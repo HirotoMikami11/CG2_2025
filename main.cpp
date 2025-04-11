@@ -2,6 +2,12 @@
 #include<cstdint>
 #include<string>
 #include<format>
+//ファイルやディレクトリに関する操作を行うライブラリ
+#include<filesystem>
+//ファイルに書いたり読んだりするライブラリ
+#include<fstream>
+//時間を扱うライブラリ
+#include<chrono>
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -42,6 +48,11 @@ void Log(const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
 
+void Log(std::ostream& os, const std::string& message) {
+	os << message << std::endl;
+	OutputDebugStringA(message.c_str());
+}
+
 // string -> wstringに変換する関数
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
@@ -61,7 +72,6 @@ std::string ConvertString(const std::wstring& str) {
 	if (str.empty()) {
 		return std::string();
 	}
-
 	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
 	if (sizeNeeded == 0) {
 		return std::string();
@@ -70,6 +80,8 @@ std::string ConvertString(const std::wstring& str) {
 	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
 	return result;
 }
+
+
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -80,6 +92,24 @@ std::string ConvertString(const std::wstring& str) {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!/n");
+
+	//ログにディレクトリを用意する
+	std::filesystem::create_directory("logs");
+
+	//現在時刻を取得（UTC時刻）
+	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+	//ログファイルの名前にコンマ何秒はいらないので、削って秒にする
+	std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>
+		nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
+	//日本時間（PCの設定時間）に変換
+	std::chrono::zoned_time localTime{ std::chrono::current_zone(),nowSeconds };
+	//formatを使って年月日_時分秒の文字列に変換
+	std::string dateString = std::format("{:%Y%m%d_%H%M%S", localtime);
+	//時刻を使ってファイル名を決定
+	std::string logFilePath = std::string("logs/") + dateString + ".log";
+	//ファイルを作って書き込み準備
+	std::ofstream logStream(logFilePath);
+
 
 	//
 	// ウィンドウクラスを登録する
@@ -126,6 +156,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//ウィンドウを表示する関数
 	ShowWindow(hwnd, SW_SHOW);
+
 
 
 	///*-----------------------------------------------------------------------*///
