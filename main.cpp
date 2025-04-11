@@ -79,7 +79,7 @@ std::string ConvertString(const std::wstring& str) {
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//出力ウィンドウへの文字出力
-	OutputDebugStringA("Hello,DirectX!/n");
+	Log("Hello,DirectX!/n");
 
 	//
 	// ウィンドウクラスを登録する
