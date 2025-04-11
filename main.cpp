@@ -86,6 +86,7 @@ std::string ConvertString(const std::wstring& str) {
 //CrashHandlerの登録
 static LONG WINAPI ExportDump(EXCEPTION_POINTERS* ecveption) {
 	//中身はこれから埋める
+	return EXCEPTION_EXECUTE_HANDLER;
 }
 
 ///*-----------------------------------------------------------------------*///
@@ -95,6 +96,10 @@ static LONG WINAPI ExportDump(EXCEPTION_POINTERS* ecveption) {
 ///*-----------------------------------------------------------------------*/
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録
+	//main関数始まってすぐ
+	SetUnhandledExceptionFilter(ExportDump);
+
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!/n");
 
