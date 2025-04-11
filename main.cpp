@@ -10,9 +10,6 @@
 #pragma comment(lib,"dxgi.lib")
 #include<cassert>
 
-//debug用のあれやこれやを使えるようにする
-#include<dbghelp.h>
-#pragma comment(lib,"Dbghelp.lib")
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -80,12 +77,6 @@ std::string ConvertString(const std::wstring& str) {
 	std::string result(sizeNeeded, 0);
 	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
 	return result;
-}
-
-
-//CrashHandlerの登録
-static LONG WINAPI ExportDump(EXCEPTION_POINTERS* ecveption) {
-	//中身はこれから埋める
 }
 
 ///*-----------------------------------------------------------------------*///
