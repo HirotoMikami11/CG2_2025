@@ -204,6 +204,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
+	///									DebugLayer							   ///
+	//																			//
+	///*-----------------------------------------------------------------------*///
+#ifdef _DEBUG
+	///DirectX12初期化前に行う必要があるため、ウィンドウを作った後すぐの位置
+	ID3D12Debug1* debugController = nullptr;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+		//デバッグレイヤーを有効化する
+		debugController->EnableDebugLayer();
+		//さらにGPU側でもチェックを行うにする
+		debugController->SetEnableGPUBasedValidation(TRUE);
+	}
+
+#endif
+
+	///*-----------------------------------------------------------------------*///
+	//																			//
 	///									DXGIFactory							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
@@ -271,6 +288,40 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//デバイスの生成がうまくいかなかったので起動できない。
 	assert(device != nullptr);
 	Log(logStream, "Complete create D3D12Device!!\n");//初期化完了のログを出す
+
+
+
+	///	DirectX12のエラー・警告が出た時止まるようにする
+
+#ifdef _DEBUG	//デバッグ時
+	ID3D12InfoQueue* infoQueue = nullptr;
+	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
+		// ヤバイエラー時に止まる
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+		// エラー時に止まる
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+		//警告時に止まる
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+		//解放
+		infoQueue->Release();
+
+		//抑制するメッセージのID
+		D3D12_MESSAGE_ID denyIds[] = {
+			//Windows11のDXGIデバッグレイヤーとDX12デバッグレイヤーの相互作用バグによるエラーメッセージ
+		D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+		};
+		//抑制するレベル
+		D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
+		D3D12_INFO_QUEUE_FILTER filter{};
+		filter.DenyList.NumIDs = _countof(denyIds);
+		filter.DenyList.pIDList = denyIds;
+		filter.DenyList.NumSeverities = _countof(severities);
+		filter.DenyList.pSeverityList = severities;
+		//指定したメッセージの表示を抑制する
+		infoQueue->PushStorageFilter(&filter);
+
+	}
+#endif
 
 
 	///*-----------------------------------------------------------------------*///
