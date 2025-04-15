@@ -44,6 +44,9 @@ struct Vector3Transform final{
 
 };
 
+
+
+
 //加算
 Vector3 Vector3Add(const Vector3& v1, const Vector3& v2);
 //減算
@@ -74,6 +77,15 @@ struct Vector4 final {
 	float y;
 	float z;
 	float w;
+};
+
+
+/// <summary>
+/// 頂点データ
+/// </summary>
+struct VertexData final {
+	Vector4 position;//座標
+	Vector2 texcoord;//UV座標系(テクスチャ座標系)
 };
 /*-----------------------------------------------------------------------*/
 //
