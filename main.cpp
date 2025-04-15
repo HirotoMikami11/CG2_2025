@@ -28,9 +28,7 @@
 
 #include<cassert>
 
-struct Vector4 {
-	float x, y, z, w;
-};
+#include "MyFunction.h"
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -600,11 +598,18 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags =
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	//RootParameter作成。複数設定できるので配列。今回は結果一つだけなので長さ1の配列
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+
+	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	//PixelShader
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(PSのgMaterial(b0)と結びつける)
+	//VertexShader
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //PixelShaderで使う
+	rootParameters[1].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(VSのgTransformationMatrix(b0)と結びつける)
+
 	descriptionRootSignature.pParameters = rootParameters;				//ルートパラメータ配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);	//配列の長さ
 
@@ -731,6 +736,20 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//今回は赤を書き込んでみる
 	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
+
+	//																			//
+	//					TransformationMatrix用のリソースを作る						//
+	//																			//
+
+	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
+	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* wvpData = nullptr;
+	//書き込むためのアドレスを取得
+	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	//単位行列を書き込んでおく
+	*wvpData = MakeIdentity4x4();
+
 	//																			//
 	//						Resourceにデータを書き込む								//
 	//																			//
@@ -769,6 +788,23 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
+
+	//Transform変数を作る
+	Vector3Transform transform{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f}
+	};
+
+	//WorldViewProjectionMatrixを作る
+	Vector3Transform cameraTransform{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,-5.0f}
+	};
+
+
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
@@ -783,9 +819,24 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		} else {
+			//							　ゲームの処理										//
 
-			//ゲームの処理
 
+			//								更新処理										//
+			
+			//																			//
+			//							三角形を動かす										//
+			//																			//
+
+			//三角形を回転させる
+			transform.rotate.y += 0.03f;
+			//viewprojectionを計算
+			Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform,(float(kClientWidth)/float(kClientHeight)));
+			//行列の更新
+			UpdateMatrix4x4(transform,viewProjectionMatrix,wvpData);
+
+
+			//								描画処理										//
 			///*-----------------------------------------------------------------------*///
 			//																			//
 			///				画面をクリアする処理が含まれたコマンドリストを作る				   ///
@@ -834,6 +885,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState);		//PSOを設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 
 			// 形状を設定。PSOに設定しているものとはまた別。RootSignatureと同じように同じものを設定すると考えておけばいい
@@ -894,7 +946,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 	//三角形を生成するものの開放
 	vertexResource->Release();
-	materialResource->Release();
+	materialResource->Release();	//マテリアル
+	wvpResource->Release();			//wvp
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {
