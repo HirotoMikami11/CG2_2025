@@ -26,6 +26,12 @@
 #include <dxcapi.h>
 #pragma comment(lib,"dxcompiler.lib")
 
+///ImGui
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 #include<cassert>
 
 #include "MyFunction.h"
@@ -36,8 +42,14 @@
 //																			//
 ///*-----------------------------------------------------------------------*///
 
-static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam) {
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+
+	//ImGuiにメッセージを渡し、マウスやキーボードで操作できるようにする
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
+
+
 	//メッセージに応じてゲーム固有の処理を行う
 	switch (msg) {
 		//ウィンドウが破棄された
@@ -129,13 +141,19 @@ static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 
 
 
-/// DXCを使ってShaderをコンパイルする関数
+
+/// <summary>
+///  DXCを使ってShaderをコンパイルする関数
+/// </summary>
+/// <param name="filePath">CompileするShaderファイルへのパス</param>
+/// <param name="profile">Compileに使用するProfile</param>
+/// <param name="dxcUtils">DxcUtil</param>
+/// <param name="dxcCompiler">DxcCompiler</param>
+/// <param name="includeHandler"></param>
+/// <returns></returns>
 IDxcBlob* CompileShader(
-	//CompilerするShaderファイルへのパス
 	const std::wstring& filePath,
-	//Compilerに使用するProfile
 	const wchar_t* profile,
-	//初期化で生成したものを3つ
 	IDxcUtils* dxcUtils,
 	IDxcCompiler3* dxcCompiler,
 	IDxcIncludeHandler* includeHandler)
@@ -238,6 +256,29 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
 
 	return Resource;
 }
+
+/// <summary>
+/// DescriptorHeapを作成する関数
+/// </summary>
+/// <param name="device"ID3D12Device*</param>
+/// <param name="heapType">作成するヒープの種類</param>
+/// <param name="numDescriptors">ディスクリプタ数</param>
+/// <param name="shaderVisible">シェーダーから参照可能にするかのフラグ</param>
+/// <returns></returns>
+ID3D12DescriptorHeap* CreateDesctiptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {
+	//ディスクリプタヒープの生成
+	ID3D12DescriptorHeap* descriptorHeap = nullptr;
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+	descriptorHeapDesc.Type = heapType;
+	descriptorHeapDesc.NumDescriptors = numDescriptors;
+	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+	// ディスクリプタヒープが作れなかったので起動できない
+	assert(SUCCEEDED(hr));
+	return descriptorHeap;
+}
+
+
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///									メイン関数							   ///
@@ -502,15 +543,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	//ディスクリプタヒープの生成
-	ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
-	D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
-	rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;	//レンダーターゲットビュー用
-	rtvDescriptorHeapDesc.NumDescriptors = 2;						//ダブルバッファ用に２つ。多くても構わない
-	hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
-	// ディスクリプタヒープが作れなかったので起動できない
-	assert(SUCCEEDED(hr));
-	Log(logStream, "Complete create DescriptorHeap!!\n");//ディスクリプタヒープ生成完了のログを出す
+	//RTV用ヒープでディスクリプタの数は2，RTVはShader内で触れるものではないのでShaderVisibleはfalse
+	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	Log(logStream, "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
+
+	//SRV用ヒープでディスクリプタの数は128，SRVはShader内で触れるものなのでShaderVisibleはtrue
+	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	Log(logStream, "Complete create SRVDescriptorHeap!!\n");//SRVディスクリプタヒープ生成完了のログを出す
 
 	//
 	///　SwapChainからResourceを引っ張ってくる
@@ -788,6 +827,25 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
+	///*-----------------------------------------------------------------------*///
+	//																			//
+	///								ImGuiの初期化								   ///
+	//																			//
+	///*-----------------------------------------------------------------------*///
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplDX12_Init(
+		device,
+		swapChainDesc.BufferCount,
+		rtvDesc.Format,
+		srvDescriptorHeap,
+		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
+	);
+
+	//								　変数宣言									//
 
 	//Transform変数を作る
 	Vector3Transform transform{
@@ -823,7 +881,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 
 			//								更新処理										//
-			
+
+			//ImGuiにフレームが始まることを伝える
+			ImGui_ImplDX12_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+
+			//開発用UIの処理
+			ImGui::ShowDemoWindow();
+
 			//																			//
 			//							三角形を動かす										//
 			//																			//
@@ -831,10 +897,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//三角形を回転させる
 			transform.rotate.y += 0.03f;
 			//viewprojectionを計算
-			Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform,(float(kClientWidth)/float(kClientHeight)));
+			Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
 			//行列の更新
-			UpdateMatrix4x4(transform,viewProjectionMatrix,wvpData);
+			UpdateMatrix4x4(transform, viewProjectionMatrix, wvpData);
 
+			//ImGuiの内部コマンドを生成する(描画処理に入る前)
+			ImGui::Render();
 
 			//								描画処理										//
 			///*-----------------------------------------------------------------------*///
@@ -869,12 +937,14 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
-
+			//	描画用のDesctiptorHeapの設定
+			ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
+			commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
 
 			///*-----------------------------------------------------------------------*///
 			//																			//
-			///							コマンドを積む									   ///
+			///							描画に必要コマンドを積む						   ///
 			//																			//
 			///*-----------------------------------------------------------------------*///
 
@@ -893,7 +963,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 			commandList->DrawInstanced(3, 1, 0, 0);
 
-
+			//実際のcommandListのImGuiの描画コマンドを積む
+			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
 			//	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
 			//	今回はRenerTargetからPresentにする
@@ -937,6 +1008,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		}
 	}
 
+	//ImGuiの終了処理
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -944,7 +1019,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	//三角形を生成するものの開放
+	//三角形を生成するものの解放処理
 	vertexResource->Release();
 	materialResource->Release();	//マテリアル
 	wvpResource->Release();			//wvp
@@ -961,6 +1036,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	CloseHandle(fenceEvent);
 	fence->Release();
 	rtvDescriptorHeap->Release();
+	srvDescriptorHeap->Release();
 	swapChainResources[0]->Release();
 	swapChainResources[1]->Release();
 	swapChain->Release();
