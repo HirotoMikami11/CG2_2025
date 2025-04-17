@@ -521,7 +521,7 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 
 
 
-Matrix4x4 MakeOrthpgrapicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+Matrix4x4 MakeOrthograpicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
 	Matrix4x4 orthpgrapicMatrix = { 0 };
 
 	orthpgrapicMatrix.m[0][0] = 2 / (right - left);
@@ -542,7 +542,7 @@ Matrix4x4 MakeOrthpgrapicMatrix(float left, float top, float right, float bottom
 	orthpgrapicMatrix.m[3][0] = (left + right) / (left - right);
 	orthpgrapicMatrix.m[3][1] = (top + bottom) / (bottom - top);
 	orthpgrapicMatrix.m[3][2] = nearClip / (nearClip - farClip);
-	orthpgrapicMatrix.m[3][3] = 0;
+	orthpgrapicMatrix.m[3][3] = 1;
 
 	return orthpgrapicMatrix;
 
@@ -588,11 +588,10 @@ Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& cameraTransform, floa
 }
 
 
-Matrix4x4 MakeViewProjectionMatrixSprite(const Vector3Transform& cameraTransform) {
+Matrix4x4 MakeViewProjectionMatrixSprite() {
 
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
-	Matrix4x4 projectionMatrix = MakeOrthpgrapicMatrix(0.0f,0.0f,float(kClientWidth),float(kClientHeight),0.0f,100.0f);
+	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f,0.0f,float(kClientWidth),float(kClientHeight),0.0f,100.0f);
 	Matrix4x4 viewProjectionMatrix = Matrix4x4Multiply(viewMatrix, projectionMatrix);
 
 	return viewProjectionMatrix;

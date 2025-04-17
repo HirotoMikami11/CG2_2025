@@ -1018,7 +1018,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
 	ID3D12Resource* materialResource =
-		CreateBufferResource(device, sizeof(VertexData));
+		CreateBufferResource(device, sizeof(Vector4));
 	//マテリアルデータに書き込む
 	Vector4* materialData = nullptr;
 	//書き込むためのアドレスを取得
@@ -1254,8 +1254,9 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//							Sprite用のWVP									//
 			//																			//
+			
 			//viewprojectionを計算
-			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite(cameraTransform);
+			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 			//行列の更新
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
 
