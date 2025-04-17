@@ -7,3 +7,4 @@ void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProje
 
 	*matrixData = worldViewProjectionMatrix;
 }
+

@@ -480,9 +480,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	RegisterClass(&wc);
 
 
-	// クライアント領域のサイズ
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
+
 
 	//　ウィンドウサイズを表す構造体にクライアント領域を入れる
 	RECT wrc = { 0,0,kClientWidth,kClientHeight };
@@ -777,15 +775,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	///DepthStencilStateの設定
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	//Depthの機能を有効化する
-	depthStencilDesc.DepthEnable = true;
-	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	//比較関数はLessEqual（近ければ描画する）
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -948,6 +937,20 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	assert(pixelShaderBlob != nullptr);
 
 
+	
+	//																			//
+	//						DepthStencilStateの設定								//
+	//																			//
+
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	//Depthの機能を有効化する
+	depthStencilDesc.DepthEnable = true;
+	//書き込みします
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	//比較関数はLessEqual（近ければ描画する）
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+
 	///PSOの作成
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -982,11 +985,16 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//生成できなかったら起動できない
 	Log(logStream, "Complete create PSO!!\n");//PSO生成完了のログを出す
 
+
+
+
 	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									VertexResource						   ///
-	//																			//
+	///									三角形									///
 	///*-----------------------------------------------------------------------*///
+
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
 
 	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
@@ -994,9 +1002,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//																			//
 	//							VertexBufferViewの作成							//
 	//																			//
+
 	//頂点バッファビューを作成
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//リソースの戦闘のアドレスから使う
+	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//仕様数リソースのサイズは頂点3つ分のサイズ
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6; //２つ三角形を作るので６個の頂点データ
@@ -1015,7 +1024,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//書き込むためのアドレスを取得
 	materialResource->
 		Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//今回は赤を書き込んでみる
+	//白で初期化
 	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 
@@ -1046,21 +1055,92 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	//上
-	vertexData[1] = { 0.0f,0.5f,0.0f,1.0f };
+	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
 	vertexData[1].texcoord = { 0.5f,0.0f };
 	//右下
-	vertexData[2] = { 0.5f,-0.5f,0.0f,1.0f };
+	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
 
 	//二つ目の三角形
 	vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
 	vertexData[3].texcoord = { 0.0f,1.0f };
 	//上
-	vertexData[4] = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
 	vertexData[4].texcoord = { 0.5f,0.0f };
 	//右下
-	vertexData[5] = { 0.5f,-0.5f,-0.5f,1.0f };
+	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
+
+
+	///*-----------------------------------------------------------------------*///
+	///								矩形Sprite									///
+	///*-----------------------------------------------------------------------*///
+
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
+
+	//実際に頂点リソースを生成
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形で矩形を作るので頂点データ6つ
+
+	//																			//
+	//							VertexBufferViewの作成							//
+	//																			//
+
+	//頂点バッファビューを作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+	//リソースの戦闘のアドレスから使う
+	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+	//仕様数リソースのサイズは頂点3つ分のサイズ
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6; //２つ三角形を作るので６個の頂点データ
+	//1頂点当たりのサイズ
+	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+
+	//																			//
+	//					TransformationMatrix用のリソースを作る						//
+	//																			//
+
+//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
+	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* transformationMatrixDataSprite = nullptr;
+	//書き込むためのアドレスを取得
+	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+	//単位行列を書き込んでおく
+	*transformationMatrixDataSprite = MakeIdentity4x4();
+	//																			//
+	//						Resourceにデータを書き込む								//
+	//																			//
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataSprite = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+	//一つ目の三角形
+	//左下
+	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
+	//左上
+	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
+	//右下
+	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
+
+	//二つ目の三角形
+	//左上
+	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
+	//右上
+	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
+	//右下
+	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
+
+
+
+
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -1112,6 +1192,14 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{0.0f,0.0f,0.0f}
 	};
 
+	//Transform変数を作る
+	Vector3Transform transformSprite{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f}
+	};
+
+
 	//WorldViewProjectionMatrixを作る
 	Vector3Transform cameraTransform{
 		{1.0f,1.0f,1.0f},
@@ -1153,7 +1241,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			}
 			ImGui::End();
 			//																			//
-			//							三角形を動かす										//
+			//							三角形用のWVP										//
 			//																			//
 
 			//三角形を回転させる
@@ -1162,6 +1250,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
 			//行列の更新
 			UpdateMatrix4x4(transform, viewProjectionMatrix, wvpData);
+
+			//																			//
+			//							Sprite用のWVP									//
+			//																			//
+			//viewprojectionを計算
+			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite(cameraTransform);
+			//行列の更新
+			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
+
 
 			//ImGuiの内部コマンドを生成する(描画処理に入る前)
 			ImGui::Render();
@@ -1228,6 +1325,18 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 			commandList->DrawInstanced(6, 1, 0, 0);
+
+			//																			//
+			//									Sprite									//
+			//																			//
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			//TransformMatrixCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			// 描画（DrawCall／ドローコール)
+			//三角形を二つ描画するので6つ
+			commandList->DrawInstanced(6, 1, 0, 0);
+
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -1302,6 +1411,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	textureResource->Release();
 	intermediateResource->Release();
 	depthStencilResource->Release();
+
+	//Sprite
+	vertexResourceSprite->Release();
+	transformationMatrixResourceSprite->Release();
 
 	//オブジェクトの解放処理
 	CloseHandle(fenceEvent);

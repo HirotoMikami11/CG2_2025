@@ -3,7 +3,9 @@
 #include<math.h>
 #include <cmath>
 
-
+// クライアント領域のサイズ
+static const int32_t kClientWidth = 1280;
+static const int32_t kClientHeight = 720;
 /*-----------------------------------------------------------------------*/
 //
 //								2次元ベクトル
@@ -36,7 +38,7 @@ struct Vector3 final {
 /// <summary>
 /// トランスフォーム
 /// </summary>
-struct Vector3Transform final{
+struct Vector3Transform final {
 
 	Vector3 scale;
 	Vector3 rotate;
@@ -141,3 +143,5 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 
 //
 Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& camera, float aspectRatio);
+//矩形Sprite用のカメラを原点としたviewProjecton
+Matrix4x4 MakeViewProjectionMatrixSprite(const Vector3Transform& camera);
