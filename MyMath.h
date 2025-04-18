@@ -136,10 +136,9 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 //透視射影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 //正射影行列
-Matrix4x4 MakeOrthporapicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+Matrix4x4 MakeOrthograpicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
 //ビューポート変換行列
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
-
 
 //
 Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& camera, float aspectRatio);

@@ -837,7 +837,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
 
 	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 	//PixelShader
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
@@ -853,6 +853,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;				//PixelShaderで使う
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;			//Tableの中身の配列を指定
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する数
+
+	//structuredbufferを追加する
+	// 既存 rootParameters[3] を追加
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[3].Descriptor.ShaderRegister = 1; // t1 に結びつける（HLSLで register(t1)）
+	rootParameters[3].Descriptor.RegisterSpace = 0;
 
 
 	//Samplerの設定
@@ -997,6 +1004,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
+
+	///ラスタスクロール用のバッファ(StructuredBuffer)
+	ID3D12Resource* scrollOffsetBuffer = CreateBufferResource(device, sizeof(float) * kClientHeight);
+	float* scrollOffsetMapped = nullptr;
+	scrollOffsetBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
+
 
 	//																			//
 	//							VertexBufferViewの作成							//
@@ -1205,6 +1218,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,-5.0f}
 	};
+	
+	/////ラスタスクロールのスクロール量の配列
+	//std::vector<float> scrollOffsets(kClientHeight);
+
+	//for (int y = 0; y < kClientHeight; ++y) {
+	//	scrollOffsets[y] = sinf(y * 0.05f) * 20.0f;  // 波っぽいスクロール
+	//}
 
 
 
@@ -1239,12 +1259,23 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 				// 色が変更された時の処理（必要ならここで更新通知など）
 			}
 			ImGui::End();
+			
+			
+			///スクロール量の更新
+			float time = static_cast<float>(GetTickCount64()) / 1000.0f;  // 秒単位の時間
+			for (int y = 0; y < kClientHeight; ++y) {
+				scrollOffsetMapped[y] = sinf(y * 0.05f + time) * 0.02f;  // 少し小さい値
+			}
+
+			
+			
+			
 			//																			//
 			//							三角形用のWVP										//
 			//																			//
 
 			//三角形を回転させる
-			transform.rotate.y += 0.03f;
+			//transform.rotate.y += 0.03f;
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
 			//行列の更新
@@ -1319,6 +1350,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			// スクロールバッファをルートパラメータ4番目（index 3）にバインド(ラスタスクロール)
+			commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 
 			// 形状を設定。PSOに設定しているものとはまた別。RootSignatureと同じように同じものを設定すると考えておけばいい
