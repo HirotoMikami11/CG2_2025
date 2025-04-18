@@ -421,6 +421,74 @@ ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t 
 }
 
 
+void CreateSphereVertexData(VertexData vertexData[]) {
+	const uint32_t kSubdivision = 16;							//分割数
+	const float kLonEvery = (2 * float(M_PI)) / kSubdivision;	//経度分割1つ分の角度
+	const float kLatEvery = float(M_PI) / kSubdivision;			//緯度分割1つ分の角度
+
+	//緯度の方向に分割　-π/2　~π/2
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = (-float(M_PI) / 2.0f) + kLatEvery * latIndex;	//現在の緯度(θ)
+
+		//経度の方向に分割 0 ~ 2π
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+
+			float lon = lonIndex * kLonEvery;
+			///データを書き込む最初の場所
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+
+			//頂点にデータを入力する。基準点a
+			vertexData[start].position.x = cos(lat) * cos(lon);
+			vertexData[start].position.y = sin(lat);
+			vertexData[start].position.z = cos(lat) * sin(lon);
+			vertexData[start].position.w = 1.0f;
+			vertexData[start].texcoord.x = float(lonIndex) / float(kSubdivision);
+			vertexData[start].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点にデータを入力する。基準点b
+			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
+			vertexData[start + 1].position.y = sin(lat + kLatEvery);
+			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
+			vertexData[start + 1].position.w = 1.0f;
+			vertexData[start + 1].texcoord.x = float(lonIndex) / float(kSubdivision);
+			vertexData[start + 1].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
+			//頂点にデータを入力する。基準点c
+			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
+			vertexData[start + 2].position.y = sin(lat);
+			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
+			vertexData[start + 2].position.w = 1.0f;
+			vertexData[start + 2].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
+			vertexData[start + 2].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+
+			//頂点にデータを入力する。基準点b
+			vertexData[start + 3].position.x = vertexData[start + 1].position.x;
+			vertexData[start + 3].position.y = vertexData[start + 1].position.y;
+			vertexData[start + 3].position.z = vertexData[start + 1].position.z;
+			vertexData[start + 3].position.w = 1.0f;
+			vertexData[start + 3].texcoord.x = vertexData[start + 1].texcoord.x;
+			vertexData[start + 3].texcoord.y = vertexData[start + 1].texcoord.y;
+
+			//頂点にデータを入力する。基準点c
+			vertexData[start + 5].position.x = vertexData[start + 2].position.x;
+			vertexData[start + 5].position.y = vertexData[start + 2].position.y;
+			vertexData[start + 5].position.z = vertexData[start + 2].position.z;
+			vertexData[start + 5].position.w = 1.0f;
+			vertexData[start + 5].texcoord.x = vertexData[start + 2].texcoord.x;
+			vertexData[start + 5].texcoord.y = vertexData[start + 2].texcoord.y;
+
+			//頂点にデータを入力する。基準点d
+			vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+			vertexData[start + 4].position.y = sin(lat + kLatEvery);
+			vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+			vertexData[start + 4].position.w = 1.0f;
+			vertexData[start + 4].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
+			vertexData[start + 4].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
+
+
+		}
+	}
+}
+
+
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -937,7 +1005,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	assert(pixelShaderBlob != nullptr);
 
 
-	
+
 	//																			//
 	//						DepthStencilStateの設定								//
 	//																			//
@@ -998,6 +1066,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
+
 
 	//																			//
 	//							VertexBufferViewの作成							//
@@ -1140,6 +1209,71 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 
 
+	///*-----------------------------------------------------------------------*///
+	///									球体									///
+	///*-----------------------------------------------------------------------*///
+
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
+
+	//実際に頂点リソースを生成
+	ID3D12Resource* vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * (16 * 16 * 6)); //球用1536
+
+	//																			//
+	//							VertexBufferViewの作成							//
+	//																			//
+
+	//頂点バッファビューを作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
+	//リソースの先頭のアドレスから使う
+	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
+	//仕様数リソースのサイズは頂点3つ分のサイズ
+	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * (16 * 16 * 6); //
+	//1頂点当たりのサイズ
+	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
+
+	//																			//
+	//							Material用のResourceを作る						//
+	//																			//
+
+	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
+	ID3D12Resource* materialResourceSphere =
+		CreateBufferResource(device, sizeof(Vector4));
+	//マテリアルデータに書き込む
+	Vector4* materialDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	materialResourceSphere->
+		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
+	//白で初期化
+	*materialDataSphere = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+
+	//																			//
+	//					TransformationMatrix用のリソースを作る						//
+	//																			//
+
+	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
+	ID3D12Resource* wvpResourceSphere = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* wvpDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	wvpResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere));
+	//単位行列を書き込んでおく
+	*wvpDataSphere = MakeIdentity4x4();
+
+	//																			//
+	//						Resourceにデータを書き込む								//
+	//																			//
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+
+	//球体のデータ
+	CreateSphereVertexData(vertexDataSphere);
+
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1189,22 +1323,28 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	Vector3Transform transform{
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
+		{2.0f,1.5f,0.0f}
 	};
 
-	//Transform変数を作る
+	//SpriteのTransform変数を作る
 	Vector3Transform transformSprite{
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,0.0f}
 	};
 
+	//SphereのTransform変数を作る
+	Vector3Transform transformSphere{
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f}
+	};
 
 	//WorldViewProjectionMatrixを作る
 	Vector3Transform cameraTransform{
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,-5.0f}
+		{0.0f,0.0f,-10.0f}
 	};
 
 
@@ -1234,11 +1374,17 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			ImGui::NewFrame();
 
 			//開発用UIの処理
-			ImGui::ShowDemoWindow();
 			ImGui::Begin("Material Color");
-			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&materialData->x))) {
-				// 色が変更された時の処理（必要ならここで更新通知など）
-			}
+			ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&materialData->x));
+			ImGui::Text("Triangle");
+			ImGui::DragFloat3("Triangle_translate",&transform.translate.x,0.01f);
+			ImGui::DragFloat3("Triangle_rotate",&transform.rotate.x,0.01f);
+			ImGui::Text("Sprite");
+			ImGui::DragFloat3("Sprite_translate###Sprite", &transformSprite.translate.x, 0.01f);
+			ImGui::DragFloat3("Sprite_rotate###Sprite", &transformSprite.rotate.x, 0.01f);
+			ImGui::Text("Sphere");
+			ImGui::DragFloat3("Sphere_translate", &transformSphere.translate.x, 0.01f);
+			ImGui::DragFloat3("Sphere_rotate", &transformSphere.rotate.x, 0.01f);
 			ImGui::End();
 			//																			//
 			//							三角形用のWVP										//
@@ -1254,11 +1400,21 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//							Sprite用のWVP									//
 			//																			//
-			
+
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 			//行列の更新
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
+
+			//																			//
+			//							球体用のWVP										//
+			//																			//
+
+		//三角形を回転させる
+			//viewprojectionを計算
+			Matrix4x4 viewProjectionMatrixSphere = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
+			//行列の更新
+			UpdateMatrix4x4(transformSphere, viewProjectionMatrix, wvpDataSphere);
 
 
 			//ImGuiの内部コマンドを生成する(描画処理に入る前)
@@ -1330,7 +1486,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//									Sprite									//
 			//																			//
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			//TransformMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
@@ -1338,6 +1493,16 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//三角形を二つ描画するので6つ
 			commandList->DrawInstanced(6, 1, 0, 0);
 
+
+			//																			//
+			//									Sphere									//
+			//																			//
+
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
+			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
+			commandList->DrawInstanced(16 * 16 * 6, 1, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -1416,6 +1581,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//Sprite
 	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
+
+
+	//Sphere
+
+
+	vertexResourceSphere->Release();
+	materialResourceSphere->Release();
+	wvpResourceSphere->Release();
+
 
 	//オブジェクトの解放処理
 	CloseHandle(fenceEvent);
