@@ -490,7 +490,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウの生成
 	HWND hwnd = CreateWindow(
 		wc.lpszClassName,		//利用するクラス名
-		L"CG2",					//タイトルバーの文字
+		L"TR1_RasterScroll",					//タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,	//よく見るウィンドウスタイル
 		CW_USEDEFAULT,			//表示X座標
 		CW_USEDEFAULT,			//表示Y座標
@@ -942,8 +942,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
+	//ラスタスクロールのHlslをコンパイル
+	IDxcBlob* rasterScrollPixelShaderBlob = CompileShader(L"RasterScroll.PS.hlsl",
+		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	assert(rasterScrollPixelShaderBlob != nullptr);
 
-	
+
+
 	//																			//
 	//						DepthStencilStateの設定								//
 	//																			//
@@ -992,6 +997,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	Log(logStream, "Complete create PSO!!\n");//PSO生成完了のログを出す
 
 
+	//　ラスタスクロール専用のPSO
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC rasterScrollPSODesc = graphicsPipelineStateDesc; // 既存PSOのコピー
+	rasterScrollPSODesc.PS = { rasterScrollPixelShaderBlob->GetBufferPointer(),
+		rasterScrollPixelShaderBlob->GetBufferSize() };
+
+	ID3D12PipelineState* rasterScrollPipelineState = nullptr;
+	hr = device->CreateGraphicsPipelineState(&rasterScrollPSODesc, IID_PPV_ARGS(&rasterScrollPipelineState));
+	assert(SUCCEEDED(hr));
+	Log(logStream, "Created RasterScroll PSO.\n");
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1218,7 +1232,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,-5.0f}
 	};
-	
+
 	/////ラスタスクロールのスクロール量の配列
 	//std::vector<float> scrollOffsets(kClientHeight);
 
@@ -1226,7 +1240,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//	scrollOffsets[y] = sinf(y * 0.05f) * 20.0f;  // 波っぽいスクロール
 	//}
 
-
+	///スクロール量の更新
+	float time = 1;  // 秒単位の時間
+	///ImGuiで操作する変数（大まかに波の大きさを変更できる）
+	float scrollOffsetNum = 0.02f;
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -1255,21 +1272,20 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//開発用UIの処理
 			ImGui::ShowDemoWindow();
 			ImGui::Begin("Material Color");
-			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&materialData->x))) {
-				// 色が変更された時の処理（必要ならここで更新通知など）
-			}
+			ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&materialData->x));
+			ImGui::SliderFloat("ScrollTime", &time, 0, 1);
+			ImGui::SliderFloat("ScrollofsetNum", &scrollOffsetNum, 0, 1);
 			ImGui::End();
-			
-			
-			///スクロール量の更新
-			float time = static_cast<float>(GetTickCount64()) / 1000.0f;  // 秒単位の時間
+
+
+			time = static_cast<float>(GetTickCount64()) / 1000.0f;  // 秒単位の時間
 			for (int y = 0; y < kClientHeight; ++y) {
-				scrollOffsetMapped[y] = sinf(y * 0.05f + time) * 0.02f;  // 少し小さい値
+				scrollOffsetMapped[y] = sinf(y * 0.05f + time) * scrollOffsetNum;
 			}
 
-			
-			
-			
+
+
+
 			//																			//
 			//							三角形用のWVP										//
 			//																			//
@@ -1284,7 +1300,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//							Sprite用のWVP									//
 			//																			//
-			
+
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 			//行列の更新
@@ -1347,25 +1363,37 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			// RootSignatureを設定。PSOに設定しているけど別途設定（PSOと同じもの）が必要
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState);		//PSOを設定
+
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+
 			// スクロールバッファをルートパラメータ4番目（index 3）にバインド(ラスタスクロール)
 			commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 
+			//																			//
+			//									三角形									//
+			//																			//
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 			// 形状を設定。PSOに設定しているものとはまた別。RootSignatureと同じように同じものを設定すると考えておけばいい
-			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);//三角形にすると設定
 			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 			commandList->DrawInstanced(6, 1, 0, 0);
+
 
 			//																			//
 			//									Sprite									//
 			//																			//
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			// RootSignatureとラスタスクロールPSOを設定
+			commandList->SetGraphicsRootSignature(rootSignature);
+			commandList->SetPipelineState(rasterScrollPipelineState);	//ここから下はラスタスクロールが適用される
+
 			//TransformMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+
 			// 描画（DrawCall／ドローコール)
 			//三角形を二つ描画するので6つ
 			commandList->DrawInstanced(6, 1, 0, 0);
@@ -1433,12 +1461,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	materialResource->Release();
 	wvpResource->Release();
 	graphicsPipelineState->Release();
+	rasterScrollPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {
 		errorBlob->Release();
 	}
 	rootSignature->Release();
 	pixelShaderBlob->Release();
+	rasterScrollPixelShaderBlob->Release();		//ラスタスクロールシェーダー
+	scrollOffsetBuffer->Release();				//スクロールする量
 	vertexShaderBlob->Release();
 
 	textureResource->Release();
