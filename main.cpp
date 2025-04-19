@@ -39,6 +39,10 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include<cassert>
 #include <vector>
 #include "MyFunction.h"
+
+
+#include "Logger.h"
+
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///						ウィンドウプロシージャここから						   ///
@@ -64,53 +68,6 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 	//標準のメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
-
-///*-----------------------------------------------------------------------*///
-//																			//
-///									ログ関連の関数							   ///
-//																			//
-///*-----------------------------------------------------------------------*///
-
-/// 出力ウィンドウに文字を出す関数
-static void Log(const std::string& message) {
-	OutputDebugStringA(message.c_str());
-}
-/// 出力ウィンドウに文字を出し、ログファイルに書き込む関数
-static void Log(std::ostream& os, const std::string& message) {
-	os << message << std::endl;
-	OutputDebugStringA(message.c_str());
-}
-
-
-// string -> wstringに変換する関数
-static std::wstring ConvertString(const std::string& str) {
-	if (str.empty()) {
-		return std::wstring();
-	}
-
-	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
-	if (sizeNeeded == 0) {
-		return std::wstring();
-	}
-	std::wstring result(sizeNeeded, 0);
-	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), &result[0], sizeNeeded);
-	return result;
-}
-// wstring -> stringに変換する関数
-static std::string ConvertString(const std::wstring& str) {
-	if (str.empty()) {
-		return std::string();
-	}
-
-	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
-	if (sizeNeeded == 0) {
-		return std::string();
-	}
-	std::string result(sizeNeeded, 0);
-	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
-	return result;
-}
-
 
 
 /// CrashHandlerの登録をする関数
@@ -162,7 +119,7 @@ static IDxcBlob* CompileShader(
 	IDxcIncludeHandler* includeHandler)
 {
 	//「これからシェーダーをコンパイルする」とログに出す
-	Log(ConvertString(std::format(L"Begin CompileShader, path:{},profile:{}\n", filePath, profile)));
+	Logger::Log(Logger::ConvertString(std::format(L"Begin CompileShader, path:{},profile:{}\n", filePath, profile)));
 
 	///hlslファイルを読み込む
 	IDxcBlobEncoding* shaderSource = nullptr;
@@ -203,7 +160,7 @@ static IDxcBlob* CompileShader(
 	IDxcBlobUtf8* shaderError = nullptr;
 	if (shaderError != nullptr && shaderError->GetStringLength() != 0)
 	{
-		Log(shaderError->GetStringPointer());
+		Logger::Log(shaderError->GetStringPointer());
 		assert(false);
 	}
 	///Compile結果を受け取って返す
@@ -212,7 +169,7 @@ static IDxcBlob* CompileShader(
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
 	assert(SUCCEEDED(hr));
 	//成功したログを出す
-	Log(ConvertString(std::format(L"Compile Succesed,path:{},profile:{}\n", filePath, profile)));
+	Logger::Log(Logger::ConvertString(std::format(L"Compile Succesed,path:{},profile:{}\n", filePath, profile)));
 	//もう使わないリソースを開放
 	shaderSource->Release();
 	shaderResult->Release();
@@ -284,7 +241,7 @@ static ID3D12DescriptorHeap* CreateDesctiptorHeap(ID3D12Device* device, D3D12_DE
 static DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 	//テクスチャファイルを読んでプログラムで扱える
 	DirectX::ScratchImage image{};
-	std::wstring filePathW = ConvertString(filePath);
+	std::wstring filePathW = Logger::ConvertString(filePath);
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 	assert(SUCCEEDED(hr));
 
@@ -537,7 +494,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//出力ウィンドウへの文字出力
-	Log(logStream, "Hello,DirectX!/n");
+	Logger::Log(logStream, "Hello,DirectX!/n");
 
 	///
 	/// ウィンドウクラスを登録する
@@ -635,7 +592,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//採用したアダプタの情報をログに出力。wstringの方なので注意
 
 			///コンバートストリングしてstr変化
-			Log(logStream, ConvertString(std::format(L"Use Adapater:{}\n", adapterDesc.Description)));
+			Logger::Log(logStream, Logger::ConvertString(std::format(L"Use Adapater:{}\n", adapterDesc.Description)));
 			break;
 		}
 		useAdapter = nullptr;//ソフトウェアアダプタの場合は見なかったことにする
@@ -665,13 +622,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		//指定した機能レベルでデバイスが生成できたかを確認
 		if (SUCCEEDED(hr)) {
 			//生成できたのでログ出力を行ってループを抜ける
-			Log(logStream, std::format("FeatureLevel : {}\n", featureLevelStrings[i]));
+			Logger::Log(logStream, std::format("FeatureLevel : {}\n", featureLevelStrings[i]));
 			break;
 		}
 	}
 	//デバイスの生成がうまくいかなかったので起動できない。
 	assert(device != nullptr);
-	Log(logStream, "Complete create D3D12Device!!\n");//初期化完了のログを出す
+	Logger::Log(logStream, "Complete create D3D12Device!!\n");//初期化完了のログを出す
 
 
 
@@ -720,21 +677,21 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	hr = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
 	//コマンドキューの生成が上手くいかなかったので起動できない
 	assert(SUCCEEDED(hr));
-	Log(logStream, "Complete create commandQueue!!\n");//コマンドキュー生成完了のログを出す
+	Logger::Log(logStream, "Complete create commandQueue!!\n");//コマンドキュー生成完了のログを出す
 
 	//コマンドアロケータ（コマンドリスト（まとまった命令郡）保存用のメモリ管理するもの）
 	ID3D12CommandAllocator* commandAllocator = nullptr;
 	hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator));
 	//コマンドアロケータの生成が上手くいかなかったので起動できない
 	assert(SUCCEEDED(hr));
-	Log(logStream, "Complete create commandAllocator!!\n");//コマンドアロケータ生成完了のログを出す
+	Logger::Log(logStream, "Complete create commandAllocator!!\n");//コマンドアロケータ生成完了のログを出す
 
 	// コマンドリスト（まとまった命令郡）を生成する
 	ID3D12GraphicsCommandList* commandList = nullptr;
 	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, nullptr, IID_PPV_ARGS(&commandList));
 	//コマンドリストの生成がうまくいかなかったので起動できない 
 	assert(SUCCEEDED(hr));
-	Log(logStream, "Complete create commandList!!\n");//コマンドリスト生成完了のログを出す
+	Logger::Log(logStream, "Complete create commandList!!\n");//コマンドリスト生成完了のログを出す
 
 
 	///*-----------------------------------------------------------------------*///
@@ -758,7 +715,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		reinterpret_cast<IDXGISwapChain1**>(&swapChain));
 	//スワップチェーンの生成がうまくいかなかったので起動できない 
 	assert(SUCCEEDED(hr));
-	Log(logStream, "Complete create swapChain!!\n");//スワップチェーン生成完了のログを出す
+	Logger::Log(logStream, "Complete create swapChain!!\n");//スワップチェーン生成完了のログを出す
 
 
 	///*-----------------------------------------------------------------------*///
@@ -775,11 +732,11 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 	//RTV用ヒープでディスクリプタの数は2，RTVはShader内で触れるものではないのでShaderVisibleはfalse
 	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	Log(logStream, "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
+	Logger::Log(logStream, "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
 
 	//SRV用ヒープでディスクリプタの数は128，SRVはShader内で触れるものなのでShaderVisibleはtrue
 	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
-	Log(logStream, "Complete create SRVDescriptorHeap!!\n");//SRVディスクリプタヒープ生成完了のログを出す
+	Logger::Log(logStream, "Complete create SRVDescriptorHeap!!\n");//SRVディスクリプタヒープ生成完了のログを出す
 
 
 	///　SwapChainからResourceを引っ張ってくる
@@ -894,7 +851,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	uint64_t fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));	//Fenceが生成できなかったので起動できない
-	Log(logStream, "Complete create fence!!\n");//フェンス生成完了のログを出す
+	Logger::Log(logStream, "Complete create fence!!\n");//フェンス生成完了のログを出す
 
 	//FenceのSignal(GPUに指定の位置で指定の値を書き込んでもらう命令)を待つためのEvent(メッセージ)を作成する
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -918,7 +875,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	IDxcIncludeHandler* includeHandler = nullptr;
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	assert(SUCCEEDED(hr));
-	Log(logStream, "Complete: DXC compiler initialization.\n"); //DXC初期化完了
+	Logger::Log(logStream, "Complete: DXC compiler initialization.\n"); //DXC初期化完了
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -986,7 +943,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	hr = D3D12SerializeRootSignature(&descriptionRootSignature,
 		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
-		Log(logStream, reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		Logger::Log(logStream, reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
 		assert(false);
 	}
 	//バイナリを元に生成
@@ -1090,7 +1047,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 	//生成できなかったら起動できない
-	Log(logStream, "Complete create PSO!!\n");//PSO生成完了のログを出す
+	Logger::Log(logStream, "Complete create PSO!!\n");//PSO生成完了のログを出す
 
 
 
