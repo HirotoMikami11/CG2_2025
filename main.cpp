@@ -766,11 +766,11 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	///							DescriptorHeapを生成							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
+	
+	//DescriptorSizeを取得する（ゲームの実行中に変化することがないため、この時点で）
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-
-	///7
 
 
 	//RTV用ヒープでディスクリプタの数は2，RTVはShader内で触れるものではないのでShaderVisibleはfalse
@@ -808,7 +808,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	rtvHandles[0] = rtvStartHandle;
 	device->CreateRenderTargetView(swapChainResources[0], &rtvDesc, rtvHandles[0]);
 	//2つ目のディスクリプタハンドルを得る（自力で）
-	rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	rtvHandles[1].ptr = rtvHandles[0].ptr + descriptorSizeRTV;
 	//2つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
@@ -818,28 +818,51 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	///									SRVを生成							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	//textureを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
-	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
-	ID3D12Resource* intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
+	
+	// テクスチャファイル名配列
+	std::vector<std::string> textureFileNames = {
+		"resources/uvChecker.png",
+		"resources/monsterBall.png"
+	};
 
-	//metadataを基にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+	// textureとSRVHandleの配列
+	std::vector<ID3D12Resource*> textureResources;
+	std::vector<ID3D12Resource*> intermediateResources;
+	std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandles;
 
 	//SRVを作成するDescriptorHeapの場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-	//先頭はImGuiが使っているのでその次を使う
-	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);//現在のディスクリプタヒープの次の位置を指定？
-	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);//現在のディスクリプタヒープの次の位置を指定？
 
-	//SRVの生成
-	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
+	// それぞれのテクスチャに対して処理を行う
+	for (size_t i = 0; i < textureFileNames.size(); ++i) {
+		// テクスチャを読み込んで転送する
+		DirectX::ScratchImage mipImages = LoadTexture(textureFileNames[i]);
+		const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+		ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
+		ID3D12Resource* intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
+
+		// SRV設定
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+		srvDesc.Format = metadata.format;
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+		// CPU・GPUハンドルをずらしてセット
+		D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = textureSrvHandleCPU;
+		currentCpuHandle.ptr += descriptorSizeSRV * (i + 1); // ImGuiが先頭を使ってるので i+1
+		D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = textureSrvHandleGPU;
+		currentGpuHandle.ptr += descriptorSizeSRV * (i + 1);
+
+		// SRVの生成
+		device->CreateShaderResourceView(textureResource, &srvDesc, currentCpuHandle);
+		// 解放するときのために
+		textureResources.push_back(textureResource);
+		intermediateResources.push_back(intermediateResource);
+		textureSrvHandles.push_back(currentGpuHandle);
+	}
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1156,6 +1179,71 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
 
+	///*-----------------------------------------------------------------------*///
+	///									球体									///
+	///*-----------------------------------------------------------------------*///
+
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
+
+	//実際に頂点リソースを生成
+	ID3D12Resource* vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * (16 * 16 * 6)); //球用1536
+
+	//																			//
+	//							VertexBufferViewの作成							//
+	//																			//
+
+	//頂点バッファビューを作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
+	//リソースの先頭のアドレスから使う
+	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
+	//仕様数リソースのサイズは頂点3つ分のサイズ
+	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * (16 * 16 * 6); //
+	//1頂点当たりのサイズ
+	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
+
+	//																			//
+	//							Material用のResourceを作る						//
+	//																			//
+
+	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
+	ID3D12Resource* materialResourceSphere =
+		CreateBufferResource(device, sizeof(Vector4));
+	//マテリアルデータに書き込む
+	Vector4* materialDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	materialResourceSphere->
+		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
+	//白で初期化
+	*materialDataSphere = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+
+	//																			//
+	//					TransformationMatrix用のリソースを作る						//
+	//																			//
+
+	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
+	ID3D12Resource* wvpResourceSphere = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* wvpDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	wvpResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere));
+	//単位行列を書き込んでおく
+	*wvpDataSphere = MakeIdentity4x4();
+
+	//																			//
+	//						Resourceにデータを書き込む								//
+	//																			//
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+
+	//球体のデータ
+	CreateSphereVertexData(vertexDataSphere);
+
 
 	///*-----------------------------------------------------------------------*///
 	///								矩形Sprite									///
@@ -1224,74 +1312,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
 
 
-
-	///*-----------------------------------------------------------------------*///
-	///									球体									///
-	///*-----------------------------------------------------------------------*///
-
-	//																			//
-	//							VertexResourceの作成								//
-	//																			//
-
-	//実際に頂点リソースを生成
-	ID3D12Resource* vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * (16 * 16 * 6)); //球用1536
-
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-
-	//頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
-	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * (16 * 16 * 6); //
-	//1頂点当たりのサイズ
-	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	ID3D12Resource* materialResourceSphere =
-		CreateBufferResource(device, sizeof(Vector4));
-	//マテリアルデータに書き込む
-	Vector4* materialDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	materialResourceSphere->
-		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
-	//白で初期化
-	*materialDataSphere = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
-
-	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	ID3D12Resource* wvpResourceSphere = CreateBufferResource(device, sizeof(Matrix4x4));
-	//データを書き込む
-	Matrix4x4* wvpDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere));
-	//単位行列を書き込んでおく
-	*wvpDataSphere = MakeIdentity4x4();
-
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-
-	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
-
-	//球体のデータ
-	CreateSphereVertexData(vertexDataSphere);
-
-
-
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///							ViewportとScissor							   ///
@@ -1342,18 +1362,18 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{2.0f,1.5f,0.0f}
 	};
 
-	//SpriteのTransform変数を作る
-	Vector3Transform transformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
-	};
-
 	//SphereのTransform変数を作る
 	Vector3Transform transformSphere{
 	{1.0f,1.0f,1.0f},
 	{0.0f,0.0f,0.0f},
 	{0.0f,0.0f,0.0f}
+	};
+
+	//SpriteのTransform変数を作る
+	Vector3Transform transformSprite{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f}
 	};
 
 	//WorldViewProjectionMatrixを作る
@@ -1363,6 +1383,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{0.0f,0.0f,-10.0f}
 	};
 
+	//ImGuiで使用する変数
+	bool useMonsterBall = true;
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1395,12 +1417,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			ImGui::Text("Triangle");
 			ImGui::DragFloat3("Triangle_translate",&transform.translate.x,0.01f);
 			ImGui::DragFloat3("Triangle_rotate",&transform.rotate.x,0.01f);
-			ImGui::Text("Sprite");
-			ImGui::DragFloat3("Sprite_translate###Sprite", &transformSprite.translate.x, 0.01f);
-			ImGui::DragFloat3("Sprite_rotate###Sprite", &transformSprite.rotate.x, 0.01f);
 			ImGui::Text("Sphere");
 			ImGui::DragFloat3("Sphere_translate", &transformSphere.translate.x, 0.01f);
 			ImGui::DragFloat3("Sphere_rotate", &transformSphere.rotate.x, 0.01f);
+			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+			ImGui::Text("Sprite");
+			ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 0.01f);
+			ImGui::DragFloat3("Sprite_rotate", &transformSprite.rotate.x, 0.01f);
 			ImGui::End();
 			//																			//
 			//							三角形用のWVP										//
@@ -1491,7 +1514,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->SetPipelineState(graphicsPipelineState);		//PSOを設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandles[0]);	//uvChecker
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 
 			// 形状を設定。PSOに設定しているものとはまた別。RootSignatureと同じように同じものを設定すると考えておけばいい
@@ -1499,10 +1522,23 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 			commandList->DrawInstanced(6, 1, 0, 0);
 
+	
+			//																			//
+			//									Sphere									//
+			//																			//
+
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandles[1] : textureSrvHandles[0]);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
+			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
+			commandList->DrawInstanced(16 * 16 * 6, 1, 0, 0);
+
+
 			//																			//
 			//									Sprite									//
 			//																			//
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandles[0]);
 			//TransformMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			// 描画（DrawCall／ドローコール)
@@ -1510,15 +1546,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->DrawInstanced(6, 1, 0, 0);
 
 
-			//																			//
-			//									Sphere									//
-			//																			//
 
-			commandList->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
-			// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-			commandList->DrawInstanced(16 * 16 * 6, 1, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -1590,8 +1618,20 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
 
-	textureResource->Release();
-	intermediateResource->Release();
+	// テクスチャリソースの解放
+	for (ID3D12Resource* resource : textureResources) {
+		if (resource) {
+			resource->Release();
+		}
+	}
+	textureResources.clear();
+	for (ID3D12Resource* resource : intermediateResources) {
+		if (resource) {
+			resource->Release();
+		}
+	}
+	intermediateResources.clear();
+
 	depthStencilResource->Release();
 
 	//Sprite
