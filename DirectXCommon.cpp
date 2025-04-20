@@ -13,10 +13,6 @@ void DirectXCommon::Finalize() {
 	pixelShaderBlob->Release();
 	vertexShaderBlob->Release();
 
-#ifdef _DEBUG
-	debugController->Release();
-#endif // _DEBUG
-
 	// テクスチャリソースの解放
 	for (ID3D12Resource* resource : textureResources) {
 		if (resource) {
@@ -33,8 +29,19 @@ void DirectXCommon::Finalize() {
 
 	depthStencilResource->Release();
 
-	swapChain->Release();
+#ifdef _DEBUG
+	debugController->Release();
+#endif // _DEBUG
 
+	CloseHandle(fenceEvent);
+	fence->Release();
+	rtvDescriptorHeap->Release();
+	srvDescriptorHeap->Release();
+	dsvDescriptorHeap->Release();
+	for (int i = 0; i <= 1; i++) {//0,1
+		swapChainResources[i]->Release();
+	}
+	swapChain->Release();
 	commandList->Release();
 	commandAllocator->Release();
 	commandQueue->Release();
@@ -43,18 +50,8 @@ void DirectXCommon::Finalize() {
 	useAdapter->Release();
 	dxgiFactory->Release();
 
-	rtvDescriptorHeap->Release();
-	srvDescriptorHeap->Release();
-	for (int i = 0; i <= 1; i++) {//0,1
-		swapChainResources[i]->Release();
-	}
 
 
-	//オブジェクトの解放処理
-	CloseHandle(fenceEvent);
-	fence->Release();
-
-	dsvDescriptorHeap->Release();
 
 
 }
@@ -102,7 +99,7 @@ void DirectXCommon::MakeDXGIFactory()
 	/// 
 
 	//使用するアダプタ用の変数、最初はnullptrを入れる
-	IDXGIAdapter4* useAdapter = nullptr;
+	useAdapter = nullptr;
 	//良い順にアダプタを摘む
 	for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i,
 		DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter)) !=
@@ -130,7 +127,7 @@ void DirectXCommon::MakeDXGIFactory()
 	//							D3D12Deviceの生成								//
 	//																			//
 
-	 device = nullptr;
+	device = nullptr;
 	//機能レベルとログ出力用の文字列
 	D3D_FEATURE_LEVEL featureLevels[] = {
 D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
@@ -745,7 +742,7 @@ void DirectXCommon::MakeViewport()
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	//シザー矩形
-	
+
 	//基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
 	scissorRect.right = kClientWidth;
