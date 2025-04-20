@@ -6,6 +6,33 @@
 ///									ログ関連の関数							   ///
 //																			//
 ///*-----------------------------------------------------------------------*///
+//変数の定義
+std::ofstream Logger::logFileStream_;
+
+void Logger::Initalize()
+{
+	//ログにディレクトリを用意する
+	std::filesystem::create_directory("logs");
+	//現在時刻を取得（UTC時刻）
+	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+	//ログファイルの名前にコンマ何秒はいらないので、削って秒にする
+	std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>
+		nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
+	//日本時間（PCの設定時間）に変換
+	std::chrono::zoned_time localTime{ std::chrono::current_zone(),nowSeconds };
+	//formatを使って年月日_時分秒の文字列に変換
+	std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
+	//時刻を使ってファイル名を決定
+	std::string logFilePath = std::string("logs/") + dateString + ".log";
+	//ファイルを作って書き込み準備
+	std::ofstream logStream(logFilePath);
+
+
+	//出力ウィンドウへの文字出力
+	Logger::Log(logStream, "Hello,DirectX!/n");
+
+}
+
 
 /// 出力ウィンドウに文字を出す関数
 void Logger::Log(const std::string& message) {
@@ -20,7 +47,7 @@ void Logger::Log(std::ostream& os, const std::string& message) {
 }
 
 /// string -> wstringに変換する関数
- std::wstring Logger::ConvertString(const std::string& str) {
+std::wstring Logger::ConvertString(const std::string& str) {
 	if (str.empty()) {
 		return std::wstring();
 	}

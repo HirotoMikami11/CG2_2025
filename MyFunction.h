@@ -1,5 +1,9 @@
 #pragma once
 #include "MyMath.h"
+///DirectX12
+#include<d3d12.h>
+#pragma comment(lib,"d3d12.lib")
+#include<cassert>
 
 /// <summary>
 /// 球体
@@ -34,6 +38,7 @@ struct Segment {
 };
 
 
+ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 /*-----------------------------------------------------------------------*/
 //
 //								計算関数
