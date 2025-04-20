@@ -837,7 +837,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
 
 	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
 	//PixelShader
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
@@ -860,6 +860,13 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[3].Descriptor.ShaderRegister = 1; // t1 に結びつける（HLSLで register(t1)）
 	rootParameters[3].Descriptor.RegisterSpace = 0;
+
+	//ScrollControl
+	// ScrollControl (b1)
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[4].Descriptor.ShaderRegister = 1;
+	rootParameters[4].Descriptor.RegisterSpace = 0;
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 
 	//Samplerの設定
@@ -1019,11 +1026,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
 
-	///ラスタスクロール用のバッファ(StructuredBuffer)
-	ID3D12Resource* scrollOffsetBuffer = CreateBufferResource(device, sizeof(float) * kClientHeight);
-	float* scrollOffsetMapped = nullptr;
-	scrollOffsetBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
-
 
 	//																			//
 	//							VertexBufferViewの作成							//
@@ -1109,6 +1111,23 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形で矩形を作るので頂点データ6つ
 
+	///ラスタスクロール用のバッファ(StructuredBuffer)
+	//各スキャンラインのスクロール量（SRV）→画面全体分の大量のバッファ
+	ID3D12Resource* scrollOffsetBuffer = CreateBufferResource(device, sizeof(float) * kClientHeight);
+	float* scrollOffsetMapped = nullptr;
+	scrollOffsetBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
+
+
+	//スクロールの方向ベクトル(CBV)→方向を決めるための小さなバッファ
+	//方向を定めるための変数を用意する（ただのVector2）
+	ScrollControl scrollControl = { {1.0f, 0.0f} }; // 初期は X方向
+
+	ID3D12Resource* scrollControlBuffer = CreateBufferResource(device, sizeof(ScrollControl));
+	ScrollControl* scrollControlMapped = nullptr;
+	scrollControlBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollControlMapped));
+	*scrollControlMapped = scrollControl; // 初期値コピー
+
+
 	//																			//
 	//							VertexBufferViewの作成							//
 	//																			//
@@ -1142,28 +1161,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	VertexData* vertexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	//一つ目の三角形
-	//左下
-	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	//左上
-	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	//右下
-	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-
-	//二つ目の三角形
-	//左上
-	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
-	//右上
-	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	//右下
-	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
-
+	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
 
 
 
@@ -1241,9 +1239,21 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//}
 
 	///スクロール量の更新
-	float time = 1;  // 秒単位の時間
+	float time = 0;  // 秒単位の時間
+	float deltaTime = (1.0f / 60.0f);
+	float waveSpeed = 1; //速さを変更
+	float waveFreq = 0.05f; //波の周波数
 	///ImGuiで操作する変数（大まかに波の大きさを変更できる）
-	float scrollOffsetNum = 0.02f;
+	float waveAmp = 0.02f; //波の大きさ
+
+	bool useRasterScroll = true;
+	bool IsEase = false;
+
+	//スクロールのイージング用
+	float t = 0;
+	float easeT = 0;
+	int EaseDir = 1;
+
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -1270,19 +1280,60 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			ImGui::NewFrame();
 
 			//開発用UIの処理
-			ImGui::ShowDemoWindow();
-			ImGui::Begin("Material Color");
-			ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&materialData->x));
-			ImGui::SliderFloat("ScrollTime", &time, 0, 1);
-			ImGui::SliderFloat("ScrollofsetNum", &scrollOffsetNum, 0, 1);
+			ImGui::Begin("Render Options");
+			ImGui::Checkbox("Use Raster Scroll", &useRasterScroll);
+			if (ImGui::Button("ScrollDirectionX")) {
+				scrollControl.direction.x = 1.0f;
+				scrollControl.direction.y = 0.0f;
+				*scrollControlMapped = scrollControl;
+
+			}
+			if (ImGui::Button("ScrollDirectionY")) {
+				scrollControl.direction.x = 0.0f;
+				scrollControl.direction.y = 1.0f;
+				*scrollControlMapped = scrollControl;
+
+			}
+			ImGui::InputFloat("ScrollTime", &time);
+			ImGui::SliderFloat("Wave Speed", &waveSpeed, 0.0f, 30.0f);
+			ImGui::SliderFloat("Wave Freq", &waveFreq, 0.0f, 0.4f);
+			ImGui::SliderFloat("Wave Amp", &waveAmp, 0.0f, 0.4f);
+
+			if (ImGui::Button("ResetWave")) {
+				deltaTime = (1.0f / 60.0f);
+				waveSpeed = 1; //速さを変更
+				waveFreq = 0.05f; //波の周波数
+				waveAmp = 0.02f; //波の大きさ
+			}
+			if (ImGui::Button("StaetEasing")) {
+				if (!IsEase) {
+					IsEase = true;
+				}
+			}
+			ImGui::SliderFloat("t", &t, 0.0f, 1.0f);
 			ImGui::End();
 
+			if (IsEase) {
+				t += (1.0f / 180.0f) * EaseDir;
+				t = Clamp(t, 0.0f, 1.0f);
+				easeT = (EaseInOutSine(t)/10.0f);
+				t = Lerp(0.0f, 1.0f, t);
 
-			time = static_cast<float>(GetTickCount64()) / 1000.0f;  // 秒単位の時間
-			for (int y = 0; y < kClientHeight; ++y) {
-				scrollOffsetMapped[y] = sinf(y * 0.05f + time) * scrollOffsetNum;
+				if (t >= 1.0f && EaseDir == 1) {
+					EaseDir = -1; // 戻る
+				} else if (t <= 0.0f && EaseDir == -1) {
+					IsEase = false; // 完了
+					EaseDir =1;
+				}
+				waveFreq = easeT; //波の周波数
+				waveAmp = easeT; //波の大きさ
 			}
 
+
+			time += deltaTime;
+			for (int y = 0; y < kClientHeight; ++y) {
+				scrollOffsetMapped[y] = sinf(y * waveFreq + (time * waveSpeed)) * waveAmp;
+			}
 
 
 
@@ -1366,8 +1417,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 
+			//コンスタントバッファにルートパラメータ5番目（index 4）にバインド(ラスタスクロールの方向)
+			commandList->SetGraphicsRootConstantBufferView(4, scrollControlBuffer->GetGPUVirtualAddress());
+
 			// スクロールバッファをルートパラメータ4番目（index 3）にバインド(ラスタスクロール)
 			commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
+
 
 			//																			//
 			//									三角形									//
@@ -1384,9 +1439,14 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//									Sprite									//
 			//																			//
-			// RootSignatureとラスタスクロールPSOを設定
+			// RootSignatureと
 			commandList->SetGraphicsRootSignature(rootSignature);
-			commandList->SetPipelineState(rasterScrollPipelineState);	//ここから下はラスタスクロールが適用される
+			//ラスタスクロールPSOを設定
+			if (useRasterScroll) {//使用するか否か
+				commandList->SetPipelineState(rasterScrollPipelineState);	//ここから下はラスタスクロールが適用される
+			} else {
+				commandList->SetPipelineState(graphicsPipelineState);		//
+			}
 
 			//TransformMatrixCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
@@ -1470,6 +1530,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	pixelShaderBlob->Release();
 	rasterScrollPixelShaderBlob->Release();		//ラスタスクロールシェーダー
 	scrollOffsetBuffer->Release();				//スクロールする量
+	scrollControlBuffer->Release();				//スクロールの方向
 	vertexShaderBlob->Release();
 
 	textureResource->Release();

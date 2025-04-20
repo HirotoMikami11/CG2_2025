@@ -19,6 +19,9 @@ struct Vector2 final {
 	float x;
 	float y;
 };
+struct ScrollControl {
+	Vector2 direction;//方向をXY
+};
 
 /*-----------------------------------------------------------------------*/
 //
