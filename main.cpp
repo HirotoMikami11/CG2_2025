@@ -143,6 +143,49 @@ static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 
 
 
+// ユーティリティ：リソースステートの遷移
+void TransitionResource(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource,
+	D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Transition.pResource = resource;
+	barrier.Transition.StateBefore = before;
+	barrier.Transition.StateAfter = after;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	commandList->ResourceBarrier(1, &barrier);
+}
+
+// オフスクリーン用テクスチャ生成関数
+ID3D12Resource* CreateRenderTargetTexture(ID3D12Device* device, int width, int height, DXGI_FORMAT format) {
+	D3D12_RESOURCE_DESC textureDesc{};
+	textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.DepthOrArraySize = 1;
+	textureDesc.MipLevels = 1;
+	textureDesc.Format = format;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = format;
+	clearValue.Color[0] = 0.1f;
+	clearValue.Color[1] = 0.25f;
+	clearValue.Color[2] = 0.5f;
+	clearValue.Color[3] = 1.0f;
+
+	D3D12_HEAP_PROPERTIES heapProps{};
+	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+	ID3D12Resource* renderTarget = nullptr;
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProps, D3D12_HEAP_FLAG_NONE,
+		&textureDesc, D3D12_RESOURCE_STATE_RENDER_TARGET,
+		&clearValue, IID_PPV_ARGS(&renderTarget));
+	assert(SUCCEEDED(hr));
+	return renderTarget;
+}
 
 
 /// <summary>
@@ -757,6 +800,31 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
 
 
+
+	// オフスクリーン用リソース作成（RTVとSRV）
+
+
+
+	ID3D12Resource* offscreenRenderTarget = CreateRenderTargetTexture(device, kClientWidth, kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTVHandle = rtvHandles[1];
+	device->CreateRenderTargetView(offscreenRenderTarget, &rtvDesc, offscreenRTVHandle);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenSRVHandleCPU = textureSrvHandleCPU;
+	D3D12_GPU_DESCRIPTOR_HANDLE offscreenSRVHandleGPU = textureSrvHandleGPU;
+	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	
+	D3D12_SHADER_RESOURCE_VIEW_DESC offscreenSrvDesc{};
+	offscreenSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	offscreenSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	offscreenSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	offscreenSrvDesc.Texture2D.MipLevels = 1;
+	device->CreateShaderResourceView(offscreenRenderTarget, &offscreenSrvDesc, offscreenSRVHandleCPU);
+
+
+
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									DSVを生成								///
@@ -1316,14 +1384,14 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			if (IsEase) {
 				t += (1.0f / 180.0f) * EaseDir;
 				t = Clamp(t, 0.0f, 1.0f);
-				easeT = (EaseInOutSine(t)/10.0f);
+				easeT = (EaseInOutSine(t) / 10.0f);
 				t = Lerp(0.0f, 1.0f, t);
 
 				if (t >= 1.0f && EaseDir == 1) {
 					EaseDir = -1; // 戻る
 				} else if (t <= 0.0f && EaseDir == -1) {
 					IsEase = false; // 完了
-					EaseDir =1;
+					EaseDir = 1;
 				}
 				waveFreq = easeT; //波の周波数
 				waveAmp = easeT; //波の大きさ
@@ -1390,12 +1458,19 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 			//描画先のRTVとDSVを設定する
 			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-
+			//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+			
 			// 指定した色で画面全体をクリアする
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
-			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+			//commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+
 			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+
+			//TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			commandList->OMSetRenderTargets(1, &offscreenRTVHandle, FALSE, &dsvHandle);
+			commandList->ClearRenderTargetView(offscreenRTVHandle, clearColor, 0, nullptr);
+
 
 			//	描画用のDesctiptorHeapの設定
 			ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
@@ -1418,10 +1493,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 
 			//コンスタントバッファにルートパラメータ5番目（index 4）にバインド(ラスタスクロールの方向)
-			commandList->SetGraphicsRootConstantBufferView(4, scrollControlBuffer->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootConstantBufferView(4, scrollControlBuffer->GetGPUVirtualAddress());
 
 			// スクロールバッファをルートパラメータ4番目（index 3）にバインド(ラスタスクロール)
-			commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
 
 
 			//																			//
@@ -1462,14 +1537,28 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
-			//	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
-			//	今回はRenerTargetからPresentにする
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-			//TransitionBarrierを張る
-			commandList->ResourceBarrier(1, &barrier);
+			////	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
+			////	今回はRenerTargetからPresentにする
+			//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+			////TransitionBarrierを張る
+			//commandList->ResourceBarrier(1, &barrier);
+			
+			// 2. オフスクリーンテクスチャをラスタスクロール適用して最終出力
+			TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], FALSE, &dsvHandle);
 
+			commandList->SetGraphicsRootSignature(rootSignature);
+			commandList->SetPipelineState(rasterScrollPipelineState);
+			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(4, scrollControlBuffer->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootDescriptorTable(2, offscreenSRVHandleGPU);
 
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			commandList->DrawInstanced(6, 1, 0, 0);
+			
 			//コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること
 			hr = commandList->Close();
 			assert(SUCCEEDED(hr));//ダメなら起動できない
