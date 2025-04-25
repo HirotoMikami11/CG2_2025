@@ -1,6 +1,7 @@
 Texture2D gTexture : register(t0);
 SamplerState gSampler : register(s0);
 StructuredBuffer<float> gScrollOffsets : register(t1);
+
 cbuffer ScrollControl : register(b1)
 {
     float2 direction; // (1,0)=X方向, (0,1)=Y方向, (-1,1)=斜めとかもOK

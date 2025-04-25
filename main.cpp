@@ -732,7 +732,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	///*-----------------------------------------------------------------------*///
 
 	//RTV用ヒープでディスクリプタの数は2，RTVはShader内で触れるものではないのでShaderVisibleはfalse
-	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	const int rtvDescriptorIndex = 3;
+	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, rtvDescriptorIndex, false);
 	Log(logStream, "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
 
 	//SRV用ヒープでディスクリプタの数は128，SRVはShader内で触れるものなのでShaderVisibleはtrue
@@ -761,7 +762,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//ディスクリプタの先頭を取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	//RTVを2つ作るのでディスクリプタを2つ用意
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[rtvDescriptorIndex];
 	//まず1つ目を作る。1つ目は最初のところに作る。作る場所を指定してあげる必要がある
 	rtvHandles[0] = rtvStartHandle;
 	device->CreateRenderTargetView(swapChainResources[0], &rtvDesc, rtvHandles[0]);
@@ -776,6 +777,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	///									SRVを生成							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
+
+	const UINT srvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	int srvIndex = 1;///imguiが使用しているため
+
 	//textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
@@ -793,8 +798,9 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	//先頭はImGuiが使っているのでその次を使う
-	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);//現在のディスクリプタヒープの次の位置を指定？
-	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);//現在のディスクリプタヒープの次の位置を指定？
+	textureSrvHandleCPU.ptr += srvDescriptorSize * srvIndex;//現在のディスクリプタヒープの次の位置を指定？
+	textureSrvHandleGPU.ptr += srvDescriptorSize * srvIndex;//現在のディスクリプタヒープの次の位置を指定？
+	srvIndex++;//使用したので増やす
 
 	//SRVの生成
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
@@ -802,25 +808,66 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 
 	// オフスクリーン用リソース作成（RTVとSRV）
-
-
-
 	ID3D12Resource* offscreenRenderTarget = CreateRenderTargetTexture(device, kClientWidth, kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
-
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTVHandle = rtvHandles[1];
+	rtvHandles[2].ptr = rtvHandles[1].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTVHandle = rtvHandles[2];
 	device->CreateRenderTargetView(offscreenRenderTarget, &rtvDesc, offscreenRTVHandle);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenSRVHandleCPU = textureSrvHandleCPU;
-	D3D12_GPU_DESCRIPTOR_HANDLE offscreenSRVHandleGPU = textureSrvHandleGPU;
-	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenSRVHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE offscreenSRVHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	offscreenSRVHandleCPU.ptr += srvDescriptorSize * srvIndex;//現在のディスクリプタヒープの次の位置を指定？
+	offscreenSRVHandleGPU.ptr += srvDescriptorSize * srvIndex;//現在のディスクリプタヒープの次の位置を指定？
+	srvIndex++;//使用したので増やす
+
 	D3D12_SHADER_RESOURCE_VIEW_DESC offscreenSrvDesc{};
 	offscreenSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	offscreenSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	offscreenSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	offscreenSrvDesc.Texture2D.MipLevels = 1;
 	device->CreateShaderResourceView(offscreenRenderTarget, &offscreenSrvDesc, offscreenSRVHandleCPU);
+
+
+
+	//structuredBuffer
+	ID3D12Resource* structuredBufferResource = nullptr;
+	// 1. リソースヒープの作成
+	D3D12_HEAP_PROPERTIES heapProps{};
+	heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+	D3D12_RESOURCE_DESC bufferDesc{};
+	bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	bufferDesc.Width = sizeof(float) * 720;
+	bufferDesc.Height = 1;
+	bufferDesc.DepthOrArraySize = 1;
+	bufferDesc.MipLevels = 1;
+	bufferDesc.SampleDesc.Count = 1;
+	bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	device->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&bufferDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&structuredBufferResource)
+	);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE structuredBufferResourceHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE structuredBufferResourceHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	structuredBufferResourceHandleCPU.ptr += srvDescriptorSize * srvIndex;
+	structuredBufferResourceHandleGPU.ptr += srvDescriptorSize * srvIndex;
+	srvIndex++;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC structuredBufferDesc{};
+	structuredBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+	structuredBufferDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	structuredBufferDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	structuredBufferDesc.Buffer.FirstElement = 0;
+	structuredBufferDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	//上まで固定
+	structuredBufferDesc.Buffer.NumElements = 720;//送る情報分（今回は楯列なので720）
+	structuredBufferDesc.Buffer.StructureByteStride = sizeof(float);
+
+	device->CreateShaderResourceView(structuredBufferResource, &structuredBufferDesc, structuredBufferResourceHandleCPU);
 
 
 
@@ -904,8 +951,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeScroll[1] = {};
+	descriptorRangeScroll[0].BaseShaderRegister = 1;//t1だから
+	descriptorRangeScroll[0].NumDescriptors = 1;//数は一つだけ
+	descriptorRangeScroll[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
+	descriptorRangeScroll[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
+
+
 	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
-	D3D12_ROOT_PARAMETER rootParameters[5] = {};
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 	//PixelShader
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
@@ -921,21 +975,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;				//PixelShaderで使う
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;			//Tableの中身の配列を指定
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する数
-
-	//structuredbufferを追加する
-	// 既存 rootParameters[3] を追加
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[3].Descriptor.ShaderRegister = 1; // t1 に結びつける（HLSLで register(t1)）
-	rootParameters[3].Descriptor.RegisterSpace = 0;
-
-	//ScrollControl
-	// ScrollControl (b1)
-	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[4].Descriptor.ShaderRegister = 1;
-	rootParameters[4].Descriptor.RegisterSpace = 0;
-	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
 
 	//Samplerの設定
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -1072,26 +1111,148 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	Log(logStream, "Complete create PSO!!\n");//PSO生成完了のログを出す
 
 
-	//　ラスタスクロール専用のPSO
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC rasterScrollPSODesc = graphicsPipelineStateDesc; // 既存PSOのコピー
-	rasterScrollPSODesc.PS = { rasterScrollPixelShaderBlob->GetBufferPointer(),
-		rasterScrollPixelShaderBlob->GetBufferSize() };
+#pragma region "ラスタスクール用ルートシグネチャ"
 
+	//																			//
+	//								RootSignature作成							//
+	//																			//
+
+	//rootSignature=具体的にshaderがどこでデータを読めばいいのかという情報をまとめたもの
+	//RootSignatureの作成
+	D3D12_ROOT_SIGNATURE_DESC rastarScrollRootDescriptiomSignature{};
+	rastarScrollRootDescriptiomSignature.Flags =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	//DescriptorRange=shaderがアクセスするリソース(テクスチャ、バッファなど)をまとめて定義する
+	//DescriptorRangeを作る
+	D3D12_DESCRIPTOR_RANGE rastarScrollDescriptorRange[1] = {};
+	rastarScrollDescriptorRange[0].BaseShaderRegister = 0;//0から始まる
+	rastarScrollDescriptorRange[0].NumDescriptors = 1;//数は一つだけ
+	rastarScrollDescriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
+	rastarScrollDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
+
+	D3D12_DESCRIPTOR_RANGE rastarScrollRootSignatureDescriptorRangeScroll[1] = {};
+	rastarScrollRootSignatureDescriptorRangeScroll[0].BaseShaderRegister = 1;//t1だから
+	rastarScrollRootSignatureDescriptorRangeScroll[0].NumDescriptors = 1;//数は一つだけ
+	rastarScrollRootSignatureDescriptorRangeScroll[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
+	rastarScrollRootSignatureDescriptorRangeScroll[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
+
+
+	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
+	D3D12_ROOT_PARAMETER rastarScrollRootParameters[4] = {};
+
+	//VertexShader
+	rastarScrollRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
+	rastarScrollRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //PixelShaderで使う
+	rastarScrollRootParameters[0].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(VSのgTransformationMatrix(b0)と結びつける)
+
+	//DescriptorTableを作成する
+	//DescriptorTableはDescriptorRangeをまとめたもの
+	rastarScrollRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;	//DescriptorTableを使う
+	rastarScrollRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;				//PixelShaderで使う
+	rastarScrollRootParameters[1].DescriptorTable.pDescriptorRanges = rastarScrollDescriptorRange;			//Tableの中身の配列を指定
+	rastarScrollRootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(rastarScrollDescriptorRange);//Tableで利用する数
+
+	//structuredbufferを追加する
+	// 既存 rastarScrollRootParameters[3] を追加
+	rastarScrollRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;	//DescriptorTableを使う
+	rastarScrollRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rastarScrollRootParameters[2].DescriptorTable.pDescriptorRanges = rastarScrollRootSignatureDescriptorRangeScroll;			//Tableの中身の配列を指定
+	rastarScrollRootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(rastarScrollRootSignatureDescriptorRangeScroll);//Tableで利用する数
+
+	//ScrollControl
+	// ScrollControl (b1
+	rastarScrollRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rastarScrollRootParameters[3].Descriptor.ShaderRegister = 1;
+	rastarScrollRootParameters[3].Descriptor.RegisterSpace = 0;
+	rastarScrollRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+
+	//Samplerの設定
+	D3D12_STATIC_SAMPLER_DESC rastarScrollStaticSamplers[1] = {};
+	rastarScrollStaticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;			//バイリニアフィルタ
+	rastarScrollStaticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;		//0~1の範囲外をリピート
+	rastarScrollStaticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	rastarScrollStaticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	rastarScrollStaticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;		//比較しない
+	rastarScrollStaticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;						//あるだけmipmapを使用する
+	rastarScrollStaticSamplers[0].ShaderRegister = 0;									//レジスタ番号を使う
+	rastarScrollStaticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//pixelShaderを使う
+	rastarScrollRootDescriptiomSignature.pStaticSamplers = rastarScrollStaticSamplers;
+	rastarScrollRootDescriptiomSignature.NumStaticSamplers = _countof(rastarScrollStaticSamplers);
+
+
+	rastarScrollRootDescriptiomSignature.pParameters = rastarScrollRootParameters;				//ルートパラメータ配列へのポインタ
+	rastarScrollRootDescriptiomSignature.NumParameters = _countof(rastarScrollRootParameters);	//配列の長さ
+
+	//シリアライズしてバイナリにする
+	ID3DBlob* rastarScrollSignatureBlob = nullptr;
+	ID3DBlob* rastarScrollErrorBlob = nullptr;
+	hr = D3D12SerializeRootSignature(&rastarScrollRootDescriptiomSignature,
+		D3D_ROOT_SIGNATURE_VERSION_1, &rastarScrollSignatureBlob, &rastarScrollErrorBlob);
+	if (FAILED(hr)) {
+		Log(logStream, reinterpret_cast<char*>(rastarScrollErrorBlob->GetBufferPointer()));
+		assert(false);
+	}
+	//バイナリを元に生成
+	ID3D12RootSignature* rastarScrollRootSignature = nullptr;
+	hr = device->CreateRootSignature(0, rastarScrollSignatureBlob->GetBufferPointer(),
+		rastarScrollSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&rastarScrollRootSignature));
+	assert(SUCCEEDED(hr));
+
+
+	///PSOの作成
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC rasterScrollPSODesc{};
+	rasterScrollPSODesc.pRootSignature = rastarScrollRootSignature;					// RootSignature
+	rasterScrollPSODesc.InputLayout = inputLayoutDesc;					// InputLayout 
+	rasterScrollPSODesc.VS = { vertexShaderBlob->GetBufferPointer(),
+		vertexShaderBlob->GetBufferSize() };									// VertexShader
+	rasterScrollPSODesc.PS = { rasterScrollPixelShaderBlob->GetBufferPointer(),
+		rasterScrollPixelShaderBlob->GetBufferSize() };										// PixelShader
+	rasterScrollPSODesc.BlendState = blendDesc;							// BlendState
+	rasterScrollPSODesc.RasterizerState = rasterizerDesc;				// RasterizerState
+
+	// 書き込むRTVの情報
+	rasterScrollPSODesc.NumRenderTargets = 1;
+	rasterScrollPSODesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	// 利用するトポロジ (形状)のタイプ。三角形 
+	rasterScrollPSODesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	// どのように画面に色を打ち込むかの設定(気にしなくて良い)
+	rasterScrollPSODesc.SampleDesc.Count = 1;
+	rasterScrollPSODesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+
+	//depthStencilの設定
+	rasterScrollPSODesc.DepthStencilState = depthStencilDesc;
+	rasterScrollPSODesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+
+	// 実際に生成
 	ID3D12PipelineState* rasterScrollPipelineState = nullptr;
 	hr = device->CreateGraphicsPipelineState(&rasterScrollPSODesc, IID_PPV_ARGS(&rasterScrollPipelineState));
 	assert(SUCCEEDED(hr));
 	Log(logStream, "Created RasterScroll PSO.\n");
 
 
-	///*-----------------------------------------------------------------------*///
-	///									三角形									///
-	///*-----------------------------------------------------------------------*///
+#pragma endregion
 
-	//																			//
-	//							VertexResourceの作成								//
-	//																			//
 
-	//実際に頂点リソースを生成
+	//　ラスタスクロール専用のPSO
+
+
+
+
+
+
+		///*-----------------------------------------------------------------------*///
+		///									三角形									///
+		///*-----------------------------------------------------------------------*///
+
+		//																			//
+		//							VertexResourceの作成								//
+		//																			//
+
+		//実際に頂点リソースを生成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
 
 
@@ -1145,8 +1306,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	//一つ目の三角形
 
+	//一つ目の三角形
 	//左下
 	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
@@ -1183,7 +1344,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//各スキャンラインのスクロール量（SRV）→画面全体分の大量のバッファ
 	ID3D12Resource* scrollOffsetBuffer = CreateBufferResource(device, sizeof(float) * kClientHeight);
 	float* scrollOffsetMapped = nullptr;
-	scrollOffsetBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
+	structuredBufferResource->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
 
 
 	//スクロールの方向ベクトル(CBV)→方向を決めるための小さなバッファ
@@ -1229,7 +1390,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	VertexData* vertexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
+	//SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
+	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { kClientWidth/2, kClientHeight/2 });
 
 
 
@@ -1298,13 +1460,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,-5.0f}
 	};
-
-	/////ラスタスクロールのスクロール量の配列
-	//std::vector<float> scrollOffsets(kClientHeight);
-
-	//for (int y = 0; y < kClientHeight; ++y) {
-	//	scrollOffsets[y] = sinf(y * 0.05f) * 20.0f;  // 波っぽいスクロール
-	//}
 
 	///スクロール量の更新
 	float time = 0;  // 秒単位の時間
@@ -1459,7 +1614,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//描画先のRTVとDSVを設定する
 			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 			//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-			
+
 			// 指定した色で画面全体をクリアする
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 			//commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -1492,16 +1647,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 
-			//コンスタントバッファにルートパラメータ5番目（index 4）にバインド(ラスタスクロールの方向)
-			//commandList->SetGraphicsRootConstantBufferView(4, scrollControlBuffer->GetGPUVirtualAddress());
-
-			// スクロールバッファをルートパラメータ4番目（index 3）にバインド(ラスタスクロール)
-			//commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
-
-
 			//																			//
 			//									三角形									//
 			//																			//
+
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
@@ -1514,51 +1663,55 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//									Sprite									//
 			//																			//
-			// RootSignatureと
-			commandList->SetGraphicsRootSignature(rootSignature);
-			//ラスタスクロールPSOを設定
-			if (useRasterScroll) {//使用するか否か
-				commandList->SetPipelineState(rasterScrollPipelineState);	//ここから下はラスタスクロールが適用される
-			} else {
-				commandList->SetPipelineState(graphicsPipelineState);		//
-			}
+			////TransformMatrixCBufferの場所を設定
+			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-			//TransformMatrixCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
 			// 描画（DrawCall／ドローコール)
 			//三角形を二つ描画するので6つ
 			commandList->DrawInstanced(6, 1, 0, 0);
 
 
-			//実際のcommandListのImGuiの描画コマンドを積む
-			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
-			////	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
-			////	今回はRenerTargetからPresentにする
-			//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-			////TransitionBarrierを張る
-			//commandList->ResourceBarrier(1, &barrier);
-			
+
+
+
 			// 2. オフスクリーンテクスチャをラスタスクロール適用して最終出力
 			TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], FALSE, &dsvHandle);
 
-			commandList->SetGraphicsRootSignature(rootSignature);
+			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);//このクリアがないとバグりんこ
+
+
+
+
+			commandList->SetGraphicsRootSignature(rastarScrollRootSignature);
 			commandList->SetPipelineState(rasterScrollPipelineState);
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootConstantBufferView(4, scrollControlBuffer->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootShaderResourceView(3, scrollOffsetBuffer->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootDescriptorTable(2, offscreenSRVHandleGPU);
+
+
+			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(3, scrollControlBuffer->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootDescriptorTable(2, structuredBufferResourceHandleGPU);
+			commandList->SetGraphicsRootDescriptorTable(1, offscreenSRVHandleGPU);
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->DrawInstanced(6, 1, 0, 0);
-			
+
+			//実際のcommandListのImGuiの描画コマンドを積む
+			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);///必ずすべての動作のあとに！！
+
+
+			//	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
+			//	今回はRenerTargetからPresentにする
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+			//TransitionBarrierを張る
+			commandList->ResourceBarrier(1, &barrier);
+
+			TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
 			//コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること
 			hr = commandList->Close();
 			assert(SUCCEEDED(hr));//ダメなら起動できない
@@ -1611,11 +1764,15 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	wvpResource->Release();
 	graphicsPipelineState->Release();
 	rasterScrollPipelineState->Release();
+
+	rasterScrollPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {
 		errorBlob->Release();
 	}
 	rootSignature->Release();
+	rastarScrollRootSignature->Release();
+
 	pixelShaderBlob->Release();
 	rasterScrollPixelShaderBlob->Release();		//ラスタスクロールシェーダー
 	scrollOffsetBuffer->Release();				//スクロールする量
