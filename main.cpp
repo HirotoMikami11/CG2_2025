@@ -772,6 +772,17 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
 
+	///
+	///オフスクリーンレンダリングに使用するRTVの設定
+	///
+
+	ID3D12Resource* offscreenRenderTarget = CreateRenderTargetTexture(device, kClientWidth, kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	rtvHandles[2].ptr = rtvHandles[1].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTVHandle = rtvHandles[2];
+	device->CreateRenderTargetView(offscreenRenderTarget, &rtvDesc, offscreenRTVHandle);
+
+
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									SRVを生成							   ///
@@ -807,11 +818,9 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 
 
-	// オフスクリーン用リソース作成（RTVとSRV）
-	ID3D12Resource* offscreenRenderTarget = CreateRenderTargetTexture(device, kClientWidth, kClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
-	rtvHandles[2].ptr = rtvHandles[1].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTVHandle = rtvHandles[2];
-	device->CreateRenderTargetView(offscreenRenderTarget, &rtvDesc, offscreenRTVHandle);
+	///
+	///　オフスクリーンレンダリングで使用するSRVの設定
+	/// 
 
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenSRVHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE offscreenSRVHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
@@ -827,8 +836,11 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	device->CreateShaderResourceView(offscreenRenderTarget, &offscreenSrvDesc, offscreenSRVHandleCPU);
 
 
+	///
+	///structuredBuffer
+	///
 
-	//structuredBuffer
+	//
 	ID3D12Resource* structuredBufferResource = nullptr;
 	// 1. リソースヒープの作成
 	D3D12_HEAP_PROPERTIES heapProps{};
@@ -1111,7 +1123,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	Log(logStream, "Complete create PSO!!\n");//PSO生成完了のログを出す
 
 
-#pragma region "ラスタスクール用ルートシグネチャ"
+	///
+	///	ラスタースクロール用のPSOを生成
+	/// 
+#pragma region "ラスタスクール用PSO"
 
 	//																			//
 	//								RootSignature作成							//
@@ -1237,22 +1252,20 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 #pragma endregion
 
 
-	//　ラスタスクロール専用のPSO
 
 
 
 
 
+	///*-----------------------------------------------------------------------*///
+	///									三角形									///
+	///*-----------------------------------------------------------------------*///
 
-		///*-----------------------------------------------------------------------*///
-		///									三角形									///
-		///*-----------------------------------------------------------------------*///
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
 
-		//																			//
-		//							VertexResourceの作成								//
-		//																			//
-
-		//実際に頂点リソースを生成
+	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
 
 
@@ -1339,24 +1352,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 	//実際に頂点リソースを生成
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形で矩形を作るので頂点データ6つ
-
-	///ラスタスクロール用のバッファ(StructuredBuffer)
-	//各スキャンラインのスクロール量（SRV）→画面全体分の大量のバッファ
-	ID3D12Resource* scrollOffsetBuffer = CreateBufferResource(device, sizeof(float) * kClientHeight);
-	float* scrollOffsetMapped = nullptr;
-	structuredBufferResource->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
-
-
-	//スクロールの方向ベクトル(CBV)→方向を決めるための小さなバッファ
-	//方向を定めるための変数を用意する（ただのVector2）
-	ScrollControl scrollControl = { {1.0f, 0.0f} }; // 初期は X方向
-
-	ID3D12Resource* scrollControlBuffer = CreateBufferResource(device, sizeof(ScrollControl));
-	ScrollControl* scrollControlMapped = nullptr;
-	scrollControlBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollControlMapped));
-	*scrollControlMapped = scrollControl; // 初期値コピー
-
-
 	//																			//
 	//							VertexBufferViewの作成							//
 	//																			//
@@ -1390,10 +1385,77 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	VertexData* vertexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	//SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
-	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { kClientWidth/2, kClientHeight/2 });
+	SetVertexDataSpriteSquare(vertexDataSprite, { 640/2,360/2 }, { 360, 180 });
 
 
+	///*-----------------------------------------------------------------------*///
+	///							オフスクリーンの矩形							   ///
+	///*-----------------------------------------------------------------------*///
+
+#pragma region"オフスクリーン"
+
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
+
+	//実際に頂点リソースを生成
+	ID3D12Resource* vertexResourceOffscreen = CreateBufferResource(device, sizeof(VertexData) * 6); //２つ三角形で矩形を作るので頂点データ6つ
+
+	///ラスタスクロール用のバッファ(StructuredBuffer)
+	//各スキャンラインのスクロール量（SRV）→画面全体分の大量のバッファ
+	ID3D12Resource* scrollOffsetBuffer = CreateBufferResource(device, sizeof(float) * kClientHeight);
+	float* scrollOffsetMapped = nullptr;
+	structuredBufferResource->Map(0, nullptr, reinterpret_cast<void**>(&scrollOffsetMapped));
+
+
+	//スクロールの方向ベクトル(CBV)→方向を決めるための小さなバッファ
+	//方向を定めるための変数を用意する（ただのVector2）
+	ScrollControl scrollControl = { {1.0f, 0.0f} }; // 初期は X方向
+
+	ID3D12Resource* scrollControlBuffer = CreateBufferResource(device, sizeof(ScrollControl));
+	ScrollControl* scrollControlMapped = nullptr;
+	scrollControlBuffer->Map(0, nullptr, reinterpret_cast<void**>(&scrollControlMapped));
+	*scrollControlMapped = scrollControl; // 初期値コピー
+
+	//																			//
+	//							VertexBufferViewの作成							//
+	//																			//
+
+	//頂点バッファビューを作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewOffscreen{};
+	//リソースの戦闘のアドレスから使う
+	vertexBufferViewOffscreen.BufferLocation = vertexResourceOffscreen->GetGPUVirtualAddress();
+	//仕様数リソースのサイズは頂点3つ分のサイズ
+	vertexBufferViewOffscreen.SizeInBytes = sizeof(VertexData) * 6; //２つ三角形を作るので６個の頂点データ
+	//1頂点当たりのサイズ
+	vertexBufferViewOffscreen.StrideInBytes = sizeof(VertexData);
+
+	//																			//
+	//					TransformationMatrix用のリソースを作る						//
+	//																			//
+
+//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
+	ID3D12Resource* transformationMatrixResourceOffscreen = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* transformationMatrixDataOffscreen = nullptr;
+	//書き込むためのアドレスを取得
+	transformationMatrixResourceOffscreen->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataOffscreen));
+	//単位行列を書き込んでおく
+	*transformationMatrixDataOffscreen = MakeIdentity4x4();
+	//																			//
+	//						Resourceにデータを書き込む								//
+	//																			//
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataOffscreen = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceOffscreen->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataOffscreen));
+	SetVertexDataSpriteSquare(vertexDataOffscreen, { 640,360 }, { kClientWidth / 2, kClientHeight / 2 });
+
+
+
+
+#pragma endregion
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1453,6 +1515,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		{0.0f,0.0f,0.0f}
 	};
 
+	//Transform変数を作る
+	Vector3Transform transformOffscreen{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f}
+	};
 
 	//WorldViewProjectionMatrixを作る
 	Vector3Transform cameraTransform{
@@ -1580,6 +1648,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//行列の更新
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
 
+			//viewprojectionを計算
+			Matrix4x4 viewProjectionMatrixOffscreen = MakeViewProjectionMatrixSprite();
+			//行列の更新
+			UpdateMatrix4x4(transformOffscreen, viewProjectionMatrixOffscreen, transformationMatrixDataOffscreen);
 
 			//ImGuiの内部コマンドを生成する(描画処理に入る前)
 			ImGui::Render();
@@ -1619,10 +1691,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 			//commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
+
 			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-
 			//TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+			//オフスクリーンレンダリング用のRTV（テクスチャ）をクリア
 			commandList->OMSetRenderTargets(1, &offscreenRTVHandle, FALSE, &dsvHandle);
 			commandList->ClearRenderTargetView(offscreenRTVHandle, clearColor, 0, nullptr);
 
@@ -1644,7 +1718,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			// RootSignatureを設定。PSOに設定しているけど別途設定（PSOと同じもの）が必要
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState);		//PSOを設定
-
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 
 			//																			//
@@ -1663,12 +1736,11 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//																			//
 			//									Sprite									//
 			//																			//
-			////TransformMatrixCBufferの場所を設定
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-
+			//TransformMatrixCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			// 描画（DrawCall／ドローコール)
 			//三角形を二つ描画するので6つ
 			commandList->DrawInstanced(6, 1, 0, 0);
@@ -1676,33 +1748,32 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 
 
 
-
-
 			// 2. オフスクリーンテクスチャをラスタスクロール適用して最終出力
-			TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], FALSE, &dsvHandle);
 
+			//オフスクリーンレンダリング用のテクスチャを連打ーターゲットからピクセルシェーダー入力
+			TransitionResource(commandList, offscreenRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+			//実際の画面描画用のバックバッファに切り替えて、一度画面クリア
+			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], FALSE, &dsvHandle);
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);//このクリアがないとバグりんこ
 
-
-
-
+			//ラスタースクロールのルートシグネチャー、PSOを設定
 			commandList->SetGraphicsRootSignature(rastarScrollRootSignature);
 			commandList->SetPipelineState(rasterScrollPipelineState);
 
-
-			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			//ラスタースクロールのための情報を設定
 			commandList->SetGraphicsRootConstantBufferView(3, scrollControlBuffer->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, structuredBufferResourceHandleGPU);
-			commandList->SetGraphicsRootDescriptorTable(1, offscreenSRVHandleGPU);
 
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			//　オフスクリーンレンダリング二書いたテクスチャを描画
+			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceOffscreen->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootDescriptorTable(1, offscreenSRVHandleGPU);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewOffscreen);
 			commandList->DrawInstanced(6, 1, 0, 0);
+
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);///必ずすべての動作のあとに！！
-
-
 			//	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
 			//	今回はRenerTargetからPresentにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -1765,7 +1836,6 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	graphicsPipelineState->Release();
 	rasterScrollPipelineState->Release();
 
-	rasterScrollPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {
 		errorBlob->Release();
@@ -1786,6 +1856,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//Sprite
 	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
+
+	//オフスクリーン
+	vertexResourceOffscreen->Release();
+	transformationMatrixResourceOffscreen->Release();
+
+	offscreenRenderTarget->Release();
 
 	//オブジェクトの解放処理
 	CloseHandle(fenceEvent);
