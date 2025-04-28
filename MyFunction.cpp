@@ -55,12 +55,13 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	return closestPoint;
 }
 
-void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, Matrix4x4* matrixData) {
-	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, TransformationMatrix* matrixData) {
+	matrixData->World = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 
-	Matrix4x4 worldViewProjectionMatrix = Matrix4x4Multiply(worldMatrix, viewProjectionMatrix);
+	Matrix4x4 worldViewProjectionMatrix = Matrix4x4Multiply(matrixData->World, viewProjectionMatrix);
 
-	*matrixData = worldViewProjectionMatrix;
+	matrixData->WVP = worldViewProjectionMatrix;
+
 }
 
 

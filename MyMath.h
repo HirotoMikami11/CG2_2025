@@ -88,6 +88,7 @@ struct Vector4 final {
 struct VertexData final {
 	Vector4 position;//座標
 	Vector2 texcoord;//UV座標系(テクスチャ座標系)
+	Vector3 normal;	//法線
 };
 /*-----------------------------------------------------------------------*/
 //
@@ -101,6 +102,25 @@ struct Matrix4x4 final {
 	float m[4][4];
 };
 
+
+/// <summary>
+/// マテリアル
+/// </summary>
+struct  Material final{
+	Vector4 color;
+	int32_t enableLighting;
+};
+
+
+/// <summary>
+/// 座標変換行列
+/// </summary>
+struct TransformationMatrix
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+
+};
 
 //4x4行列の加算
 Matrix4x4 Matrix4x4Add(const Matrix4x4& m1, const Matrix4x4& m2);
