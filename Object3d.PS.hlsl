@@ -3,6 +3,7 @@ struct Material
 {
     float32_t4 color;
     int32_t enableLighting;
+    int32_t useLambertianReflectance;
 };
 ConstantBuffer<Material> gMaterial : register(b0);
 
@@ -14,8 +15,8 @@ struct DirectionalLight
 };
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
-Texture2D<float32_t4> gTexture : register(t0);      //SRVのregisterはt
-SamplerState gSampler : register(s0);  //Samplerはs
+Texture2D<float32_t4> gTexture : register(t0); //SRVのregisterはt
+SamplerState gSampler : register(s0); //Samplerはs
 
 struct PixelShaderOutput
 {
@@ -31,7 +32,19 @@ PixelShaderOutput main(VertexShaderOutput input)
  
     if (gMaterial.enableLighting != 0)//Lightingする場合
     {
-        float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+        ///最初に宣言
+        float cos = 0;
+        //ランバート反射を使うかどうか
+        if (gMaterial.useLambertianReflectance != 0)
+        {
+            cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+        }
+        else
+        {
+            float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+            cos = pow(NdotL * 0.5 + 0.5f, 2.0f);
+        }
+        
         output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
     }
     else

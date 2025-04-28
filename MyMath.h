@@ -109,6 +109,7 @@ struct Matrix4x4 final {
 struct  Material final{
 	Vector4 color;
 	int32_t enableLighting;
+	int32_t useLambertianReflectance;
 };
 
 

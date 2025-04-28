@@ -249,6 +249,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//白で初期化
 	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData->enableLighting = false;
+	materialData->useLambertianReflectance = false;
+
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -343,6 +345,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	materialDataSphere->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialDataSphere->enableLighting = true;
+	materialDataSphere->useLambertianReflectance = false;
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -426,6 +429,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	materialDataSprite->color = { 1.0f,1.0f,1.0,1.0f };
 	materialDataSprite->enableLighting = false;
+	materialDataSprite->useLambertianReflectance = false;
 
 
 	//																			//
@@ -564,6 +568,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 		ImGui::Checkbox("useEnableLighting", reinterpret_cast<bool*>(&materialDataSphere->enableLighting));
+		ImGui::Checkbox("useLambertianReflectance", reinterpret_cast<bool*>(&materialDataSphere->useLambertianReflectance));
 		ImGui::Text("Sprite");
 		ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 0.01f);
 		ImGui::DragFloat3("Sprite_rotate", &transformSprite.rotate.x, 0.01f);
