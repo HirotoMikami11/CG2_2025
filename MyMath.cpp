@@ -89,6 +89,195 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 }
 
 
+
+
+
+Matrix3x3 Matrix3x3Add(Matrix3x3 matrix1, Matrix3x3 matrix2) {
+	Matrix3x3 result = { 0 };
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			result.m[i][j] = matrix1.m[i][j] + matrix2.m[i][j];
+		}
+	}
+	return result;
+};
+
+Matrix3x3 Matrix3x3Subtract(Matrix3x3 matrix1, Matrix3x3 matrix2) {
+	Matrix3x3 result = { 0 };
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			result.m[i][j] = matrix1.m[i][j] - matrix2.m[i][j];
+		}
+	}
+	return result;
+};
+
+//行列の積
+Matrix3x3 Matrix3x3Multiply(Matrix3x3 matrix1, Matrix3x3 matrix2) {
+
+	Matrix3x3 result = { 0 };
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			result.m[i][j] = (matrix1.m[i][0] * matrix2.m[0][j]) + (matrix1.m[i][1] * matrix2.m[1][j]) + (matrix1.m[i][2] * matrix2.m[2][j]);
+		}
+	}
+
+	return result;
+};
+
+
+
+
+
+//回転行列
+Matrix3x3 Matrix3x3MakeRotateMatrix(float theta) {
+	Matrix3x3 RotateMatrix = { 0 };
+
+	RotateMatrix.m[0][0] = cosf(theta);
+	RotateMatrix.m[0][1] = sinf(theta);
+	RotateMatrix.m[0][2] = 0;
+	RotateMatrix.m[1][0] = -sinf(theta);
+	RotateMatrix.m[1][1] = cosf(theta);
+	RotateMatrix.m[1][2] = 0;
+	RotateMatrix.m[2][0] = 0;
+	RotateMatrix.m[2][1] = 0;
+	RotateMatrix.m[2][2] = 1;
+	return RotateMatrix;
+
+}
+
+//平行移動行列
+Matrix3x3 Matrix3x3MakeTranslateMatrix(Vector2 translate) {
+	Matrix3x3 TranslateMatrix = { 0 };
+
+	TranslateMatrix.m[0][0] = 1;
+	TranslateMatrix.m[0][1] = 0;
+	TranslateMatrix.m[0][2] = 0;
+	TranslateMatrix.m[1][0] = 0;
+	TranslateMatrix.m[1][1] = 1;
+	TranslateMatrix.m[1][2] = 0;
+	TranslateMatrix.m[2][0] = translate.x;
+	TranslateMatrix.m[2][1] = translate.y;
+	TranslateMatrix.m[2][2] = 1;
+
+	return TranslateMatrix;
+};
+
+//拡大縮小行列
+Matrix3x3 Matrix3x3MakeScaleMatrix(Vector2 scale) {
+	Matrix3x3 ScaleMatrix = { 0 };
+
+	ScaleMatrix.m[0][0] = scale.x;
+	ScaleMatrix.m[0][1] = 0;
+	ScaleMatrix.m[0][2] = 0;
+	ScaleMatrix.m[1][0] = 0;
+	ScaleMatrix.m[1][1] = scale.y;
+	ScaleMatrix.m[1][2] = 0;
+	ScaleMatrix.m[2][0] = 0;
+	ScaleMatrix.m[2][1] = 0;
+	ScaleMatrix.m[2][2] = 1;
+
+	return ScaleMatrix;
+};
+
+//アフィン行列
+Matrix3x3 Matrix3x3MakeAffineMatrix(Vector2 scale, float rotate, Vector2 translate) {
+	Matrix3x3 AffineMatrix = { 0 };
+	AffineMatrix.m[0][0] = scale.x * cosf(rotate);
+	AffineMatrix.m[0][1] = scale.x * sinf(rotate);
+	AffineMatrix.m[0][2] = 0;
+	AffineMatrix.m[1][0] = scale.y * -sinf(rotate);
+	AffineMatrix.m[1][1] = scale.y * cosf(rotate);
+	AffineMatrix.m[1][2] = 0;
+	AffineMatrix.m[2][0] = translate.x;
+	AffineMatrix.m[2][1] = translate.y;
+	AffineMatrix.m[2][2] = 1;
+
+	return AffineMatrix;
+};
+
+//行列変換
+Vector2 Matrix3x3Transform(Vector2 vector, Matrix3x3 matrix) {
+	Vector2 result = { 0 };//w=1がデカルト座標系であるので(x,y,1)のベクトルとしてmatrixの積をとる
+	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + 1.0f * matrix.m[2][0];
+	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + 1.0f * matrix.m[2][1];
+	float w = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + 1.0f * matrix.m[2][2];
+	assert(w != 0.0f);//bベクトルに対して基本的な操作を行う秒列ではｗ＝０にならない
+	result.x /= w;
+	result.y /= w;
+
+	return result;
+
+};
+
+//3x3行列の逆行列を生成
+Matrix3x3 Matrix3x3Inverse(Matrix3x3 matrix) {
+	float scalar = 1 /
+		((matrix.m[0][0] * matrix.m[1][1] * matrix.m[2][2]) +
+			(matrix.m[0][1] * matrix.m[1][2] * matrix.m[2][0]) +
+
+			(matrix.m[0][2] * matrix.m[1][0] * matrix.m[2][1]) -
+			(matrix.m[0][2] * matrix.m[1][1] * matrix.m[2][0]) -
+
+			(matrix.m[0][1] * matrix.m[1][0] * matrix.m[2][2]) -
+			(matrix.m[0][0] * matrix.m[1][2] * matrix.m[2][1]));
+
+	Matrix3x3 m1 = { 0 };
+	m1.m[0][0] = matrix.m[1][1] * matrix.m[2][2] - matrix.m[1][2] * matrix.m[2][1];
+	m1.m[0][1] = -(matrix.m[0][1] * matrix.m[2][2] - matrix.m[0][2] * matrix.m[2][1]);
+	m1.m[0][2] = matrix.m[0][1] * matrix.m[1][2] - matrix.m[0][2] * matrix.m[1][1];
+
+	m1.m[1][0] = -(matrix.m[1][0] * matrix.m[2][2] - matrix.m[1][2] * matrix.m[2][0]);
+	m1.m[1][1] = matrix.m[0][0] * matrix.m[2][2] - matrix.m[0][2] * matrix.m[2][0];
+	m1.m[1][2] = -(matrix.m[0][0] * matrix.m[1][2] - matrix.m[0][2] * matrix.m[1][0]);
+
+	m1.m[2][0] = matrix.m[1][0] * matrix.m[2][1] - matrix.m[1][1] * matrix.m[2][0];
+	m1.m[2][1] = -(matrix.m[0][0] * matrix.m[2][1] - matrix.m[0][1] * matrix.m[2][0]);
+	m1.m[2][2] = matrix.m[0][0] * matrix.m[1][1] - matrix.m[0][1] * matrix.m[1][0];
+
+
+	Matrix3x3 result = { 0 };
+
+	//行列のスカラー倍
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			result.m[i][j] = scalar * m1.m[i][j];
+		}
+	}
+
+	return result;
+};
+
+//3x3転置行列を求める
+Matrix3x3 Matrix3x3Transpose(Matrix3x3 matrix) {
+	Matrix3x3 result = { 0 };
+	//対称になるように変更
+	result.m[0][1] = matrix.m[1][0];
+	result.m[0][2] = matrix.m[2][0];
+	result.m[1][0] = matrix.m[0][1];
+	result.m[1][2] = matrix.m[2][1];
+	result.m[2][1] = matrix.m[1][2];
+	result.m[2][0] = matrix.m[0][2];
+
+	//軸なので変わらない
+	result.m[0][0] = matrix.m[0][0];
+	result.m[1][1] = matrix.m[1][1];
+	result.m[2][2] = matrix.m[2][2];
+
+	return result;
+};
+
+
+
+
+
+
+
+
+
+
+
 /*-----------------------------------------------------------------------*/
 //
 //								4x4行列
@@ -596,3 +785,4 @@ Matrix4x4 MakeViewProjectionMatrixSprite() {
 
 	return viewProjectionMatrix;
 }
+

@@ -2,10 +2,20 @@
 #define _USE_MATH_DEFINES
 #include<math.h>
 #include <cmath>
+#include<assert.h>
 
 // クライアント領域のサイズ
 static const int32_t kClientWidth = 1280;
 static const int32_t kClientHeight = 720;
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+///																		///
+///								ベクトル
+///																		///
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
 /*-----------------------------------------------------------------------*/
 //
 //								2次元ベクトル
@@ -39,11 +49,9 @@ struct Vector3 final {
 /// トランスフォーム
 /// </summary>
 struct Vector3Transform final {
-
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
-
 };
 
 
@@ -90,6 +98,59 @@ struct VertexData final {
 	Vector2 texcoord;//UV座標系(テクスチャ座標系)
 	Vector3 normal;	//法線
 };
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+///																		///
+///								行列
+///																		///
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+
+
+/*-----------------------------------------------------------------------*/
+//
+//								3x3
+//
+/*-----------------------------------------------------------------------*/
+
+
+//3x3の行列を表す
+struct Matrix3x3 {
+	float m[3][3];
+};
+
+Matrix3x3 Matrix3x3Add(Matrix3x3 matrix1, Matrix3x3 matrix2);
+
+Matrix3x3 Matrix3x3Subtract(Matrix3x3 matrix1, Matrix3x3 matrix2);
+//行列の積
+Matrix3x3 Matrix3x3Multiply(Matrix3x3 matrix1, Matrix3x3 matrix2);
+
+
+//回転行列
+Matrix3x3 Matrix3x3MakeRotateMatrix(float theta);
+
+//平行移動行列
+Matrix3x3 Matrix3x3MakeTranslateMatrix(Vector2 translate);
+
+//拡大縮小行列
+Matrix3x3 Matrix3x3MakeScaleMatrix(Vector2 scale);
+
+//アフィン行列
+Matrix3x3 Matrix3x3MakeAffineMatrix(Vector2 scale, float rotate, Vector2 translate);
+
+//行列変換
+Vector2 Matrix3x3Transform(Vector2 vector, Matrix3x3 matrix);
+
+//3x3行列の逆行列を生成
+Matrix3x3 Matrix3x3Inverse(Matrix3x3 matrix);
+
+//3x3転置行列を求める
+Matrix3x3 Matrix3x3Transpose(Matrix3x3 matrix);
+
+
+
 /*-----------------------------------------------------------------------*/
 //
 //								4x4
@@ -107,9 +168,11 @@ struct Matrix4x4 final {
 /// マテリアル
 /// </summary>
 struct  Material final{
-	Vector4 color;
-	int32_t enableLighting;
-	int32_t useLambertianReflectance;
+	Vector4 color;						//色
+	int32_t enableLighting;				//ライティングするか
+	int32_t useLambertianReflectance;	//ランバート反射させるか
+	float padding[2];					//隙間埋める
+	Matrix4x4 uvTransform;				
 };
 
 

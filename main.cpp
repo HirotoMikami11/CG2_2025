@@ -155,7 +155,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData->enableLighting = false;
 	materialData->useLambertianReflectance = false;
-
+	materialData->uvTransform = MakeIdentity4x4();
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -280,6 +280,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDataSphere->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialDataSphere->enableLighting = true;
 	materialDataSphere->useLambertianReflectance = false;
+	materialDataSphere->uvTransform = MakeIdentity4x4();
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -392,7 +393,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDataSprite->color = { 1.0f,1.0f,1.0,1.0f };
 	materialDataSprite->enableLighting = false;
 	materialDataSprite->useLambertianReflectance = false;
-
+	materialDataSprite->uvTransform = MakeIdentity4x4();
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -461,6 +462,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f}
 	};
 
+	Vector3Transform uvTransformSprite{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f}
+	};
 	//WorldViewProjectionMatrixを作る
 	Vector3Transform cameraTransform{
 		{1.0f,1.0f,1.0f},
@@ -492,23 +498,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::NewFrame();
 
 		//開発用UIの処理
-		ImGui::Begin("Material Color");
-		ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&materialData->color.x));
+		ImGui::Begin("Debug");
 		ImGui::Text("Triangle");
+		ImGui::ColorEdit4("Triangle_Color", reinterpret_cast<float*>(&materialData->color.x));
 		ImGui::DragFloat3("Triangle_translate", &transform.translate.x, 0.01f);
 		ImGui::DragFloat3("Triangle_rotate", &transform.rotate.x, 0.01f);
+
 		ImGui::Text("Sphere");
+		ImGui::ColorEdit4("Sphere_Color", reinterpret_cast<float*>(&materialDataSphere->color.x));
 		ImGui::DragFloat3("Sphere_translate", &transformSphere.translate.x, 0.01f);
 		ImGui::DragFloat3("Sphere_rotate", &transformSphere.rotate.x, 0.01f);
 		ImGui::DragFloat3("Sphere_LightDirection", &directionalLightDataSphere->direction.x, 0.01f);
 
-
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 		ImGui::Checkbox("useEnableLighting", reinterpret_cast<bool*>(&materialDataSphere->enableLighting));
 		ImGui::Checkbox("useLambertianReflectance", reinterpret_cast<bool*>(&materialDataSphere->useLambertianReflectance));
+
+
 		ImGui::Text("Sprite");
+		ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&materialDataSprite->color.x));
 		ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 0.01f);
 		ImGui::DragFloat3("Sprite_rotate", &transformSprite.rotate.x, 0.01f);
+		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
 		ImGui::End();
 		//																			//
 		//							三角形用のWVP										//
@@ -524,6 +537,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		//							球体用のWVP										//
 		//																			//
+		transformSphere.rotate.y += 0.01f;
 
 		//viewprojectionを計算
 		Matrix4x4 viewProjectionMatrixSphere = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
@@ -538,7 +552,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 		//行列の更新
 		UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
-
+		//uvTransformの更新
+		UpdateUVTransform(uvTransformSprite, materialDataSprite);
 
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();

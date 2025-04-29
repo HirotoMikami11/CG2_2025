@@ -257,6 +257,14 @@ void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProje
 
 }
 
+void UpdateUVTransform(const Vector3Transform uvtransform, Material* materialData)
+{
+	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvtransform.scale);
+	uvTransformMatrix = Matrix4x4Multiply(uvTransformMatrix, MakeRotateZMatrix(uvtransform.rotate.z));
+	uvTransformMatrix = Matrix4x4Multiply(uvTransformMatrix, MakeTranslateMatrix(uvtransform.translate));
+	materialData->uvTransform = uvTransformMatrix;
+}
+
 
 
 /*-----------------------------------------------------------------------*/
