@@ -48,6 +48,12 @@ struct DirectionalLight {
 
 
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
+
+/// <summary>
+/// vertexDataに情報を書き込む関数
+/// </summary>
+/// <returns></returns>
+void SetVertexDataSprite(VertexData* vertexDataSprite, Vector2 center, Vector2 radius);
 /*-----------------------------------------------------------------------*/
 //
 //								計算関数

@@ -35,6 +35,30 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 	return Resource;
 }
 
+void SetVertexDataSprite(VertexData* vertexDataSprite,Vector2 center, Vector2 radius)
+{
+	//Spriteを表示するための四頂点
+	//左下
+	vertexDataSprite[0].position = { center.x - radius.x,center.y + radius.y,0.0f,1.0f };
+	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
+	//左上
+	vertexDataSprite[1].position = { center.x - radius.x,center.y - radius.y,0.0f,1.0f };
+	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
+	//右下
+	vertexDataSprite[2].position = { center.x + radius.x,center.y + radius.y,0.0f,1.0f };
+	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
+
+	//右上
+	vertexDataSprite[3].position = { center.x + radius.x,center.y - radius.y,0.0f,1.0f };
+	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
+
+
+	for (int i = 0; i < 4; i++)
+	{
+		vertexDataSprite[i].normal = { 0.0f,0.0f,-1.0f };
+	}
+}
+
 /*-----------------------------------------------------------------------*/
 //
 //								描画関数

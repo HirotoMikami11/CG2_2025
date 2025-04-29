@@ -398,7 +398,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//実際に頂点リソースを生成
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 6); //２つ三角形で矩形を作るので頂点データ6つ
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 4); //２つ三角形で矩形を作るので頂点データ6つ
 
 	//																			//
 	//							VertexBufferViewの作成							//
@@ -409,9 +409,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの戦闘のアドレスから使う
 	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
 	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6; //２つ三角形を作るので６個の頂点データ
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 4; //２つ三角形を作るので６個の頂点データ
 	//1頂点当たりのサイズ
 	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+
+	//																			//
+	//							indexResourceの作成								//
+	//																			//
+
+	//実際にインデックスリソースを生成
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 6); //２つ三角形を作るので６個の頂点データ
+
+	//																			//
+	//							indexBufferViewの作成							//
+	//																			//
+	//インデックスバッファビューを作成
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	//リソースの先頭のアドレスから使う
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+	//使用するリソースのサイズはインデックス6つ分のサイズ
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6; //２つ三角形を作るので６個の頂点データ
+	//1頂点当たりのサイズはuint32_t
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+
+
+	//インデックスリソースにデータを書き込む
+	uint32_t* indexDataSprite = nullptr;
+	//書き込むためのアドレスを取得
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
+
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -455,33 +483,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	//一つ目の三角形
-	//左下
-	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
-	//左上
-	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	//右下
-	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-
-	//二つ目の三角形
-	//左上
-	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
-	//右上
-	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	//右下
-	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
-
-	for (int i = 0; i < 6; i++)
-	{
-		vertexDataSprite[i].normal = { 0.0f,0.0f,-1.0f };
-	}
-
+	//Spriteを表示するための四頂点
+	SetVertexDataSprite(vertexDataSprite, { 320.0f,180.0f }, { 320.0f,180.0f });
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -583,7 +586,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
 		//行列の更新
 		UpdateMatrix4x4(transform, viewProjectionMatrix, wvpData);
-	
+
 		//																			//
 		//							球体用のWVP										//
 		//																			//
@@ -639,8 +642,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 
-			directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-					//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+		//wvp用のCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? directXCommon->GetTextureSrvHandles()[1] : directXCommon->GetTextureSrvHandles()[0]);
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
 		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
@@ -652,13 +655,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
+
+		///indexBufferで表示するため、VertexBufferはコメントアウト
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);
+
 		//TransformMatrixCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+
 		// 描画（DrawCall／ドローコール)
+		///indexBufferで表示するため、VertexBufferはコメントアウト
 		//三角形を二つ描画するので6つ
-		directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+		//directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+		directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 
@@ -694,13 +705,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
 	materialResourceSprite->Release();
+	indexResourceSprite->Release();
 
 	//Sphere
 	vertexResourceSphere->Release();
 	materialResourceSphere->Release();
 	wvpResourceSphere->Release();
 	directionalLightResourceSphere->Release();
-	
+
 
 
 	winApp->Finalize();
