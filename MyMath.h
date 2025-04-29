@@ -88,6 +88,7 @@ struct Vector4 final {
 struct VertexData final {
 	Vector4 position;//座標
 	Vector2 texcoord;//UV座標系(テクスチャ座標系)
+	Vector3 normal;	//法線
 };
 /*-----------------------------------------------------------------------*/
 //
@@ -101,6 +102,26 @@ struct Matrix4x4 final {
 	float m[4][4];
 };
 
+
+/// <summary>
+/// マテリアル
+/// </summary>
+struct  Material final{
+	Vector4 color;
+	int32_t enableLighting;
+	int32_t useLambertianReflectance;
+};
+
+
+/// <summary>
+/// 座標変換行列
+/// </summary>
+struct TransformationMatrix
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+
+};
 
 //4x4行列の加算
 Matrix4x4 Matrix4x4Add(const Matrix4x4& m1, const Matrix4x4& m2);
@@ -136,7 +157,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 //透視射影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 //正射影行列
-Matrix4x4 MakeOrthporapicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+Matrix4x4 MakeOrthograpicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
 //ビューポート変換行列
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
 

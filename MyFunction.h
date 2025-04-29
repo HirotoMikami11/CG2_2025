@@ -1,5 +1,9 @@
 #pragma once
 #include "MyMath.h"
+///DirectX12
+#include<d3d12.h>
+#pragma comment(lib,"d3d12.lib")
+#include<cassert>
 
 /// <summary>
 /// 球体
@@ -33,7 +37,17 @@ struct Segment {
 	Vector3 diff;		//終点への差分ベクトル
 };
 
+/// <summary>
+/// 平行光源
+/// </summary>
+struct DirectionalLight {
+	Vector4  color;		//色
+	Vector3 direction;	//方向
+	float intensity;	//強度
+};
 
+
+ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 /*-----------------------------------------------------------------------*/
 //
 //								計算関数
@@ -45,7 +59,7 @@ Vector3 Project(const Vector3& v1, const Vector3& v2);
 //　最近接点を求める関数
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 //	行列の更新
-void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, Matrix4x4* matrixData);
+void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, TransformationMatrix* matrixData);
 
 /*-----------------------------------------------------------------------*/
 //
