@@ -455,6 +455,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	{0.0f,0.0f,0.0f}
 	};
 
+
 	//SpriteのTransform変数を作る
 	Vector3Transform transformSprite{
 		{1.0f,1.0f,1.0f},
