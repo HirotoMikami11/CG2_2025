@@ -75,101 +75,6 @@ static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-void CreateSphereVertexData(VertexData vertexData[]) {
-	const uint32_t kSubdivision = 16;							//分割数
-	const float kLonEvery = (2 * float(M_PI)) / kSubdivision;	//経度分割1つ分の角度
-	const float kLatEvery = float(M_PI) / kSubdivision;			//緯度分割1つ分の角度
-
-	//緯度の方向に分割　-π/2　~π/2
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = (-float(M_PI) / 2.0f) + kLatEvery * latIndex;	//現在の緯度(θ)
-
-		//経度の方向に分割 0 ~ 2π
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-
-			float lon = lonIndex * kLonEvery;
-			///データを書き込む最初の場所
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-
-			//頂点にデータを入力する。基準点a
-			vertexData[start].position.x = cos(lat) * cos(lon);
-			vertexData[start].position.y = sin(lat);
-			vertexData[start].position.z = cos(lat) * sin(lon);
-			vertexData[start].position.w = 1.0f;
-			vertexData[start].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[start].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-			vertexData[start].normal = {
-			vertexData[start].position.x ,
-			vertexData[start].position.y,
-			vertexData[start].position.z
-			};
-
-			//頂点にデータを入力する。基準点b
-			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[start + 1].position.y = sin(lat + kLatEvery);
-			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[start + 1].position.w = 1.0f;
-			vertexData[start + 1].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[start + 1].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
-			vertexData[start + 1].normal = {
-			vertexData[start + 1].position.x ,
-			vertexData[start + 1].position.y,
-			vertexData[start + 1].position.z
-			};
-
-			//頂点にデータを入力する。基準点c
-			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[start + 2].position.y = sin(lat);
-			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[start + 2].position.w = 1.0f;
-			vertexData[start + 2].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
-			vertexData[start + 2].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-			vertexData[start + 2].normal = {
-			vertexData[start + 2].position.x ,
-			vertexData[start + 2].position.y,
-			vertexData[start + 2].position.z
-			};
-			//頂点にデータを入力する。基準点b
-			vertexData[start + 3].position.x = vertexData[start + 1].position.x;
-			vertexData[start + 3].position.y = vertexData[start + 1].position.y;
-			vertexData[start + 3].position.z = vertexData[start + 1].position.z;
-			vertexData[start + 3].position.w = 1.0f;
-			vertexData[start + 3].texcoord.x = vertexData[start + 1].texcoord.x;
-			vertexData[start + 3].texcoord.y = vertexData[start + 1].texcoord.y;
-			vertexData[start + 3].normal = {
-			vertexData[start + 3].position.x ,
-			vertexData[start + 3].position.y,
-			vertexData[start + 3].position.z
-			};
-			//頂点にデータを入力する。基準点d
-			vertexData[start + 4].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-			vertexData[start + 4].position.y = sin(lat + kLatEvery);
-			vertexData[start + 4].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-			vertexData[start + 4].position.w = 1.0f;
-			vertexData[start + 4].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
-			vertexData[start + 4].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
-			vertexData[start + 4].normal = {
-			vertexData[start + 4].position.x ,
-			vertexData[start + 4].position.y,
-			vertexData[start + 4].position.z
-			};
-			//頂点にデータを入力する。基準点c
-			vertexData[start + 5].position.x = vertexData[start + 2].position.x;
-			vertexData[start + 5].position.y = vertexData[start + 2].position.y;
-			vertexData[start + 5].position.z = vertexData[start + 2].position.z;
-			vertexData[start + 5].position.w = 1.0f;
-			vertexData[start + 5].texcoord.x = vertexData[start + 2].texcoord.x;
-			vertexData[start + 5].texcoord.y = vertexData[start + 2].texcoord.y;
-			vertexData[start + 5].normal = {
-			vertexData[start + 5].position.x ,
-			vertexData[start + 5].position.y,
-			vertexData[start + 5].position.z
-			};
-		}
-	}
-}
-
-
 D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	handleCPU.ptr += (descriptorSize * index);
@@ -325,9 +230,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの先頭のアドレスから使う
 	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
 	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * (16 * 16 * 6); //
+	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * ((16 + 1) * (16 + 1)); //分割数nの時、交点は(n+1)になるため
 	//1頂点当たりのサイズ
 	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
+
+	//																			//
+	//							indexResourceの作成								//
+	//																			//
+
+	//実際にインデックスリソースを生成
+	ID3D12Resource* indexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 16 * 16 * 6); //２つ三角形を作るので６個の頂点データ
+
+
+	//																			//
+	//							indexBufferViewの作成							//
+	//																			//
+
+	//インデックスバッファビューを作成
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSphere{};
+	//リソースの先頭のアドレスから使う
+	indexBufferViewSphere.BufferLocation = indexResourceSphere->GetGPUVirtualAddress();
+	//使用するリソースのサイズはインデックス6つ分のサイズ
+	indexBufferViewSphere.SizeInBytes = sizeof(uint32_t) * 16 * 16 * 6; //三角リスト方式の頂点数と同じ
+	//1頂点当たりのサイズはuint32_t
+	indexBufferViewSphere.Format = DXGI_FORMAT_R32_UINT;
+
+
+	//インデックスリソースにデータを書き込む
+	uint32_t* indexDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	indexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSphere));
+	CreateSphereIndexData(indexDataSphere);
+
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -484,7 +418,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 	//Spriteを表示するための四頂点
-	SetVertexDataSprite(vertexDataSprite, { 320.0f,180.0f }, { 320.0f,180.0f });
+	CreateSpriteVertexData(vertexDataSprite, { 320.0f,180.0f }, { 320.0f,180.0f });
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -646,9 +580,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//wvp用のCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? directXCommon->GetTextureSrvHandles()[1] : directXCommon->GetTextureSrvHandles()[0]);
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
+		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
+		///indexBufferで表示するため、VertexBufferはコメントアウト
 		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-		directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
-
+		//directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
+		directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
 
 		//																			//
 		//									Sprite									//
@@ -656,9 +592,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 
-		///indexBufferで表示するため、VertexBufferはコメントアウト
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+
+		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
+		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
 
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);
 
@@ -707,12 +643,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResourceSprite->Release();
 	indexResourceSprite->Release();
 
+
 	//Sphere
 	vertexResourceSphere->Release();
 	materialResourceSphere->Release();
 	wvpResourceSphere->Release();
 	directionalLightResourceSphere->Release();
-
+	indexResourceSphere->Release();
 
 
 	winApp->Finalize();

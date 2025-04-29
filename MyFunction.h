@@ -50,10 +50,32 @@ struct DirectionalLight {
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 
 /// <summary>
-/// vertexDataに情報を書き込む関数
+/// 矩形スプライトvertexDataに情報を書き込む関数
 /// </summary>
 /// <returns></returns>
-void SetVertexDataSprite(VertexData* vertexDataSprite, Vector2 center, Vector2 radius);
+void CreateSpriteVertexData(VertexData vertexDataSprite[], Vector2 center, Vector2 radius);
+
+
+/// <summary>
+/// 三角形リスト方式のVetrtexDataを作成する関数
+/// </summary>
+/// <param name="vertexData"></param>
+//void CreateSphereVertexData(VertexData vertexData[]);
+
+/// <summary>
+/// インデックス方式の球体VetrtexDataを作成する関数
+/// </summary>
+/// <param name="vertexData"></param>
+void CreateSphereVertexData(VertexData vertexData[]);
+
+/// <summary>
+/// インデックス方式の球体IndexDataを作成する関数
+/// </summary>
+/// <param name="indexData"></param>
+void CreateSphereIndexData(uint32_t indexData[]);
+
+
+
 /*-----------------------------------------------------------------------*/
 //
 //								計算関数
