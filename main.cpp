@@ -6,13 +6,9 @@
 #include<filesystem>
 //ファイルに書いたり読んだりするライブラリ
 #include<fstream>
+#include<sstream>
 //時間を扱うライブラリ
 #include<chrono>
-
-#include<strsafe.h>
-// Debug用のあれこれを使えるようにする
-#include <dbghelp.h>
-#pragma comment (lib,"Dbghelp.lib")
 
 ///DirectX12
 #include<d3d12.h>
@@ -37,43 +33,13 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include"externals/DirectXTex/d3dx12.h"
 
 #include<cassert>
-#include <vector>
 #include "MyFunction.h"
 
 
 #include "Logger.h"
 #include "WinApp.h"
 #include "DirectXCommon.h"
-
-
-
-/// CrashHandlerの登録をする関数
-static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
-	///
-	///	Dumpを出力する
-	/// 
-
-	//時刻を取得して、時刻を名前に入れたファイルを作成。Dumpディレクトリ以下に出力
-	SYSTEMTIME time;
-	GetLocalTime(&time);
-	wchar_t filePath[MAX_PATH] = { 0 };
-	CreateDirectory(L"./Dumps", nullptr);
-	StringCchPrintfW(filePath, MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
-	HANDLE dumpFileHandle = CreateFile(filePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-	// processId(このexeのId)とクラッシュ（例外）の発生したthreadIdを取得
-	DWORD processId = GetCurrentProcessId();
-	DWORD threadId = GetCurrentThreadId();
-	// 設定情報を入力
-	MINIDUMP_EXCEPTION_INFORMATION minidumpInformation{ 0 };//miniDump
-	minidumpInformation.ThreadId = threadId;
-	minidumpInformation.ExceptionPointers = exception;
-	minidumpInformation.ClientPointers = TRUE;
-
-	//Dumpを出力　MiniDumpNormalは最低限の情報を出力するフラグ
-	MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInformation, nullptr, nullptr);
-	//他に関連付けられているSEH例外ハンドラがあれば実行、通常はプロセスを終了する
-	return EXCEPTION_EXECUTE_HANDLER;
-}
+#include "Dump.h"
 
 D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -87,6 +53,117 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 	return handleGPU;
 }
 
+
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
+	//1.中で必要となる変数の宣言
+	MaterialData materialData;			//構築するMaterialData
+	std::string line;					//ファイルから読んだ1行を格納するもの
+
+	//2.ファイルを開く
+	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
+	assert(file.is_open());//開けなかった場合は停止する
+
+	//3.実際にファイルを読み、ModelDataを構築していく
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;	//先頭の識別子を読む
+
+		//identifierに応じた処理
+		if (identifier == "map_Kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+			//連結してファイルパスにする
+			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		}
+	}
+	//4.MaterialDataを返す
+	return materialData;
+}
+
+
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+	//1.中で必要となる変数の宣言
+	ModelData modelData;				//構築するModelData
+	std::vector<Vector4> positions;		//位置
+	std::vector<Vector3> normals;		//法線
+	std::vector<Vector2> texcoords;		//テクスチャ座標
+	std::string line;					//ファイルから読んだ1行を格納するもの
+
+	//2.ファイルを開く
+	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
+	assert(file.is_open());//開けなかった場合は停止する
+
+	//3.実際にファイルを読み、ModelDataを構築していく
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;	//先頭の識別子を読む
+
+		if (identifier == "v") {		//識別子がvの場合	頂点位置
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.w = 1.0f;	//w成分は1.0fで初期化
+			positions.push_back(position);//位置を格納する
+
+		} else if (identifier == "vt") {//識別子がvtの場合	頂点テクスチャ
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);//テクスチャ座標を格納する
+
+		} else if (identifier == "vn") {//識別子がvnの場合	頂点法線
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normals.push_back(normal);//法線を格納する
+
+		} else if (identifier == "f") {	//識別子がfの場合	面
+			//面は三角形限定
+			VertexData triangle[3];//三角形の頂点データを格納する
+
+			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+				std::string vertexDefinition;
+				s >> vertexDefinition;	//頂点の情報を読む
+				//頂点の要素へのindexは「位置/UV/法線」で格納されているので、分解してindexを取得する
+				std::stringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (int32_t element = 0; element < 3; ++element) {
+					std::string index;
+					std::getline(v, index, '/');// '/'区切りでインデックスを読んでいく
+					elementIndices[element] = std::stoi(index);
+				}
+
+				//要素へのindexから、実際の要素の値を取得して頂点を構成する
+				Vector4 position = positions[elementIndices[0] - 1];	//位置は1始まりなので-1する
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];	//テクスチャ座標も-1
+				Vector3 normal = normals[elementIndices[2] - 1];		//法線も-1
+
+				//右手座標系から左手座標系に変換する
+				position.x *= -1.0f;
+				normal.x *= -1.0f;
+				texcoord.y = 1.0f - texcoord.y; // Y軸反転
+				triangle[faceVertex] = { position, texcoord, normal };//頂点データを構成する
+			}
+			modelData.vertices.push_back(triangle[2]);//頂点データを格納する
+			modelData.vertices.push_back(triangle[1]);//頂点データを格納する
+			modelData.vertices.push_back(triangle[0]);//頂点データを格納する
+		} else if (identifier == "mtllib") {
+			//materialTemplateLibraryファイルの名前を取得する
+			std::string materialFilename;
+			s >> materialFilename;
+			//objファイルとmtlファイルは同じディレクトリにあるので、ディレクトリ・ファイル名を渡す
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+		}
+	}
+	//4.ModelDataを返す
+	return modelData;
+
+}
+
+
+
+
+
+
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///									メイン関数							   ///
@@ -96,7 +173,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrip
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録（main関数が始まってすぐ）
-	SetUnhandledExceptionFilter(ExportDump);
+	Dump::Initialize();
+
+
+
 
 
 	WinApp* winApp = new WinApp;
@@ -113,11 +193,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///
 
 	Logger::Initalize();
-	directXCommon->Initialize(winApp);
+
+	///
+	///モデルデータの読み込み
+	///
+	ModelData modelData = LoadObjFile("resources", "axis.obj");
+
+	directXCommon->Initialize(winApp,modelData);
+
+
+
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
+
+#pragma region Triangle
 
 	//																			//
 	//							VertexResourceの作成								//
@@ -209,10 +300,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		vertexData[i].normal.z = vertexData[i].position.z;
 	}
 
+#pragma endregion
 
 	///*-----------------------------------------------------------------------*///
 	///									球体									///
 	///*-----------------------------------------------------------------------*///
+
+#pragma region Sphere
 
 	//																			//
 	//							VertexResourceの作成								//
@@ -323,10 +417,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//球体のデータ
 	CreateSphereVertexData(vertexDataSphere);
 
+#pragma endregion
 
 	///*-----------------------------------------------------------------------*///
 	///								矩形Sprite									///
 	///*-----------------------------------------------------------------------*///
+
+#pragma region "Sprite"
 
 	//																			//
 	//							VertexResourceの作成								//
@@ -399,7 +496,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
 
-//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
+	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
 	//データを書き込む
 	TransformationMatrix* transformationMatrixDataSprite = nullptr;
@@ -420,6 +517,74 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 	//Spriteを表示するための四頂点
 	CreateSpriteVertexData(vertexDataSprite, { 320.0f,180.0f }, { 320.0f,180.0f });
+#pragma endregion
+
+	///*-----------------------------------------------------------------------*///
+	///									model									///
+	///*-----------------------------------------------------------------------*///
+
+#pragma region "Model"
+	
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
+	ID3D12Resource* vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
+
+	//																			//
+	//							VertexBufferViewの作成							//
+	//																			//
+	//頂点バッファビュー作成
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewModel{};
+	vertexBufferViewModel.BufferLocation = vertexResourceModel->GetGPUVirtualAddress();			//リソースの戦闘のアドレスから使う
+	vertexBufferViewModel.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());	//使用するリソースのサイズは頂点のサイズ
+	vertexBufferViewModel.StrideInBytes = sizeof(VertexData);									//1頂点当たりのサイズ
+
+	//																			//
+	//							Material用のResourceを作る						//
+	//																			//
+	// モデル用のマテリアルリソースを作成
+	ID3D12Resource* materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
+	Material* materialDataModel = nullptr;
+	materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
+	materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialDataModel->enableLighting = true;
+	materialDataModel->useLambertianReflectance = false;
+	materialDataModel->uvTransform = MakeIdentity4x4();
+
+
+	//																			//
+	//							DirectionalLightのResourceを作る						//
+	//																			//
+
+	ID3D12Resource* directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	//データを書き込む
+	DirectionalLight* directionalLightDataModel = nullptr;
+	//書き込むためのアドレスを取得
+	directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
+	//単位行列を書き込んでおく
+	directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightDataModel->intensity = 1.0f;
+
+
+	//																			//
+	//					TransformationMatrix用のリソースを作る						//
+	//																			//
+
+	ID3D12Resource* transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
+	TransformationMatrix* transformMatrixDataModel = nullptr;
+	transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
+	transformMatrixDataModel->WVP = MakeIdentity4x4();
+	transformMatrixDataModel->World = MakeIdentity4x4();
+
+	//																			//
+	//						Resourceにデータを書き込む								//
+	//																			//
+	VertexData* vertexDataModel = nullptr;
+	vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));						//書き込むためのアドレス取得
+	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());	//頂点データをリソースにコピー
+
+#pragma endregion
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -473,10 +638,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,-10.0f}
 	};
+	// モデル用のTransform変数
+	Vector3Transform transformModel{
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 0.0f}
+	};
 
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
-	bool useEnableLighting = true;
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -514,7 +684,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Checkbox("useEnableLighting", reinterpret_cast<bool*>(&materialDataSphere->enableLighting));
 		ImGui::Checkbox("useLambertianReflectance", reinterpret_cast<bool*>(&materialDataSphere->useLambertianReflectance));
 
-
 		ImGui::Text("Sprite");
 		ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&materialDataSprite->color.x));
 		ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 0.01f);
@@ -522,6 +691,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
+
+		ImGui::Text("Model");
+		ImGui::DragFloat3("Model_translate", &transformModel.translate.x, 0.01f);
+		ImGui::DragFloat3("Model_rotate", &transformModel.rotate.x, 0.01f);
+
+
 		ImGui::End();
 		//																			//
 		//							三角形用のWVP										//
@@ -555,6 +730,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//uvTransformの更新
 		UpdateUVTransform(uvTransformSprite, materialDataSprite);
 
+
+		//																			//
+		//							Model用のWVP									//
+		//																			//
+
+		UpdateMatrix4x4(transformModel, viewProjectionMatrix, transformMatrixDataModel);
+
+
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();
 
@@ -575,6 +758,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
+		//																			//
+		//								三角形用の描画									//
+		//																			//
+
+#pragma region Triangle
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
@@ -582,48 +770,60 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 		directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
-
-
-		//																			//
-		//									Sphere									//
-		//																			//
-
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-		//wvp用のCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? directXCommon->GetTextureSrvHandles()[1] : directXCommon->GetTextureSrvHandles()[0]);
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
-		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
-		///indexBufferで表示するため、VertexBufferはコメントアウト
-		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-		//directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
-		directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
+#pragma endregion
 
 		//																			//
-		//									Sprite									//
+		//								Sphereの描画									//
+		//																			//
+#pragma region Sphere
+
+		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
+		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+
+		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+		////wvp用のCBufferの場所を設定
+		//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? directXCommon->GetTextureSrvHandles()[1] : directXCommon->GetTextureSrvHandles()[0]);
+		//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
+		//directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
+		/////indexBufferで表示するため、VertexBufferはコメントアウト
+		//// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
+		////directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
+		//directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
+#pragma endregion
+		//																			//
+		//								Spriteの描画									//
 		//																			//
 
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
+#pragma region Sprite
 
+		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
+		//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
+		//directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
 
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
-		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
+		//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);
 
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);
+		////TransformMatrixCBufferの場所を設定
+		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-		//TransformMatrixCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+		//// 描画（DrawCall／ドローコール)
+		////三角形を二つ描画するので6つ
+		//directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
-		// 描画（DrawCall／ドローコール)
-		///indexBufferで表示するため、VertexBufferはコメントアウト
-		//三角形を二つ描画するので6つ
-		//directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
-		directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+#pragma endregion
 
+		//																			//
+		//								Modelの描画									//
+		//																			//
 
-
+#pragma region Model
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[2]); // テクスチャ
+		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
+		// インデックスバッファがない場合は直接頂点で描画
+		directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+#pragma endregion
 
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), directXCommon->GetCommandList());
@@ -651,14 +851,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResource->Release();
 	wvpResource->Release();
 
-
-	//Sprite
-	vertexResourceSprite->Release();
-	transformationMatrixResourceSprite->Release();
-	materialResourceSprite->Release();
-	indexResourceSprite->Release();
-
-
 	//Sphere
 	vertexResourceSphere->Release();
 	materialResourceSphere->Release();
@@ -666,6 +858,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightResourceSphere->Release();
 	indexResourceSphere->Release();
 
+	//Sprite
+	vertexResourceSprite->Release();
+	transformationMatrixResourceSprite->Release();
+	materialResourceSprite->Release();
+	indexResourceSprite->Release();
+
+	//Model
+	vertexResourceModel->Release();
+	materialResourceModel->Release();
+	transformMatrixResourceModel->Release();
+	directionalLightResourceModel->Release();
 
 	winApp->Finalize();
 	delete winApp;

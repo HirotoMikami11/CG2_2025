@@ -27,7 +27,7 @@ class DirectXCommon
 {
 public:
 
-	void Initialize(WinApp* winApp);
+	void Initialize(WinApp* winApp,ModelData modelData);
 	void Finalize();
 
 	/// <summary>

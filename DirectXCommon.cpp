@@ -1,14 +1,15 @@
 #include "DirectXCommon.h"
 
-void DirectXCommon::Initialize(WinApp* winApp) {
+void DirectXCommon::Initialize(WinApp* winApp, ModelData modelData) {
 
-	//あとでイニシャライズに入れる
 // テクスチャファイル名配列
 	std::vector<std::string> textureFileNames = {
 		"resources/uvChecker.png",
 		"resources/monsterBall.png"
 	};
 
+	// materialのテクスチャを追加
+	textureFileNames.push_back(modelData.material.textureFilePath);
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
