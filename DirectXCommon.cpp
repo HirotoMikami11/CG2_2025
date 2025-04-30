@@ -1,43 +1,41 @@
 #include "DirectXCommon.h"
 
-void DirectXCommon::Initialize(WinApp* winApp, ModelData modelData) {
+void DirectXCommon::Initialize(WinApp* winApp) {
 
-// テクスチャファイル名配列
+	// テクスチャファイル名配列
 	std::vector<std::string> textureFileNames = {
 		"resources/uvChecker.png",
 		"resources/monsterBall.png"
 	};
 
-	// materialのテクスチャを追加
-	textureFileNames.push_back(modelData.material.textureFilePath);
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									DebugLayer							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakeDebugLayer();
+	MakeDebugLayer();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									DXGIFactory							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakeDXGIFactory();
+	MakeDXGIFactory();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///					CommandQueueとCommandListを生成						   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 InitializeCommand();
+	InitializeCommand();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///							SwapChainを生成								   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakeSwapChain(winApp);
+	MakeSwapChain(winApp);
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -45,29 +43,31 @@ void DirectXCommon::Initialize(WinApp* winApp, ModelData modelData) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	 MakeDescriptorHeap();
+	MakeDescriptorHeap();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									RTVを生成							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakeRTV();
+	MakeRTV();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									SRVを生成							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-
-	 MakeSRV(textureFileNames);
-
+		// それぞれのテクスチャに対して処理を行う
+	for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
+		LoadTextureResourceForSRV(textureFileNames[i], i);
+		MakeSRV(textureFileNames[i],i);
+	}
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									DSVを生成								///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakeDSV();
+	MakeDSV();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -75,7 +75,7 @@ void DirectXCommon::Initialize(WinApp* winApp, ModelData modelData) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	 MakeFenceEvent();
+	MakeFenceEvent();
 
 
 	///*-----------------------------------------------------------------------*///
@@ -83,13 +83,13 @@ void DirectXCommon::Initialize(WinApp* winApp, ModelData modelData) {
 	///									DXCの初期化								///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 InitalizeDXC();
+	InitalizeDXC();
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///								PSOを生成する									///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakePSO();
+	MakePSO();
 
 
 	///*-----------------------------------------------------------------------*///
@@ -97,7 +97,7 @@ void DirectXCommon::Initialize(WinApp* winApp, ModelData modelData) {
 	///							ViewportとScissor							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	 MakeViewport();
+	MakeViewport();
 
 
 }
@@ -154,6 +154,20 @@ void DirectXCommon::Finalize() {
 
 
 }
+
+
+D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	handleCPU.ptr += (descriptorSize * index);
+	return handleCPU;
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	handleGPU.ptr += (descriptorSize * index);
+	return handleGPU;
+}
+
 
 
 ///*-----------------------------------------------------------------------*///
@@ -399,47 +413,45 @@ void DirectXCommon::MakeRTV()
 	rtvHandles[0] = rtvStartHandle;
 	device->CreateRenderTargetView(swapChainResources[0], &rtvDesc, rtvHandles[0]);
 	//2つ目のディスクリプタハンドルを得る（自力で）
-	rtvHandles[1].ptr = rtvHandles[0].ptr + descriptorSizeRTV;
+	//rtvHandles[1].ptr = rtvHandles[0].ptr + descriptorSizeRTV;
+	rtvHandles[1] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, 1);
 	//2つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
 }
 
-void DirectXCommon::MakeSRV(const std::vector<std::string>& textureFileNames)
+
+void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName, uint32_t index)
 {
+	// テクスチャを読み込んで転送する
+	DirectX::ScratchImage mipImages = LoadTexture(textureFileName);
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
+	ID3D12Resource* intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
+	// CPU・GPUハンドルをずらしてセット
+		// // ImGuiが先頭を使ってるので i+1
+	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, uint32_t(index + 1));
+	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, uint32_t(index + 1));
+	
+	// 解放するときのために
+	textureResources.push_back(textureResource);
+	intermediateResources.push_back(intermediateResource);
+	metadatas.push_back(metadata);
+	textureCPUSrvHandles.push_back(currentCpuHandle);
+	textureGPUSrvHandles.push_back(currentGpuHandle);
 
-	//SRVを作成するDescriptorHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+}
+void DirectXCommon::MakeSRV(const std::string& textureFileNames,uint32_t index)
+{
+	// SRV設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = metadatas[index].format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = UINT(metadatas[index].mipLevels);
 
-	// それぞれのテクスチャに対して処理を行う
-	for (size_t i = 0; i < textureFileNames.size(); ++i) {
-		// テクスチャを読み込んで転送する
-		DirectX::ScratchImage mipImages = LoadTexture(textureFileNames[i]);
-		const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-		ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
-		ID3D12Resource* intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
-
-		// SRV設定
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-		srvDesc.Format = metadata.format;
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-		// CPU・GPUハンドルをずらしてセット
-		D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = textureSrvHandleCPU;
-		currentCpuHandle.ptr += descriptorSizeSRV * (i + 1); // ImGuiが先頭を使ってるので i+1
-		D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = textureSrvHandleGPU;
-		currentGpuHandle.ptr += descriptorSizeSRV * (i + 1);
-
-		// SRVの生成
-		device->CreateShaderResourceView(textureResource, &srvDesc, currentCpuHandle);
-		// 解放するときのために
-		textureResources.push_back(textureResource);
-		intermediateResources.push_back(intermediateResource);
-		textureSrvHandles.push_back(currentGpuHandle);
-	}
+	// SRVの生成
+	device->CreateShaderResourceView(textureResources[index], &srvDesc, textureCPUSrvHandles[index]);
 }
 
 DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)

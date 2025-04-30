@@ -41,17 +41,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "DirectXCommon.h"
 #include "Dump.h"
 
-D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
-	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	handleCPU.ptr += (descriptorSize * index);
-	return handleCPU;
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
-	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-	handleGPU.ptr += (descriptorSize * index);
-	return handleGPU;
-}
 
 
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
@@ -194,14 +183,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Logger::Initalize();
 
-	///
-	///モデルデータの読み込み
-	///
-	ModelData modelData = LoadObjFile("resources", "axis.obj");
-
-	directXCommon->Initialize(winApp,modelData);
-
-
+	directXCommon->Initialize(winApp);
 
 
 	///*-----------------------------------------------------------------------*///
@@ -525,6 +507,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Model"
 	
+	//モデルデータ作成
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	
+	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath,2);
+	directXCommon->MakeSRV(modelData.material.textureFilePath,2);
+
 	//																			//
 	//							VertexResourceの作成								//
 	//																			//
@@ -696,7 +684,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Model_translate", &transformModel.translate.x, 0.01f);
 		ImGui::DragFloat3("Model_rotate", &transformModel.rotate.x, 0.01f);
 
-
 		ImGui::End();
 		//																			//
 		//							三角形用のWVP										//
@@ -712,6 +699,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		//							球体用のWVP										//
 		//																			//
+		
 		transformSphere.rotate.y += 0.01f;
 
 		//viewprojectionを計算
@@ -766,10 +754,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);	//uvChecker
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[0]);	//uvChecker
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 		directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+
 #pragma endregion
 
 		//																			//
@@ -789,6 +778,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 		////directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
 		//directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
+
 #pragma endregion
 		//																			//
 		//								Spriteの描画									//
@@ -816,13 +806,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 #pragma region Model
+
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[2]); // テクスチャ
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[2]); // テクスチャ
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
 		// インデックスバッファがない場合は直接頂点で描画
 		directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+
 #pragma endregion
 
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
