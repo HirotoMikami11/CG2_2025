@@ -29,6 +29,14 @@ public:
 
 	void Initialize(WinApp* winApp);
 	void Finalize();
+	
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index);
+	
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index);
+
+
+
 
 	/// <summary>
 	/// デバッグレイヤーを作成する
@@ -56,12 +64,15 @@ public:
 	void MakeDescriptorHeap();
 	///desctipotorHeapを生成する関数
 	static ID3D12DescriptorHeap* CreateDesctiptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
-
+	/// <summary>
+/// 
+/// </summary>
+	void LoadTextureResourceForSRV(const std::string& textureFilename, uint32_t index);
 	/// <summary>
 	/// SRVを作成する
 	/// </summary>
 	/// <param name="textureFileNames"></param>
-	void MakeSRV(const std::vector<std::string>& textureFileNames);
+	void MakeSRV(const std::string& textureFileNames,  uint32_t index);
 
 	/// <summary>
 	/// RTVを作成する
@@ -118,6 +129,8 @@ public:
 	/// </summary>
 	void PostDraw();
 
+
+
 	///ゲッター
 
 	ID3D12Device* GetDevice() const { return device; }
@@ -136,7 +149,8 @@ public:
 	D3D12_RENDER_TARGET_VIEW_DESC GetRTVDesc() { return rtvDesc; }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle(int index) const { return rtvHandles[index]; }
 	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap; }
-	const std::vector<D3D12_GPU_DESCRIPTOR_HANDLE>& GetTextureSrvHandles() const { return textureSrvHandles; }
+	const std::vector<D3D12_GPU_DESCRIPTOR_HANDLE>& GetTextureGPUSrvHandles() const { return textureGPUSrvHandles; }
+	const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetTextureCPUSrvHandles() const { return textureCPUSrvHandles; }
 
 private:
 
@@ -175,7 +189,9 @@ private:
 	//srv
 	std::vector<ID3D12Resource*> textureResources;
 	std::vector<ID3D12Resource*> intermediateResources;
-	std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureSrvHandles;
+	std::vector<DirectX::TexMetadata> metadatas;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureCPUSrvHandles;
+	std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureGPUSrvHandles;
 
 	//dsv
 	ID3D12Resource* depthStencilResource = nullptr;

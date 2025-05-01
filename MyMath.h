@@ -3,6 +3,11 @@
 #include<math.h>
 #include <cmath>
 #include<assert.h>
+#include <vector>
+//ファイルに書いたり読んだりするライブラリ
+#include<fstream>
+#include<sstream>
+
 
 // クライアント領域のサイズ
 static const int32_t kClientWidth = 1280;
@@ -99,6 +104,25 @@ struct VertexData final {
 	Vector3 normal;	//法線
 };
 
+
+
+/// <summary>
+/// mtlファイルを読んで使えるようにする
+/// </summary>
+struct MaterialData {
+	std::string textureFilePath;	//テクスチャファイルのパス
+};
+
+/// <summary>
+/// モデル用の頂点データ
+/// </summary>
+struct ModelData {
+	std::vector<VertexData> vertices;	//頂点データ
+	MaterialData material;	//マテリアルデータ
+};
+
+
+
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
 ///																		///
@@ -131,6 +155,7 @@ Matrix3x3 Matrix3x3Multiply(Matrix3x3 matrix1, Matrix3x3 matrix2);
 //回転行列
 Matrix3x3 Matrix3x3MakeRotateMatrix(float theta);
 
+//平行移動行列
 //平行移動行列
 Matrix3x3 Matrix3x3MakeTranslateMatrix(Vector2 translate);
 
