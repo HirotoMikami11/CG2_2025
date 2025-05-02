@@ -78,7 +78,7 @@ Vector3 Vector3Normalize(const Vector3& v);
 //クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
-
+Vector3 Lerp(const Vector3& start, const Vector3& end, float t);
 /*-----------------------------------------------------------------------*/
 //
 //								4次元ベクトル

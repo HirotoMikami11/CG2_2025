@@ -170,6 +170,6 @@ void TriangularPrism::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DES
 	// IBを設定
 	commandList->IASetIndexBuffer(&indexBufferView);
 
-	// 描画（DrawCall/ドローコール）- インデックス使用版
+	// 描画（DrawCall/ドローコール)
 	commandList->DrawIndexedInstanced(kIndexCount, 1, 0, 0, 0);
 }

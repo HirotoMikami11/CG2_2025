@@ -86,6 +86,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="Dump.cpp" />
+    <ClCompile Include="Easing.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -99,6 +100,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="TriangularPrism.cpp" />
+    <ClCompile Include="TriangularPyramid.cpp" />
     <ClCompile Include="TriForce.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
@@ -117,6 +119,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="Dump.h" />
+    <ClInclude Include="Easing.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -130,6 +133,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="TriangularPrism.h" />
+    <ClInclude Include="TriangularPyramid.h" />
     <ClInclude Include="TriForce.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>

@@ -40,8 +40,12 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Dump.h"
+//三角形
 #include "Triangle.h"
-#include "TriangularPrism.h"
+//三角柱を三つ
+#include "TriForce.h"
+//三角錐
+#include "TriangularPyramid.h"
 
 
 
@@ -197,16 +201,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		triangle[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 
+	TriangularPyramid* triangularPyramid;
+	//const int indextriangularPrism = 3;
+
+	triangularPyramid = new TriangularPyramid();
+	triangularPyramid->Initialize(directXCommon->GetDevice());
+	triangularPyramid->SetPosition({ 0.0f, 0.0f, 0.0f });
+	triangularPyramid->SetRotation({ 0.0f, 0.0f, 0.0f });
+	triangularPyramid->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+
+
+
 	///三角柱の生成
-	TriangularPrism* triangularPrism[3];
-	const int indextriangularPrism = 3;
-	for (int i = 0; i < indextriangularPrism; i++) {
-		triangularPrism[i] = new TriangularPrism();
-		triangularPrism[i]->Initialize(directXCommon->GetDevice());
-		triangularPrism[i]->SetPosition({ 0.0f, 0.0f, 0.0f });
-		triangularPrism[i]->SetRotation({ 0.0f, 0.0f, 0.0f });
-		triangularPrism[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-	}
+	TriForce* triforce = new TriForce(directXCommon->GetDevice());
+	triforce->Initialize();
 
 
 #pragma region Triangle
@@ -741,7 +749,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//							三角形用のWVP										//
 			//																			//
 
-	
+
 			//三角形を回転させる
 			for (int i = 0; i < indexTriangle; i++) {
 				Vector3Transform transform[2];
@@ -801,18 +809,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Begin("triangularPrism");
 			ImGui::Text("triangularPrism");
-			for (int i = 0; i < indextriangularPrism; i++) {
-				std::string label_tri_translate = "triangularPrism_translate " + std::to_string(i);
-				std::string label_tri_rotate = "triangularPrism_rotate " + std::to_string(i);
-				std::string label_tri_scale = "triangularPrism_scale " + std::to_string(i);
-				std::string label_tri_color = "triangularPrism_color " + std::to_string(i);
+			if (ImGui::Button("Reset")) {
+				triforce->Initialize();
+			}
+			//コンボボックスの選択肢
+			const char* easing[] = { "easeOutBack", "easeOutQuad","easeInOutCubic","easeOutBounce","EaseOutSine","easeOutExpo" };
 
-				// 色
-				ImGui::ColorEdit4(label_tri_color.c_str(), reinterpret_cast<float*>(&triangularPrism[i]->GetColor().x));
-				// 位置・回転・スケール
-				ImGui::DragFloat3(label_tri_translate.c_str(), const_cast<float*>(&triangularPrism[i]->GetTransform().translate.x), 0.01f);
-				ImGui::DragFloat3(label_tri_rotate.c_str(), const_cast<float*>(&triangularPrism[i]->GetTransform().rotate.x), 0.01f);
-				ImGui::DragFloat3(label_tri_scale.c_str(), const_cast<float*>(&triangularPrism[i]->GetTransform().scale.x), 0.01f);
+			static int selected_Easing = { 0 };
+			if (ImGui::Combo(("Select easing "), &selected_Easing, easing, IM_ARRAYSIZE(easing))) {
+				///このimguiで中身を変更し、それをイージングするところで変える。
+
 			}
 			ImGui::End();
 #pragma endregion
@@ -821,9 +827,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
-			for (int i = 0; i < indextriangularPrism; i++) {
-				triangularPrism[i]->Update(viewProjectionMatrix);
-			}
+			Vector3Transform transformPyramid;
+			transformPyramid = triangularPyramid->GetTransform();
+			transformPyramid.rotate.x += 0.03f;
+			transformPyramid.rotate.y += 0.03f;
+			transformPyramid.rotate.z += 0.03f;
+			triangularPyramid->SetRotation(transformPyramid.rotate);
+
+			//行列の更新
+			triangularPyramid->Update(viewProjectionMatrix);
+
+
+
+
+			triforce->MoveEasing(selected_Easing);
+			triforce->Update(viewProjectionMatrix);
 
 		}
 
@@ -925,11 +943,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		} else {
 			///映像演出の描画
+			triangularPyramid->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
 
-			for (int i = 0; i < indextriangularPrism; i++) {
-				triangularPrism[i]->Draw(directXCommon->GetCommandList(),
-					directXCommon->GetTextureGPUSrvHandles()[2]);
-			}
+			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
 
 
 
@@ -956,9 +972,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//三角形の前で解放
-	for (int i = 0; i < indextriangularPrism; i++) {
-		delete triangularPrism[i];
-	}
+	delete triforce;
+
+	delete triangularPyramid;
+
 	//三角形を生成するものの解放処理
 	for (int i = 0; i < indexTriangle; i++) {
 		delete triangle[i];

@@ -57,6 +57,11 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color = gMaterial.color * textureColor;
     }
     
+    //output.colorのa値が0のときPixelを破棄(空白で塗りつぶされないように)
+    if (output.color.a == 0.0)
+    {
+        discard;
+    }
     
     return output;
 }

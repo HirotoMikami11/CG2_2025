@@ -88,7 +88,13 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 	return result;
 }
 
-
+Vector3 Lerp(const Vector3& start, const Vector3& end, float t) {
+	return {
+		start.x + (end.x - start.x) * t,
+		start.y + (end.y - start.y) * t,
+		start.z + (end.z - start.z) * t
+	};
+}
 
 
 
@@ -780,7 +786,7 @@ Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& cameraTransform, floa
 Matrix4x4 MakeViewProjectionMatrixSprite() {
 
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
-	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f,0.0f,float(kClientWidth),float(kClientHeight),0.0f,100.0f);
+	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
 	Matrix4x4 viewProjectionMatrix = Matrix4x4Multiply(viewMatrix, projectionMatrix);
 
 	return viewProjectionMatrix;
