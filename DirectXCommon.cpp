@@ -5,7 +5,9 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	// テクスチャファイル名配列
 	std::vector<std::string> textureFileNames = {
 		"resources/uvChecker.png",
-		"resources/monsterBall.png"
+		"resources/monsterBall.png",
+		"resources/white10x10.png",
+
 	};
 
 
@@ -60,7 +62,7 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 		// それぞれのテクスチャに対して処理を行う
 	for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
 		LoadTextureResourceForSRV(textureFileNames[i], i);
-		MakeSRV(textureFileNames[i],i);
+		MakeSRV(textureFileNames[i], i);
 	}
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -432,7 +434,7 @@ void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName
 		// // ImGuiが先頭を使ってるので i+1
 	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, uint32_t(index + 1));
 	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, uint32_t(index + 1));
-	
+
 	// 解放するときのために
 	textureResources.push_back(textureResource);
 	intermediateResources.push_back(intermediateResource);
@@ -441,7 +443,7 @@ void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName
 	textureGPUSrvHandles.push_back(currentGpuHandle);
 
 }
-void DirectXCommon::MakeSRV(const std::string& textureFileNames,uint32_t index)
+void DirectXCommon::MakeSRV(const std::string& textureFileNames, uint32_t index)
 {
 	// SRV設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -874,7 +876,7 @@ void DirectXCommon::MakeViewport()
 	scissorRect.bottom = kClientHeight;
 }
 
-void DirectXCommon::PreDraw()
+void DirectXCommon::PreDraw(bool isDrectionScene)
 {
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -905,7 +907,15 @@ void DirectXCommon::PreDraw()
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
 	// 指定した色で画面全体をクリアする
+		///通常の時は、kamataengineと同じ色
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
+	if (isDrectionScene) {
+		///演出の時は黒
+		clearColor[0] = { 0.0f };
+		clearColor[1] = { 0.0f };
+		clearColor[2] = { 0.0f };
+		clearColor[3] = { 1.0f };
+	}
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 

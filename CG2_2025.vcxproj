@@ -97,6 +97,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyFunction.cpp" />
     <ClCompile Include="MyMath.cpp" />
+    <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="TriangularPrism.cpp" />
+    <ClCompile Include="TriForce.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -125,6 +128,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MyFunction.h" />
     <ClInclude Include="MyMath.h" />
+    <ClInclude Include="Triangle.h" />
+    <ClInclude Include="TriangularPrism.h" />
+    <ClInclude Include="TriForce.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>

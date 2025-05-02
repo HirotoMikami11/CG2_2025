@@ -122,14 +122,12 @@ public:
 	/// <summary>
 	/// 描画前の処理
 	/// </summary>
-	void PreDraw();
+	void PreDraw(bool isDrectionScene);
 
 	/// <summary>
 	/// 描画後の処理
 	/// </summary>
 	void PostDraw();
-
-
 
 	///ゲッター
 
