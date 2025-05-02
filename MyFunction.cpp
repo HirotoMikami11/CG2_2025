@@ -6,7 +6,8 @@
 //
 /*-----------------------------------------------------------------------*/
 
-ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
+
+Microsoft::WRL::ComPtr <ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr <ID3D12Device> device, size_t sizeInBytes)
 {
 	//リソース用のヒープの設定
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
