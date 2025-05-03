@@ -6,7 +6,7 @@ TriForce::TriForce(ID3D12Device* device)
 		triangularPrism[i] = new TriangularPrism();
 		triangularPrism[i]->Initialize(device);
 		moveStart[i] = { 0.0f,0.0f,0.0f };
-		rotateStart[i] = { 10.0f,10.0f,10.0f };
+		rotateStart[i] = { 30.0f,30.0f,30.0f };
 		rotateEnd[i] = { 0.0f,0.0f,0.0f };
 	}
 	moveEnd[0] = { 0.0f,0.55f,0.0f };
@@ -34,7 +34,7 @@ void TriForce::Initialize()
 	//左
 	triangularPrism[1]->SetPosition({ -10.0f, -7.0f, 15.0f });
 	//右
-	triangularPrism[2]->SetPosition({ 10.0f, -7.0f, 15.0f });
+	triangularPrism[2]->SetPosition({ 10.0f, -7.0f, 15.0f});
 
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		moveStart[i] = triangularPrism[i]->GetTransform().translate;
@@ -73,16 +73,16 @@ void TriForce::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR
 void TriForce::MoveEasing(int easing_num)
 {
 
-	t += (1.0f / 240.0f);
+	t += (1.0f / (240.0f*1.5f));
 	t = std::clamp(t, 0.0f, 1.0f);
 	//イージング
 	float easeT;
 	switch (easing_num) {
 	case 0:
-		easeT = easeOutBack(t);
+		easeT = easeOutQuad(t);	///第一候補！！
 		break;
 	case 1:
-		easeT = easeOutQuad(t);
+		easeT = easeOutBack(t);
 		break;
 	case 2:
 		easeT = easeInOutCubic(t);

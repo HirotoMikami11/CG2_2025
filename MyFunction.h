@@ -5,6 +5,9 @@
 #pragma comment(lib,"d3d12.lib")
 #include<cassert>
 
+//ランダム生成
+#include <random>
+
 /// <summary>
 /// 球体
 /// </summary>
@@ -90,6 +93,9 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, TransformationMatrix* matrixData);
 
 void UpdateUVTransform(const Vector3Transform uvtransform, Material* materialData);
+
+///ランダムにfloatを返す関数
+float RandomFloat(float min, float max);
 
 /*-----------------------------------------------------------------------*/
 //

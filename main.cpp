@@ -47,6 +47,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 //三角錐
 #include "TriangularPyramid.h"
 
+#include "Emitter.h"
+
 
 
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
@@ -201,20 +203,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		triangle[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 
-	TriangularPyramid* triangularPyramid;
-	//const int indextriangularPrism = 3;
-
-	triangularPyramid = new TriangularPyramid();
-	triangularPyramid->Initialize(directXCommon->GetDevice());
-	triangularPyramid->SetPosition({ 0.0f, 0.0f, 0.0f });
-	triangularPyramid->SetRotation({ 0.0f, 0.0f, 0.0f });
-	triangularPyramid->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-
 
 	///三角柱の生成
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
 	triforce->Initialize();
+
+	Emitter* emitter = new Emitter(directXCommon->GetDevice());
 
 
 #pragma region Triangle
@@ -813,7 +807,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				triforce->Initialize();
 			}
 			//コンボボックスの選択肢
-			const char* easing[] = { "easeOutBack", "easeOutQuad","easeInOutCubic","easeOutBounce","EaseOutSine","easeOutExpo" };
+			const char* easing[] = {  "easeOutQuad","easeOutBack","easeInOutCubic","easeOutBounce","EaseOutSine","easeOutExpo" };
 
 			static int selected_Easing = { 0 };
 			if (ImGui::Combo(("Select easing "), &selected_Easing, easing, IM_ARRAYSIZE(easing))) {
@@ -825,21 +819,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma endregion
-
-
-			Vector3Transform transformPyramid;
-			transformPyramid = triangularPyramid->GetTransform();
-			transformPyramid.rotate.x += 0.03f;
-			transformPyramid.rotate.y += 0.03f;
-			transformPyramid.rotate.z += 0.03f;
-			triangularPyramid->SetRotation(transformPyramid.rotate);
-
-			//行列の更新
-			triangularPyramid->Update(viewProjectionMatrix);
+			emitter->Update((1.0f/60.0f));
 
 
 
 
+			//トライフォースの更新
 			triforce->MoveEasing(selected_Easing);
 			triforce->Update(viewProjectionMatrix);
 
@@ -943,11 +928,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		} else {
 			///映像演出の描画
-			triangularPyramid->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
-
+			
 			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
 
-
+			emitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 
 		}
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
@@ -970,11 +954,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
+	delete emitter;
 
 	//三角形の前で解放
 	delete triforce;
 
-	delete triangularPyramid;
+
 
 	//三角形を生成するものの解放処理
 	for (int i = 0; i < indexTriangle; i++) {
