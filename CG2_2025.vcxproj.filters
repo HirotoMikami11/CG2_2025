@@ -16,15 +16,27 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{09ed2eb8-a2f2-4001-8a92-88fb361709f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyMath">
+      <UniqueIdentifier>{a1eda0d3-8a6b-4a47-b6b9-62cf77349493}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\DirectXCommon">
+      <UniqueIdentifier>{3e87b75f-190d-4881-b399-9accc93194a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\shapes">
+      <UniqueIdentifier>{b6b081e3-18e6-4445-b6f2-f14767c6648e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\MyMath">
+      <UniqueIdentifier>{8a5c0f5b-be7b-44eb-8ff6-5e331462aa3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\DirectXCommon">
+      <UniqueIdentifier>{d799689c-18f2-4aa3-a648-2ed741aaaba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\shapes">
+      <UniqueIdentifier>{6de511c7-a57a-453b-8ab0-c917526888cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="MyFunction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -48,31 +60,7 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="WinApp.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectXCommon.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Dump.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Triangle.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="TriForce.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TriangularPrism.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Easing.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TriangularPyramid.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Particle.cpp">
@@ -81,18 +69,48 @@
     <ClCompile Include="Emitter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Easing.cpp">
+      <Filter>ソース ファイル\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="MyFunction.cpp">
+      <Filter>ソース ファイル\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMath.cpp">
+      <Filter>ソース ファイル\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXCommon.cpp">
+      <Filter>ソース ファイル\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Dump.cpp">
+      <Filter>ソース ファイル\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>ソース ファイル\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>ソース ファイル\shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangularPrism.cpp">
+      <Filter>ソース ファイル\shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangularPyramid.cpp">
+      <Filter>ソース ファイル\shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApp.cpp">
+      <Filter>ソース ファイル\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="TriforceEmitter.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="TriforceParticle.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
     <FxCompile Include="Object3d.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyMath.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="MyFunction.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -117,37 +135,49 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="WinApp.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectXCommon.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Dump.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Triangle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="TriForce.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TriangularPrism.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Easing.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TriangularPyramid.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Particle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Emitter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Easing.h">
+      <Filter>ヘッダー ファイル\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="MyFunction.h">
+      <Filter>ヘッダー ファイル\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMath.h">
+      <Filter>ヘッダー ファイル\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXCommon.h">
+      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Dump.h">
+      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="WinApp.h">
+      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>ヘッダー ファイル\shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangularPrism.h">
+      <Filter>ヘッダー ファイル\shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangularPyramid.h">
+      <Filter>ヘッダー ファイル\shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="TriforceEmitter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="TriforceParticle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

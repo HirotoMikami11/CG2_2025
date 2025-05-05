@@ -4,6 +4,8 @@
 #include <algorithm>  // std::clamp
 #include"Easing.h"
 
+#include"TriforceEmitter.h"
+
 class TriForce {
 public:
 	// コンストラクタ、デストラクタ
@@ -15,7 +17,7 @@ public:
 
 
 	//イージングする動作の関数
-	void MoveEasing(int easing_num);
+	void MoveEasing(int easing_num, const Matrix4x4& viewProjection);
 	// 更新
 	void Update(const Matrix4x4& viewProjectionMatrix);
 
@@ -36,6 +38,10 @@ private:
 	///インデックス
 	const int indexTriangularPrism = 3;
 
+	///残像を生成するエミッター
+	TriforceEmitter* triforceEmitter[3];
+
+
 	///イージング用の変数
 	Vector3 moveStart[3];
 	Vector3 moveEnd[3];
@@ -43,6 +49,8 @@ private:
 	Vector3 rotateEnd[3];
 	float t;
 
+	///移動用のイージングが完了してからのタイマー
+	float endEaseTimer;
+	///
 
-	
 };

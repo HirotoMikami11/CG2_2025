@@ -200,6 +200,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		triangle[i]->Initialize(directXCommon->GetDevice());
 		triangle[i]->SetPosition({ 0.0f, 0.0f, 0.0f });
 		triangle[i]->SetRotation({ 0.0f, i * 0.8f, 0.0f });
+		triangle[i]->SetScale({ 2.0f, 2.0f, 2.0f });
 		triangle[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 
@@ -208,6 +209,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
 	triforce->Initialize();
 
+	///浮かんでるパーティクル
 	Emitter* emitter = new Emitter(directXCommon->GetDevice());
 
 
@@ -807,7 +809,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				triforce->Initialize();
 			}
 			//コンボボックスの選択肢
-			const char* easing[] = {  "easeOutQuad","easeOutBack","easeInOutCubic","easeOutBounce","EaseOutSine","easeOutExpo" };
+			const char* easing[] = { "easeOutCubic" ,"easeOutBack","easeOutQuad","easeOutBounce","EaseOutSine","easeOutExpo" };
 
 			static int selected_Easing = { 0 };
 			if (ImGui::Combo(("Select easing "), &selected_Easing, easing, IM_ARRAYSIZE(easing))) {
@@ -819,17 +821,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma endregion
-			emitter->Update((1.0f/60.0f));
+		
+		
 
 
 
 
 			//トライフォースの更新
-			triforce->MoveEasing(selected_Easing);
+			triforce->MoveEasing(selected_Easing, viewProjectionMatrix);
 			triforce->Update(viewProjectionMatrix);
 
 		}
-
+	emitter->Update((1.0f/60.0f));
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();
 
@@ -932,7 +935,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
 
 			emitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
-
+			
 		}
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), directXCommon->GetCommandList());
@@ -955,6 +958,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 	delete emitter;
+
 
 	//三角形の前で解放
 	delete triforce;

@@ -3,14 +3,14 @@
 
 Particle::Particle(ID3D12Device* device) {
 	transform.translate = { RandomFloat(-5.0f, 5.0f), -2.0f, RandomFloat(-5.0f, 5.0f) };
-	transform.scale = { RandomFloat(0.01f, 0.1f), RandomFloat(0.01f, 0.1f),RandomFloat(0.01f, 0.1f) };
+	transform.scale = { RandomFloat(0.01f, 0.08f), RandomFloat(0.01f, 0.08f),RandomFloat(0.01f, 0.08f) };
 	transform.rotate = { 0.0f, 0.0f, RandomFloat(0.0f, 3.14f) };
 
 	lifeTime = 6.0f;
 	currentTime = 0.0f;
 	alphaSpeed = 1.0f;
 	rotationSpeed = RandomFloat(-3.0f, 3.0f);
-	speed = RandomFloat(0.005f, 0.3f);
+	speed = RandomFloat(0.05f, 0.4f);
 	alpha = 0.0f;
 
 	pyramid = new TriangularPyramid();

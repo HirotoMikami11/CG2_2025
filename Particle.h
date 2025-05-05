@@ -1,9 +1,6 @@
 #pragma once
 #include "TriangularPyramid.h"
 
-
-#include "TriangularPyramid.h"
-
 class Particle {
 public:
 	Particle(ID3D12Device* device);  // デバイスを受け取るように
@@ -12,6 +9,7 @@ public:
 	// コピー禁止
 	Particle(const Particle&) = delete;
 	Particle& operator=(const Particle&) = delete;
+
 
 	void Update(float deltaTime);
 

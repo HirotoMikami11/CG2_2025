@@ -8,6 +8,9 @@ TriForce::TriForce(ID3D12Device* device)
 		moveStart[i] = { 0.0f,0.0f,0.0f };
 		rotateStart[i] = { 30.0f,30.0f,30.0f };
 		rotateEnd[i] = { 0.0f,0.0f,0.0f };
+
+		triforceEmitter[i] = new TriforceEmitter(device);
+
 	}
 	moveEnd[0] = { 0.0f,0.55f,0.0f };
 	moveEnd[1] = { -0.5f,-0.47f,0.0f };
@@ -19,6 +22,7 @@ TriForce::~TriForce()
 {
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		delete triangularPrism[i];
+		delete triforceEmitter[i];
 	}
 }
 
@@ -34,7 +38,7 @@ void TriForce::Initialize()
 	//左
 	triangularPrism[1]->SetPosition({ -10.0f, -7.0f, 15.0f });
 	//右
-	triangularPrism[2]->SetPosition({ 10.0f, -7.0f, 15.0f});
+	triangularPrism[2]->SetPosition({ 10.0f, -7.0f, 15.0f });
 
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		moveStart[i] = triangularPrism[i]->GetTransform().translate;
@@ -66,26 +70,27 @@ void TriForce::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR
 	///三角柱それぞれを描画
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		triangularPrism[i]->Draw(commandList, textureHandle);
+		triforceEmitter[i]->Draw(commandList, textureHandle);
 	}
 
 }
 
-void TriForce::MoveEasing(int easing_num)
+void TriForce::MoveEasing(int easing_num, const Matrix4x4& viewProjection)
 {
 
-	t += (1.0f / (240.0f*1.5f));
+	t += (1.0f / (360.0f));
 	t = std::clamp(t, 0.0f, 1.0f);
 	//イージング
 	float easeT;
 	switch (easing_num) {
 	case 0:
-		easeT = easeOutQuad(t);	///第一候補！！
+		easeT = easeOutCubic(t);///第一候補！！
 		break;
 	case 1:
 		easeT = easeOutBack(t);
 		break;
 	case 2:
-		easeT = easeInOutCubic(t);
+		easeT = easeOutQuad(t);
 		break;
 
 	case 3:
@@ -108,6 +113,9 @@ void TriForce::MoveEasing(int easing_num)
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		triangularPrism[i]->SetPosition(Lerp(moveStart[i], moveEnd[i], easeT));
 		triangularPrism[i]->SetRotation(Lerp(rotateStart[i], rotateEnd[i], easeT));
+		///イージングが完了するまで残像を生成する
+		triforceEmitter[i]->Update((1.0f / 60.0f), triangularPrism[i]->GetTransform(), easeT, viewProjection);
+
 	}
 }
 

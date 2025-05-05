@@ -41,6 +41,10 @@ public:
 		materialData->color = color;
 	}
 
+	void SetTransform(const Vector3Transform& vector3Transform) {
+		transform = vector3Transform;
+	}
+
 	Vector4& GetColor() {
 		return materialData->color;
 	}

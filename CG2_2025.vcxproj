@@ -104,6 +104,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="TriangularPrism.cpp" />
     <ClCompile Include="TriangularPyramid.cpp" />
     <ClCompile Include="TriForce.cpp" />
+    <ClCompile Include="TriforceEmitter.cpp" />
+    <ClCompile Include="TriforceParticle.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +141,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="TriangularPrism.h" />
     <ClInclude Include="TriangularPyramid.h" />
     <ClInclude Include="TriForce.h" />
+    <ClInclude Include="TriforceEmitter.h" />
+    <ClInclude Include="TriforceParticle.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
