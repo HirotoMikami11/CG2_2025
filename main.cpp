@@ -1385,7 +1385,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	VertexData* vertexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	SetVertexDataSpriteSquare(vertexDataSprite, { 640/2,360/2 }, { 360, 180 });
+	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1544,6 +1544,11 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	float t = 0;
 	float easeT = 0;
 	int EaseDir = 1;
+	// 設定したい最小値・最大値
+	float minFreq = 0.0f;
+	float maxFreq = 0.5f;
+	float minAmp = 0.0f;
+	float maxAmp = 0.5f;
 
 
 	///*-----------------------------------------------------------------------*///
@@ -1570,6 +1575,18 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
+			//三角形、スプライトの座標
+			ImGui::Begin("object");
+			ImGui::Text("Triangle");
+			ImGui::DragFloat3("Triangle_translate", &transform.translate.x, 0.01f);
+			ImGui::DragFloat3("Triangle_rotate", &transform.rotate.x, 0.01f);
+			ImGui::Text("Sprite");
+			ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 1.0f);
+			ImGui::DragFloat3("Sprite_rotate", &transformSprite.rotate.x, 1.0f);
+
+
+			ImGui::End();
+
 			//開発用UIの処理
 			ImGui::Begin("Render Options");
 			ImGui::Checkbox("Use Raster Scroll", &useRasterScroll);
@@ -1589,6 +1606,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			ImGui::SliderFloat("Wave Speed", &waveSpeed, 0.0f, 30.0f);
 			ImGui::SliderFloat("Wave Freq", &waveFreq, 0.0f, 0.4f);
 			ImGui::SliderFloat("Wave Amp", &waveAmp, 0.0f, 0.4f);
+
+			ImGui::SliderFloat("maxFreq", &maxFreq, 0.0f, 1.0f);
+			ImGui::SliderFloat("minFreq", &minFreq, 0.0f, 1.0f);
+
+			ImGui::SliderFloat("max Amp", &maxAmp, 0.0f, 1.0f);
+			ImGui::SliderFloat("min Amp", &minAmp, 0.0f, 1.0f);
 
 			if (ImGui::Button("ResetWave")) {
 				deltaTime = (1.0f / 60.0f);
@@ -1616,8 +1639,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 					IsEase = false; // 完了
 					EaseDir = 1;
 				}
-				waveFreq = easeT; //波の周波数
-				waveAmp = easeT; //波の大きさ
+
+				// 補間で振幅・周波数をスムーズに変化させる
+				waveFreq = Lerp(minFreq, maxFreq, easeT);	//波の周波数
+				waveAmp = Lerp(minAmp, maxAmp, easeT);//波の大きさ
 			}
 
 
@@ -1648,8 +1673,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			//行列の更新
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
 
+
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrixOffscreen = MakeViewProjectionMatrixSprite();
+
 			//行列の更新
 			UpdateMatrix4x4(transformOffscreen, viewProjectionMatrixOffscreen, transformationMatrixDataOffscreen);
 
