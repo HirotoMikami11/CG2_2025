@@ -39,6 +39,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include<cassert>
 #include <vector>
 #include "MyFunction.h"
+#include"makeSprite.h"
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///						ウィンドウプロシージャここから						   ///
@@ -1164,8 +1165,19 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
 
 
+	makeSprite* sprite[2];
+	Vector2 spriteCPos[2];
+	Vector2 spriteSize[2];
+	spriteCPos[0] = { -640.0f,360.0f };
+	spriteSize[0] = { 180.0f,90.0f };
+	spriteCPos[1] = { -100.0f,100.0f };
+	spriteSize[1] = { 40.0f,40.0f };
 
-
+	for (int i = 0; i < 2; i++)
+	{
+		sprite[i] = new makeSprite();
+		sprite[i]->Initialize(device, spriteCPos[i], spriteSize[i]);
+	}
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///							ViewportとScissor							   ///
@@ -1316,14 +1328,14 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			if (IsEase) {
 				t += (1.0f / 180.0f) * EaseDir;
 				t = Clamp(t, 0.0f, 1.0f);
-				easeT = (EaseInOutSine(t)/10.0f);
+				easeT = (EaseInOutSine(t) / 10.0f);
 				t = Lerp(0.0f, 1.0f, t);
 
 				if (t >= 1.0f && EaseDir == 1) {
 					EaseDir = -1; // 戻る
 				} else if (t <= 0.0f && EaseDir == -1) {
 					IsEase = false; // 完了
-					EaseDir =1;
+					EaseDir = 1;
 				}
 				waveFreq = easeT; //波の周波数
 				waveAmp = easeT; //波の大きさ
@@ -1356,6 +1368,10 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 			//行列の更新
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
+			for (int i = 0; i < 2; i++)
+			{
+				sprite[i]->Update(viewProjectionMatrixSprite);
+			}
 
 
 			//ImGuiの内部コマンドを生成する(描画処理に入る前)
@@ -1459,6 +1475,12 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->DrawInstanced(6, 1, 0, 0);
 
 
+			for (int i = 0; i < 2; i++)
+			{
+				sprite[i]->Draw(commandList, textureSrvHandleGPU);
+			}
+
+
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1533,6 +1555,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	scrollControlBuffer->Release();				//スクロールの方向
 	vertexShaderBlob->Release();
 
+
+
 	textureResource->Release();
 	intermediateResource->Release();
 	depthStencilResource->Release();
@@ -1540,6 +1564,8 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//Sprite
 	vertexResourceSprite->Release();
 	transformationMatrixResourceSprite->Release();
+	delete sprite[0];
+	delete sprite[1];
 
 	//オブジェクトの解放処理
 	CloseHandle(fenceEvent);
