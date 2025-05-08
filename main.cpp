@@ -39,6 +39,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include<cassert>
 #include <vector>
 #include "MyFunction.h"
+#include "makeSprite.h"
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///						ウィンドウプロシージャここから						   ///
@@ -1388,6 +1389,14 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	SetVertexDataSpriteSquare(vertexDataSprite, { 640,360 }, { 360, 180 });
 
 
+	makeSprite* sprite = new makeSprite();
+	Vector2 spritePos = { 640,360 };
+	Vector2 size = { 180,90 };
+
+	sprite->Initialize(device,spritePos,size);
+	
+
+
 	///*-----------------------------------------------------------------------*///
 	///							オフスクリーンの矩形							   ///
 	///*-----------------------------------------------------------------------*///
@@ -1674,11 +1683,18 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
 
 
+			sprite->Update(viewProjectionMatrixSprite);
+
+
+			//オフスクリーンの更新
+
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrixOffscreen = MakeViewProjectionMatrixSprite();
 
 			//行列の更新
 			UpdateMatrix4x4(transformOffscreen, viewProjectionMatrixOffscreen, transformationMatrixDataOffscreen);
+
+
 
 			//ImGuiの内部コマンドを生成する(描画処理に入る前)
 			ImGui::Render();
@@ -1773,6 +1789,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 			commandList->DrawInstanced(6, 1, 0, 0);
 
 
+			sprite->Draw(commandList, textureSrvHandleGPU);
 
 
 			// 2. オフスクリーンテクスチャをラスタスクロール適用して最終出力
