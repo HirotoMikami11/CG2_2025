@@ -4,6 +4,7 @@
 #include<d3d12.h>
 #pragma comment(lib,"d3d12.lib")
 #include<cassert>
+#include<wrl.h>
 
 /// <summary>
 /// 球体
@@ -47,7 +48,7 @@ struct DirectionalLight {
 };
 
 
-ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
+Microsoft::WRL::ComPtr <ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr <ID3D12Device> device, size_t sizeInBytes);
 
 /// <summary>
 /// 矩形スプライトvertexDataに情報を書き込む関数
