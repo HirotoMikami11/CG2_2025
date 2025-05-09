@@ -218,7 +218,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	///	DirectX12のエラー・警告が出た時止まるようにする
 
 #ifdef _DEBUG	//デバッグ時
-	ID3D12InfoQueue* infoQueue = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue = nullptr;
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
 		// ヤバイエラー時に止まる
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -227,7 +227,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		//警告時に止まる
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true); //解放忘れが判明した時、一時的にコメントアウトすれば、ログに情報を出力できる。確認できたらすぐ元に戻す。
 		//解放
-		infoQueue->Release();
+		//infoQueue->Release();
 
 		//抑制するメッセージのID
 		D3D12_MESSAGE_ID denyIds[] = {
@@ -438,7 +438,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Micr
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;							//細かい設定を行う
 
 	//Resourceの生成
-	ID3D12Resource* resource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,							//heapの設定
 		D3D12_HEAP_FLAG_NONE,						//heapの特殊な設定。特になし
@@ -512,7 +512,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTextureR
 
 
 	//Resuorceの生成
-	ID3D12Resource* resource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,							//Heapの設定
 		D3D12_HEAP_FLAG_NONE,						//Heapの特殊な設定なしにする
@@ -862,8 +862,8 @@ void DirectXCommon::PreDraw()
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	//	描画用のDesctiptorHeapの設定
-	ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap.Get() };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps);
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///							描画に必要コマンドを積む						   ///
@@ -896,8 +896,8 @@ void DirectXCommon::PostDraw()
 	assert(SUCCEEDED(hr));//ダメなら起動できない
 
 	///コマンドをキックする
-	ID3D12CommandList* commandLists[] = { commandList.Get() };
-	commandQueue->ExecuteCommandLists(1, commandLists);
+	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
 	//GPUとOSに画面の交換を行うように通知
 	swapChain->Present(1, 0);
 

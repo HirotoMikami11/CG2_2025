@@ -590,7 +590,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());	//頂点データをリソースにコピー
 
 #pragma endregion
-
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///								ImGuiの初期化								   ///
@@ -863,6 +862,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //	// Sphere関連のリソース解放
 //	vertexResourceSphere.Reset();
 //	indexResourceSphere.Reset();
+// 
+// 
+// 
 //	materialResourceSphere.Reset();
 //	wvpResourceSphere.Reset();
 //	directionalLightResourceSphere.Reset();
@@ -881,7 +883,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	winApp->Finalize();
-
 	delete winApp;
 	directXCommon->Finalize();
 	delete directXCommon;
