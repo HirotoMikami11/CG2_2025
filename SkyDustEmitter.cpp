@@ -1,0 +1,47 @@
+#include "SkyDustEmitter.h"
+
+///初期化リストで初期化（うまくいかなかったら戻す）
+SkyDustEmitter::SkyDustEmitter(ID3D12Device* device) : device(device), spawnTimer(0.0f), spawnInterval(0.025f) {}
+
+SkyDustEmitter::~SkyDustEmitter() {
+	///残っているパーティクルを全部解放
+	for (SkyDustParticle* particle : particles) {
+		delete particle;
+	}
+	particles.clear();
+}
+
+void SkyDustEmitter::Update(float deltaTime) {
+	// 生成
+	spawnTimer += deltaTime;
+	while (spawnTimer >= spawnInterval) {
+		spawnTimer -= spawnInterval;
+		///パーティクルを生成するときに入れるTransformを指定した範囲でランダム決定する
+		SetParticles.scale = { RandomFloat(0.02f, 0.03f), RandomFloat(0.02f, 0.03f),RandomFloat(0.02f, 0.03f) };
+		SetParticles.rotate = { 0.0f, 0.0f, RandomFloat(0.0f, 3.14f) };
+		SetParticles.translate = { RandomFloat(-5.0f, 5.0f), 1.0f, RandomFloat(-5.0f, 5.0f) };
+
+		///追加
+		particles.emplace_back(new SkyDustParticle(device, SetParticles));
+	}
+
+	// 更新
+	for (auto it = particles.begin(); it != particles.end(); ) {
+		//生きているパーティクルは更新
+		(*it)->Update(deltaTime);
+
+		//死んだら消す
+		if (!(*it)->IsAlive()) {
+			delete* it;
+			it = particles.erase(it);
+		} else {
+			++it;
+		}
+	}
+}
+
+void SkyDustEmitter::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Matrix4x4& viewProjection) {
+	for (auto& particle : particles) {
+		particle->Draw(commandList, textureHandle, viewProjection);
+	}
+}

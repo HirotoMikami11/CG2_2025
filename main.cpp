@@ -48,6 +48,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "TriangularPyramid.h"
 
 #include "Emitter.h"
+#include "SkyDustEmitter.h"
 
 
 
@@ -211,6 +212,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	///浮かんでるパーティクル
 	Emitter* emitter = new Emitter(directXCommon->GetDevice());
+
+	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
 
 
 #pragma region Triangle
@@ -570,7 +573,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	//シーンの変更
-	bool directionScene = false;
+	bool directionScene = true;
 
 
 	///*-----------------------------------------------------------------------*///
@@ -743,6 +746,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		}
 		emitter->Update((1.0f / 60.0f));
+		skyDustEmitter->Update((1.0f / 60.0f));
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();
 
@@ -845,6 +849,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
 
 			emitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+			skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 
 		}
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
