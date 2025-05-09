@@ -7,6 +7,7 @@
 //ファイルに書いたり読んだりするライブラリ
 #include<fstream>
 #include<sstream>
+#include <iostream>//すぐ消す
 //時間を扱うライブラリ
 #include<chrono>
 
@@ -44,7 +45,15 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "DirectXCommon.h"
 #include "Dump.h"
 
-
+/// <summary>
+/// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
+/// </summary>
+void DumpLiveObjects() {
+	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	}
+}
 
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる変数の宣言

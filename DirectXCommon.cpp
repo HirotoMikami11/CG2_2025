@@ -60,7 +60,7 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 		// それぞれのテクスチャに対して処理を行う
 	for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
 		LoadTextureResourceForSRV(textureFileNames[i], i);
-		MakeSRV(textureFileNames[i],i);
+		MakeSRV(textureFileNames[i], i);
 	}
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -104,6 +104,7 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 
 void DirectXCommon::Finalize() {
 	CloseHandle(fenceEvent);
+
 }
 
 
@@ -201,7 +202,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	//高い順に生成できるか試していく
 	for (size_t i = 0; i < _countof(featureLevels); ++i) {
 		//採用したアダプターでデバイスを生成
-		hr = D3D12CreateDevice(useAdapter.Get() , featureLevels[i], IID_PPV_ARGS(&device));
+		hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&device));
 		//指定した機能レベルでデバイスが生成できたかを確認
 		if (SUCCEEDED(hr)) {
 			//生成できたのでログ出力を行ってループを抜ける
@@ -226,7 +227,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 		//警告時に止まる
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true); //解放忘れが判明した時、一時的にコメントアウトすれば、ログに情報を出力できる。確認できたらすぐ元に戻す。
-		//解放
+		//解放(comptrにしたことでリリースの必要なくなった)
 		//infoQueue->Release();
 
 		//抑制するメッセージのID
@@ -337,9 +338,11 @@ void DirectXCommon::MakeDescriptorHeap()
 /// <param name="numDescriptors">ディスクリプタ数</param>
 /// <param name="shaderVisible">シェーダーから参照可能にするかのフラグ</param>
 /// <returns></returns>
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible){
-//ディスクリプタヒープの生成
-	ID3D12DescriptorHeap* descriptorHeap = nullptr;
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible) {
+	//ディスクリプタヒープの生成
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap = nullptr;
 	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
 	descriptorHeapDesc.Type = heapType;
 	descriptorHeapDesc.NumDescriptors = numDescriptors;
@@ -383,7 +386,7 @@ void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName
 		// // ImGuiが先頭を使ってるので i+1
 	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
 	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
-	
+
 	// 解放するときのために
 	textureResources.push_back(textureResource);
 	intermediateResources.push_back(intermediateResource);
@@ -392,7 +395,7 @@ void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName
 	textureGPUSrvHandles.push_back(currentGpuHandle);
 
 }
-void DirectXCommon::MakeSRV(const std::string& textureFileNames,uint32_t index)
+void DirectXCommon::MakeSRV(const std::string& textureFileNames, uint32_t index)
 {
 	// SRV設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -746,7 +749,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
 	const wchar_t* profile,
 	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils,
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler,
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler){
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler) {
 	//「これからシェーダーをコンパイルする」とログに出す
 	Logger::Log(Logger::ConvertString(std::format(L"Begin CompileShader, path:{},profile:{}\n", filePath, profile)));
 
