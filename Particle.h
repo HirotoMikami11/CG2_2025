@@ -3,7 +3,7 @@
 
 class Particle {
 public:
-	Particle(ID3D12Device* device);  // デバイスを受け取るように
+	Particle(ID3D12Device* device,Vector3Transform setTransform);  // デバイスを受け取るように
 	~Particle(); 
 
 	// コピー禁止

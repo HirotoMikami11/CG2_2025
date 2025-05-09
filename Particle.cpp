@@ -1,11 +1,11 @@
 #include "Particle.h"
 
 
-Particle::Particle(ID3D12Device* device) {
-	transform.translate = { RandomFloat(-5.0f, 5.0f), -2.0f, RandomFloat(-5.0f, 5.0f) };
-	transform.scale = { RandomFloat(0.01f, 0.08f), RandomFloat(0.01f, 0.08f),RandomFloat(0.01f, 0.08f) };
-	transform.rotate = { 0.0f, 0.0f, RandomFloat(0.0f, 3.14f) };
-
+Particle::Particle(ID3D12Device* device, Vector3Transform setTransform) {
+	transform.translate = setTransform.translate;
+	transform.scale = setTransform.scale;
+	transform.rotate = setTransform.rotate;
+	
 	lifeTime = 6.0f;
 	currentTime = 0.0f;
 	alphaSpeed = 1.0f;

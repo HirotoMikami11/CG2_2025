@@ -15,6 +15,7 @@ private:
 	std::vector<Particle*> particles;
 	float spawnTimer;
 	float spawnInterval;
+	Vector3Transform SetParticles;	//パーティクルにセットするTransform情報
 	ID3D12Device* device;
 };
 

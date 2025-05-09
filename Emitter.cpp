@@ -16,7 +16,13 @@ void Emitter::Update(float deltaTime) {
 	spawnTimer += deltaTime;
 	while (spawnTimer >= spawnInterval) {
 		spawnTimer -= spawnInterval;
-		particles.emplace_back(new Particle(device));
+		///パーティクルを生成するときに入れるTransformを指定した範囲でランダム決定する
+		SetParticles.scale = { RandomFloat(0.01f, 0.08f), RandomFloat(0.01f, 0.08f),RandomFloat(0.01f, 0.08f) };
+		SetParticles.rotate = { 0.0f, 0.0f, RandomFloat(0.0f, 3.14f) };
+		SetParticles.translate = { RandomFloat(-5.0f, 5.0f), -2.0f, RandomFloat(-5.0f, 5.0f) };
+
+		///追加
+		particles.emplace_back(new Particle(device,SetParticles));
 	}
 
 	// 更新
