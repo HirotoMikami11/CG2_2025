@@ -163,7 +163,7 @@ struct D3DResourceLeakChecker {
 			debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 			debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 			debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		
+
 		}
 
 	}
@@ -179,7 +179,8 @@ struct D3DResourceLeakChecker {
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
-D3DResourceLeakChecker leakCheak;
+	D3DResourceLeakChecker* leakCheak = new D3DResourceLeakChecker;
+
 	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録（main関数が始まってすぐ）
 	Dump::Initialize();
 
@@ -522,12 +523,12 @@ D3DResourceLeakChecker leakCheak;
 	///*-----------------------------------------------------------------------*///
 
 #pragma region "Model"
-	
+
 	//モデルデータ作成
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
-	
-	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath,2);
-	directXCommon->MakeSRV(modelData.material.textureFilePath,2);
+
+	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 2);
+	directXCommon->MakeSRV(modelData.material.textureFilePath, 2);
 
 	//																			//
 	//							VertexResourceの作成								//
@@ -715,7 +716,7 @@ D3DResourceLeakChecker leakCheak;
 		//																			//
 		//							球体用のWVP										//
 		//																			//
-		
+
 		transformSphere.rotate.y += 0.01f;
 
 		//viewprojectionを計算
@@ -852,39 +853,41 @@ D3DResourceLeakChecker leakCheak;
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
+//
+//	// コンテキストの解放前に、明示的にすべてのComPtrをリセット
+//// Triangle関連のリソース解放
+//	vertexResource.Reset();
+//	materialResource.Reset();
+//	wvpResource.Reset();
+//
+//	// Sphere関連のリソース解放
+//	vertexResourceSphere.Reset();
+//	indexResourceSphere.Reset();
+//	materialResourceSphere.Reset();
+//	wvpResourceSphere.Reset();
+//	directionalLightResourceSphere.Reset();
+//
+//	// Sprite関連のリソース解放
+//	vertexResourceSprite.Reset();
+//	indexResourceSprite.Reset();
+//	materialResourceSprite.Reset();
+//	transformationMatrixResourceSprite.Reset();
+//
+//	// Model関連のリソース解放
+//	vertexResourceModel.Reset();
+//	materialResourceModel.Reset();
+//	directionalLightResourceModel.Reset();
+//	transformMatrixResourceModel.Reset();
 
-	// コンテキストの解放前に、明示的にすべてのComPtrをリセット
-// Triangle関連のリソース解放
-	vertexResource.Reset();
-	materialResource.Reset();
-	wvpResource.Reset();
-
-	// Sphere関連のリソース解放
-	vertexResourceSphere.Reset();
-	indexResourceSphere.Reset();
-	materialResourceSphere.Reset();
-	wvpResourceSphere.Reset();
-	directionalLightResourceSphere.Reset();
-
-	// Sprite関連のリソース解放
-	vertexResourceSprite.Reset();
-	indexResourceSprite.Reset();
-	materialResourceSprite.Reset();
-	transformationMatrixResourceSprite.Reset();
-
-	// Model関連のリソース解放
-	vertexResourceModel.Reset();
-	materialResourceModel.Reset();
-	directionalLightResourceModel.Reset();
-	transformMatrixResourceModel.Reset();
 
 	winApp->Finalize();
+
 	delete winApp;
 	directXCommon->Finalize();
 	delete directXCommon;
 
 
-
+	delete leakCheak;
 	//COMの終了処理
 	CoUninitialize();
 
