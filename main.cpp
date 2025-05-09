@@ -179,7 +179,7 @@ struct D3DResourceLeakChecker {
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
-	D3DResourceLeakChecker* leakCheak = new D3DResourceLeakChecker;
+	D3DResourceLeakChecker leakCheak;
 
 	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録（main関数が始まってすぐ）
 	Dump::Initialize();
@@ -852,43 +852,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-//
-//	// コンテキストの解放前に、明示的にすべてのComPtrをリセット
-//// Triangle関連のリソース解放
-//	vertexResource.Reset();
-//	materialResource.Reset();
-//	wvpResource.Reset();
-//
-//	// Sphere関連のリソース解放
-//	vertexResourceSphere.Reset();
-//	indexResourceSphere.Reset();
-// 
-// 
-// 
-//	materialResourceSphere.Reset();
-//	wvpResourceSphere.Reset();
-//	directionalLightResourceSphere.Reset();
-//
-//	// Sprite関連のリソース解放
-//	vertexResourceSprite.Reset();
-//	indexResourceSprite.Reset();
-//	materialResourceSprite.Reset();
-//	transformationMatrixResourceSprite.Reset();
-//
-//	// Model関連のリソース解放
-//	vertexResourceModel.Reset();
-//	materialResourceModel.Reset();
-//	directionalLightResourceModel.Reset();
-//	transformMatrixResourceModel.Reset();
-
-
 	winApp->Finalize();
 	delete winApp;
 	directXCommon->Finalize();
 	delete directXCommon;
 
-
-	delete leakCheak;
 	//COMの終了処理
 	CoUninitialize();
 
