@@ -10,7 +10,7 @@ public:
 	SkyDustParticle(const SkyDustParticle&) = delete;
 	SkyDustParticle& operator=(const SkyDustParticle&) = delete;
 
-
+	void Reset(const Vector3Transform& newTransform);
 	void Update(float deltaTime);
 
 	bool IsAlive() const {
@@ -24,6 +24,10 @@ public:
 	float GetAlpha() const {
 		return alpha;
 	}
+	void SetVelocity(const Vector3& newVelocity) {
+		velocity = newVelocity;
+	}
+
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Matrix4x4& viewProjection);
 
 private:
@@ -32,7 +36,7 @@ private:
 	float currentTime;
 	float alphaSpeed;
 	float rotationSpeed;
-	float speed;
+	Vector3 velocity; // 移動速度ベクトル(speedを変更)
 	float alpha;
 
 	TriangularPyramid* pyramid;  // 各パーティクルに固有のピラミッド

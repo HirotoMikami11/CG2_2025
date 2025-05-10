@@ -212,9 +212,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	///浮かんでるパーティクル
 	Emitter* emitter = new Emitter(directXCommon->GetDevice());
+	emitter->Initialize(); 
 
 	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
-
+	skyDustEmitter->Initialize();
 
 #pragma region Triangle
 
@@ -443,70 +444,70 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Model"
 
-	//モデルデータ作成
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	////モデルデータ作成
+	//ModelData modelData = LoadObjFile("resources", "plane.obj");
 
-	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 3);
-	directXCommon->MakeSRV(modelData.material.textureFilePath, 3);
+	//directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 3);
+	//directXCommon->MakeSRV(modelData.material.textureFilePath, 3);
 
-	//																			//
-	//							VertexResourceの作成								//
-	//																			//
-	ID3D12Resource* vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
+	////																			//
+	////							VertexResourceの作成								//
+	////																			//
+	//ID3D12Resource* vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
 
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-	//頂点バッファビュー作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewModel{};
-	vertexBufferViewModel.BufferLocation = vertexResourceModel->GetGPUVirtualAddress();			//リソースの戦闘のアドレスから使う
-	vertexBufferViewModel.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());	//使用するリソースのサイズは頂点のサイズ
-	vertexBufferViewModel.StrideInBytes = sizeof(VertexData);									//1頂点当たりのサイズ
+	////																			//
+	////							VertexBufferViewの作成							//
+	////																			//
+	////頂点バッファビュー作成
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferViewModel{};
+	//vertexBufferViewModel.BufferLocation = vertexResourceModel->GetGPUVirtualAddress();			//リソースの戦闘のアドレスから使う
+	//vertexBufferViewModel.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());	//使用するリソースのサイズは頂点のサイズ
+	//vertexBufferViewModel.StrideInBytes = sizeof(VertexData);									//1頂点当たりのサイズ
 
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-	// モデル用のマテリアルリソースを作成
-	ID3D12Resource* materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	Material* materialDataModel = nullptr;
-	materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
-	materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialDataModel->enableLighting = true;
-	materialDataModel->useLambertianReflectance = false;
-	materialDataModel->uvTransform = MakeIdentity4x4();
-
-
-	//																			//
-	//							DirectionalLightのResourceを作る						//
-	//																			//
-
-	ID3D12Resource* directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
-	//データを書き込む
-	DirectionalLight* directionalLightDataModel = nullptr;
-	//書き込むためのアドレスを取得
-	directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
-	//単位行列を書き込んでおく
-	directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
-	directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
-	directionalLightDataModel->intensity = 1.0f;
+	////																			//
+	////							Material用のResourceを作る						//
+	////																			//
+	//// モデル用のマテリアルリソースを作成
+	//ID3D12Resource* materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
+	//Material* materialDataModel = nullptr;
+	//materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
+	//materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//materialDataModel->enableLighting = true;
+	//materialDataModel->useLambertianReflectance = false;
+	//materialDataModel->uvTransform = MakeIdentity4x4();
 
 
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
+	////																			//
+	////							DirectionalLightのResourceを作る						//
+	////																			//
 
-	ID3D12Resource* transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	TransformationMatrix* transformMatrixDataModel = nullptr;
-	transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
-	transformMatrixDataModel->WVP = MakeIdentity4x4();
-	transformMatrixDataModel->World = MakeIdentity4x4();
+	//ID3D12Resource* directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	////データを書き込む
+	//DirectionalLight* directionalLightDataModel = nullptr;
+	////書き込むためのアドレスを取得
+	//directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
+	////単位行列を書き込んでおく
+	//directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
+	//directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
+	//directionalLightDataModel->intensity = 1.0f;
 
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-	VertexData* vertexDataModel = nullptr;
-	vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));						//書き込むためのアドレス取得
-	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());	//頂点データをリソースにコピー
+
+	////																			//
+	////					TransformationMatrix用のリソースを作る						//
+	////																			//
+
+	//ID3D12Resource* transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
+	//TransformationMatrix* transformMatrixDataModel = nullptr;
+	//transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
+	//transformMatrixDataModel->WVP = MakeIdentity4x4();
+	//transformMatrixDataModel->World = MakeIdentity4x4();
+
+	////																			//
+	////						Resourceにデータを書き込む								//
+	////																			//
+	//VertexData* vertexDataModel = nullptr;
+	//vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));						//書き込むためのアドレス取得
+	//std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());	//頂点データをリソースにコピー
 
 #pragma endregion
 
@@ -703,7 +704,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//							Model用のWVP									//
 			//																			//
 
-			UpdateMatrix4x4(transformModel, viewProjectionMatrix, transformMatrixDataModel);
+			//UpdateMatrix4x4(transformModel, viewProjectionMatrix, transformMatrixDataModel);
 
 
 #pragma endregion
@@ -745,6 +746,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triforce->Update(viewProjectionMatrix);
 
 		}
+
 		emitter->Update((1.0f / 60.0f));
 		skyDustEmitter->Update((1.0f / 60.0f));
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
@@ -833,13 +835,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Model
 
-			directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
-			directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
-			directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
-			directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[2]); // テクスチャ
-			directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
-			// インデックスバッファがない場合は直接頂点で描画
-			directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
+			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
+			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
+			//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[2]); // テクスチャ
+			//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
+			//// インデックスバッファがない場合は直接頂点で描画
+			//directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 #pragma endregion
 
@@ -873,7 +875,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 	delete emitter;
-
+	delete skyDustEmitter;
 
 	//三角形の前で解放
 	delete triforce;
@@ -900,10 +902,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	indexResourceSprite->Release();
 
 	//Model
-	vertexResourceModel->Release();
-	materialResourceModel->Release();
-	transformMatrixResourceModel->Release();
-	directionalLightResourceModel->Release();
+	//vertexResourceModel->Release();
+	//materialResourceModel->Release();
+	//transformMatrixResourceModel->Release();
+	//directionalLightResourceModel->Release();
 
 	winApp->Finalize();
 	delete winApp;

@@ -23,6 +23,14 @@ Particle::~Particle()
 	delete pyramid;
 }
 
+void Particle::Reset(const Vector3Transform& newTransform) {
+	transform = newTransform;
+	currentTime = 0.0f;
+	rotationSpeed = RandomFloat(-3.0f, 3.0f);
+	speed = RandomFloat(0.05f, 0.4f);
+	alpha = 0.0f;
+}
+
 void Particle::Update(float deltaTime) {
 	currentTime += deltaTime;
 	transform.translate.y += speed * deltaTime;

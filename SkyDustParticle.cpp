@@ -10,7 +10,8 @@ SkyDustParticle::SkyDustParticle(ID3D12Device* device, Vector3Transform setTrans
 	currentTime = 0.0f;
 	alphaSpeed = 1.0f;
 	rotationSpeed = RandomFloat(-3.0f, 3.0f);
-	speed = RandomFloat(0.2f, 0.5f);
+	//EmitterのImguiで変更される
+	velocity = Vector3(0.0f, -0.3f, 0.3f);
 	alpha = 0.0f;
 
 	pyramid = new TriangularPyramid();
@@ -23,10 +24,24 @@ SkyDustParticle::~SkyDustParticle()
 	delete pyramid;
 }
 
+void SkyDustParticle::Reset(const Vector3Transform& newTransform) {
+	transform = newTransform;
+	currentTime = 0.0f;
+	alphaSpeed = 1.0f;
+	rotationSpeed = RandomFloat(-3.0f, 3.0f);
+	// velocityはSetVelocityで設定するので、ここでは初期化しない
+	alpha = 0.0f;
+}
+
 void SkyDustParticle::Update(float deltaTime) {
 	currentTime += deltaTime;
-	transform.translate.y -= speed * deltaTime;
-	transform.translate.z += speed * deltaTime;
+
+	//指定した方向に移動するように変更
+	transform.translate.x += velocity.x * deltaTime;
+	transform.translate.y += velocity.y * deltaTime;
+	transform.translate.z += velocity.z * deltaTime;
+
+
 	transform.rotate.y += rotationSpeed * deltaTime;
 
 	if (currentTime < lifeTime / 2.0f) {

@@ -10,6 +10,8 @@ public:
 	Particle(const Particle&) = delete;
 	Particle& operator=(const Particle&) = delete;
 
+	//リセット関数(パーティカルプール用)
+	void Reset(const Vector3Transform& newTransform);
 
 	void Update(float deltaTime);
 
