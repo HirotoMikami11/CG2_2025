@@ -39,6 +39,10 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include<cassert>
 #include "MyFunction.h"
 
+//Audio
+#include<xaudio2.h>
+#pragma comment (lib,"xaudio2.lib")
+//#include<fstream>ファイル分けするときに使用する
 
 #include "Logger.h"
 #include "WinApp.h"
@@ -179,6 +183,139 @@ struct D3DResourceLeakChecker {
 
 };
 
+/// <summary>
+/// チャンクヘッダ
+/// </summary>
+struct ChunkHeader {
+	char id[4];		//チャンクごとのid
+	int32_t size;	//チャンクサイズ
+};
+/// <summary>
+/// RIFFヘッダチャンク
+/// </summary>
+struct RiffHeader {
+	ChunkHeader chunk;	//RIFF
+	char type[4];		//WAVE
+};
+/// <summary>
+/// FMTチャンク
+/// </summary>
+struct FormatChunk {
+	ChunkHeader chunk;	//fmt
+	WAVEFORMATEX fmt;	//波型フォーマット(18byteまで対応)
+};
+
+/// <summary>
+/// 音声データ
+/// </summary>
+struct SoundData {
+	//波型フォーマット
+	WAVEFORMATEX wfex;
+	//バッファの先頭アドレス
+	BYTE* pBuffer;
+	//バッファサイズ
+	unsigned int bufferSize;
+};
+
+/// <summary>
+/// 音声データの読み込み
+/// </summary>
+/// <param name="filename">ファイルパス</param>
+/// <returns></returns>
+SoundData SoundLoadWave(const char* filename) {
+
+	HRESULT result;
+
+	///ファイルを開く
+	std::ifstream file;
+	file.open(filename, std::ios_base::binary);
+	//失敗したら閉じる
+	assert(file.is_open());
+
+	///.wavデータ読み込み
+	//RIFFヘッダーを読む
+	RiffHeader riff;
+	file.read((char*)&riff, sizeof(riff));
+	//ファイルがRIFFかどうか
+	if (strncmp(riff.chunk.id, "RIFF", 4) != 0) {
+		assert(0);
+	}
+	//タイプがWAVEかどうか
+	if (strncmp(riff.type, "WAVE", 4) != 0) {
+		assert(0);
+	}
+
+	//Formatチャンク読み込み
+	//16,18,40Byteのうち、40byte以外には対応する。
+	FormatChunk format = {};
+	//チャンクヘッダーの確認
+	file.read((char*)&format, sizeof(ChunkHeader));
+	if (strncmp(format.chunk.id, "fmt ", 4) != 0) {
+		assert(0);
+	}
+	//チャンク本体の読み込み
+	assert(format.chunk.size <= sizeof(format.fmt));
+	file.read((char*)&format.fmt, format.chunk.size);
+
+	//Dataチャンクの読み込み
+	ChunkHeader data;
+	file.read((char*)&data, sizeof(data));
+	//JUNKチャンクはダミーデータなので、検出した場合はそれを読み飛ばす
+	if (strncmp(data.id, "JUNK", 4) == 0) {
+		//読み取りの位置をJUNKチャンクの終わりまで進める
+		file.seekg(data.size, std::ios_base::cur);
+		//再読み込み
+		file.read((char*)&data, sizeof(data));
+	}
+
+	if (strncmp(data.id, "data", 4) != 0) {
+		assert(0);
+	}
+	// Dataチャンクの波型データを読み込む
+	char* pBuffer = new char[data.size];
+	file.read(pBuffer, data.size);
+	///ファイルを閉じる
+	file.close();
+
+	///読み込んだ音声データを返す
+	//返す音声データ
+	SoundData soundData = {};
+	soundData.wfex = format.fmt;							//波型フォーマット
+	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);	//波型データ
+	soundData.bufferSize = data.size;						//波型データのサイズ
+
+	return soundData;
+}
+
+//音声データの解放
+void SoundUnload(SoundData* soundData) {
+	//バッファのメモリを解放
+	delete[] soundData->pBuffer;
+	soundData->pBuffer = 0;
+	soundData->bufferSize = 0;
+	soundData->wfex = {};
+
+}
+
+//音声再生
+void SoundPlayWave(IXAudio2* xAudio2, const SoundData& soundData) {
+	HRESULT result;
+	//波型フォーマットをもとにSourceVoiceを生成
+	IXAudio2SourceVoice* pSourceVoice = nullptr;
+	result = xAudio2->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
+	assert(SUCCEEDED(result));
+
+	//再生する波型データの生成
+	XAUDIO2_BUFFER buf{};
+	buf.pAudioData = soundData.pBuffer;
+	buf.AudioBytes = soundData.bufferSize;
+	buf.Flags = XAUDIO2_END_OF_STREAM;
+
+	//波型データの生成
+	result = pSourceVoice->SubmitSourceBuffer(&buf);
+	result = pSourceVoice->Start();
+
+}
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -196,6 +333,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	WinApp* winApp = new WinApp;
 	DirectXCommon* directXCommon = new DirectXCommon;
+	//オーディオ用の変数宣言
+	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
+	IXAudio2MasteringVoice* masterVoice;
 
 	///
 	/// ウィンドウクラスを登録する
@@ -210,6 +350,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Logger::Initalize();
 
 	directXCommon->Initialize(winApp);
+	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
+	directXCommon->SetHR(XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR));
+	//HRESULT result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	//result = xAudio2->CreateMasteringVoice(&masterVoice);
+	//マスターボイスの生成
+	//音声を鳴らすとき、最終的に通る場所
+	directXCommon->SetHR(xAudio2->CreateMasteringVoice(&masterVoice));
 
 
 	///*-----------------------------------------------------------------------*///
@@ -662,6 +809,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
 
+	//ゲーム開始前に読み込む音声データ
+	SoundData  soundData1 = SoundLoadWave("resources/Alarm01.wav");
+	//音声を再生する
+	SoundPlayWave(xAudio2.Get(), soundData1);
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
@@ -861,6 +1013,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///							ReportLiveObjects							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
+
+	//xAudio解放
+	xAudio2.Reset();
+	//音声データ解放
+	SoundUnload(&soundData1);
 
 	winApp->Finalize();
 	delete winApp;
