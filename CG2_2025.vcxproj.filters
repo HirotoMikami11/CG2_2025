@@ -16,6 +16,12 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{09ed2eb8-a2f2-4001-8a92-88fb361709f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Audio">
+      <UniqueIdentifier>{49779a9c-4b33-4482-9b87-8114c9a89d5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Audio">
+      <UniqueIdentifier>{67e04bfc-e7ed-4269-b5fa-6b01d2cb6c14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -59,6 +65,12 @@
     </ClCompile>
     <ClCompile Include="Dump.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>ソース ファイル\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>ソース ファイル\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +119,12 @@
     </ClInclude>
     <ClInclude Include="Dump.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>ヘッダー ファイル\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>ヘッダー ファイル\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

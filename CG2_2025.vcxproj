@@ -84,6 +84,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
@@ -112,6 +114,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Audio.h" />
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="Dump.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
