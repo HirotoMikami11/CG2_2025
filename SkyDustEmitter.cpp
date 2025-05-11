@@ -1,16 +1,16 @@
 #include "SkyDustEmitter.h"
 
 SkyDustEmitter::SkyDustEmitter(ID3D12Device* device) : device(device), spawnTimer(0.0f), spawnInterval(0.025f) {
-	translateMin = Vector3(-5.0f, 1.0f, -5.0f);
-	translateMax = Vector3(5.0f, 1.0f, 5.0f);
+	translateMin = Vector3(-5.0f, 1.8f, -5.0f);
+	translateMax = Vector3(5.0f, 2.0f, 5.0f);
 	rotateMin = Vector3(0.0f, 0.0f, 0.0f);
 	rotateMax = Vector3(0.0f, 0.0f, 3.14f);
 	scaleMin = Vector3(0.02f, 0.02f, 0.02f);
 	scaleMax = Vector3(0.03f, 0.03f, 0.03f);
 
 	minSpeed = 0.2f;
-	maxSpeed = 0.5f;
-	moveDirection = Vector3(0.0f, -1.0f, 1.0f); // 下方向とZ軸正方向に移動
+	maxSpeed = 1.0f;
+	moveDirection = Vector3(-1.0f, 0.0f, 1.0f); // 下方向とZ軸正方向に移動
 	directionVariance = 0.2f;
 }
 

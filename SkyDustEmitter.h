@@ -19,7 +19,7 @@ public:
 	void Update(float deltaTime);
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Matrix4x4& viewProjection);
 	void ImGui();
-
+	void SetData();
 
 	//デバッグ用imguiを使用するか(最後に消す)
 	bool useImGui = true;
