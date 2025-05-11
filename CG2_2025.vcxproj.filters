@@ -34,6 +34,18 @@
     <Filter Include="ヘッダー ファイル\shapes">
       <UniqueIdentifier>{6de511c7-a57a-453b-8ab0-c917526888cf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Emitter">
+      <UniqueIdentifier>{07c2fc30-2082-4e49-95b5-bd3afcc2e915}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Particle">
+      <UniqueIdentifier>{6f8873eb-8318-47a4-a519-cea78e345e2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Emitter">
+      <UniqueIdentifier>{9b8587de-952c-4902-a13c-91b86a987fbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Particle">
+      <UniqueIdentifier>{303a3390-45c3-4abd-bd7e-e6da74374d56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -61,12 +73,6 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="TriForce.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Particle.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Emitter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Easing.cpp">
@@ -99,11 +105,23 @@
     <ClCompile Include="WinApp.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
     </ClCompile>
+    <ClCompile Include="Emitter.cpp">
+      <Filter>ソース ファイル\Emitter</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyDustEmitter.cpp">
+      <Filter>ソース ファイル\Emitter</Filter>
+    </ClCompile>
     <ClCompile Include="TriforceEmitter.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Emitter</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyDustParticle.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
     <ClCompile Include="TriforceParticle.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -138,12 +156,6 @@
     <ClInclude Include="TriForce.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Particle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Emitter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Easing.h">
       <Filter>ヘッダー ファイル\MyMath</Filter>
     </ClInclude>
@@ -174,11 +186,23 @@
     <ClInclude Include="TriangularPyramid.h">
       <Filter>ヘッダー ファイル\shapes</Filter>
     </ClInclude>
+    <ClInclude Include="Emitter.h">
+      <Filter>ヘッダー ファイル\Emitter</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyDustEmitter.h">
+      <Filter>ヘッダー ファイル\Emitter</Filter>
+    </ClInclude>
     <ClInclude Include="TriforceEmitter.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\Emitter</Filter>
+    </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>ヘッダー ファイル\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyDustParticle.h">
+      <Filter>ヘッダー ファイル\Particle</Filter>
     </ClInclude>
     <ClInclude Include="TriforceParticle.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,18 +1,16 @@
 #pragma once
 #include "TriangularPyramid.h"
 
-class Particle {
+class SkyDustParticle {
 public:
-	Particle(ID3D12Device* device,Vector3Transform setTransform);  // デバイスを受け取るように
-	~Particle(); 
+	SkyDustParticle(ID3D12Device* device, Vector3Transform setTransform);  // デバイスを受け取るように
+	~SkyDustParticle();
 
 	// コピー禁止
-	Particle(const Particle&) = delete;
-	Particle& operator=(const Particle&) = delete;
+	SkyDustParticle(const SkyDustParticle&) = delete;
+	SkyDustParticle& operator=(const SkyDustParticle&) = delete;
 
-	//リセット関数(パーティカルプール用)
 	void Reset(const Vector3Transform& newTransform);
-
 	void Update(float deltaTime);
 
 	bool IsAlive() const {
@@ -26,6 +24,10 @@ public:
 	float GetAlpha() const {
 		return alpha;
 	}
+	void SetVelocity(const Vector3& newVelocity) {
+		velocity = newVelocity;
+	}
+
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Matrix4x4& viewProjection);
 
 private:
@@ -34,7 +36,7 @@ private:
 	float currentTime;
 	float alphaSpeed;
 	float rotationSpeed;
-	float speed;
+	Vector3 velocity; // 移動速度ベクトル(speedを変更)
 	float alpha;
 
 	TriangularPyramid* pyramid;  // 各パーティクルに固有のピラミッド
