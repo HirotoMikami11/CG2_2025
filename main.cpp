@@ -508,16 +508,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Model"
 
-	//モデルデータ作成
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	////モデルデータ作成
+	//ModelData modelData = LoadObjFile("resources", "plane.obj");
 
-	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 2);
-	directXCommon->MakeSRV(modelData.material.textureFilePath, 2);
+	//directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 2);
+	//directXCommon->MakeSRV(modelData.material.textureFilePath, 2);
 
 	//																			//
 	//							VertexResourceの作成								//
 	//																			//
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
+	//Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
 
 	////																			//
 	////							VertexBufferViewの作成							//
@@ -531,40 +531,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	//							Material用のResourceを作る						//
 	//																			//
-	// モデル用のマテリアルリソースを作成
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	Material* materialDataModel = nullptr;
-	materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
-	materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialDataModel->enableLighting = true;
-	materialDataModel->useLambertianReflectance = false;
-	materialDataModel->uvTransform = MakeIdentity4x4();
+	//// モデル用のマテリアルリソースを作成
+	//Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
+	//Material* materialDataModel = nullptr;
+	//materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
+	//materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//materialDataModel->enableLighting = true;
+	//materialDataModel->useLambertianReflectance = false;
+	//materialDataModel->uvTransform = MakeIdentity4x4();
 
 
 	////																			//
 	////							DirectionalLightのResourceを作る						//
 	////																			//
 
-	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
-	//データを書き込む
-	DirectionalLight* directionalLightDataModel = nullptr;
-	//書き込むためのアドレスを取得
-	directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
-	//単位行列を書き込んでおく
-	directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
-	directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
-	directionalLightDataModel->intensity = 1.0f;
+	//Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	////データを書き込む
+	//DirectionalLight* directionalLightDataModel = nullptr;
+	////書き込むためのアドレスを取得
+	//directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
+	////単位行列を書き込んでおく
+	//directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
+	//directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
+	//directionalLightDataModel->intensity = 1.0f;
 
 
 	////																			//
 	////					TransformationMatrix用のリソースを作る						//
 	////																			//
 
-	Microsoft::WRL::ComPtr <ID3D12Resource> transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	TransformationMatrix* transformMatrixDataModel = nullptr;
-	transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
-	transformMatrixDataModel->WVP = MakeIdentity4x4();
-	transformMatrixDataModel->World = MakeIdentity4x4();
+	//Microsoft::WRL::ComPtr <ID3D12Resource> transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
+	//TransformationMatrix* transformMatrixDataModel = nullptr;
+	//transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
+	//transformMatrixDataModel->WVP = MakeIdentity4x4();
+	//transformMatrixDataModel->World = MakeIdentity4x4();
 
 	////																			//
 	////						Resourceにデータを書き込む								//
@@ -961,32 +961,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//三角形の前で解放
 	delete triforce;
 
-
-
 	//三角形を生成するものの解放処理
 	for (int i = 0; i < indexTriangle; i++) {
 		delete triangle[i];
 	}
-
-
-	//Sphere
-	vertexResourceSphere->Release();
-	materialResourceSphere->Release();
-	wvpResourceSphere->Release();
-	directionalLightResourceSphere->Release();
-	indexResourceSphere->Release();
-
-	//Sprite
-	vertexResourceSprite->Release();
-	transformationMatrixResourceSprite->Release();
-	materialResourceSprite->Release();
-	indexResourceSprite->Release();
-
-	//Model
-	//vertexResourceModel->Release();
-	//materialResourceModel->Release();
-	//transformMatrixResourceModel->Release();
-	//directionalLightResourceModel->Release();
 
 	// winAppの終了処理
 	winApp->Finalize();
