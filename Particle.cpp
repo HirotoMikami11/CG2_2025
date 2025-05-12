@@ -13,6 +13,7 @@ Particle::Particle(ID3D12Device* device, Vector3Transform setTransform) {
 	//EmitterのImguiで変更される
 	velocity = Vector3(0.0f, -0.3f, 0.3f);
 	alpha = 0.0f;
+	color = { 1.0f,1.0f,1.0f,alpha };
 
 	pyramid = new TriangularPyramid();
 	// ピラミッド初期化
@@ -51,7 +52,7 @@ void Particle::Update(float deltaTime) {
 
 void Particle::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Matrix4x4& viewProjection) {
 	pyramid->SetTransform(transform);
-	Vector4 color = { 1.0f,1.0f,1.0f,alpha };
+	color.w =alpha;
 	pyramid->SetColor(color);
 	pyramid->Update(viewProjection);
 	pyramid->Draw(commandList, textureHandle);

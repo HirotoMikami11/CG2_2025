@@ -212,14 +212,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	///パーティクル
 
-	const int EmitterIndex=2;
+	const int EmitterIndex = 2;
 
-
+	Emitter* emitter[EmitterIndex];
 	for (int i = 0; i < EmitterIndex; i++)//エミッターを複数生成
-	{}
-	Emitter* emitter = new Emitter(directXCommon->GetDevice());
-	emitter->Initialize(0);
-	emitter->SetParticleData(
+	{
+		emitter[i] = new Emitter(directXCommon->GetDevice());
+		emitter[i]->Initialize(i);
+	}
+	emitter[0]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
 		Vector3(0.06f, 0.06f, 0.06f),
 		Vector3(0.0f, 0.0f, 0.0f),
@@ -229,9 +230,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.05f,
 		0.15f,
 		Vector3(0.0f, 1.0f, 0.0f),
-		0.05f
+		0.05f,
+	Vector4{1.0f,1.0f,1.0f,0.0f}
 	);
-
+	emitter[1]->SetParticleData(
+		Vector3(0.025f, 0.025f, 0.025f),
+		Vector3(0.06f, 0.06f, 0.06f),
+		Vector3(0.0f, 0.0f, 0.0f),
+		Vector3(0.0f, 0.0f, 3.14f),
+		Vector3(-5.0f, -2.0f, -5.0f),
+		Vector3(5.0f, -2.0f, 5.0f),
+		0.05f,
+		0.15f,
+		Vector3(0.0f, 1.0f, 0.0f),
+		0.05f,
+		Vector4{ 1.0f,1.0f,1.0f,0.0f }
+	);
 	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
 	skyDustEmitter->Initialize();
 
@@ -764,8 +778,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triforce->Update(viewProjectionMatrix);
 
 		}
+		for (int i = 0; i < EmitterIndex; i++)
+		{
+			emitter[i]->Update((1.0f / 60.0f));
+		}
 
-		emitter->Update((1.0f / 60.0f));
 		skyDustEmitter->Update((1.0f / 60.0f));
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();
@@ -867,8 +884,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			///映像演出の描画
 
 			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
+			for (int i = 0; i < EmitterIndex; i++)
+			{
+				emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+			}
 
-			emitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 			skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 
 		}
@@ -892,7 +912,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	delete emitter;
+	for (int i = 0; i < EmitterIndex; i++)
+	{
+	delete emitter[i];
+	}
+
 	delete skyDustEmitter;
 
 	//三角形の前で解放

@@ -17,7 +17,7 @@ Emitter::Emitter(ID3D12Device* device) : device(device), spawnTimer(0.0f) {
 	moveDirection = Vector3(0.0f, -1.0f, 0.0f); // 上方向
 	directionVariance = 0.2f;
 	spawnInterval = float(0.025f);
-	
+	color = { 1.0f,1.0f,1.0f,0.0f };
 }
 
 Emitter::~Emitter() {
@@ -109,7 +109,8 @@ void Emitter::Update(float deltaTime) {
 
 		// パーティクルに速度を設定
 		particle->SetVelocity(finalVelocity);
-
+		// パーティクルに色を設定
+		particle->SetColor(color);
 		// アクティブリストに追加
 		activeParticles.push_back(particle);
 	}
@@ -139,7 +140,6 @@ void Emitter::ImGui()
 	if (useImGui) {
 		std::string label_Name = "Emitter [" + std::to_string(imGuiNumber) + "] ";
 		ImGui::Begin(label_Name.c_str());
-
 		// 各Vector3変数の編集UI
 		ImGui::Text("Translation Range:");
 		bool translateMinChanged = ImGui::DragFloat3("Min Translation", &translateMin.x, 0.01f, -5.0f, 5.0f);
@@ -228,6 +228,8 @@ void Emitter::ImGui()
 		ImGui::Text("spawnTimer/interval %f / %f", spawnTimer, spawnInterval);
 		ImGui::DragFloat("spawnInterval", &spawnInterval, 0.0001f, 0.001f, 1.0f);
 
+		ImGui::ColorEdit4("color", reinterpret_cast<float*>(&color.x));
+
 		// パーティクル情報を表示
 		ImGui::Separator();
 		ImGui::Text("Particle Count: Active %zu / Pool %zu / Total %zu",
@@ -237,7 +239,8 @@ void Emitter::ImGui()
 	}
 }
 
-void Emitter::SetParticleData(Vector3 Scalemin, Vector3 Scalemax, Vector3 Rotatemin, Vector3 Rotatemax, Vector3 Translatemin, Vector3 Translatemax, float MinSpeed, float Maxspeed, Vector3 MoveDirection, float Spawninterval)
+void Emitter::SetParticleData(Vector3 Scalemin, Vector3 Scalemax, Vector3 Rotatemin, Vector3 Rotatemax, Vector3 Translatemin, Vector3 Translatemax, float MinSpeed, float Maxspeed, Vector3 MoveDirection, float Spawninterval
+	, Vector4 Color)
 {
 	//値を代入する
 	scaleMin = Scalemin;
@@ -250,5 +253,6 @@ void Emitter::SetParticleData(Vector3 Scalemin, Vector3 Scalemax, Vector3 Rotate
 	maxSpeed = Maxspeed;
 	moveDirection = MoveDirection;
 	spawnInterval = Spawninterval;
+	color = Color;
 }
 

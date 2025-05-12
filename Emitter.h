@@ -35,7 +35,7 @@ public:
 	/// <param name="MoveDirection">移動する方向</param>
 	/// <param name="Spawninterval">生成されるまでの時間</param>
 	void SetParticleData(Vector3 Scalemin, Vector3 Scalemax, Vector3 Rotatemin, Vector3 Rotatemax,Vector3 Translatemin, Vector3 Translatemax,
-		float MinSpeed,float Maxspeed,Vector3 MoveDirection,float Spawninterval);
+		float MinSpeed,float Maxspeed,Vector3 MoveDirection,float Spawninterval,Vector4 Color);
 	
 	//デバッグ用imguiを使用するか(最後に消す)
 	bool useImGui = true;
@@ -67,7 +67,7 @@ private:
 	float maxSpeed;				// 最大移動速度
 	Vector3 moveDirection;		// 移動方向
 	float directionVariance;	// 方向のばらつき
-
+	Vector4 color;
 	
 };
 
