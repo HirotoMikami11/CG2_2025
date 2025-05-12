@@ -7,6 +7,7 @@
 //ファイルに書いたり読んだりするライブラリ
 #include<fstream>
 #include<sstream>
+#include <iostream>//すぐ消す
 //時間を扱うライブラリ
 #include<chrono>
 
@@ -32,6 +33,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 
+//comptr
+#include<wrl.h>
+
 #include<cassert>
 #include "MyFunction.h"
 
@@ -46,10 +50,20 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "TriForce.h"
 //三角錐
 #include "TriangularPyramid.h"
+#include "AudioManager.h"
 
 #include "Emitter.h"
 #include "SkyDustEmitter.h"
 
+/// <summary>
+/// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
+/// </summary>
+void DumpLiveObjects() {
+	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	}
+}
 
 
 MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
@@ -158,9 +172,23 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 }
 
 
+/// <summary>
+/// リソースリークチェック
+/// </summary>
+struct D3DResourceLeakChecker {
+	~D3DResourceLeakChecker() {
+		//リソースリークチェック
+		Microsoft::WRL::ComPtr <IDXGIDebug1> debug;
+		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+			debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+			debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+			debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
 
+		}
 
+	}
 
+};
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -170,8 +198,11 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
+	D3DResourceLeakChecker leakCheak;
+
 	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録（main関数が始まってすぐ）
 	Dump::Initialize();
+
 
 	WinApp* winApp = new WinApp;
 	DirectXCommon* directXCommon = new DirectXCommon;
@@ -179,12 +210,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	/// ウィンドウクラスを登録する
 	winApp->Initialize();
-
 	///	ログをファイルに書き込む
 	Logger::Initalize();
 
-	/// DirectXの初期化
+	///DirectX初期化
 	directXCommon->Initialize(winApp);
+	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
+	AudioManager::GetInstance()->Initialize();
 
 
 
@@ -264,7 +296,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//実際に頂点リソースを生成
-	ID3D12Resource* vertexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * (16 * 16 * 6)); //球用1536
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * (16 * 16 * 6)); //球用1536
 
 	//																			//
 	//							VertexBufferViewの作成							//
@@ -284,7 +316,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//実際にインデックスリソースを生成
-	ID3D12Resource* indexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 16 * 16 * 6); //２つ三角形を作るので６個の頂点データ
+	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 16 * 16 * 6); //２つ三角形を作るので６個の頂点データ
 
 
 	//																			//
@@ -313,7 +345,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	ID3D12Resource* materialResourceSphere =
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSphere =
 		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
 	//マテリアルデータに書き込む
 	Material* materialDataSphere = nullptr;
@@ -332,7 +364,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	ID3D12Resource* wvpResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
+	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
 	//データを書き込む
 	TransformationMatrix* wvpDataSphere = nullptr;
 	//書き込むためのアドレスを取得
@@ -346,7 +378,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//							DirectionalLightのResourceを作る						//
 	//																			//
 
-	ID3D12Resource* directionalLightResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
 	//データを書き込む
 	DirectionalLight* directionalLightDataSphere = nullptr;
 	//書き込むためのアドレスを取得
@@ -381,7 +413,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//実際に頂点リソースを生成
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 4); //２つ三角形で矩形を作るので頂点データ6つ
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 4); //２つ三角形で矩形を作るので頂点データ6つ
 
 	//																			//
 	//							VertexBufferViewの作成							//
@@ -401,7 +433,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//実際にインデックスリソースを生成
-	ID3D12Resource* indexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 6); //２つ三角形を作るので６個の頂点データ
+	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 6); //２つ三角形を作るので６個の頂点データ
 
 	//																			//
 	//							indexBufferViewの作成							//
@@ -428,8 +460,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//							Material用のResourceを作る						//
 	//																			//
 
-	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	ID3D12Resource* materialResourceSprite =
+//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite =
 		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
 	//マテリアルデータに書き込む
 	Material* materialDataSprite = nullptr;
@@ -448,7 +480,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
+	Microsoft::WRL::ComPtr <ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
 	//データを書き込む
 	TransformationMatrix* transformationMatrixDataSprite = nullptr;
 	//書き込むためのアドレスを取得
@@ -476,16 +508,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Model"
 
-	////モデルデータ作成
-	//ModelData modelData = LoadObjFile("resources", "plane.obj");
+	//モデルデータ作成
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
 
-	//directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 3);
-	//directXCommon->MakeSRV(modelData.material.textureFilePath, 3);
+	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 2);
+	directXCommon->MakeSRV(modelData.material.textureFilePath, 2);
 
-	////																			//
-	////							VertexResourceの作成								//
-	////																			//
-	//ID3D12Resource* vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
+	//																			//
+	//							VertexResourceの作成								//
+	//																			//
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
 
 	////																			//
 	////							VertexBufferViewの作成							//
@@ -496,43 +528,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//vertexBufferViewModel.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());	//使用するリソースのサイズは頂点のサイズ
 	//vertexBufferViewModel.StrideInBytes = sizeof(VertexData);									//1頂点当たりのサイズ
 
-	////																			//
-	////							Material用のResourceを作る						//
-	////																			//
-	//// モデル用のマテリアルリソースを作成
-	//ID3D12Resource* materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	//Material* materialDataModel = nullptr;
-	//materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
-	//materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	//materialDataModel->enableLighting = true;
-	//materialDataModel->useLambertianReflectance = false;
-	//materialDataModel->uvTransform = MakeIdentity4x4();
+	//																			//
+	//							Material用のResourceを作る						//
+	//																			//
+	// モデル用のマテリアルリソースを作成
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
+	Material* materialDataModel = nullptr;
+	materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
+	materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialDataModel->enableLighting = true;
+	materialDataModel->useLambertianReflectance = false;
+	materialDataModel->uvTransform = MakeIdentity4x4();
 
 
 	////																			//
 	////							DirectionalLightのResourceを作る						//
 	////																			//
 
-	//ID3D12Resource* directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
-	////データを書き込む
-	//DirectionalLight* directionalLightDataModel = nullptr;
-	////書き込むためのアドレスを取得
-	//directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
-	////単位行列を書き込んでおく
-	//directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
-	//directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
-	//directionalLightDataModel->intensity = 1.0f;
+	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	//データを書き込む
+	DirectionalLight* directionalLightDataModel = nullptr;
+	//書き込むためのアドレスを取得
+	directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
+	//単位行列を書き込んでおく
+	directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightDataModel->intensity = 1.0f;
 
 
 	////																			//
 	////					TransformationMatrix用のリソースを作る						//
 	////																			//
 
-	//ID3D12Resource* transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	//TransformationMatrix* transformMatrixDataModel = nullptr;
-	//transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
-	//transformMatrixDataModel->WVP = MakeIdentity4x4();
-	//transformMatrixDataModel->World = MakeIdentity4x4();
+	Microsoft::WRL::ComPtr <ID3D12Resource> transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
+	TransformationMatrix* transformMatrixDataModel = nullptr;
+	transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
+	transformMatrixDataModel->WVP = MakeIdentity4x4();
+	transformMatrixDataModel->World = MakeIdentity4x4();
 
 	////																			//
 	////						Resourceにデータを書き込む								//
@@ -542,7 +574,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());	//頂点データをリソースにコピー
 
 #pragma endregion
-
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///								ImGuiの初期化								   ///
@@ -571,6 +602,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	{0.0f,0.0f,0.0f},
 	{0.0f,0.0f,0.0f}
 	};
+
 
 	//SpriteのTransform変数を作る
 	Vector3Transform transformSprite{
@@ -607,6 +639,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//シーンの変更
 	bool directionScene = true;
+
+
+	//ゲーム開始前に読み込む音声データ
+	AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
+	//tagを利用して再生
+	AudioManager::GetInstance()->PlayLoop("Alarm");
+	AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
 
 
 	///*-----------------------------------------------------------------------*///
@@ -705,11 +744,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 
-			//																			//
-			//							球体用のWVP										//
-			//																			//
+		//																			//
+		//							球体用のWVP										//
+		//																			//
 
-			transformSphere.rotate.y += 0.01f;
+		transformSphere.rotate.y += 0.01f;
 
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrixSphere = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
@@ -949,19 +988,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//transformMatrixResourceModel->Release();
 	//directionalLightResourceModel->Release();
 
+	// winAppの終了処理
 	winApp->Finalize();
 	delete winApp;
+	// directXの終了処理
 	directXCommon->Finalize();
 	delete directXCommon;
-
-	//リソースリークチェック
-	IDXGIDebug1* debug;
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		debug->Release();
-	}
 
 	//COMの終了処理
 	CoUninitialize();
