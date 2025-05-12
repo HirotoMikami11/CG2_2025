@@ -19,7 +19,6 @@ public:
 	void Update(float deltaTime);
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle, const Matrix4x4& viewProjection);
 	void ImGui();
-	void SetData();
 
 	//デバッグ用imguiを使用するか(最後に消す)
 	bool useImGui = true;
@@ -35,6 +34,7 @@ private:
 	Vector3Transform SetParticles;    // パーティクルにセットするTransform情報
 	ID3D12Device* device;
 
+	//	ランダムで生成されるパーティクルの最大値最小値
 	Vector3 translateMin;
 	Vector3 translateMax;
 	Vector3 rotateMin;

@@ -210,9 +210,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
 	triforce->Initialize();
 
-	///浮かんでるパーティクル
+	///パーティクル
+
+	const int EmitterIndex=2;
+
+
+	for (int i = 0; i < EmitterIndex; i++)//エミッターを複数生成
+	{}
 	Emitter* emitter = new Emitter(directXCommon->GetDevice());
-	emitter->Initialize(); 
+	emitter->Initialize(0);
+	emitter->SetParticleData(
+		Vector3(0.025f, 0.025f, 0.025f),
+		Vector3(0.06f, 0.06f, 0.06f),
+		Vector3(0.0f, 0.0f, 0.0f),
+		Vector3(0.0f, 0.0f, 3.14f),
+		Vector3(-5.0f, -2.0f, -5.0f),
+		Vector3(5.0f, -2.0f, 5.0f),
+		0.05f,
+		0.15f,
+		Vector3(0.0f, 1.0f, 0.0f),
+		0.05f
+	);
 
 	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
 	skyDustEmitter->Initialize();
