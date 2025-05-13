@@ -252,6 +252,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		emitter[i] = new Emitter(directXCommon->GetDevice());
 		emitter[i]->Initialize(i);
 	}
+	//白色、真上に上昇する
 	emitter[0]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
 		Vector3(0.06f, 0.06f, 0.06f),
@@ -265,18 +266,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.05f,
 	Vector4{1.0f,1.0f,1.0f,0.0f}
 	);
+	//黄色、左斜め前方に上昇する
 	emitter[1]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
-		Vector3(0.06f, 0.06f, 0.06f),
+		Vector3(0.07f, 0.07f, 0.07f),
 		Vector3(0.0f, 0.0f, 0.0f),
 		Vector3(0.0f, 0.0f, 3.14f),
 		Vector3(-5.0f, -2.0f, -5.0f),
-		Vector3(5.0f, -2.0f, 5.0f),
+		Vector3(5.0f, -0.9f, 5.0f),
+		0.33f,
+		0.48f,
+		Vector3(-1.0f, 0.5f, -1.0f),
 		0.05f,
-		0.15f,
-		Vector3(0.0f, 1.0f, 0.0f),
-		0.05f,
-		Vector4{ 1.0f,1.0f,1.0f,0.0f }
+		Vector4{ 1.0f,1.0f,0.0f,0.0f }
 	);
 	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
 	skyDustEmitter->Initialize();
@@ -698,12 +700,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				//色
 				ImGui::ColorEdit4(label_color.c_str(), reinterpret_cast<float*>(&triangle[i]->GetColor().x));
-
+				ImGui::Separator();
 				// 位置・回転・スケール
 				ImGui::DragFloat3(label_translate.c_str(), const_cast<float*>(&triangle[i]->GetTransform().translate.x), 0.01f);
 				ImGui::DragFloat3(label_rotate.c_str(), const_cast<float*>(&triangle[i]->GetTransform().rotate.x), 0.01f);
 				ImGui::DragFloat3(label_scale.c_str(), const_cast<float*>(&triangle[i]->GetTransform().scale.x), 0.01f);
-
+				ImGui::Separator();
 				//コンボボックスの選択肢
 				const char* textures[] = { "uvChecker", "MonsterBall" };
 
@@ -719,11 +721,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 
 			}
-			ImGui::DragFloat3("Sphere_LightDirection", &directionalLightDataSphere->direction.x, 0.01f);
 			ImGui::End();
-
-			ImGui::ShowDemoWindow();
-
 #pragma endregion
 
 			//																			//
