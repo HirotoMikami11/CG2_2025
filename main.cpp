@@ -55,6 +55,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "Emitter.h"
 #include "SkyDustEmitter.h"
 
+#include "BreakScreenEffect.h"
+
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
 /// </summary>
@@ -189,7 +191,6 @@ struct D3DResourceLeakChecker {
 	}
 
 };
-
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///									メイン関数							   ///
@@ -218,7 +219,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
 	AudioManager::GetInstance()->Initialize();
 
-
+	//スクリーンを割るエフェクト生成
+	BreakScreenEffect* breakScreenEffect = new BreakScreenEffect();
+	// 初期化（DirectX初期化後）
+	breakScreenEffect->Initialize(directXCommon->GetDevice());
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
@@ -241,7 +245,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///三角柱の生成
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
 	triforce->Initialize();
-
+	//開始と同時にイージング開始させる
+	triforce->StartEasing();
 	///パーティクル
 
 	const int EmitterIndex = 2;
@@ -264,7 +269,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.15f,
 		Vector3(0.0f, 1.0f, 0.0f),
 		0.05f,
-	Vector4{1.0f,1.0f,1.0f,0.0f}
+		Vector4{ 1.0f,1.0f,1.0f,0.0f }
 	);
 	//黄色、左斜め前方に上昇する
 	emitter[1]->SetParticleData(
@@ -642,14 +647,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//シーンの変更
 	bool directionScene = true;
 
-
-	//ゲーム開始前に読み込む音声データ
-	AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
-	//tagを利用して再生
-	AudioManager::GetInstance()->PlayLoop("Alarm");
-	AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
-
-
+	////ゲーム開始前に読み込む音声データ
+	//AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
+	////tagを利用して再生
+	//AudioManager::GetInstance()->PlayLoop("Alarm");
+	//AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
@@ -742,11 +744,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 
-		//																			//
-		//							球体用のWVP										//
-		//																			//
+			//																			//
+			//							球体用のWVP										//
+			//																			//
 
-		transformSphere.rotate.y += 0.01f;
+			transformSphere.rotate.y += 0.01f;
 
 			//viewprojectionを計算
 			Matrix4x4 viewProjectionMatrixSphere = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
@@ -763,11 +765,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
 			//uvTransformの更新
 			UpdateUVTransform(uvTransformSprite, materialDataSprite);
-
-
-
-
-
 
 			//																			//
 			//							Model用のWVP									//
@@ -800,21 +797,67 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 			ImGui::End();
-#pragma endregion
-
 
 #pragma endregion
 
 
+#pragma endregion
 
 
-
-
-			//トライフォースの更新
+			// トライフォースの更新（イージング開始フラグに応じて動作）
 			triforce->MoveEasing(selected_Easing, viewProjectionMatrix);
 			triforce->Update(viewProjectionMatrix);
 
+			// triforceが完了したらbreakScreenEffectを開始
+			static bool lastTriforceCompleted = false;
+			bool triforceCompleted = triforce->IsCompleted();
+
+			// トライフォースが完了して、エフェクトがアクティブでない場合のみ開始
+			if (triforceCompleted && !lastTriforceCompleted && !breakScreenEffect->GetActive()) {
+				breakScreenEffect->SetActive(true);
+				triforce->StopEasing(); // エフェクト開始時にイージングを停止
+			}
+			lastTriforceCompleted = triforceCompleted;
+
+			// isMovingOutが終わったタイミングでトライフォースをリセット
+			static bool lastMovingOut = false;
+			static bool hasResetTriforce = false;
+
+			// isMovingOutからfalseに変化した瞬間（画面外への移動が完了した瞬間）
+			bool movingOutJustFinished = lastMovingOut && !breakScreenEffect->IsMovingOut() && breakScreenEffect->GetActive();
+
+			if (movingOutJustFinished && !hasResetTriforce) {
+				// トライフォースを完全に初期状態にリセット（破片が画面外に移動中）
+				triforce->Initialize();
+				triforce->ResetProgress(); // 明示的に進行度とイージングフラグをリセット
+				hasResetTriforce = true;
+			}
+
+			// エフェクトが完了して非アクティブになったタイミングで次のサイクル開始
+			static bool lastEffectActive = false;
+			bool effectJustFinished = lastEffectActive && !breakScreenEffect->GetActive();
+
+			if (effectJustFinished) {
+				// エフェクトリセットと次のサイクル開始
+				breakScreenEffect->Reset(); // エフェクトをリセット
+				hasResetTriforce = false;   // リセットフラグをクリア
+
+				//トライフォースのイージング開始
+				triforce->StartEasing();
+			}
+
+			// 現在の状態を記録
+			lastMovingOut = breakScreenEffect->IsMovingOut();
+			lastEffectActive = breakScreenEffect->GetActive();
+
+			// breakScreenEffectの更新（自動アニメーション）
+			if (breakScreenEffect->GetActive()) {
+				breakScreenEffect->Update(); // 引数なしで自動アニメーション
+			}
 		}
+
+
+
 		for (int i = 0; i < EmitterIndex; i++)
 		{
 			emitter[i]->Update((1.0f / 60.0f));
@@ -838,32 +881,64 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
-		///必須内容の描画
-		directXCommon->PreDraw(directionScene);
-		if (!directionScene) {
+		// 描画処理（breakScreenEffectの状態をチェック）
+		if (breakScreenEffect->GetActive()) {
+			// 1. オフスクリーンレンダリング開始
+			directXCommon->BeginOffScreen();
 
+			// 2. 通常の描画処理をオフスクリーンに行う
+			if (!directionScene) {
+				// 通常シーンの描画
+				for (int i = 0; i < indexTriangle; i++) {
+					triangle[i]->Draw(
+						directXCommon->GetCommandList(),
+						useMonsterBall[i] ? directXCommon->GetTextureGPUSrvHandles()[1] : directXCommon->GetTextureGPUSrvHandles()[0]
+					);
+				}
+			} else {
+				// 演出シーンの描画
+				triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
+				for (int i = 0; i < EmitterIndex; i++) {
+					emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+				}
+				skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+			}
 
+			// 3. オフスクリーンレンダリング終了
+			directXCommon->EndOffScreen();
 
-			//																			//
-			//								三角形用の描画									//
-			//																			//
+			// 4. メインのレンダーターゲットに戻してポストエフェクトを描画
+			directXCommon->PreDraw(directionScene);
 
+			// 5. breakScreenエフェクトを描画
+			breakScreenEffect->Draw(
+				directXCommon->GetCommandList(),
+				directXCommon->GetOffScreenSRVHandle()
+			);
+		} else {
+			// 通常の描画
+			directXCommon->PreDraw(directionScene);
+
+			if (!directionScene) {
+				//																			//
+				//								三角形用の描画									//
+				//																			//
 
 #pragma region Triangle
-			for (int i = 0; i < indexTriangle; i++) {
+				for (int i = 0; i < indexTriangle; i++) {
 
-				//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+					//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
 
-				triangle[i]->Draw(
-					directXCommon->GetCommandList(),
-					useMonsterBall[i] ? directXCommon->GetTextureGPUSrvHandles()[1] : directXCommon->GetTextureGPUSrvHandles()[0]
-				);
-			}
+					triangle[i]->Draw(
+						directXCommon->GetCommandList(),
+						useMonsterBall[i] ? directXCommon->GetTextureGPUSrvHandles()[1] : directXCommon->GetTextureGPUSrvHandles()[0]
+					);
+				}
 #pragma endregion
 
-			//																			//
-			//								Sphereの描画									//
-			//																			//
+				//																			//
+				//								Sphereの描画									//
+				//																			//
 #pragma region Sphere
 
 		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
@@ -917,17 +992,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-		} else {
-			///映像演出の描画
+			} else {
+				///映像演出の描画
 
-			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
-			for (int i = 0; i < EmitterIndex; i++)
-			{
-				emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+				triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
+				for (int i = 0; i < EmitterIndex; i++)
+				{
+					emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+				}
+
+				skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+
 			}
-
-			skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
-
 		}
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), directXCommon->GetCommandList());
@@ -951,7 +1027,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	for (int i = 0; i < EmitterIndex; i++)
 	{
-	delete emitter[i];
+		delete emitter[i];
 	}
 
 	delete skyDustEmitter;
@@ -964,6 +1040,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		delete triangle[i];
 	}
 
+
+	delete breakScreenEffect;
 	// winAppの終了処理
 	winApp->Finalize();
 	delete winApp;

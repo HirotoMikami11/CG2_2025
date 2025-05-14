@@ -1,109 +1,5 @@
 #include "DirectXCommon.h"
 
-void DirectXCommon::Initialize(WinApp* winApp) {
-
-	// テクスチャファイル名配列
-	std::vector<std::string> textureFileNames = {
-		"resources/uvChecker.png",
-		"resources/monsterBall.png",
-		"resources/white10x10.png",
-
-	};
-
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									DebugLayer							   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakeDebugLayer();
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									DXGIFactory							   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakeDXGIFactory();
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///					CommandQueueとCommandListを生成						   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	InitializeCommand();
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///							SwapChainを生成								   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakeSwapChain(winApp);
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///							DescriptorHeapを生成							   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-
-	MakeDescriptorHeap();
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									RTVを生成							   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakeRTV();
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									SRVを生成							   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-		// それぞれのテクスチャに対して処理を行う
-	for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
-		LoadTextureResourceForSRV(textureFileNames[i], i);
-		MakeSRV(textureFileNames[i], i);
-	}
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									DSVを生成								///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakeDSV();
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///							FenceとEventを生成する							///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-
-	MakeFenceEvent();
-
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///									DXCの初期化								///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	InitalizeDXC();
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///								PSOを生成する									///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakePSO();
-
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///							ViewportとScissor							   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-	MakeViewport();
-
-
-}
-
 void DirectXCommon::Finalize() {
 	CloseHandle(fenceEvent);
 
@@ -315,7 +211,7 @@ void DirectXCommon::MakeDescriptorHeap()
 
 
 	//RTV用ヒープでディスクリプタの数は2，RTVはShader内で触れるものではないのでShaderVisibleはfalse
-	rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3, false);
 	Logger::Log(Logger::GetStream(), "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
 
 	//SRV用ヒープでディスクリプタの数は128，SRVはShader内で触れるものなのでShaderVisibleはtrue
@@ -408,6 +304,60 @@ void DirectXCommon::MakeSRV(const std::string& textureFileNames, uint32_t index)
 
 	// SRVの生成
 	device->CreateShaderResourceView(textureResources[index].Get(), &srvDesc, textureCPUSrvHandles[index]);
+}
+
+
+/// <summary>
+/// オフスクリーンを作成する
+/// </summary>
+void DirectXCommon::MakeOffScreenRenderTarget()
+{
+	// オフスクリーンテクスチャの作成
+	D3D12_RESOURCE_DESC textureDesc{};
+	textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureDesc.Width = kClientWidth;
+	textureDesc.Height = kClientHeight;
+	textureDesc.DepthOrArraySize = 1;
+	textureDesc.MipLevels = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+	D3D12_HEAP_PROPERTIES heapProps{};
+	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = textureDesc.Format;
+	clearValue.Color[0] = 0.0f;
+	clearValue.Color[1] = 0.0f;
+	clearValue.Color[2] = 0.0f;
+	clearValue.Color[3] = 1.0f;
+
+	hr = device->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&textureDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&clearValue,
+		IID_PPV_ARGS(&offScreenTexture)
+	);
+	assert(SUCCEEDED(hr));
+
+	// RTVの作成（既存のヒープの2番目のスロットを使用）
+	offScreenRTVHandle = GetCPUDescriptorHandle(rtvDescriptorHeap.Get(), descriptorSizeRTV, 2);
+	device->CreateRenderTargetView(offScreenTexture.Get(), nullptr, offScreenRTVHandle);
+
+	// SRVの作成（既存のヒープの4番目のスロットを使用）
+	offScreenSRVCPUHandle = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 4);
+	offScreenSRVHandle = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, 4);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+	device->CreateShaderResourceView(offScreenTexture.Get(), &srvDesc, offScreenSRVCPUHandle);
 }
 
 DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
@@ -839,6 +789,52 @@ void DirectXCommon::MakeViewport()
 	scissorRect.bottom = kClientHeight;
 }
 
+void DirectXCommon::BeginOffScreen()
+{
+	// リソースバリア：GENERIC_READ -> RENDER_TARGET
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = offScreenTexture.Get();
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_GENERIC_READ;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	commandList->ResourceBarrier(1, &barrier);
+
+	// 深度ステンシルハンドルを取得
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+	// オフスクリーンレンダーターゲットを設定
+	commandList->OMSetRenderTargets(1, &offScreenRTVHandle, false, &dsvHandle);
+
+	// クリア
+	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	commandList->ClearRenderTargetView(offScreenRTVHandle, clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	// 描画用のDescriptorHeapの設定
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { srvDescriptorHeap.Get() };
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+
+	// ビューポートとシザーレクトを設定
+	commandList->RSSetViewports(1, &viewport);
+	commandList->RSSetScissorRects(1, &scissorRect);
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->SetPipelineState(graphicsPipelineState.Get());
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void DirectXCommon::EndOffScreen()
+{
+	// リソースバリア：RENDER_TARGET -> GENERIC_READ
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = offScreenTexture.Get();
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+	commandList->ResourceBarrier(1, &barrier);
+}
+
 void DirectXCommon::PreDraw(bool isDrectionScene)
 {
 	///*-----------------------------------------------------------------------*///
@@ -869,7 +865,7 @@ void DirectXCommon::PreDraw(bool isDrectionScene)
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
-	// 指定した色で画面全体をクリアする
+	///	指定した色で画面全体をクリアする(バックバッファの色を変更できる)
 		///通常の時は、kamataengineと同じ色
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 	if (isDrectionScene) {
@@ -878,6 +874,8 @@ void DirectXCommon::PreDraw(bool isDrectionScene)
 		clearColor[1] = { 0.0f };
 		clearColor[2] = { 0.0f };
 		clearColor[3] = { 1.0f };
+
+		// TODO:ここで、画面が割れるフラグができた時に色を青っぽい色（もしくは白色）に戻す。裏の色がわかりやすくなる。
 	}
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);

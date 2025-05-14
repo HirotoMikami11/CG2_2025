@@ -31,15 +31,133 @@ class DirectXCommon
 {
 public:
 
-	void Initialize(WinApp* winApp);
+	void Initialize(WinApp* winApp) {
+
+		// テクスチャファイル名配列
+		std::vector<std::string> textureFileNames = {
+			"resources/uvChecker.png",
+			"resources/monsterBall.png",
+			"resources/white10x10.png",
+
+		};
+
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									DebugLayer							   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakeDebugLayer();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									DXGIFactory							   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakeDXGIFactory();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///					CommandQueueとCommandListを生成						   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		InitializeCommand();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///							SwapChainを生成								   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakeSwapChain(winApp);
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///							DescriptorHeapを生成							   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+
+		MakeDescriptorHeap();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									RTVを生成							   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakeRTV();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									SRVを生成							   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		// それぞれのテクスチャに対して処理を行う
+		for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
+			LoadTextureResourceForSRV(textureFileNames[i], i);
+			MakeSRV(textureFileNames[i], i);
+		}
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///							オフスクリーン生成									///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+
+		MakeOffScreenRenderTarget();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									DSVを生成								///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakeDSV();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///							FenceとEventを生成する							///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+
+		MakeFenceEvent();
+
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									DXCの初期化								///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		InitalizeDXC();
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///								PSOを生成する									///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakePSO();
+
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///							ViewportとScissor							   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		MakeViewport();
+
+
+	}
 	void Finalize();
-	
+
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
-	
+
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
+	/// <summary>
+	/// オフスクリーンテクスチャのSRVハンドルを取得
+	/// </summary>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetOffScreenSRVHandle() const { return offScreenSRVHandle; }
 
+	/// <summary>
+	/// オフスクリーンテクスチャのCPU SRVハンドルを取得
+	/// </summary>
+	D3D12_CPU_DESCRIPTOR_HANDLE GetOffScreenSRVCPUHandle() const { return offScreenSRVCPUHandle; }
 
 
 	/// <summary>
@@ -68,7 +186,7 @@ public:
 	void MakeDescriptorHeap();
 
 	///desctipotorHeapを生成する関数
-	 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 	/// <summary>
 	/// 
@@ -85,6 +203,13 @@ public:
 	/// RTVを作成する
 	/// </summary>
 	void MakeRTV();
+	
+	/// <summary>
+	/// オフスクリーンレンダーターゲットを作成
+	/// </summary>
+	void MakeOffScreenRenderTarget();
+
+
 
 	//static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);   // MYFunctionに移動
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
@@ -125,6 +250,15 @@ public:
 	void MakeViewport();
 
 	/// <summary>
+	/// オフスクリーンレンダリング開始
+	/// </summary>
+	void BeginOffScreen();
+
+	/// <summary>
+	/// オフスクリーンレンダリング終了
+	/// </summary>
+	void EndOffScreen();
+	/// <summary>
 	/// 描画前の処理
 	/// </summary>
 	void PreDraw(bool isDrectionScene);
@@ -150,6 +284,8 @@ public:
 	D3D12_RENDER_TARGET_VIEW_DESC GetRTVDesc() { return rtvDesc; }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle(int index) const { return rtvHandles[index]; }
 	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap.Get(); }
+	ID3D12RootSignature* GetRootSignature() const { return rootSignature.Get(); }
+	ID3D12PipelineState* GetPipelineState() const { return graphicsPipelineState.Get(); }
 	const std::vector<D3D12_GPU_DESCRIPTOR_HANDLE>& GetTextureGPUSrvHandles() const { return textureGPUSrvHandles; }
 	const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetTextureCPUSrvHandles() const { return textureCPUSrvHandles; }
 
@@ -229,5 +365,14 @@ private:
 
 	//TransitionBarrier
 	D3D12_RESOURCE_BARRIER barrier{};
+
+
+	// オフスクリーンレンダリング用
+	Microsoft::WRL::ComPtr<ID3D12Resource> offScreenTexture;
+	D3D12_CPU_DESCRIPTOR_HANDLE offScreenRTVHandle;
+	D3D12_GPU_DESCRIPTOR_HANDLE offScreenSRVHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE offScreenSRVCPUHandle;
+
+
 };
 

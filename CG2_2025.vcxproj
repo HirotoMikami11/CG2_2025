@@ -86,6 +86,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="AudioManager.cpp" />
+    <ClCompile Include="BreakScreenEffect.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="Easing.cpp" />
@@ -127,6 +128,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="Audio.h" />
     <ClInclude Include="AudioManager.h" />
+    <ClInclude Include="BreakScreenEffect.h" />
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="Dump.h" />
     <ClInclude Include="Easing.h" />
