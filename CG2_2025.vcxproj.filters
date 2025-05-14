@@ -16,6 +16,12 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{09ed2eb8-a2f2-4001-8a92-88fb361709f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Audio">
+      <UniqueIdentifier>{49779a9c-4b33-4482-9b87-8114c9a89d5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Audio">
+      <UniqueIdentifier>{67e04bfc-e7ed-4269-b5fa-6b01d2cb6c14}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ソース ファイル\MyMath">
       <UniqueIdentifier>{a1eda0d3-8a6b-4a47-b6b9-62cf77349493}</UniqueIdentifier>
     </Filter>
@@ -123,6 +129,12 @@
     <ClCompile Include="TriforceParticle.cpp">
       <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>ソース ファイル\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>ソース ファイル\Audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
@@ -203,6 +215,12 @@
     </ClInclude>
     <ClInclude Include="TriforceParticle.h">
       <Filter>ヘッダー ファイル\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.h">
+      <Filter>ヘッダー ファイル\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>ヘッダー ファイル\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

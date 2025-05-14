@@ -8,22 +8,7 @@ TriangularPrism::TriangularPrism() {
 }
 
 TriangularPrism::~TriangularPrism() {
-	// 解放処理
-	if (vertexResource) {
-		vertexResource->Release();
-	}
 
-	if (materialResource) {
-		materialResource->Release();
-	}
-
-	if (wvpResource) {
-		wvpResource->Release();
-	}
-
-	if (indexResource) {
-		indexResource->Release();
-	}
 }
 
 void TriangularPrism::Initialize(ID3D12Device* device) {

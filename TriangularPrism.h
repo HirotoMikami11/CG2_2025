@@ -57,10 +57,10 @@ private:
 	static const int kTriangleCount = 8; // 三角柱を構成する三角形の数
 	static const int kIndexCount = kTriangleCount * 3; // インデックス数 (三角形ごとに3頂点)
 
-	ID3D12Resource* vertexResource = nullptr;
-	ID3D12Resource* materialResource = nullptr;
-	ID3D12Resource* wvpResource = nullptr;
-	ID3D12Resource* indexResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> indexResource = nullptr;
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;

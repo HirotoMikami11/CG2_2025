@@ -2,28 +2,14 @@
 
 
 Triangle::Triangle() {
-	
+
 	transform.scale = { 1.0f, 1.0f, 1.0f };
 	transform.rotate = { 0.0f, 0.0f, 0.0f };
 	transform.translate = { 0.0f, 0.0f, 0.0f };
 }
 
 Triangle::~Triangle() {
-//解放処理
-	if (vertexResource) {
-		vertexResource->Release();
 
-	}
-
-	if (materialResource) {
-		materialResource->Release();
-
-	}
-
-	if (wvpResource) {
-		wvpResource->Release();
-
-	}
 }
 
 void Triangle::Initialize(ID3D12Device* device) {
@@ -90,7 +76,7 @@ void Triangle::Update(const Matrix4x4& viewProjectionMatrix) {
 }
 
 void Triangle::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
-	
+
 	//マテリアルのCBufferの場所を設定
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//wvp用のCBufferの場所を設定

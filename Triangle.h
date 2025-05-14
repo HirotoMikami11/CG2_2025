@@ -46,9 +46,9 @@ public:
 
 private:
 
-	ID3D12Resource* vertexResource = nullptr;
-	ID3D12Resource* materialResource = nullptr;
-	ID3D12Resource* wvpResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResource = nullptr;
 
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
