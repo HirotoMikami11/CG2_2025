@@ -779,28 +779,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 描画処理
 
-		///BreakScreenがtrueのときオフスクリーンレンダリング
-		if (breakScreenEffect->GetActive()) {
+		// 描画処理でオフスクリーンレンダリングを演出シーンでのみ使用
+// 演出シーンかつBreakScreenEffectがアクティブな時のみオフスクリーンレンダリング
+		if (directionScene && breakScreenEffect->GetActive()) {
 			// 1. オフスクリーンレンダリング開始
 			directXCommon->BeginOffScreen();
 
-			// 2. 通常の描画処理をオフスクリーンに行う
-			if (!directionScene) {
-				// 通常シーンの描画
-				for (int i = 0; i < indexTriangle; i++) {
-					triangle[i]->Draw(
-						directXCommon->GetCommandList(),
-						useMonsterBall[i] ? directXCommon->GetTextureGPUSrvHandles()[1] : directXCommon->GetTextureGPUSrvHandles()[0]
-					);
-				}
-			} else {
-				// 演出シーンの描画
-				triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
-				for (int i = 0; i < EmitterIndex; i++) {
-					emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
-				}
-				skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
+			// 2. 演出シーンの描画をオフスクリーンに行う
+			triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
+			for (int i = 0; i < EmitterIndex; i++) {
+				emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 			}
+			skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 
 			// 3. オフスクリーンレンダリング終了
 			directXCommon->EndOffScreen();
@@ -818,80 +808,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			directXCommon->PreDraw(directionScene);
 
 			if (!directionScene) {
-				//																			//
-				//								三角形用の描画									//
-				//																			//
-
-#pragma region Triangle
+				// 通常シーン：不透明描画
 				for (int i = 0; i < indexTriangle; i++) {
-
-					//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-
 					triangle[i]->Draw(
 						directXCommon->GetCommandList(),
 						useMonsterBall[i] ? directXCommon->GetTextureGPUSrvHandles()[1] : directXCommon->GetTextureGPUSrvHandles()[0]
 					);
 				}
-#pragma endregion
-
-				//																			//
-				//								Sphereの描画									//
-				//																			//
-#pragma region Sphere
 				sphere->Draw(
 					directXCommon->GetCommandList(),
-					directXCommon->GetTextureGPUSrvHandles()[0]  
+					directXCommon->GetTextureGPUSrvHandles()[0]
 				);
-
-#pragma endregion
-		//																			//
-		//								Spriteの描画									//
-		//																			//
-
-#pragma region Sprite
-
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
-		//directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
-
-		//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);
-
-		////TransformMatrixCBufferの場所を設定
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-
-		//// 描画（DrawCall／ドローコール)
-		////三角形を二つ描画するので6つ
-		//directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
-
-#pragma endregion
-
-		//																			//
-		//								Modelの描画									//
-		//																			//
-
-#pragma region Model
-
-			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
-			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
-			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
-			//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[2]); // テクスチャ
-			//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
-			//// インデックスバッファがない場合は直接頂点で描画
-			//directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-
-#pragma endregion
-
 			} else {
-				///映像演出の描画
-
+				// 演出シーン：透明描画（オフスクリーンエフェクトなし）
 				triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
-				for (int i = 0; i < EmitterIndex; i++)
-				{
+				for (int i = 0; i < EmitterIndex; i++) {
 					emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 				}
-
 				skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
-
 			}
 		}
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む

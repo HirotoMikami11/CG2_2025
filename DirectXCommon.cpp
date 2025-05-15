@@ -905,8 +905,15 @@ void DirectXCommon::PreDraw(bool isDrectionScene)
 	commandList->RSSetScissorRects(1, &scissorRect);			//Scissorを設定
 	// RootSignatureを設定。PSOに設定しているけど別途設定（PSOと同じもの）が必要
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	//commandList->SetPipelineState(graphicsPipelineState.Get());		//PSOを設定
-	commandList->SetPipelineState(transparentPipelineState.Get());		//会ブレンド対応できるPSOに設定
+
+	// シーンに応じてPSOを設定
+	if (isDrectionScene) {
+		// 演出シーン：透明用PSO（αブレンド有効）
+		commandList->SetPipelineState(transparentPipelineState.Get());	//αブレンドPSO
+	} else {
+		// 通常シーン：不透明用PSO（αブレンド無効）
+		commandList->SetPipelineState(graphicsPipelineState.Get());		//通常PSO
+	}
 	// 形状を設定。PSOに設定しているものとはまた別。RootSignatureと同じように同じものを設定すると考えておけばいい
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
