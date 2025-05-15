@@ -626,14 +626,17 @@ void DirectXCommon::MakePSO()
 	blendDesc.RenderTarget[0].RenderTargetWriteMask =
 		D3D12_COLOR_WRITE_ENABLE_ALL;
 
-	//αブレンドするために追加
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	//αブレンドするためのブレンドディスク
+	D3D12_BLEND_DESC transparentBlendDesc{};
+	transparentBlendDesc.RenderTarget[0].RenderTargetWriteMask =
+		D3D12_COLOR_WRITE_ENABLE_ALL;
+	transparentBlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	transparentBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparentBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	transparentBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparentBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparentBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparentBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	//																			//
 	//						RasterizerStateの設定								//
@@ -693,15 +696,23 @@ void DirectXCommon::MakePSO()
 	//depthStencilの設定
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-
 	// 実際に生成
-
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 	//生成できなかったら起動できない
 	Logger::Log(Logger::GetStream(), "Complete create PSO!!\n");//PSO生成完了のログを出す
+
+	// 透明用PSO作成
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentPipelineStateDesc = graphicsPipelineStateDesc;  // コピー
+	transparentPipelineStateDesc.BlendState = transparentBlendDesc;                   // 透明用ブレンドに変更
+
+	hr = device->CreateGraphicsPipelineState(&transparentPipelineStateDesc, IID_PPV_ARGS(&transparentPipelineState));
+	assert(SUCCEEDED(hr));
+	//生成できなかったら起動できない
+	Logger::Log(Logger::GetStream(), "Complete create transparentPSO!!\n");//PSO生成完了のログを出す
+
+
 
 
 }
@@ -894,7 +905,8 @@ void DirectXCommon::PreDraw(bool isDrectionScene)
 	commandList->RSSetScissorRects(1, &scissorRect);			//Scissorを設定
 	// RootSignatureを設定。PSOに設定しているけど別途設定（PSOと同じもの）が必要
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get());		//PSOを設定
+	//commandList->SetPipelineState(graphicsPipelineState.Get());		//PSOを設定
+	commandList->SetPipelineState(transparentPipelineState.Get());		//会ブレンド対応できるPSOに設定
 	// 形状を設定。PSOに設定しているものとはまた別。RootSignatureと同じように同じものを設定すると考えておけばいい
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

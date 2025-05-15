@@ -356,6 +356,8 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;//実際に生成されるPSO
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> transparentPipelineState;//実際に生成されるPSO(αブレンド用)
+
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
