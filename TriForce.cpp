@@ -10,13 +10,14 @@ TriForce::TriForce(ID3D12Device* device)
 		rotateEnd[i] = { 0.0f,0.0f,0.0f };
 
 		triforceEmitter[i] = new TriforceEmitter(device);
+		triforceEmitter[i]->Initialize();
 	}
 	moveEnd[0] = { 0.0f,0.55f,0.0f };
 	moveEnd[1] = { -0.5f,-0.47f,0.0f };
 	moveEnd[2] = { 0.5f,-0.47f,0.0f };
 	t = 0;
 	shouldStartEasing = false; // 初期状態ではイージングしない
-		endEaseTimer = 0.0f;
+	easeStartTimer = kStartTime;
 }
 
 TriForce::~TriForce()
@@ -59,7 +60,7 @@ void TriForce::ResetProgress()
 	t = 0.0f;
 
 	// 必要に応じて他の状態もリセット
-	endEaseTimer = 0.0f;
+	easeStartTimer = kStartTime;
 
 	// イージング開始フラグもリセット
 	shouldStartEasing = false;
@@ -73,6 +74,15 @@ void TriForce::ResetProgress()
 
 void TriForce::Update(const Matrix4x4& viewProjectionMatrix)
 {
+	if (!shouldStartEasing) {
+		easeStartTimer -= (1.0f / 60.0f);
+
+		if (easeStartTimer <= 0.0f) {
+			shouldStartEasing = true;
+		}
+	}
+
+
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		triangularPrism[i]->Update(viewProjectionMatrix);
 	}

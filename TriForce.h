@@ -55,12 +55,7 @@ public:
 	/// <param name="commandList"></param>
 	/// <param name="textureHandle"></param>
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
-	
-	void OnLastParticleDeleted(); // コールバック処理用
-	void ResetMainColor();        // 色をリセット
-	void SetColor(const Vector4& color); // 色を設定
 
-	Vector4 GetColor()const ;
 	const Vector3Transform& GetTransform() const { return triangularPrism[0]->GetTransform(); }
 
 	bool IsCompleted() const { return t >= 1.0f; }
@@ -82,8 +77,10 @@ private:
 	Vector3 rotateEnd[3];
 	float t;
 
-	///移動用のイージングが完了してからのタイマー
-	float endEaseTimer;
+	///移動用のイージングが開始するまでの時間
+	const float kStartTime = 5;
+	float easeStartTimer=kStartTime;
+
 
 	///イージング開始フラグ
 	bool shouldStartEasing;

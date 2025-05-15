@@ -10,6 +10,7 @@ public:
 	// コピー禁止
 	TriforceParticle(const TriforceParticle&) = delete;
 	TriforceParticle& operator=(const TriforceParticle&) = delete;
+	void Reset(const Vector3Transform& newTransform);
 
 	void Update(float deltaTime, const Matrix4x4& viewProjection);
 	//イージングが終わった後一個だけに適用するUpdate

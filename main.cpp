@@ -252,7 +252,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
 	triforce->Initialize();
 	//開始と同時にイージング開始させる
-	triforce->StartEasing();
+	//triforce->StartEasing();
 	///パーティクル
 
 	const int EmitterIndex = 2;
@@ -579,6 +579,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		} else {
 			///映像演出のシーン
 #pragma region DiectionScene
+
+			
 
 
 

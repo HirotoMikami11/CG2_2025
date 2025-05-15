@@ -18,6 +18,14 @@ TriforceParticle::~TriforceParticle()
 	delete prism;
 }
 
+void TriforceParticle::Reset(const Vector3Transform& newTransform) {
+	transform = newTransform;
+	lifeTime = 1.0f;
+	currentTime = 0.0f;
+	alpha = 1.0f;
+	// 新しい座標を設定
+	prism->SetTransform(transform);
+}
 void TriforceParticle::Update(float deltaTime, const Matrix4x4& viewProjection) {
 	currentTime += deltaTime;
 
@@ -43,7 +51,5 @@ void TriforceParticle::UpdateEaseEnd(float deltaTime, const Matrix4x4& viewProje
 }
 
 void TriforceParticle::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle) {
-
-
 	prism->Draw(commandList, textureHandle);
 }
