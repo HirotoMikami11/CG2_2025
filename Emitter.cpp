@@ -51,7 +51,7 @@ void Emitter::Initialize(int ImGuiNumber) {
 }
 void Emitter::Update(float deltaTime) {
 
-	ImGui();
+	//ImGui();
 
 	// 生成
 	spawnTimer += deltaTime;

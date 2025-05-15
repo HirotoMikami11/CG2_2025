@@ -261,7 +261,7 @@ public:
 	/// <summary>
 	/// 描画前の処理
 	/// </summary>
-	void PreDraw(bool isDrectionScene);
+	void PreDraw(bool isDrectionScene, bool breakScreenEffect);
 
 	/// <summary>
 	/// 描画後の処理

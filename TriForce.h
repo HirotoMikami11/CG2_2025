@@ -40,9 +40,8 @@ public:
 	/// <summary>
 	/// イージングする動作の関数
 	/// </summary>
-	/// <param name="easing_num">デバッグ用</param>
 	/// <param name="viewProjection">ビュープロジェクション行列</param>
-	void MoveEasing(int easing_num, const Matrix4x4& viewProjection);
+	void MoveEasing(const Matrix4x4& viewProjection);
 
 	/// <summary>
 	/// 更新
@@ -56,11 +55,12 @@ public:
 	/// <param name="commandList"></param>
 	/// <param name="textureHandle"></param>
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
+	
+	void OnLastParticleDeleted(); // コールバック処理用
+	void ResetMainColor();        // 色をリセット
+	void SetColor(const Vector4& color); // 色を設定
 
-	Vector4& GetColor() {
-		return triangularPrism[0]->GetColor();
-	}
-
+	Vector4 GetColor()const ;
 	const Vector3Transform& GetTransform() const { return triangularPrism[0]->GetTransform(); }
 
 	bool IsCompleted() const { return t >= 1.0f; }
@@ -87,4 +87,7 @@ private:
 
 	///イージング開始フラグ
 	bool shouldStartEasing;
+
+
+
 };

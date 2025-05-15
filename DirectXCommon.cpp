@@ -831,7 +831,7 @@ void DirectXCommon::BeginOffScreen()
 	commandList->RSSetViewports(1, &viewport);
 	commandList->RSSetScissorRects(1, &scissorRect);
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->SetPipelineState(graphicsPipelineState.Get());
+	commandList->SetPipelineState(transparentPipelineState.Get());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
@@ -847,7 +847,7 @@ void DirectXCommon::EndOffScreen()
 	commandList->ResourceBarrier(1, &barrier);
 }
 
-void DirectXCommon::PreDraw(bool isDrectionScene)
+void DirectXCommon::PreDraw(bool isDrectionScene, bool breakScreenEffect)
 {
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -877,17 +877,42 @@ void DirectXCommon::PreDraw(bool isDrectionScene)
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 
-	///	指定した色で画面全体をクリアする(バックバッファの色を変更できる)
-		///通常の時は、kamataengineと同じ色
-	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
-	if (isDrectionScene) {
-		///演出の時は黒
-		clearColor[0] = { 0.0f };
-		clearColor[1] = { 0.0f };
-		clearColor[2] = { 0.0f };
-		clearColor[3] = { 1.0f };
+	///	指定した色で画面全体をクリアする(バックバッファの色を変更)
+	///通常の時は、kamataengineと同じ色
+	float clearNormalColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
+	///画面が割れるときはの時は、白色
+	float clearBreakColor[] = { 1.0f,1.0f,1.0f,1.0f };//白色。RGBAの順
+	///演出の時は、黒色
+	float clearDirectionColor[] = { 0.0f,0.0f,0.0f,0.0f };//黒色。RGBAの順
+	float clearColor[] = { 0.0f,0.0f,0.0f,0.0f };
 
-		// TODO:ここで、画面が割れるフラグができた時に色を青っぽい色（もしくは白色）に戻す。裏の色がわかりやすくなる。
+
+	if (isDrectionScene) {
+
+		if (breakScreenEffect) {
+			// TODO:ここで、画面が割れるフラグができた時に色を青っぽい色（もしくは白色）に戻す。裏の色がわかりやすくなる。
+			///色以外の色を背景色にするとなぜかトライフォースが透明？になりカクついたように見えてしまう
+			///アルファブレンドの影響でトライフォースも透明になってしまっている？なぜparticleが消えた瞬間にそうなるか不明
+			clearColor[0] = clearBreakColor[0];
+			clearColor[1] = clearBreakColor[1];
+			clearColor[2] = clearBreakColor[2];
+			clearColor[3] = clearBreakColor[3];
+		} else {
+			///われていないときの演出は黒
+			clearColor[0] = clearDirectionColor[0];
+			clearColor[1] = clearDirectionColor[1];
+			clearColor[2] = clearDirectionColor[2];
+			clearColor[3] = clearDirectionColor[3];
+
+		}
+	} else {
+		///通常の時は、kamataengineと同じ色
+		clearColor[0] = clearNormalColor[0];
+		clearColor[1] = clearNormalColor[1];
+		clearColor[2] = clearNormalColor[2];
+		clearColor[3] = clearNormalColor[3];
+
+
 	}
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);

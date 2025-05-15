@@ -40,7 +40,7 @@ SkyDustEmitter::~SkyDustEmitter() {
 
 void SkyDustEmitter::Update(float deltaTime) {
 	
-	ImGui();
+	//ImGui();
 
 	// 生成
 	spawnTimer += deltaTime;

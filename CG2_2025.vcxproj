@@ -106,6 +106,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="SkyDustEmitter.cpp" />
     <ClCompile Include="SkyDustParticle.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="TriangularPrism.cpp" />
     <ClCompile Include="TriangularPyramid.cpp" />
@@ -151,6 +152,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="SkyDustEmitter.h" />
     <ClInclude Include="SkyDustParticle.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Sprite.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="TriangularPrism.h" />
     <ClInclude Include="TriangularPyramid.h" />

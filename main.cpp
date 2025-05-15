@@ -51,6 +51,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 //球体
 #include "Sphere.h"
 
+//画像
+#include "Sprite.h"
+
 
 #include "AudioManager.h"
 #include "Emitter.h"
@@ -299,15 +302,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Sphere
 
-	// 球体の初期化
-	Sphere* sphere = new Sphere();
-	sphere->Initialize(directXCommon->GetDevice());
-	sphere->SetPosition({ 0.0f, 0.0f, 0.0f });
-	sphere->SetRotation({ 0.0f, 0.0f, 0.0f });
-	sphere->SetScale({ 1.0f, 1.0f, 1.0f });
-	sphere->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-	// デフォルトのライト設定
-	sphere->SetDirectionalLight({ 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1.0f);
+	//// 球体の初期化
+	//Sphere* sphere = new Sphere();
+	//sphere->Initialize(directXCommon->GetDevice());
+	//sphere->SetPosition({ 0.0f, 0.0f, 0.0f });
+	//sphere->SetRotation({ 0.0f, 0.0f, 0.0f });
+	//sphere->SetScale({ 1.0f, 1.0f, 1.0f });
+	//sphere->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	//// デフォルトのライト設定
+	//sphere->SetDirectionalLight({ 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1.0f);
 
 #pragma endregion
 
@@ -317,98 +320,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Sprite"
 
-	//																			//
-	//							VertexResourceの作成								//
-	//																			//
-
-	//実際に頂点リソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 4); //２つ三角形で矩形を作るので頂点データ6つ
-
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-
-	//頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
-	//リソースの戦闘のアドレスから使う
-	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 4; //２つ三角形を作るので６個の頂点データ
-	//1頂点当たりのサイズ
-	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-
-	//																			//
-	//							indexResourceの作成								//
-	//																			//
-
-	//実際にインデックスリソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 6); //２つ三角形を作るので６個の頂点データ
-
-	//																			//
-	//							indexBufferViewの作成							//
-	//																			//
-	//インデックスバッファビューを作成
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-	//リソースの先頭のアドレスから使う
-	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	//使用するリソースのサイズはインデックス6つ分のサイズ
-	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6; //２つ三角形を作るので６個の頂点データ
-	//1頂点当たりのサイズはuint32_t
-	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-
-
-	//インデックスリソースにデータを書き込む
-	uint32_t* indexDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
-
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite =
-		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	//マテリアルデータに書き込む
-	Material* materialDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	materialResourceSprite->
-		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-	//白で初期化
-
-	materialDataSprite->color = { 1.0f,1.0f,1.0,1.0f };
-	materialDataSprite->enableLighting = false;
-	materialDataSprite->useLambertianReflectance = false;
-	materialDataSprite->uvTransform = MakeIdentity4x4();
-
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
-
-	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	Microsoft::WRL::ComPtr <ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* transformationMatrixDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
-	//単位行列を書き込んでおく
-
-	transformationMatrixDataSprite->WVP = MakeIdentity4x4();
-	transformationMatrixDataSprite->World = MakeIdentity4x4();
-
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-
-	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	//Spriteを表示するための四頂点
-	CreateSpriteVertexData(vertexDataSprite, { 320.0f,180.0f }, { 320.0f,180.0f });
+//// スプライトの初期化
+//	Sprite* sprite = new Sprite();
+//	sprite->Initialize(directXCommon->GetDevice());
+//	sprite->SetPosition({ 320.0f, 180.0f });         // 中心座標
+//	sprite->SetSize({ 640.0f, 360.0f });            // 実際のサイズ
+//	sprite->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 #pragma endregion
 
 	///*-----------------------------------------------------------------------*///
@@ -505,25 +422,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Transform変数を作る
 
-
-	//SpriteのTransform変数を作る
-	Vector3Transform transformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
-	};
-
-	Vector3Transform uvTransformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
-	};
 	//WorldViewProjectionMatrixを作る
 	Vector3Transform cameraTransform{
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,-10.0f}
 	};
+
 	// モデル用のTransform変数
 	Vector3Transform transformModel{
 		{1.0f, 1.0f, 1.0f},
@@ -560,6 +465,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		//								更新処理										//
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///								更新処理									   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
 
 		//ImGuiにフレームが始まることを伝える
 		ImGui_ImplDX12_NewFrame();
@@ -574,9 +484,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//viewprojectionを計算
 		Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
 
-
-		///必須内容のシーン
 		if (!directionScene) {
+			///必須内容のシーン
 #pragma region normalScene
 
 #pragma	region ImGui
@@ -643,24 +552,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//							球体用のWVP										//
 			//																			//
 
-			 // 球体を回転させる
-			Vector3Transform transformSphere = sphere->GetTransform();
-			transformSphere.rotate.y += 0.01f;
-			sphere->SetRotation(transformSphere.rotate);
+			// // 球体を回転させる
+			//Vector3Transform transformSphere = sphere->GetTransform();
+			//transformSphere.rotate.y += 0.01f;
+			//sphere->SetRotation(transformSphere.rotate);
 
-			// 行列更新
-			sphere->Update(viewProjectionMatrix);
+			//// 行列更新
+			//sphere->Update(viewProjectionMatrix);
 
 			//																			//
 			//							Sprite用のWVP									//
 			//																			//
 
-			//viewprojectionを計算
-			Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
-			//行列の更新
-			UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
-			//uvTransformの更新
-			UpdateUVTransform(uvTransformSprite, materialDataSprite);
+			//// スプライトの更新
+			//sprite->Update();
 
 			//																			//
 			//							Model用のWVP									//
@@ -673,35 +578,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		} else {
 			///映像演出のシーン
-
 #pragma region DiectionScene
 
 
-#pragma region ImGui
-
-			ImGui::Begin("triangularPrism");
-			ImGui::Text("triangularPrism");
-			if (ImGui::Button("Reset")) {
-				triforce->Initialize();
-			}
-			//コンボボックスの選択肢
-			const char* easing[] = { "easeOutCubic" ,"easeOutBack","easeOutQuad","easeOutBounce","EaseOutSine","easeOutExpo" };
-
-			static int selected_Easing = { 0 };
-			if (ImGui::Combo(("Select easing "), &selected_Easing, easing, IM_ARRAYSIZE(easing))) {
-				///このimguiで中身を変更し、それをイージングするところで変える。
-
-			}
-			ImGui::End();
-
-#pragma endregion
-
-
-#pragma endregion
-
 
 			// トライフォースの更新（イージング開始フラグに応じて動作）
-			triforce->MoveEasing(selected_Easing, viewProjectionMatrix);
+			triforce->MoveEasing(viewProjectionMatrix);
 			triforce->Update(viewProjectionMatrix);
 
 			// triforceが完了したらbreakScreenEffectを開始
@@ -711,7 +593,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// トライフォースが完了して、エフェクトがアクティブでない場合のみ開始
 			if (triforceCompleted && !lastTriforceCompleted && !breakScreenEffect->GetActive()) {
 				breakScreenEffect->SetActive(true);
-				triforce->StopEasing(); // エフェクト開始時にイージングを停止
+				//triforce->StopEasing(); // エフェクト開始時にイージングを停止
 			}
 			lastTriforceCompleted = triforceCompleted;
 
@@ -725,7 +607,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (movingOutJustFinished && !hasResetTriforce) {
 				// トライフォースを完全に初期状態にリセット（破片が画面外に移動中）
 				triforce->Initialize();
-				triforce->ResetProgress(); // 明示的に進行度とイージングフラグをリセット
+				triforce->ResetProgress(); // 進行度とイージングフラグをリセット
 				hasResetTriforce = true;
 			}
 
@@ -750,23 +632,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (breakScreenEffect->GetActive()) {
 				breakScreenEffect->Update(); // 引数なしで自動アニメーション
 			}
+
+
+
+
+			for (int i = 0; i < EmitterIndex; i++)
+			{
+				emitter[i]->Update((1.0f / 60.0f));
+			}
+
+			skyDustEmitter->Update((1.0f / 60.0f));
+
+#pragma endregion
+
 		}
-
-
-
-		for (int i = 0; i < EmitterIndex; i++)
-		{
-			emitter[i]->Update((1.0f / 60.0f));
-		}
-
-		skyDustEmitter->Update((1.0f / 60.0f));
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();
 
 		//								描画処理										//
 		///*-----------------------------------------------------------------------*///
 		//																			//
-		///				画面をクリアする処理が含まれたコマンドリストを作る				   ///
+		///								描画処理						　			   ///
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
@@ -777,10 +663,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
-		// 描画処理
 
-		// 描画処理でオフスクリーンレンダリングを演出シーンでのみ使用
-// 演出シーンかつBreakScreenEffectがアクティブな時のみオフスクリーンレンダリング
+		//																			//
+		//							オフスクリーンの処理								//
+		//																			//
+		
+		/// オフスクリーンレンダリングを演出シーンでのみ使用
+		/// 演出シーンかつBreakScreenEffectがtrueな時のみオフスクリーンレンダリング
 		if (directionScene && breakScreenEffect->GetActive()) {
 			// 1. オフスクリーンレンダリング開始
 			directXCommon->BeginOffScreen();
@@ -796,38 +685,99 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			directXCommon->EndOffScreen();
 
 			// 4. メインのレンダーターゲットに戻してポストエフェクトを描画
-			directXCommon->PreDraw(directionScene);
+			directXCommon->PreDraw(directionScene, breakScreenEffect->GetActive());
 
 			// 5. breakScreenエフェクトを描画
 			breakScreenEffect->Draw(
 				directXCommon->GetCommandList(),
 				directXCommon->GetOffScreenSRVHandle()
 			);
+
+
+
 		} else {
+
+		//																	//
+		//							通常描画の処理								//
+		//																	//
+
 			// 通常の描画
-			directXCommon->PreDraw(directionScene);
+			directXCommon->PreDraw(directionScene, breakScreenEffect->GetActive());
 
 			if (!directionScene) {
-				// 通常シーン：不透明描画
+				///必須内容のシーン
+
+#pragma region normalScene
+
+				//																			//
+				//								三角形用の描画									//
+				//																			//
+#pragma region Triangle
 				for (int i = 0; i < indexTriangle; i++) {
+
+					//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+
 					triangle[i]->Draw(
 						directXCommon->GetCommandList(),
 						useMonsterBall[i] ? directXCommon->GetTextureGPUSrvHandles()[1] : directXCommon->GetTextureGPUSrvHandles()[0]
 					);
 				}
-				sphere->Draw(
+#pragma endregion
+
+				//																			//
+				//								Sphereの描画									//
+				//																			//
+#pragma region Sphere
+				//sphere->Draw(
+				//	directXCommon->GetCommandList(),
+				//	directXCommon->GetTextureGPUSrvHandles()[0]
+				//);
+#pragma endregion
+				//																			//
+				//								Spriteの描画									//
+				//																			//
+
+#pragma region Sprite
+
+	/*			sprite->Draw(
 					directXCommon->GetCommandList(),
 					directXCommon->GetTextureGPUSrvHandles()[0]
-				);
+				);*/
+
+#pragma endregion
+
+				//																			//
+				//								Modelの描画									//
+				//																			//
+
+#pragma region Model
+
+			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
+			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
+			//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
+			//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[2]); // テクスチャ
+			//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
+			//// インデックスバッファがない場合は直接頂点で描画
+			//directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+
+#pragma endregion
+
+#pragma endregion
+
 			} else {
-				// 演出シーン：透明描画（オフスクリーンエフェクトなし）
+				///映像演出のシーン
+#pragma region DiectionScene
+
+				// 透明描画（オフスクリーンエフェクトなし）
 				triforce->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2]);
 				for (int i = 0; i < EmitterIndex; i++) {
 					emitter[i]->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 				}
 				skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 			}
+#pragma endregion
 		}
+
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), directXCommon->GetCommandList());
 
@@ -862,8 +812,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (int i = 0; i < indexTriangle; i++) {
 		delete triangle[i];
 	}
-	delete sphere;
-
+	//delete sphere;
+	//delete sprite;
 	delete breakScreenEffect;
 	// winAppの終了処理
 	winApp->Finalize();

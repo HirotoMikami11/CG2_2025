@@ -16,6 +16,7 @@ TriForce::TriForce(ID3D12Device* device)
 	moveEnd[2] = { 0.5f,-0.47f,0.0f };
 	t = 0;
 	shouldStartEasing = false; // 初期状態ではイージングしない
+		endEaseTimer = 0.0f;
 }
 
 TriForce::~TriForce()
@@ -86,7 +87,7 @@ void TriForce::Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR
 	}
 }
 
-void TriForce::MoveEasing(int easing_num, const Matrix4x4& viewProjection)
+void TriForce::MoveEasing(const Matrix4x4& viewProjection)
 {
 	// イージング開始フラグがfalseの場合は何もしない
 	if (!shouldStartEasing) {
@@ -99,29 +100,8 @@ void TriForce::MoveEasing(int easing_num, const Matrix4x4& viewProjection)
 
 	//イージング
 	float easeT;
-	switch (easing_num) {
-	case 0:
-		easeT = easeOutCubic(t);///第一候補！！
-		break;
-	case 1:
-		easeT = easeOutBack(t);
-		break;
-	case 2:
-		easeT = easeOutQuad(t);
-		break;
-	case 3:
-		easeT = easeOutBounce(t);
-		break;
-	case 4:
-		easeT = EaseOutSine(t);
-		break;
-	case 5:
-		easeT = easeOutExpo(t);
-		break;
-	default:
-		easeT = t;
-		break;
-	}
+
+	easeT = easeOutCubic(t);///第一候補！
 
 	for (int i = 0; i < indexTriangularPrism; i++) {
 		triangularPrism[i]->SetPosition(Lerp(moveStart[i], moveEnd[i], easeT));
