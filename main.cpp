@@ -251,8 +251,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///三角柱の生成
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
 	triforce->Initialize();
-	//開始と同時にイージング開始させる
-	//triforce->StartEasing();
+
 	///パーティクル
 
 	const int EmitterIndex = 2;
@@ -263,6 +262,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		emitter[i] = new Emitter(directXCommon->GetDevice());
 		emitter[i]->Initialize(i);
 	}
+
 	//白色、真上に上昇する
 	emitter[0]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
@@ -277,6 +277,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.05f,
 		Vector4{ 1.0f,1.0f,1.0f,0.0f }
 	);
+
 	//黄色、左斜め前方に上昇する
 	emitter[1]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
@@ -291,6 +292,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.05f,
 		Vector4{ 1.0f,1.0f,0.0f,0.0f }
 	);
+
+	//それ上に舞っているパーティクル　エミッターをImGuiで動かす前に作ったせいで独立した
 	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
 	skyDustEmitter->Initialize();
 
@@ -452,6 +455,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	////tagを利用して再生
 	//AudioManager::GetInstance()->PlayLoop("Alarm");
 	//AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
@@ -489,7 +493,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region normalScene
 
 #pragma	region ImGui
+
 			//開発用UIの処理
+			//課題の動作チェックするためのImgui
 			ImGui::Begin("Debug");
 
 			///
@@ -528,6 +534,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 			ImGui::End();
+
+
 #pragma endregion
 
 			//																			//
@@ -535,10 +543,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//																			//
 
 
-			//三角形を回転させる
 			for (int i = 0; i < indexTriangle; i++) {
 				Vector3Transform transform[2];
 				transform[i] = triangle[i]->GetTransform();
+
 				//transform[i].rotate.y += 0.03f;
 				//triangle[i]->SetRotation(transform[i].rotate);
 
@@ -580,7 +588,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			///映像演出のシーン
 #pragma region DiectionScene
 
-			
+
 
 
 
@@ -669,9 +677,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		//							オフスクリーンの処理								//
 		//																			//
+
 		
 		/// オフスクリーンレンダリングを演出シーンでのみ使用
 		/// 演出シーンかつBreakScreenEffectがtrueな時のみオフスクリーンレンダリング
+		
 		if (directionScene && breakScreenEffect->GetActive()) {
 			// 1. オフスクリーンレンダリング開始
 			directXCommon->BeginOffScreen();
@@ -699,9 +709,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		} else {
 
-		//																	//
-		//							通常描画の処理								//
-		//																	//
+			//																	//
+			//							通常描画の処理								//
+			//																	//
 
 			// 通常の描画
 			directXCommon->PreDraw(directionScene, breakScreenEffect->GetActive());
@@ -778,6 +788,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				skyDustEmitter->Draw(directXCommon->GetCommandList(), directXCommon->GetTextureGPUSrvHandles()[2], viewProjectionMatrix);
 			}
 #pragma endregion
+
 		}
 
 		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
@@ -814,8 +825,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (int i = 0; i < indexTriangle; i++) {
 		delete triangle[i];
 	}
+
 	//delete sphere;
 	//delete sprite;
+	
 	delete breakScreenEffect;
 	// winAppの終了処理
 	winApp->Finalize();

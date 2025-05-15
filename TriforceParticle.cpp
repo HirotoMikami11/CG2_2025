@@ -26,6 +26,7 @@ void TriforceParticle::Reset(const Vector3Transform& newTransform) {
 	// 新しい座標を設定
 	prism->SetTransform(transform);
 }
+
 void TriforceParticle::Update(float deltaTime, const Matrix4x4& viewProjection) {
 	currentTime += deltaTime;
 

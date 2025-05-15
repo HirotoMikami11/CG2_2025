@@ -24,11 +24,12 @@ void BreakScreenEffect::Initialize(ID3D12Device* device)
 	phaseTime = 0.0f;
 	breakScreenProgress = 0.0f;
 }
+
 void BreakScreenEffect::Update()
 {
 	if (!isActive) return;
 
-	const float deltaTime = 1.0f / 60.0f; // 60FPSと仮定
+	const float deltaTime = 1.0f / 60.0f;
 	totalAnimationTime += deltaTime;
 	phaseTime += deltaTime;
 
@@ -43,6 +44,7 @@ void BreakScreenEffect::Update()
 			phaseTime = 0.0f; // 次のフェーズ用にリセット
 		}
 	}
+
 	// フェーズ2: 画面外への移動 (shatterDuration ~ shatterDuration + moveOutDuration)
 	else if (isMovingOut && !isReturning) {
 		// 画面外への移動が完了したら戻りを開始
@@ -52,31 +54,32 @@ void BreakScreenEffect::Update()
 			phaseTime = 0.0f; // 次のフェーズ用にリセット
 		}
 	}
+
 	// フェーズ3: 元の位置への戻り (shatterDuration + moveOutDuration ~ total)
 	else if (isReturning) {
 		// 戻りが完了したらエフェクトを終了
 		if (phaseTime >= returnDuration) {
 			isReturning = false;
 			isCompleted = true;
-			// ☆修正点：自動的にリセットしてループすることを停止
-			// Reset(); // この行をコメントアウト
+			///ここでイージングを停止させると、付随したパーティクルの演出も停止するため動かしたままにする（要修正）
 			isActive = false; // 非アクティブにする
 		}
 	}
 
 	// マテリアルデータの更新
-	for (int i = 0; i < kTriangleCount; i++) {
-		if (materialDatas[i]) {
-			materialDatas[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-			materialDatas[i]->enableLighting = false;
-			materialDatas[i]->useLambertianReflectance = false;
-			materialDatas[i]->uvTransform = MakeIdentity4x4();
-		}
+
+	if (materialData) {
+		materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		materialData->enableLighting = false;
+		materialData->useLambertianReflectance = false;
+		materialData->uvTransform = MakeIdentity4x4();
+
 	}
 }
 void BreakScreenEffect::Draw(ID3D12GraphicsCommandList* commandList,
 	D3D12_GPU_DESCRIPTOR_HANDLE offScreenSRVHandle)
 {
+	///エフェクトが開始されていなければ、以下の処理はスキップ
 	if (!isActive) return;
 
 	// ポストエフェクト専用のルートシグネチャとPSOを設定
@@ -91,29 +94,12 @@ void BreakScreenEffect::Draw(ID3D12GraphicsCommandList* commandList,
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// デバッグ用の色配列
-	Vector4 debugColors[8] = {
-		{1.0f, 0.0f, 0.0f, 1.0f}, // 赤   - 上左
-		{0.0f, 1.0f, 0.0f, 1.0f}, // 緑   - 上右
-		{0.0f, 0.0f, 1.0f, 1.0f}, // 青   - 右上
-		{1.0f, 1.0f, 0.0f, 1.0f}, // 黄   - 右下
-		{1.0f, 0.0f, 1.0f, 1.0f}, // マゼンタ - 下右
-		{0.0f, 1.0f, 1.0f, 1.0f}, // シアン - 下左
-		{1.0f, 0.5f, 0.0f, 1.0f}, // オレンジ - 左下
-		{0.5f, 0.0f, 0.5f, 1.0f}  // 紫   - 左上
-	};
-
 	// 8つの三角形を描画
 	for (int i = 0; i < kTriangleCount; i++) {
-		// デバッグ用：色分けまたは白色
-		if (breakScreenProgress == 0.0f) {
-			materialDatas[i]->color = debugColors[i];
-		} else {
-			materialDatas[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		}
 
+		materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// マテリアルを設定
-		commandList->SetGraphicsRootConstantBufferView(0, materialBuffers[i]->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(0, materialBuffer->GetGPUVirtualAddress());
 
 		// 各三角形ごとに変形行列を計算
 		Vector3Transform transform{};
@@ -130,8 +116,7 @@ void BreakScreenEffect::Draw(ID3D12GraphicsCommandList* commandList,
 			easedProgress = easeInCirc(phaseTime / moveOutDuration);
 			currentMoveDistance = breakScreenProgress * 0.5f + easedProgress * maxMoveDistance;
 		} else if (isReturning) {
-			// ☆修正点：元の位置への戻りのイージングを変更
-			// easeInCirc（急加速）から easeOutCubic（滑らかな減速）に変更
+			//easeOutCubicで動きに波をつける
 			easedProgress = easeOutCubic(phaseTime / returnDuration);
 			currentMoveDistance = (breakScreenProgress * 0.5f + maxMoveDistance) * (1.0f - easedProgress);
 		} else if (breakScreenProgress > 0.0f) {
@@ -188,8 +173,7 @@ void BreakScreenEffect::Reset()
 	isReturning = false;
 	totalAnimationTime = 0.0f;
 	phaseTime = 0.0f;
-	// ☆修正点：リセット後は非アクティブにする
-	isActive = false; // false に変更
+	isActive = false;
 }
 void BreakScreenEffect::GenerateRandomCenter()
 {
@@ -294,7 +278,7 @@ void BreakScreenEffect::CreateTriangleVertices()
 	triangleVertices.push_back({ center, uvCenter, normal });
 }
 
-// 他のCreateBuffers、CreatePostEffectPSOは既存のままで問題ありません
+
 void BreakScreenEffect::CreateBuffers(ID3D12Device* device)
 {
 	// 頂点バッファの作成
@@ -311,15 +295,15 @@ void BreakScreenEffect::CreateBuffers(ID3D12Device* device)
 	vertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * triangleVertices.size());
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	// 8つのマテリアルバッファを作成（各三角形用）
-	for (int i = 0; i < kTriangleCount; ++i) {
-		materialBuffers[i] = CreateBufferResource(device, sizeof(Material));
-		materialBuffers[i]->Map(0, nullptr, reinterpret_cast<void**>(&materialDatas[i]));
-		materialDatas[i]->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		materialDatas[i]->enableLighting = false;
-		materialDatas[i]->useLambertianReflectance = false;
-		materialDatas[i]->uvTransform = MakeIdentity4x4();
-	}
+	// マテリアルバッファを作成
+
+	materialBuffer = CreateBufferResource(device, sizeof(Material));
+	materialBuffer->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialData->enableLighting = false;
+	materialData->useLambertianReflectance = false;
+	materialData->uvTransform = MakeIdentity4x4();
+
 
 	// 8つのトランスフォームバッファを作成（各三角形用）
 	for (int i = 0; i < kTriangleCount; ++i) {
@@ -337,6 +321,7 @@ void BreakScreenEffect::CreateBuffers(ID3D12Device* device)
 	directionalLightData->intensity = 1.0f;
 }
 
+/// ここで生成していいかわからないけどここ以外で生成する場所がわからなかった
 void BreakScreenEffect::CreatePostEffectPSO(ID3D12Device* device)
 {
 	// 1. ルートシグネチャの作成（DirectXCommonと同じ）

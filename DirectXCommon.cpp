@@ -792,8 +792,8 @@ void DirectXCommon::MakeViewport()
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
+	
 	//シザー矩形
-
 	//基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
 	scissorRect.right = kClientWidth;
@@ -803,7 +803,7 @@ void DirectXCommon::MakeViewport()
 
 void DirectXCommon::BeginOffScreen()
 {
-	// リソースバリア：GENERIC_READ -> RENDER_TARGET
+	// GENERIC_READからRENDER_TARGET
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	barrier.Transition.pResource = offScreenTexture.Get();
@@ -837,7 +837,7 @@ void DirectXCommon::BeginOffScreen()
 
 void DirectXCommon::EndOffScreen()
 {
-	// リソースバリア：RENDER_TARGET -> GENERIC_READ
+	// RENDER_TARGETからGENERIC_READ
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	barrier.Transition.pResource = offScreenTexture.Get();

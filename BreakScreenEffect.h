@@ -88,8 +88,8 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
 	// 各三角形用のマテリアルバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffers[8];
-	Material* materialDatas[8] = { nullptr };
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffer;
+	Material* materialData = { nullptr };
 
 	// 各三角形用のトランスフォームバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformBuffers[8];
