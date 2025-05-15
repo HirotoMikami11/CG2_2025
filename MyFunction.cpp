@@ -163,73 +163,6 @@ void CreateSpriteVertexData(VertexData vertexDataSprite[], Vector2 center, Vecto
 //	}
 //}
 
-void CreateSphereVertexData(VertexData vertexData[])
-{
-	const uint32_t kSubdivision = 16; // 分割数
-	const float kLonEvery = (2 * float(M_PI)) / kSubdivision; // 経度分割1つ分の角度
-	const float kLatEvery = float(M_PI) / kSubdivision; // 緯度分割1つ分の角度
-	uint32_t vertexCount = 0;
-
-
-	// 頂点データの作成
-	// (kSubdivision+1) × (kSubdivision+1) の格子状の頂点を作成
-	for (uint32_t latIndex = 0; latIndex <= kSubdivision; ++latIndex) {
-		float lat = (-float(M_PI) / 2.0f) + kLatEvery * latIndex; // 現在の緯度(θ)
-		for (uint32_t lonIndex = 0; lonIndex <= kSubdivision; ++lonIndex) {
-			float lon = lonIndex * kLonEvery; // 現在の経度(φ)
-
-			// 頂点位置の計算
-			vertexData[vertexCount].position.x = cos(lat) * cos(lon);
-			vertexData[vertexCount].position.y = sin(lat);
-			vertexData[vertexCount].position.z = cos(lat) * sin(lon);
-			vertexData[vertexCount].position.w = 1.0f;
-
-			// テクスチャ座標の計算
-			vertexData[vertexCount].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[vertexCount].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-
-			// 法線は頂点位置と同じ（正規化された位置ベクトル）
-			vertexData[vertexCount].normal.x = vertexData[vertexCount].position.x;
-			vertexData[vertexCount].normal.y = vertexData[vertexCount].position.y;
-			vertexData[vertexCount].normal.z = vertexData[vertexCount].position.z;
-
-			vertexCount++;
-		}
-	}
-}
-
-void CreateSphereIndexData(uint32_t indexData[])
-{
-	const uint32_t kSubdivision = 16; // 分割数
-	const float kLonEvery = (2 * float(M_PI)) / kSubdivision; // 経度分割1つ分の角度
-	const float kLatEvery = float(M_PI) / kSubdivision; // 緯度分割1つ分の角度
-	uint32_t indexCount = 0;
-	uint32_t maxIndex = kSubdivision * kSubdivision * 6;//三角リスト方式の頂点数と同じ数
-
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			// 各格子点のインデックスを計算
-			uint32_t currentRow = latIndex * (kSubdivision + 1);
-			uint32_t nextRow = (latIndex + 1) * (kSubdivision + 1);
-
-			uint32_t currentIndex = currentRow + lonIndex;
-			uint32_t rightIndex = currentRow + lonIndex + 1;
-			uint32_t bottomIndex = nextRow + lonIndex;
-			uint32_t bottomRightIndex = nextRow + lonIndex + 1;
-
-			// 1つ目の三角形（左上、左下、右上）
-			indexData[indexCount++] = currentIndex;
-			indexData[indexCount++] = bottomIndex;
-			indexData[indexCount++] = rightIndex;
-
-			// 2つ目の三角形（右上、左下、右下）
-			indexData[indexCount++] = rightIndex;
-			indexData[indexCount++] = bottomIndex;
-			indexData[indexCount++] = bottomRightIndex;
-		}
-	}
-
-}
 
 
 
@@ -362,7 +295,7 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 /// <param name="viewProjectionMatrix">ビュープロジェクション</param>
 /// <param name="viewportMatrix">ビューポート</param>
 /// <param name="color">色</param>
-void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+void DrawSphere(const SphereMath& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	const uint32_t kSubdivision = 10;//分割数
 	const float kLonEvery = (2 * float(M_PI)) / kSubdivision;		//経度分割1つ分の角度
 	const float kLatEvery = float(M_PI) / kSubdivision;				//緯度分割1つ分の角度

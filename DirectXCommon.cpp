@@ -110,6 +110,7 @@ D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	}
 	//デバイスの生成がうまくいかなかったので起動できない。
 	assert(device != nullptr);
+
 	Logger::Log(Logger::GetStream(), "Complete create D3D12Device!!\n");//初期化完了のログを出す
 
 

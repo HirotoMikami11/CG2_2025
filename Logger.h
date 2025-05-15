@@ -13,18 +13,18 @@ class Logger
 {
 public:
     static void Initalize();
+    static void Finalize();
 
     static void Log(const std::string& message);
-
     static void Log(std::ostream& os, const std::string& message);
 
     static std::wstring ConvertString(const std::string& str);
-
     static std::string ConvertString(const std::wstring& str);
 
+    // ファイルストリームを直接取得（Logger::GetStream() << "message" の使い方用）
     static std::ofstream& GetStream() { return logFileStream_; };
-private:
-//ログの出力先
-    static std::ofstream logFileStream_; 
-};
 
+private:
+    // ログの出力先ファイルストリーム
+    static std::ofstream logFileStream_;
+};

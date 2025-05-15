@@ -48,13 +48,13 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "Triangle.h"
 //三角柱を三つ
 #include "TriForce.h"
-//三角錐
-#include "TriangularPyramid.h"
-#include "AudioManager.h"
+//球体
+#include "Sphere.h"
 
+
+#include "AudioManager.h"
 #include "Emitter.h"
 #include "SkyDustEmitter.h"
-
 #include "BreakScreenEffect.h"
 
 /// <summary>
@@ -227,6 +227,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
+#pragma region Triangle
+
 
 	///三角形の初期化
 	Triangle* triangle[2];
@@ -241,6 +243,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		triangle[i]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 
+#pragma endregion
 
 	///三角柱の生成
 	TriForce* triforce = new TriForce(directXCommon->GetDevice());
@@ -288,9 +291,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	SkyDustEmitter* skyDustEmitter = new SkyDustEmitter(directXCommon->GetDevice());
 	skyDustEmitter->Initialize();
 
-#pragma region Triangle
 
-#pragma endregion
 
 	///*-----------------------------------------------------------------------*///
 	///									球体									///
@@ -298,114 +299,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Sphere
 
-	//																			//
-	//							VertexResourceの作成								//
-	//																			//
-
-	//実際に頂点リソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * (16 * 16 * 6)); //球用1536
-
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-
-	//頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
-	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * ((16 + 1) * (16 + 1)); //分割数nの時、交点は(n+1)になるため
-	//1頂点当たりのサイズ
-	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
-
-	//																			//
-	//							indexResourceの作成								//
-	//																			//
-
-	//実際にインデックスリソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 16 * 16 * 6); //２つ三角形を作るので６個の頂点データ
-
-
-	//																			//
-	//							indexBufferViewの作成							//
-	//																			//
-
-	//インデックスバッファビューを作成
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSphere{};
-	//リソースの先頭のアドレスから使う
-	indexBufferViewSphere.BufferLocation = indexResourceSphere->GetGPUVirtualAddress();
-	//使用するリソースのサイズはインデックス6つ分のサイズ
-	indexBufferViewSphere.SizeInBytes = sizeof(uint32_t) * 16 * 16 * 6; //三角リスト方式の頂点数と同じ
-	//1頂点当たりのサイズはuint32_t
-	indexBufferViewSphere.Format = DXGI_FORMAT_R32_UINT;
-
-
-	//インデックスリソースにデータを書き込む
-	uint32_t* indexDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	indexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSphere));
-	CreateSphereIndexData(indexDataSphere);
-
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSphere =
-		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	//マテリアルデータに書き込む
-	Material* materialDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	materialResourceSphere->
-		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
-	//白で初期化
-
-	materialDataSphere->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialDataSphere->enableLighting = true;
-	materialDataSphere->useLambertianReflectance = false;
-	materialDataSphere->uvTransform = MakeIdentity4x4();
-
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
-
-	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* wvpDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere));
-	//単位行列を書き込んでおく
-	wvpDataSphere->WVP = MakeIdentity4x4();
-	wvpDataSphere->World = MakeIdentity4x4();
-
-
-	//																			//
-	//							DirectionalLightのResourceを作る						//
-	//																			//
-
-	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
-	//データを書き込む
-	DirectionalLight* directionalLightDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	directionalLightResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataSphere));
-	//単位行列を書き込んでおく
-	directionalLightDataSphere->color = { 1.0f,1.0f,1.0f,1.0f };
-	directionalLightDataSphere->direction = { 0.0f,-1.0f,0.0f };
-	directionalLightDataSphere->intensity = 1.0f;
-
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-
-	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
-
-	//球体のデータ
-	CreateSphereVertexData(vertexDataSphere);
+	// 球体の初期化
+	Sphere* sphere = new Sphere();
+	sphere->Initialize(directXCommon->GetDevice());
+	sphere->SetPosition({ 0.0f, 0.0f, 0.0f });
+	sphere->SetRotation({ 0.0f, 0.0f, 0.0f });
+	sphere->SetScale({ 1.0f, 1.0f, 1.0f });
+	sphere->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	// デフォルトのライト設定
+	sphere->SetDirectionalLight({ 0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, 1.0f);
 
 #pragma endregion
 
@@ -602,13 +504,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//								　変数宣言									//
 
 	//Transform変数を作る
-	// 
-	//SphereのTransform変数を作る
-	Vector3Transform transformSphere{
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f}
-	};
 
 
 	//SpriteのTransform変数を作る
@@ -748,12 +643,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//							球体用のWVP										//
 			//																			//
 
+			 // 球体を回転させる
+			Vector3Transform transformSphere = sphere->GetTransform();
 			transformSphere.rotate.y += 0.01f;
+			sphere->SetRotation(transformSphere.rotate);
 
-			//viewprojectionを計算
-			Matrix4x4 viewProjectionMatrixSphere = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
-			//行列の更新
-			UpdateMatrix4x4(transformSphere, viewProjectionMatrix, wvpDataSphere);
+			// 行列更新
+			sphere->Update(viewProjectionMatrix);
 
 			//																			//
 			//							Sprite用のWVP									//
@@ -881,7 +777,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
-		// 描画処理（breakScreenEffectの状態をチェック）
+		// 描画処理
+
+		///BreakScreenがtrueのときオフスクリーンレンダリング
 		if (breakScreenEffect->GetActive()) {
 			// 1. オフスクリーンレンダリング開始
 			directXCommon->BeginOffScreen();
@@ -940,19 +838,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//								Sphereの描画									//
 				//																			//
 #pragma region Sphere
-
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-		////wvp用のCBufferの場所を設定
-		//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? directXCommon->GetTextureSrvHandles()[1] : directXCommon->GetTextureSrvHandles()[0]);
-		//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
-		//directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
-		/////indexBufferで表示するため、VertexBufferはコメントアウト
-		//// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-		////directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
-		//directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
+				sphere->Draw(
+					directXCommon->GetCommandList(),
+					directXCommon->GetTextureGPUSrvHandles()[0]  
+				);
 
 #pragma endregion
 		//																			//
@@ -1039,7 +928,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (int i = 0; i < indexTriangle; i++) {
 		delete triangle[i];
 	}
-
+	delete sphere;
 
 	delete breakScreenEffect;
 	// winAppの終了処理

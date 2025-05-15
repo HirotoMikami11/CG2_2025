@@ -12,7 +12,7 @@
 /// <summary>
 /// 球体
 /// </summary>
-struct Sphere {
+struct SphereMath {
 	Vector3 center;	///中心点
 	float radius;	///半径
 };
@@ -107,7 +107,7 @@ float RandomFloat(float min, float max);
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
 //球体を表示する関数
-void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+void DrawSphere(const SphereMath& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 //線分を描画する関数
 void DrawLine(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
