@@ -24,7 +24,7 @@ public:
 	bool useImGui = true;
 
 private:
-	const size_t MAX_PARTICLES = 80; // 適切な数に調整
+	const size_t MAX_PARTICLES = 45; // 適切な数に調整
 
 	std::vector<SkyDustParticle*> activeParticles; // アクティブなパーティクル
 	std::queue<SkyDustParticle*> particlePool;    // 待機中のパーティクル

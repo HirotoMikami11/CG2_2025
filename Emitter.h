@@ -43,7 +43,7 @@ public:
 	int imGuiNumber;
 
 private:
-	const size_t MAX_PARTICLES = 300; // 適切な数に調整
+	const size_t MAX_PARTICLES = 125; // 適切な数に調整
 
 	std::vector<Particle*> activeParticles; // アクティブなパーティクル
 	std::queue<Particle*> particlePool;    // 待機中のパーティクル
