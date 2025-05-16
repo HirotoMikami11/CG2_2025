@@ -78,13 +78,11 @@ private:
 	float t;
 
 	///移動用のイージングが開始するまでの時間
-	const float kStartTime = 5;//秒
+	const float kStartTime = 5;//5秒
 	float easeStartTimer=kStartTime;
 
 
 	///イージング開始フラグ
 	bool shouldStartEasing;
-
-
 
 };

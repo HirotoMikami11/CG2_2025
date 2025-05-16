@@ -111,6 +111,7 @@ void BreakScreenEffect::Draw(ID3D12GraphicsCommandList* commandList,
 		float currentMoveDistance = 0.0f;
 		float easedProgress = 0.0f;
 
+		///移動するフラグ
 		if (isMovingOut) {
 			// 画面外への移動
 			easedProgress = easeInCirc(phaseTime / moveOutDuration);
@@ -135,10 +136,12 @@ void BreakScreenEffect::Draw(ID3D12GraphicsCommandList* commandList,
 				0.0f
 			};
 
-			// 回転も適用
+			// 回転も適用(平面の三角形なので、Z以外操作しない)
 			transform.rotate = {
-				0.0f, 0.0f, rotationAmount * (i % 2 == 0 ? 1.0f : -1.0f)
+				0.0f, 0.0f, rotationAmount * (i % 2 == 0 ? 1.0f : -1.0f)//indexに応じて回転方向を変える
 			};
+
+
 		}
 
 		// 変形行列を更新

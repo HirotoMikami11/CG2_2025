@@ -17,6 +17,8 @@ public:
 		return currentTime < lifeTime;
 	}
 
+	//アクセッサ
+
 	const Vector3Transform& GetTransform() const {
 		return transform;
 	}

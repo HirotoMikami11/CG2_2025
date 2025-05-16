@@ -21,6 +21,7 @@ public:
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 
 	// アクセッサ
+
 	void SetTransform(const Vector3Transform& vector3Transform) {
 		transform = vector3Transform;
 	}

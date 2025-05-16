@@ -25,6 +25,7 @@ public:
 	void Draw(ID3D12GraphicsCommandList* commandList, D3D12_GPU_DESCRIPTOR_HANDLE textureHandle);
 
 	// アクセッサ
+
 	void SetPosition(const Vector3& position) {
 		transform.translate = position;
 	}

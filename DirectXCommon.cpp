@@ -282,7 +282,7 @@ void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName
 	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource = CreateTextureResource(device.Get(), metadata);
 	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device.Get(), commandList);
 	// CPU・GPUハンドルをずらしてセット
-		// // ImGuiが先頭を使ってるので i+1
+	// ImGuiが先頭を使ってるので i+1
 	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
 	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
 
@@ -671,8 +671,16 @@ void DirectXCommon::MakePSO()
 	//比較関数はLessEqual（近ければ描画する）
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
+	///透明用のDepthStencilDesc(深度書き込みを無効にして応急処置的に半透明実装)
+	D3D12_DEPTH_STENCIL_DESC transparentDepthStencilDesc{};
+	transparentDepthStencilDesc.DepthEnable = true;								// 深度テストは有効
+	transparentDepthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;	// 深度の書き込みは無効
+	transparentDepthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-	///PSOの作成
+	
+	//																			//
+	//								実際にPSOの設定								//
+	//																			//
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();					// RootSignature
@@ -703,9 +711,14 @@ void DirectXCommon::MakePSO()
 	//生成できなかったら起動できない
 	Logger::Log(Logger::GetStream(), "Complete create PSO!!\n");//PSO生成完了のログを出す
 
-	// 透明用PSO作成
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentPipelineStateDesc = graphicsPipelineStateDesc;  // コピー
-	transparentPipelineStateDesc.BlendState = transparentBlendDesc;                   // 透明用ブレンドに変更
+
+	///
+	/// 透明用PSO作成
+	///
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentPipelineStateDesc = graphicsPipelineStateDesc;	// コピー
+	transparentPipelineStateDesc.BlendState = transparentBlendDesc;									// 透明用ブレンドに変更
+	transparentPipelineStateDesc.DepthStencilState = transparentDepthStencilDesc;					//
 
 	hr = device->CreateGraphicsPipelineState(&transparentPipelineStateDesc, IID_PPV_ARGS(&transparentPipelineState));
 	assert(SUCCEEDED(hr));

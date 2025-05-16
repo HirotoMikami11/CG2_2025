@@ -14,6 +14,10 @@ Emitter::Emitter(ID3D12Device* device) : device(device), spawnTimer(0.0f) {
 
 	minSpeed = 0.05f;
 	maxSpeed = 0.4f;
+
+	minRotateSpeed = -5.0f;
+	maxRotateSpeed = 5.0f;
+
 	moveDirection = Vector3(0.0f, -1.0f, 0.0f); // 上方向
 	directionVariance = 0.2f;
 	spawnInterval = float(0.025f);
@@ -111,6 +115,12 @@ void Emitter::Update(float deltaTime) {
 		particle->SetVelocity(finalVelocity);
 		// パーティクルに色を設定
 		particle->SetColor(color);
+
+		float rotateSpeed = RandomFloat(minRotateSpeed, maxRotateSpeed);
+	
+		// パーティクルの回転速度を設定
+		particle->SetRotationSpeed(rotateSpeed);
+		
 		// アクティブリストに追加
 		activeParticles.push_back(particle);
 	}
@@ -212,7 +222,7 @@ void Emitter::ImGui()
 		ImGui::Text("Movement Direction:");
 		ImGui::DragFloat3("Direction", &moveDirection.x, 0.01f, -1.0f, 1.0f);
 
-		// 方向のノーマライズをユーザーに提供
+		// 方向のノーマライズ
 		if (ImGui::Button("Normalize Direction")) {
 			float length = std::sqrt(moveDirection.x * moveDirection.x +
 				moveDirection.y * moveDirection.y +
@@ -223,7 +233,21 @@ void Emitter::ImGui()
 				moveDirection.z /= length;
 			}
 		}
+
 		ImGui::Separator();
+		// 回転速度の範囲
+		bool rotateSpeedChanged = false;
+		rotateSpeedChanged |= ImGui::DragFloat("Min Rotate Speed", &minRotateSpeed, 0.01f, -15.0, maxRotateSpeed);
+		rotateSpeedChanged |= ImGui::DragFloat("Max Rotate Speed", &maxRotateSpeed, 0.01f, minRotateSpeed, 15.0f);
+
+		// 速度の範囲を確認
+		if (rotateSpeedChanged) {
+			if (minRotateSpeed > maxRotateSpeed) minRotateSpeed = maxRotateSpeed;
+			if (maxRotateSpeed < minRotateSpeed) maxRotateSpeed = minRotateSpeed;
+		}
+
+		ImGui::Separator();
+
 		//生成速度
 		ImGui::Text("spawnTimer/interval %f / %f", spawnTimer, spawnInterval);
 		ImGui::DragFloat("spawnInterval", &spawnInterval, 0.0001f, 0.001f, 1.0f);

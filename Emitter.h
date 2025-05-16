@@ -34,16 +34,16 @@ public:
 	/// <param name="Maxspeed">最高速度</param>
 	/// <param name="MoveDirection">移動する方向</param>
 	/// <param name="Spawninterval">生成されるまでの時間</param>
-	void SetParticleData(Vector3 Scalemin, Vector3 Scalemax, Vector3 Rotatemin, Vector3 Rotatemax,Vector3 Translatemin, Vector3 Translatemax,
-		float MinSpeed,float Maxspeed,Vector3 MoveDirection,float Spawninterval,Vector4 Color);
-	
+	void SetParticleData(Vector3 Scalemin, Vector3 Scalemax, Vector3 Rotatemin, Vector3 Rotatemax, Vector3 Translatemin, Vector3 Translatemax,
+		float MinSpeed, float Maxspeed, Vector3 MoveDirection, float Spawninterval, Vector4 Color);
+
 	//デバッグ用imguiを使用するか(最後に消す)
 	bool useImGui = true;
 	//ImGuiで識別する番号
 	int imGuiNumber;
 
 private:
-	const size_t MAX_PARTICLES = 125; // 適切な数に調整
+	const size_t MAX_PARTICLES = 125; // プールの最大サイズ
 
 	std::vector<Particle*> activeParticles; // アクティブなパーティクル
 	std::queue<Particle*> particlePool;    // 待機中のパーティクル
@@ -65,9 +65,13 @@ private:
 	// パーティクルの移動用変数
 	float minSpeed;				// 最小移動速度
 	float maxSpeed;				// 最大移動速度
+
+	float minRotateSpeed;				// 最小回転速度
+	float maxRotateSpeed;				// 最大回転速度
+
 	Vector3 moveDirection;		// 移動方向
 	float directionVariance;	// 方向のばらつき
 	Vector4 color;
-	
+
 };
 

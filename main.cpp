@@ -603,7 +603,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// トライフォースが完了して、エフェクトがアクティブでない場合のみ開始
 			if (triforceCompleted && !lastTriforceCompleted && !breakScreenEffect->GetActive()) {
 				breakScreenEffect->SetActive(true);
-				//triforce->StopEasing(); // エフェクト開始時にイージングを停止
+				//triforce->StopEasing(); // ここで停止させると、連動させてしまったparticleの動きが死ぬ
 			}
 			lastTriforceCompleted = triforceCompleted;
 

@@ -10,6 +10,7 @@ public:
 	// コピー禁止
 	TriforceParticle(const TriforceParticle&) = delete;
 	TriforceParticle& operator=(const TriforceParticle&) = delete;
+
 	void Reset(const Vector3Transform& newTransform);
 
 	void Update(float deltaTime, const Matrix4x4& viewProjection);
@@ -19,6 +20,8 @@ public:
 	bool IsAlive() const {
 		return currentTime < lifeTime;
 	}
+	
+	//アクセッサ
 
 	const Vector3Transform& GetTransform() const {
 		return transform;

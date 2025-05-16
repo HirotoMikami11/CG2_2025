@@ -3,8 +3,8 @@
 
 class Particle {
 public:
-	Particle(ID3D12Device* device,Vector3Transform setTransform);  // デバイスを受け取るように
-	~Particle(); 
+	Particle(ID3D12Device* device, Vector3Transform setTransform);  // デバイスを受け取るように
+	~Particle();
 
 	// コピー禁止
 	Particle(const Particle&) = delete;
@@ -19,6 +19,8 @@ public:
 		return currentTime < lifeTime;
 	}
 
+	//アクセッサ
+
 	const Vector3Transform& GetTransform() const {
 		return transform;
 	}
@@ -30,6 +32,11 @@ public:
 	void SetVelocity(const Vector3& newVelocity) {
 		velocity = newVelocity;
 	}
+
+	void SetRotationSpeed(const float& newRotationSpeed) {
+		rotationSpeed = newRotationSpeed;
+	}
+
 	void SetColor(const Vector4& Color) {
 		color = Color;
 	}
@@ -43,6 +50,6 @@ private:
 	float rotationSpeed;
 	Vector3 velocity; // 移動速度ベクトル(speedを変更)
 	float alpha;
-	Vector4 color ;
+	Vector4 color;
 	TriangularPyramid* pyramid;  // 各パーティクルに固有のピラミッド
 };

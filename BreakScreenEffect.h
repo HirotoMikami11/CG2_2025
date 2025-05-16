@@ -24,7 +24,7 @@ public:
 	void Update();
 
 	/// <summary>
-	/// ポストエフェクト描画
+	/// ポストのエフェクト描画
 	/// </summary>
 	/// <param name="commandList">コマンドリスト</param>
 	/// <param name="offScreenSRVHandle">オフスクリーンテクスチャのSRVハンドル</param>

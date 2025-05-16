@@ -68,7 +68,7 @@ void TriangularPyramid::CreateVertexData() {
 	vertexData[1].normal = { 0.0f, -1.0f, 0.0f };
 	vertexData[2].normal = { 0.0f, -1.0f, 0.0f };
 
-	// 頂点の法線は上向き（簡易版 - 実際は各面に対応した法線を設定するべき）
+	// 頂点の法線は上向き(仮置き)
 	vertexData[3].normal = { 0.0f, 1.0f, 0.0f };
 }
 

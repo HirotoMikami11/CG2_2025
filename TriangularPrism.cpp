@@ -68,9 +68,9 @@ void TriangularPrism::CreateVertexData() {
 	vertexData[4].texcoord = { 1.0f, 0.0f };
 	vertexData[5].texcoord = { 0.5f, 1.0f };
 
-	// 法線を計算 (簡易版 - 各面ごとに正確な法線を計算すべき)
+	// 法線を計算 (仮置き)
 	for (int i = 0; i < kVertexCount; i++) {
-		// 頂点座標を正規化して法線として使用（近似）
+		// 頂点座標を正規化して法線として使用
 		float length = sqrt(
 			vertexData[i].position.x * vertexData[i].position.x +
 			vertexData[i].position.y * vertexData[i].position.y +
