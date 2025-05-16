@@ -281,9 +281,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//黄色、左斜め前方に上昇する
 	emitter[1]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
-		Vector3(0.07f, 0.07f, 0.07f),
-		Vector3(0.0f, 0.0f, 0.0f),
-		Vector3(0.0f, 0.0f, 3.14f),
+		Vector3(0.08f, 0.07f, 0.07f),
+		Vector3(0.0f, 2.0f, 2.0f),
+		Vector3(0.0f, 3.14f, 3.14f),
 		Vector3(-5.0f, -2.0f, -5.0f),
 		Vector3(5.0f, -0.9f, 5.0f),
 		0.33f,
@@ -627,11 +627,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			if (effectJustFinished) {
 				// エフェクトリセットと次のサイクル開始
-				breakScreenEffect->Reset(); // エフェクトをリセット
+				breakScreenEffect->Reset(); // エフェクトをリセット(タイマー始動)
 				hasResetTriforce = false;   // リセットフラグをクリア
-
-				//トライフォースのイージング開始
-				triforce->StartEasing();
 			}
 
 			// 現在の状態を記録

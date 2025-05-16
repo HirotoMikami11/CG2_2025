@@ -61,13 +61,15 @@ void Emitter::Update(float deltaTime) {
 	spawnTimer += deltaTime;
 	while (spawnTimer >= spawnInterval && !particlePool.empty()) {
 		spawnTimer -= spawnInterval;
-
+		float ramdomScale = RandomFloat(scaleMin.x, scaleMax.x);
 		// パーティクルの設定を準備
 		SetParticles.scale = Vector3(
-			RandomFloat(scaleMin.x, scaleMax.x),
-			RandomFloat(scaleMin.y, scaleMax.y),
-			RandomFloat(scaleMin.z, scaleMax.z)
+			ramdomScale,
+			ramdomScale,
+			ramdomScale
 		);
+
+
 
 		SetParticles.rotate = Vector3(
 			RandomFloat(rotateMin.x, rotateMax.x),
