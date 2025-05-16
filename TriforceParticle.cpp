@@ -3,7 +3,7 @@
 
 TriforceParticle::TriforceParticle(ID3D12Device* device, Vector3Transform& vector3Transform) {
 	transform = vector3Transform;
-	lifeTime = 1.0f;
+	lifeTime = 2.0f;
 	currentTime = 0.0f;
 	alpha = 1.0f;
 	prism = new TriangularPrism();
@@ -20,7 +20,7 @@ TriforceParticle::~TriforceParticle()
 
 void TriforceParticle::Reset(const Vector3Transform& newTransform) {
 	transform = newTransform;
-	lifeTime = 1.0f;
+	lifeTime = 2.0f;
 	currentTime = 0.0f;
 	alpha = 1.0f;
 	// 新しい座標を設定
@@ -30,7 +30,7 @@ void TriforceParticle::Reset(const Vector3Transform& newTransform) {
 void TriforceParticle::Update(float deltaTime, const Matrix4x4& viewProjection) {
 	currentTime += deltaTime;
 
-	alpha = 1.0f - (currentTime / lifeTime);
+	alpha = 0.8f - (currentTime / lifeTime);
 	if (alpha < 0.0f) alpha = 0.0f;
 
 	Vector4 color = { 1.0f,1.0f,1.0f,alpha };

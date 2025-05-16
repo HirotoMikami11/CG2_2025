@@ -281,7 +281,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//黄色、左斜め前方に上昇する
 	emitter[1]->SetParticleData(
 		Vector3(0.025f, 0.025f, 0.025f),
-		Vector3(0.08f, 0.07f, 0.07f),
+		Vector3(0.07f, 0.07f, 0.07f),
 		Vector3(0.0f, 2.0f, 2.0f),
 		Vector3(0.0f, 3.14f, 3.14f),
 		Vector3(-5.0f, -2.0f, -5.0f),

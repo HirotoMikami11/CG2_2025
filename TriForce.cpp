@@ -49,18 +49,18 @@ void TriForce::Initialize()
 	firstPosition[1] = { 0.0f, 30.0f, 50.0f };
 	firstPosition[2] = { 0.0f, 30.0f, 50.0f };
 
-	firstRotate[0] = { 20.0f, 10.0f, 10.0f };
-	firstRotate[1] = { 10.0f, 20.0f, 10.0f };
-	firstRotate[2] = { 10.0f, 10.0f, 20.0f };
+	firstRotate[0] = { 10.0f, 10.0f, 10.0f };
+	firstRotate[1] = { 10.0f, 10.0f, 10.0f };
+	firstRotate[2] = { 10.0f, 10.0f, 10.0f };
 
 	//画面中央
-	secondPosition[0] = { -2.0f, -1.5f, 100.0f };
-	secondPosition[1] = { 2.0f,-1.5f, 100.0f };
-	secondPosition[2] = { 0.0f, 1.5f, 100.0f };
+	secondPosition[0] = { 0.0f,0.0f,50.0f };
+	secondPosition[1] = { 0.0f,0.0f,50.0f };
+	secondPosition[2] = { 0.0f,0.0f,50.0f };
 
-	secondRotate[0] = { 0.0f, 0.0f, 0.0f };
-	secondRotate[1] = { 0.0f, 0.0f, 0.0f };
-	secondRotate[2] = { 0.0f, 0.0f, 0.0f };
+	secondRotate[0] = { 0.0f, float(M_PI) * 2.0f, float(M_PI) };
+	secondRotate[1] = { 0.0f, float(M_PI) * 2.0f, float(M_PI) };
+	secondRotate[2] = { 0.0f, float(M_PI) * 2.0f, float(M_PI) };
 
 	//演出開始の位置　
 	thirdPosition[0] = { 0.0f, 7.0f, 10.0f };
@@ -142,11 +142,11 @@ void TriForce::MoveEasing(const Matrix4x4& viewProjection)
 	switch (currentStage) {
 	case EasingStage::FIRST_STAGE:
 		///上から画面中央へ落下
-		firstT += (1.0f / (60.0f * 10.0f));
+		firstT += (1.0f / (60.0f * 15.0f));
 		firstT = std::clamp(firstT, 0.0f, 1.0f);
 
 		{
-			float firstEaseT = easeOutCubic(firstT);
+			float firstEaseT = easeOutQuint(firstT);
 
 			for (int i = 0; i < indexTriangularPrism; i++) {
 				triangularPrism[i]->SetPosition(Lerp(firstPosition[i], secondPosition[i], firstEaseT));
@@ -163,7 +163,7 @@ void TriForce::MoveEasing(const Matrix4x4& viewProjection)
 
 	case EasingStage::SECOND_STAGE:
 		///中央から演出の位置へ
-		secondT += (1.0f / (60.0f * 10.0f));
+		secondT += (1.0f / (60.0f * 20.0f));
 		secondT = std::clamp(secondT, 0.0f, 1.0f);
 
 		{

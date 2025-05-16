@@ -59,7 +59,7 @@ private:
 	Vector3 finalRotate[3];
 
 	///移動用のイージングが開始するまでの時間
-	const float kStartTime = 6.0f;
+	const float kStartTime = 5.0f;
 	float easeStartTimer = kStartTime;
 
 	///イージング開始フラグ
