@@ -142,7 +142,7 @@ void TriForce::MoveEasing(const Matrix4x4& viewProjection)
 	switch (currentStage) {
 	case EasingStage::FIRST_STAGE:
 		///上から画面中央へ落下
-		firstT += (1.0f / (60.0f * 15.0f));
+		firstT += (1.0f / (60.0f * 13.0f));
 		firstT = std::clamp(firstT, 0.0f, 1.0f);
 
 		{
@@ -163,7 +163,7 @@ void TriForce::MoveEasing(const Matrix4x4& viewProjection)
 
 	case EasingStage::SECOND_STAGE:
 		///中央から演出の位置へ
-		secondT += (1.0f / (60.0f * 20.0f));
+		secondT += (1.0f / (60.0f * 10.0f));
 		secondT = std::clamp(secondT, 0.0f, 1.0f);
 
 		{
@@ -186,7 +186,7 @@ void TriForce::MoveEasing(const Matrix4x4& viewProjection)
 
 	case EasingStage::THIRD_STAGE:
 		///トライフォース完成
-		thirdT += (1.0f / (60.0f * 25.0f));
+		thirdT += (1.0f / (60.0f * 20.0f));
 		thirdT = std::clamp(thirdT, 0.0f, 1.0f);
 
 		{

@@ -1,7 +1,7 @@
 #include "TriforceEmitter.h"
 
 TriforceEmitter::TriforceEmitter(ID3D12Device* device)
-	: device(device), spawnTimer(0.0f), spawnInterval(1.5f) {
+	: device(device), spawnTimer(0.0f), spawnInterval(2.5f) {
 }
 
 TriforceEmitter::~TriforceEmitter() {
