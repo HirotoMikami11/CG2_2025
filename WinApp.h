@@ -22,8 +22,9 @@ public:
 	bool ProsessMessege();
 	//ゲッター
 	HWND GetHwnd() { return hwnd; };
+	HINSTANCE GetInstance() const { return wc.hInstance; }
 private:
 	HWND hwnd = nullptr;
-
+	WNDCLASS wc{};
 };
 

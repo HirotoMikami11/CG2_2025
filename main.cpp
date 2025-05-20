@@ -44,7 +44,10 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Dump.h"
+
 #include "AudioManager.h"
+
+#include"InputManager.h"
 
 
 /// <summary>
@@ -198,7 +201,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	WinApp* winApp = new WinApp;
 	DirectXCommon* directXCommon = new DirectXCommon;
 
-
 	/// ウィンドウクラスを登録する
 	winApp->Initialize();
 	///	ログをファイルに書き込む
@@ -206,6 +208,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	///DirectX初期化
 	directXCommon->Initialize(winApp);
+
+	//DirectXの末尾にキーボード入力のインスタンス生成
+	InputManager::GetInstance()->Initialize(winApp);
+
 	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
 	AudioManager::GetInstance()->Initialize();
 
@@ -660,11 +666,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
 
-	//ゲーム開始前に読み込む音声データ
-	AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
-	//tagを利用して再生
-	AudioManager::GetInstance()->PlayLoop("Alarm");
-	AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
+	////ゲーム開始前に読み込む音声データ
+	//AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
+	////tagを利用して再生
+	//AudioManager::GetInstance()->PlayLoop("Alarm");
+	//AudioManager::GetInstance()->SetVolume("Alarm", 0.1f);
 
 
 	///*-----------------------------------------------------------------------*///
@@ -677,6 +683,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウのxボタンが押されるまでループ
 	while (winApp->ProsessMessege()) {
 		//							　ゲームの処理										//
+
+		///キー入力の更新
+		InputManager::GetInstance()->Update();
+
+		//if (InputManager::GetInstance()->IsKeyTrigger(DIK_1)) {
+		//	OutputDebugStringA("Trigger 1!!\n");
+		//}
+
+		//if (InputManager::GetInstance()->IsMouseButtonDown(0)) {
+		//	OutputDebugStringA("Left!!\n");
+		//}
 
 
 		//								更新処理										//
