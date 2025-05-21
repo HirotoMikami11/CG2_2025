@@ -46,6 +46,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "Dump.h"
 #include "AudioManager.h"
 
+//図形
+#include "GameObject.h"
+
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -209,10 +212,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
 	AudioManager::GetInstance()->Initialize();
 
-
+	std::vector<GameObject*> GameObujects;
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
+
+	
 
 #pragma region Triangle
 
@@ -660,11 +665,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
 
-	//ゲーム開始前に読み込む音声データ
-	AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
-	//tagを利用して再生
-	AudioManager::GetInstance()->PlayLoop("Alarm");
-	AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
+	////ゲーム開始前に読み込む音声データ
+	//AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
+	////tagを利用して再生
+	//AudioManager::GetInstance()->PlayLoop("Alarm");
+	//AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
 
 
 	///*-----------------------------------------------------------------------*///

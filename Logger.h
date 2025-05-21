@@ -14,6 +14,8 @@ class Logger
 public:
     static void Initalize();
 
+    static void Finalize();
+
     static void Log(const std::string& message);
 
     static void Log(std::ostream& os, const std::string& message);

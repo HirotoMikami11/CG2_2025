@@ -7,6 +7,7 @@
 //ファイルに書いたり読んだりするライブラリ
 #include<fstream>
 #include<sstream>
+#include<numbers>
 
 
 // クライアント領域のサイズ

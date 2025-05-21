@@ -24,25 +24,51 @@ void Logger::Initalize()
 	std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
 	//時刻を使ってファイル名を決定
 	std::string logFilePath = std::string("logs/") + dateString + ".log";
-	//ファイルを作って書き込み準備
-	std::ofstream logStream(logFilePath);
 
+	// ログファイルを開く（一度だけ開いて保持）
+	logFileStream_.open(logFilePath);
 
-	//出力ウィンドウへの文字出力
-	Logger::Log(logStream, "Hello,DirectX!/n");
+	// ファイルが正常に開かれたかチェック
+	if (!logFileStream_.is_open()) {
+		OutputDebugStringA("Error: Could not open log file\n");
+		return;
+	}
 
+	//初期化完了のログ出力
+	Logger::Log("Hello,DirectX!\n");
 }
 
+/// プログラム終了時にファイルを閉じる関数
+void Logger::Finalize()
+{
+	if (logFileStream_.is_open()) {
+		Log("Logger finalized.\n");
+		logFileStream_.close();
+	}
+}
 
-/// 出力ウィンドウに文字を出す関数
+/// 出力ウィンドウとログファイルに文字を出す関数
 void Logger::Log(const std::string& message) {
+	// 出力ウィンドウに出力
 	OutputDebugStringA(message.c_str());
+
+	// ログファイルに出力（ファイルが開いている場合のみ）
+	if (logFileStream_.is_open()) {
+		logFileStream_ << message;
+		logFileStream_.flush(); // 即座にファイルに書き込む
+	}
 }
 
-
-/// 出力ウィンドウに文字を出し、ログファイルに書き込む関数
+/// カスタムストリームと出力ウィンドウに文字を出す関数（Logger::GetStream()を使う場合との互換性用）
 void Logger::Log(std::ostream& os, const std::string& message) {
-	os << message << std::endl;
+	// カスタムストリームに出力
+	os << message;
+	if (&os == &logFileStream_) {
+		// ログファイルストリームの場合は即座にフラッシュ
+		os.flush();
+	}
+
+	// 出力ウィンドウにも出力
 	OutputDebugStringA(message.c_str());
 }
 
@@ -51,7 +77,6 @@ std::wstring Logger::ConvertString(const std::string& str) {
 	if (str.empty()) {
 		return std::wstring();
 	}
-
 	auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(&str[0]), static_cast<int>(str.size()), NULL, 0);
 	if (sizeNeeded == 0) {
 		return std::wstring();
@@ -61,13 +86,11 @@ std::wstring Logger::ConvertString(const std::string& str) {
 	return result;
 }
 
-
 /// wstring -> stringに変換する関数
 std::string Logger::ConvertString(const std::wstring& str) {
 	if (str.empty()) {
 		return std::string();
 	}
-
 	auto sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), NULL, 0, NULL, NULL);
 	if (sizeNeeded == 0) {
 		return std::string();
@@ -76,4 +99,3 @@ std::string Logger::ConvertString(const std::wstring& str) {
 	WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), result.data(), sizeNeeded, NULL, NULL);
 	return result;
 }
-

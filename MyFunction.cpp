@@ -355,7 +355,7 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 /// <param name="viewProjectionMatrix">ビュープロジェクション</param>
 /// <param name="viewportMatrix">ビューポート</param>
 /// <param name="color">色</param>
-void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+void DrawSphere(const SphereMath& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	const uint32_t kSubdivision = 10;//分割数
 	const float kLonEvery = (2 * float(M_PI)) / kSubdivision;		//経度分割1つ分の角度
 	const float kLatEvery = float(M_PI) / kSubdivision;				//緯度分割1つ分の角度
