@@ -17,7 +17,7 @@ void WinApp::Initialize() {
 	/// ウィンドウクラスを登録する
 	///
 
-	WNDCLASS wc{};
+	
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
 

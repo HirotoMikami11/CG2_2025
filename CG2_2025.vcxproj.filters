@@ -78,6 +78,9 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>ソース ファイル\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>ソース ファイル\GameObject</Filter>
     </ClCompile>
@@ -146,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="AudioManager.h">
       <Filter>ヘッダー ファイル\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>ヘッダー ファイル\GameObject</Filter>
