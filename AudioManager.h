@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Audio.h"
+#include "Logger.h"
 #include <xaudio2.h>
 #include <wrl.h>
 #include <map>

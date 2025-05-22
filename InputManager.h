@@ -7,6 +7,7 @@
 #pragma comment(lib, "dxguid.lib")
 
 #include "WinApp.h"
+#include "Logger.h"
 
 /// <summary>
 /// 入力管理クラス（キーボード、マウス）

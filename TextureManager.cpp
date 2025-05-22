@@ -17,7 +17,7 @@ void TextureManager::Initialize(DirectXCommon* dxCommon) {
 	// インデックス管理用配列を初期化
 	usedIndices_.resize(MAX_TEXTURE_COUNT, false);
 	//初期化できたらログを出す
-	Logger::Log(Logger::GetStream(), "TextureManager initialized successfully.\n");
+	Logger::Log(Logger::GetStream(), "Complete TextureManager initialized !!\n");
 }
 
 void TextureManager::Finalize() {
@@ -28,7 +28,6 @@ void TextureManager::Finalize() {
 }
 
 bool TextureManager::LoadTexture(const std::string& filename, const std::string& tagName) {
-	assert(dxCommon_ != nullptr && "TextureManager not initialized!");
 
 	// 既に同じタグ名で登録されていた場合は古いものを解放
 	if (HasTexture(tagName)) {
@@ -110,11 +109,14 @@ void TextureManager::UnloadAll() {
 }
 
 bool TextureManager::HasTexture(const std::string& tagName) const {
+	// 指定されたタグ名のテクスチャが存在するかチェック
+	// なぜか画像が読み込めなかった場合に使用したので残しておく
 	return textures_.find(tagName) != textures_.end();
 }
 
 uint32_t TextureManager::GetAvailableSRVIndex() {
 	// 空いているインデックスを探す（0から順番に）
+	// falseのインデックスを探して、見つかったらtrueにしてそのインデックスを返す
 	for (uint32_t i = 0; i < MAX_TEXTURE_COUNT; ++i) {
 		if (!usedIndices_[i]) {
 			usedIndices_[i] = true;

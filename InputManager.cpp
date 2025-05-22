@@ -57,6 +57,8 @@ void InputManager::Initialize(WinApp* winApp) {
 	devMouse->GetDeviceState(sizeof(mouse), &mouse);
 	// 前回のマウス入力状態を初期化
 	preMouse = mouse;
+
+	Logger::Log(Logger::GetStream(), "Complete InputManager initialized !!\n");
 }
 
 

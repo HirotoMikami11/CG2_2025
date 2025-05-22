@@ -24,6 +24,7 @@ void AudioManager::Initialize() {
 	//音声を鳴らすとき、通る場所
 	result = xAudio2->CreateMasteringVoice(&masterVoice);
 	assert(SUCCEEDED(result));
+	Logger::Log(Logger::GetStream(), "Complete AudioManager initialized !!\n");
 }
 
 void AudioManager::Finalize() {
