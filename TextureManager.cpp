@@ -12,20 +12,19 @@ TextureManager::~TextureManager() {
 }
 
 void TextureManager::Initialize(DirectXCommon* dxCommon) {
-	assert(dxCommon != nullptr);
 	dxCommon_ = dxCommon;
 
 	// インデックス管理用配列を初期化
 	usedIndices_.resize(MAX_TEXTURE_COUNT, false);
-
+	//初期化できたらログを出す
 	Logger::Log(Logger::GetStream(), "TextureManager initialized successfully.\n");
 }
 
 void TextureManager::Finalize() {
+	// 全てのテクスチャを解放
 	UnloadAll();
 	dxCommon_ = nullptr;
 
-	Logger::Log(Logger::GetStream(), "TextureManager finalized.\n");
 }
 
 bool TextureManager::LoadTexture(const std::string& filename, const std::string& tagName) {
@@ -33,13 +32,13 @@ bool TextureManager::LoadTexture(const std::string& filename, const std::string&
 
 	// 既に同じタグ名で登録されていた場合は古いものを解放
 	if (HasTexture(tagName)) {
-		Logger::Log(Logger::GetStream(),
-			std::format("Texture with tag '{}' already exists. Replacing it.\n", tagName));
 		UnloadTexture(tagName);
 	}
 
 	// 使用可能なインデックスを取得
 	uint32_t srvIndex = GetAvailableSRVIndex();
+
+	//インデックスの数が最大値以上の場合は獲得できないとログを出す
 	if (srvIndex >= MAX_TEXTURE_COUNT) {
 		Logger::Log(Logger::GetStream(),
 			std::format("Failed to load texture '{}': No available SRV slots.\n", filename));
@@ -50,18 +49,12 @@ bool TextureManager::LoadTexture(const std::string& filename, const std::string&
 	auto texture = std::make_unique<Texture>();
 	if (!texture->LoadTexture(filename, dxCommon_, srvIndex)) {
 		ReleaseSRVIndex(srvIndex);
-		Logger::Log(Logger::GetStream(),
-			std::format("Failed to load texture: {}\n", filename));
 		return false;
 	}
 
 	// マップに登録
 	textures_[tagName] = std::move(texture);
 	textureIndices_[tagName] = srvIndex;
-
-	Logger::Log(Logger::GetStream(),
-		std::format("Texture loaded successfully: {} (tag: {}, index: {})\n",
-			filename, tagName, srvIndex));
 
 	return true;
 }
@@ -72,6 +65,7 @@ Texture* TextureManager::GetTexture(const std::string& tagName) {
 		return it->second.get();
 	}
 
+	// テクスチャが見つからない場合はnullptr
 	Logger::Log(Logger::GetStream(),
 		std::format("Texture with tag '{}' not found.\n", tagName));
 	return nullptr;
@@ -100,8 +94,6 @@ void TextureManager::UnloadTexture(const std::string& tagName) {
 		textures_.erase(textureIt);
 		textureIndices_.erase(indexIt);
 
-		Logger::Log(Logger::GetStream(),
-			std::format("Texture unloaded: {}\n", tagName));
 	}
 }
 
@@ -115,40 +107,10 @@ void TextureManager::UnloadAll() {
 	textures_.clear();
 	textureIndices_.clear();
 	std::fill(usedIndices_.begin(), usedIndices_.end(), false);
-
-	Logger::Log(Logger::GetStream(), "All textures unloaded.\n");
 }
 
 bool TextureManager::HasTexture(const std::string& tagName) const {
 	return textures_.find(tagName) != textures_.end();
-}
-
-void TextureManager::DebugPrintTextureInfo() const {
-	Logger::Log(Logger::GetStream(),
-		std::format("=== Texture Manager Debug Info ===\n"));
-	Logger::Log(Logger::GetStream(),
-		std::format("Total textures loaded: {}\n", textures_.size()));
-
-	for (const auto& pair : textures_) {
-		const std::string& tagName = pair.first;
-		const Texture* texture = pair.second.get();
-		auto indexIt = textureIndices_.find(tagName);
-		uint32_t index = (indexIt != textureIndices_.end()) ? indexIt->second : 0;
-
-		Logger::Log(Logger::GetStream(),
-			std::format("  Tag: {}, Index: {}, FilePath: {}\n",
-				tagName, index, texture->GetFilePath()));
-	}
-
-	// 使用中のインデックスを表示
-	Logger::Log(Logger::GetStream(), "Used SRV indices: ");
-	for (uint32_t i = 0; i < usedIndices_.size(); ++i) {
-		if (usedIndices_[i]) {
-			Logger::Log(Logger::GetStream(), std::format("{} ", i));
-		}
-	}
-	Logger::Log(Logger::GetStream(), "\n");
-	Logger::Log(Logger::GetStream(), "=== End Debug Info ===\n");
 }
 
 uint32_t TextureManager::GetAvailableSRVIndex() {

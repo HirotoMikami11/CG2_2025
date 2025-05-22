@@ -80,11 +80,6 @@ public:
     /// <returns>テクスチャ数</returns>
     size_t GetTextureCount() const { return textures_.size(); }
 
-    /// <summary>
-    /// デバッグ用：全テクスチャの情報を出力
-    /// </summary>
-    void DebugPrintTextureInfo() const;
-
 private:
     // コンストラクタ
     TextureManager() = default;

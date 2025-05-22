@@ -211,17 +211,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DirectXの末尾にキーボード入力のインスタンス生成
 	InputManager* inputManager = InputManager::GetInstance();
 	inputManager->Initialize(winApp);
-	//InputManager::GetInstance()->Initialize(winApp);
 
 	//DirectXの末尾にテクスチャ読み込みのインスタンス生成
-
 	TextureManager* textureManager = TextureManager::GetInstance();
 	textureManager->Initialize(directXCommon);
 
 	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
 	AudioManager* audioManager = AudioManager::GetInstance();
 	audioManager->Initialize();
-	//AudioManager::GetInstance()->Initialize();
+
 
 
 
