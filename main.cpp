@@ -48,6 +48,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "InputManager.h"
 #include "TextureManager.h"
 
+#include"Material.h"
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -59,9 +60,9 @@ void DumpLiveObjects() {
 	}
 }
 
-MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
+MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる変数の宣言
-	MaterialData materialData;			//構築するMaterialData
+	MaterialDataModel materialData;			//構築するMaterialData
 	std::string line;					//ファイルから読んだ1行を格納するもの
 
 	//2.ファイルを開く
@@ -221,10 +222,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	audioManager->Initialize();
 
 
-
-
-
-
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
 	///*-----------------------------------------------------------------------*///
@@ -237,11 +234,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///								音声データの読み込み							///
 	///*-----------------------------------------------------------------------*///
 
-	//ゲーム開始前に読み込む音声データ
-	audioManager->LoadWave("resources/Alarm01.wav", "Alarm");
-	//tagを利用して再生
-	audioManager->PlayLoop("Alarm");
-	audioManager->SetVolume("Alarm", 0.1f);
+	////ゲーム開始前に読み込む音声データ
+	//audioManager->LoadWave("resources/Alarm01.wav", "Alarm");
+	////tagを利用して再生
+	//audioManager->PlayLoop("Alarm");
+	//audioManager->SetVolume("Alarm", 0.1f);
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
@@ -275,19 +272,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//							Material用のResourceを作る						//
 	//																			//
 
-	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource =
-		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	//マテリアルデータに書き込む
-	Material* materialData = nullptr;
-	//書き込むためのアドレスを取得
-	materialResource->
-		Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//白で初期化
-	materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData->enableLighting = false;
-	materialData->useLambertianReflectance = false;
-	materialData->uvTransform = MakeIdentity4x4();
+	Material triangleMaterial;
+	// マテリアル用のリソースを作る
+	triangleMaterial.Initialize(directXCommon);
+	//デフォルトの状態で設定(イニシャライズでも同じことしてるけど明示的に書いておく)
+	//消していい
+	triangleMaterial.SetDefaultSettings();
+
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -402,20 +393,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//							Material用のResourceを作る						//
 	//																			//
 
-	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSphere =
-		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	//マテリアルデータに書き込む
-	Material* materialDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	materialResourceSphere->
-		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
-	//白で初期化
-
-	materialDataSphere->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialDataSphere->enableLighting = true;
-	materialDataSphere->useLambertianReflectance = false;
-	materialDataSphere->uvTransform = MakeIdentity4x4();
+	Material sphereMaterial;
+	// マテリアル用のリソースを作る
+	sphereMaterial.Initialize(directXCommon);
+	//ライトが反映されるように設定
+	sphereMaterial.SetLitObjectSettings();
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -518,20 +500,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//							Material用のResourceを作る						//
 	//																			//
 
-//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite =
-		CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	//マテリアルデータに書き込む
-	Material* materialDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	materialResourceSprite->
-		Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-	//白で初期化
-
-	materialDataSprite->color = { 1.0f,1.0f,1.0,1.0f };
-	materialDataSprite->enableLighting = false;
-	materialDataSprite->useLambertianReflectance = false;
-	materialDataSprite->uvTransform = MakeIdentity4x4();
+	Material spriteMaterial;
+	// マテリアル用のリソースを作る
+	spriteMaterial.Initialize(directXCommon);
+	//デフォルトの状態で設定
+	spriteMaterial.SetDefaultSettings();
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -588,14 +561,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	//							Material用のResourceを作る						//
 	//																			//
-	// モデル用のマテリアルリソースを作成
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(Material));
-	Material* materialDataModel = nullptr;
-	materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
-	materialDataModel->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialDataModel->enableLighting = true;
-	materialDataModel->useLambertianReflectance = false;
-	materialDataModel->uvTransform = MakeIdentity4x4();
+
+	Material modelMaterial;
+	// マテリアル用のリソースを作る
+	modelMaterial.Initialize(directXCommon);
+	//デフォルトの状態で設定
+	modelMaterial.SetLitObjectSettings();
+
 
 
 	//																			//
@@ -728,33 +700,62 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//開発用UIの処理
 		ImGui::Begin("Debug");
+
+#pragma region "Triangle"
 		ImGui::Text("Triangle");
-		ImGui::ColorEdit4("Triangle_Color", reinterpret_cast<float*>(&materialData->color.x));
+		Vector4 triangleColor = triangleMaterial.GetColor();
+		if (ImGui::ColorEdit4("Triangle_Color", reinterpret_cast<float*>(&triangleColor.x))) {
+			triangleMaterial.SetColor(triangleColor);
+		}
+
 		ImGui::DragFloat3("Triangle_translate", &transform.translate.x, 0.01f);
 		ImGui::DragFloat3("Triangle_rotate", &transform.rotate.x, 0.01f);
 
+#pragma endregion
+
+
+#pragma region "Sphere"
 		ImGui::Text("Sphere");
-		ImGui::ColorEdit4("Sphere_Color", reinterpret_cast<float*>(&materialDataSphere->color.x));
+		Vector4 sphereColor = sphereMaterial.GetColor();
+		if (ImGui::ColorEdit4("Sphere_Color", reinterpret_cast<float*>(&sphereColor.x))) {
+			sphereMaterial.SetColor(sphereColor);
+		}
 		ImGui::DragFloat3("Sphere_translate", &transformSphere.translate.x, 0.01f);
 		ImGui::DragFloat3("Sphere_rotate", &transformSphere.rotate.x, 0.01f);
 		ImGui::DragFloat3("Sphere_LightDirection", &directionalLightDataSphere->direction.x, 0.01f);
 
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-		ImGui::Checkbox("useEnableLighting", reinterpret_cast<bool*>(&materialDataSphere->enableLighting));
-		ImGui::Checkbox("useLambertianReflectance", reinterpret_cast<bool*>(&materialDataSphere->useLambertianReflectance));
+		bool sphereLighting = sphereMaterial.IsLightingEnabled();
+		if (ImGui::Checkbox("useEnableLighting", &sphereLighting)) {
+			sphereMaterial.SetLightingEnable(sphereLighting);
+		}
+		bool sphereLambertian = sphereMaterial.IsLambertianReflectanceEnabled();
+		if (ImGui::Checkbox("useLambertianReflectance", &sphereLambertian)) {
+			sphereMaterial.SetLambertianReflectance(sphereLambertian);
+		}
 
+#pragma endregion
+
+
+#pragma region Sprite
 		ImGui::Text("Sprite");
-		ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&materialDataSprite->color.x));
+		Vector4 spriteColor = spriteMaterial.GetColor();
+		if (ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&spriteColor.x))) {
+			spriteMaterial.SetColor(spriteColor);
+		}
 		ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 0.01f);
 		ImGui::DragFloat3("Sprite_rotate", &transformSprite.rotate.x, 0.01f);
 		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
+#pragma endregion
 
+
+#pragma region Model
 		ImGui::Text("Model");
 		ImGui::DragFloat3("Model_translate", &transformModel.translate.x, 0.01f);
 		ImGui::DragFloat3("Model_rotate", &transformModel.rotate.x, 0.01f);
-
+#pragma endregion
 		ImGui::End();
 		//																			//
 		//							三角形用のWVP										//
@@ -787,13 +788,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//行列の更新
 		UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
 		//uvTransformの更新
-		UpdateUVTransform(uvTransformSprite, materialDataSprite);
+		UpdateUVTransform(uvTransformSprite, spriteMaterial.GetMaterialDataPtr());
 
 
 		//																			//
 		//							Model用のWVP									//
 		//																			//
 
+		transformModel.rotate.y = 3.0f;
+		transformModel.translate.x = -2.2f;
+		transformModel.translate.y = -1.2f;
 		UpdateMatrix4x4(transformModel, viewProjectionMatrix, transformMatrixDataModel);
 
 
@@ -823,7 +827,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Triangle
 
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleMaterial.GetResource()->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
@@ -837,18 +841,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 #pragma region Sphere
 
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphereMaterial.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-		////wvp用のCBufferの場所を設定
-		//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? directXCommon->GetTextureSrvHandles()[1] : directXCommon->GetTextureSrvHandles()[0]);
-		//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
-		//directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
-		/////indexBufferで表示するため、VertexBufferはコメントアウト
-		//// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-		////directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
-		//directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+		//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureManager->GetTextureHandle("monsterBall") : textureManager->GetTextureHandle("uvChecker"));
+		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
+		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
+		///indexBufferで表示するため、VertexBufferはコメントアウト
+		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
+		//directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
+		directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
 
 #pragma endregion
 		//																			//
@@ -856,19 +860,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 #pragma region Sprite
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteMaterial.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
+		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
 
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		//directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
-		//directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
 
-		//directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureSrvHandles()[0]);
+		//TransformMatrixCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
-		////TransformMatrixCBufferの場所を設定
-		//directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-
-		//// 描画（DrawCall／ドローコール)
-		////三角形を二つ描画するので6つ
-		//directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		// 描画（DrawCall／ドローコール)
+		//三角形を二つ描画するので6つ
+		directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 #pragma endregion
 
@@ -877,8 +880,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 #pragma region Model
-
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelMaterial.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));

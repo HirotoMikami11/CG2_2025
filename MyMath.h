@@ -110,7 +110,7 @@ struct VertexData final {
 /// <summary>
 /// mtlファイルを読んで使えるようにする
 /// </summary>
-struct MaterialData {
+struct MaterialDataModel {
 	std::string textureFilePath;	//テクスチャファイルのパス
 };
 
@@ -119,7 +119,7 @@ struct MaterialData {
 /// </summary>
 struct ModelData {
 	std::vector<VertexData> vertices;	//頂点データ
-	MaterialData material;	//マテリアルデータ
+	MaterialDataModel material;	//マテリアルデータ
 };
 
 
@@ -193,7 +193,7 @@ struct Matrix4x4 final {
 /// <summary>
 /// マテリアル
 /// </summary>
-struct  Material final{
+struct  MaterialData final{
 	Vector4 color;						//色
 	int32_t enableLighting;				//ライティングするか
 	int32_t useLambertianReflectance;	//ランバート反射させるか
