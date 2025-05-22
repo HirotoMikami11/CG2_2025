@@ -57,11 +57,11 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	///									SRVを生成							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-		// それぞれのテクスチャに対して処理を行う
-	for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
-		LoadTextureResourceForSRV(textureFileNames[i], i);
-		MakeSRV(textureFileNames[i], i);
-	}
+	//	// それぞれのテクスチャに対して処理を行う
+	//for (uint32_t i = 0; i < textureFileNames.size(); ++i) {
+	//	LoadTextureResourceForSRV(textureFileNames[i], i);
+	//	MakeSRV(textureFileNames[i], i);
+	//}
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									DSVを生成								///
@@ -374,39 +374,39 @@ void DirectXCommon::MakeRTV()
 
 }
 
-
-void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName, uint32_t index)
-{
-	// テクスチャを読み込んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture(textureFileName);
-	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource = CreateTextureResource(device.Get(), metadata);
-	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device.Get(), commandList);
-	// CPU・GPUハンドルをずらしてセット
-		// // ImGuiが先頭を使ってるので i+1
-	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
-	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
-
-	// 解放するときのために
-	textureResources.push_back(textureResource);
-	intermediateResources.push_back(intermediateResource);
-	metadatas.push_back(metadata);
-	textureCPUSrvHandles.push_back(currentCpuHandle);
-	textureGPUSrvHandles.push_back(currentGpuHandle);
-
-}
-void DirectXCommon::MakeSRV(const std::string& textureFileNames, uint32_t index)
-{
-	// SRV設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadatas[index].format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = UINT(metadatas[index].mipLevels);
-
-	// SRVの生成
-	device->CreateShaderResourceView(textureResources[index].Get(), &srvDesc, textureCPUSrvHandles[index]);
-}
+//
+//void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName, uint32_t index)
+//{
+//	// テクスチャを読み込んで転送する
+//	DirectX::ScratchImage mipImages = LoadTexture(textureFileName);
+//	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+//	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource = CreateTextureResource(device.Get(), metadata);
+//	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device.Get(), commandList);
+//	// CPU・GPUハンドルをずらしてセット
+//		// // ImGuiが先頭を使ってるので i+1
+//	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
+//	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
+//
+//	// 解放するときのために
+//	textureResources.push_back(textureResource);
+//	intermediateResources.push_back(intermediateResource);
+//	metadatas.push_back(metadata);
+//	textureCPUSrvHandles.push_back(currentCpuHandle);
+//	textureGPUSrvHandles.push_back(currentGpuHandle);
+//
+//}
+//void DirectXCommon::MakeSRV(const std::string& textureFileNames, uint32_t index)
+//{
+//	// SRV設定
+//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+//	srvDesc.Format = metadatas[index].format;
+//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+//	srvDesc.Texture2D.MipLevels = UINT(metadatas[index].mipLevels);
+//
+//	// SRVの生成
+//	device->CreateShaderResourceView(textureResources[index].Get(), &srvDesc, textureCPUSrvHandles[index]);
+//}
 
 DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 {

@@ -70,16 +70,16 @@ public:
 	///desctipotorHeapを生成する関数
 	 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
-	/// <summary>
-	/// 
-	/// </summary>
-	void LoadTextureResourceForSRV(const std::string& textureFilename, uint32_t index);
+	///// <summary>
+	///// 
+	///// </summary>
+	//void LoadTextureResourceForSRV(const std::string& textureFilename, uint32_t index);
 
-	/// <summary>
-	/// SRVを作成する
-	/// </summary>
-	/// <param name="textureFileNames"></param>
-	void MakeSRV(const std::string& textureFileNames, uint32_t index);
+	///// <summary>
+	///// SRVを作成する
+	///// </summary>
+	///// <param name="textureFileNames"></param>
+	//void MakeSRV(const std::string& textureFileNames, uint32_t index);
 
 	/// <summary>
 	/// RTVを作成する
@@ -150,8 +150,17 @@ public:
 	D3D12_RENDER_TARGET_VIEW_DESC GetRTVDesc() { return rtvDesc; }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle(int index) const { return rtvHandles[index]; }
 	ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return srvDescriptorHeap.Get(); }
-	const std::vector<D3D12_GPU_DESCRIPTOR_HANDLE>& GetTextureGPUSrvHandles() const { return textureGPUSrvHandles; }
-	const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetTextureCPUSrvHandles() const { return textureCPUSrvHandles; }
+	//const std::vector<D3D12_GPU_DESCRIPTOR_HANDLE>& GetTextureGPUSrvHandles() const { return textureGPUSrvHandles; }
+	//const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetTextureCPUSrvHandles() const { return textureCPUSrvHandles; }
+
+	// TextureManagerに使用する
+	uint32_t GetDescriptorSizeSRV() const { return descriptorSizeSRV; }
+	uint32_t GetDescriptorSizeRTV() const { return descriptorSizeRTV; }
+	uint32_t GetDescriptorSizeDSV() const { return descriptorSizeDSV; }
+	///参照で返すゲッター？
+	const Microsoft::WRL::ComPtr<ID3D12Device>& GetDeviceComPtr() const { return device; }
+	const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& GetCommandListComPtr() const { return commandList; }
+	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& GetSRVDescriptorHeapComPtr() const { return srvDescriptorHeap; }
 
 
 private:
@@ -189,11 +198,11 @@ private:
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};//rtvの設定
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 	//srv
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> textureResources;
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> intermediateResources;
-	std::vector<DirectX::TexMetadata> metadatas;
-	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureCPUSrvHandles;
-	std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureGPUSrvHandles;
+	//std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> textureResources;
+	//std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> intermediateResources;
+	//std::vector<DirectX::TexMetadata> metadatas;
+	//std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> textureCPUSrvHandles;
+	//std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureGPUSrvHandles;
 
 	//dsv
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;

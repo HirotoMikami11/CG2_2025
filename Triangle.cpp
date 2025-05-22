@@ -38,7 +38,7 @@ void Triangle::Draw(DirectXCommon* directX) {
 
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformResource->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, directX->GetTextureGPUSrvHandles()[0]);
+	//commandList->SetGraphicsRootDescriptorTable(2, directX->GetTextureGPUSrvHandles()[0]);
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	commandList->DrawInstanced(3, 1, 0, 0);
 }

@@ -57,7 +57,7 @@ void Sphere::Draw(DirectXCommon* directX) {
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, directX->GetTextureGPUSrvHandles()[1]); // モンスターボール
+	//commandList->SetGraphicsRootDescriptorTable(2, directX->GetTextureGPUSrvHandles()[1]); // モンスターボール
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	commandList->IASetIndexBuffer(&indexBufferView);
 	commandList->DrawIndexedInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0, 0);

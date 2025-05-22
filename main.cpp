@@ -44,12 +44,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Dump.h"
-
 #include "AudioManager.h"
-
-//図形
-#include "GameObject.h"
-#include"InputManager.h"
+#include "InputManager.h"
+#include "TextureManager.h"
 
 
 /// <summary>
@@ -212,17 +209,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directXCommon->Initialize(winApp);
 
 	//DirectXの末尾にキーボード入力のインスタンス生成
-	InputManager::GetInstance()->Initialize(winApp);
+	InputManager* inputManager = InputManager::GetInstance();
+	inputManager->Initialize(winApp);
+	//InputManager::GetInstance()->Initialize(winApp);
+
+	//DirectXの末尾にテクスチャ読み込みのインスタンス生成
+
+	TextureManager* textureManager = TextureManager::GetInstance();
+	textureManager->Initialize(directXCommon);
 
 	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
-	AudioManager::GetInstance()->Initialize();
+	AudioManager* audioManager = AudioManager::GetInstance();
+	audioManager->Initialize();
+	//AudioManager::GetInstance()->Initialize();
 
-	std::vector<GameObject*> GameObujects;
+
+
+
+
+	///*-----------------------------------------------------------------------*///
+	///								テクスチャの読み込み							///
+	///*-----------------------------------------------------------------------*///
+
+	textureManager->LoadTexture("resources/uvChecker.png", "uvChecker");
+	textureManager->LoadTexture("resources/monsterBall.png", "monsterBall");
+
+
+	///*-----------------------------------------------------------------------*///
+	///								音声データの読み込み							///
+	///*-----------------------------------------------------------------------*///
+
+	//ゲーム開始前に読み込む音声データ
+	audioManager->LoadWave("resources/Alarm01.wav", "Alarm");
+	//tagを利用して再生
+	audioManager->PlayLoop("Alarm");
+	audioManager->SetVolume("Alarm", 0.1f);
+
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
 
-	
+
 
 #pragma region Triangle
 
@@ -543,9 +570,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//モデルデータ作成
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
-
-	directXCommon->LoadTextureResourceForSRV(modelData.material.textureFilePath, 2);
-	directXCommon->MakeSRV(modelData.material.textureFilePath, 2);
+	//モデルデータの読み込み
+	textureManager->LoadTexture(modelData.material.textureFilePath, "planeTexture");
 
 	//																			//
 	//							VertexResourceの作成								//
@@ -670,12 +696,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
 
-	////ゲーム開始前に読み込む音声データ
-	//AudioManager::GetInstance()->LoadWave("resources/Alarm01.wav", "Alarm");
-	////tagを利用して再生
-	//AudioManager::GetInstance()->PlayLoop("Alarm");
-	//AudioManager::GetInstance()->SetVolume("Alarm",0.1f);
-
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
@@ -689,15 +709,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//							　ゲームの処理										//
 
 		///キー入力の更新
-		InputManager::GetInstance()->Update();
+		inputManager->Update();
 
-		//if (InputManager::GetInstance()->IsKeyTrigger(DIK_1)) {
-		//	OutputDebugStringA("Trigger 1!!\n");
-		//}
 
-		//if (InputManager::GetInstance()->IsMouseButtonDown(0)) {
-		//	OutputDebugStringA("Left!!\n");
-		//}
+		if (inputManager->IsKeyTrigger(DIK_1)) {
+			OutputDebugStringA("Trigger 1!!\n");
+		}
+
+		if (inputManager->IsMouseButtonDown(0)) {
+			OutputDebugStringA("Left!!\n");
+		}
 
 
 		//								更新処理										//
@@ -806,7 +827,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[0]);	//uvChecker
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
 		directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
@@ -862,7 +883,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, directXCommon->GetTextureGPUSrvHandles()[2]); // テクスチャ
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
 		// インデックスバッファがない場合は直接頂点で描画
 		directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
@@ -888,8 +909,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	// AudioManagerの終了処理
-	AudioManager::GetInstance()->Finalize();
+	// Audioの終了処理
+	audioManager->Finalize();
+	//inputの終了処理(中身は何もない)
+	inputManager->Finalize();
+	//textureの終了処理
+	textureManager->Finalize();
+
 
 	// winAppの終了処理
 	winApp->Finalize();
@@ -897,6 +923,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// directXの終了処理
 	directXCommon->Finalize();
 	delete directXCommon;
+
 
 	//COMの終了処理
 	CoUninitialize();
