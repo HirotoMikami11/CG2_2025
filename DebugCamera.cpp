@@ -82,13 +82,13 @@ void DebugCamera::Move()
 		}
 		if (InputManager::GetInstance()->IsKeyDown(DIK_A)) {
 			//カメラ移動ベクトル
-			Vector3 move = { speed,0,0 };
+			Vector3 move = { -speed,0,0 };
 			translation_ = Vector3Add(translation_, move);
 		}
 
 		if (InputManager::GetInstance()->IsKeyDown(DIK_D)) {
 			//カメラ移動ベクトル
-			Vector3 move = { -speed,0,0 };
+			Vector3 move = { speed,0,0 };
 			translation_ = Vector3Add(translation_, move);
 
 		}
@@ -126,8 +126,8 @@ void DebugCamera::Rotate() {
 		rotation_.x += mouseDelta.y * 0.0002f;
 		rotation_.y += mouseDelta.x * 0.0002f;
 
-		rotation_.x = std::clamp(rotation_.x, -1.5f, 1.5f);
-		rotation_.y = std::clamp(rotation_.y, -1.5f, 1.5f);
+		//rotation_.x = std::clamp(rotation_.x, -1.5f, 1.5f);
+		//rotation_.y = std::clamp(rotation_.y, -1.5f, 1.5f);
 
 	}
 
