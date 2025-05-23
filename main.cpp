@@ -50,6 +50,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 #include"Material.h"
 #include"Transform.h"
+//カメラ系統
+#include"Camera.h"
+#include"DebugCamera.h"
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -242,10 +245,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//audioManager->SetVolume("Alarm", 0.1f);
 
 	///*-----------------------------------------------------------------------*///
-	///									三角形									///
+	///                             カメラの初期化                              ///
 	///*-----------------------------------------------------------------------*///
 
+	Camera mainCamera;
+	mainCamera.Initialize();
+	// カメラの初期位置を設定（必要に応じて）
+	mainCamera.SetTranslate({ 0.0f, 0.0f, -10.0f });
 
+
+	//デバッグカメラの初期化
+	DebugCamera debugCamera;
+	debugCamera.Initialize();
+	
+	bool useDebugCamera = true;
+
+	///*-----------------------------------------------------------------------*///
+	///									三角形									///
+	///*-----------------------------------------------------------------------*///
 
 #pragma region Triangle
 
@@ -642,17 +659,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,0.0f}
 	};
-	//WorldViewProjectionMatrixを作る
-	Vector3Transform cameraTransform{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,-10.0f}
-	};
 
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
-
-
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
@@ -674,6 +683,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (inputManager->IsMouseButtonDown(0)) {
 			OutputDebugStringA("Left!!\n");
+		}
+
+		if (inputManager->IsMoveMouseWheel()) {	
+			std::string str = std::to_string(inputManager->GetMouseWheel());
+			OutputDebugStringA(str.c_str());
 		}
 
 
@@ -706,7 +720,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-
 #pragma region "Sphere"
 		ImGui::Text("Sphere");
 		Vector4 sphereColor = sphereMaterial.GetColor();
@@ -735,7 +748,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-
 #pragma region Sprite
 		ImGui::Text("Sprite");
 		Vector4 spriteColor = spriteMaterial.GetColor();
@@ -758,7 +770,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
 #pragma endregion
 
-
 #pragma region Model
 		ImGui::Text("Model");
 		Vector3 modelTranslate = modelTransform.GetTranslate();
@@ -770,11 +781,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			modelTransform.SetRotate(modelRotate);
 		}
 #pragma endregion
+
+#pragma region Camera
+		ImGui::Text("Camera");
+		Vector3 cameraTranslate = mainCamera.GetTranslate();
+		if (ImGui::DragFloat3("Camera_translate", &cameraTranslate.x, 0.01f)) {
+			mainCamera.SetTranslate(cameraTranslate);
+		}
+		Vector3 cameraRotate = mainCamera.GetRotate();
+		if (ImGui::DragFloat3("Camera_rotate", &cameraRotate.x, 0.01f)) {
+			mainCamera.SetRotate(cameraRotate);
+		}
+
+
+#pragma endregion
+
 		ImGui::End();
 
+		Matrix4x4 viewProjectionMatrix;
+		if (!useDebugCamera) {
+			mainCamera.Update();
+			viewProjectionMatrix = mainCamera.GetViewProjectionMatrix();
 
-		//viewprojectionを計算
-		Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
+		} else {
+			debugCamera.Update();
+			viewProjectionMatrix = debugCamera.GetViewProjectionMatrix();
+
+		}
+		// ビュープロジェクション行列を取得
+		Matrix4x4 viewProjectionMatrixSprite = mainCamera.GetSpriteViewProjectionMatrix();
+
+
 
 		//																			//
 		//							三角形用のWVP										//
@@ -792,6 +829,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//三角形を回転させる
 		sphereTransform.AddRotation({ 0.0f,0.01f,0.0f });
+
 		//行列の更新
 		sphereTransform.UpdateMatrix(viewProjectionMatrix);
 
@@ -799,9 +837,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//							Sprite用のWVP									//
 		//																			//
 
-
-		//viewprojectionを計算
-		Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 		//行列の更新
 		spriteTransform.UpdateMatrix(viewProjectionMatrixSprite);
 		//uvTransformの更新

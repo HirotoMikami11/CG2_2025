@@ -88,6 +88,8 @@ public:
 	/// </summary>
 	/// /// <param name="buttonNumber">マウスボタン番号(0:左,1:右,2:中,3~7:拡張マウスボタン)</param>
 	bool IsMouseButtonRelease(int buttonNumber) const;
+	
+	bool IsMoveMouseWheel()const;
 
 	/// <summary>
 	/// マウスの移動量を取得（X軸）
@@ -108,6 +110,12 @@ public:
 	/// マウスの座標を取得
 	/// </summary>
 	Vector2 GetMousePosition() const { return mousePosition; }
+
+	/// <summary>
+	/// 前のマウス座標
+	/// </summary>
+	/// <returns></returns>
+	Vector2 GetPreMousePosition() const { return preMousePosition; }
 private:
 
 	// シングルトン用
@@ -129,4 +137,5 @@ private:
 	DIMOUSESTATE2 mouse = {};
 	DIMOUSESTATE2 preMouse = {};
 	Vector2 mousePosition = {};  // マウスの座標（スクリーンの座標）
+	Vector2 preMousePosition = {};  // 前のマウスの座標（スクリーンの座標）
 };

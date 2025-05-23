@@ -83,6 +83,7 @@ void InputManager::Update() {
 
 	// 前回のマウス入力状態を保存
 	preMouse = mouse;
+	preMousePosition = mousePosition;
 
 	// マウス情報の取得開始
 	result = devMouse->Acquire();
@@ -165,6 +166,16 @@ bool InputManager::IsMouseButtonRelease(int buttonNumber) const {
 	}
 	return (mouse.rgbButtons[buttonNumber] & 0x80) == 0 &&
 		(preMouse.rgbButtons[buttonNumber] & 0x80) != 0;
+}
+
+bool InputManager::IsMoveMouseWheel() const {
+
+	//前フレームの情報が今の座標と違う場合にtrue
+	if (preMouse.lZ != mouse.lZ) {
+		return true;
+	}
+
+	return false;
 }
 
 
