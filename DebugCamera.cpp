@@ -8,9 +8,10 @@ void DebugCamera::Initialize()
 void DebugCamera::Update()
 {
 	///入力によってcameraの移動回転
-	Move();
-	Rotate();
-
+	if (moveDebugCamera_) {
+		Move();
+		Rotate();
+	}
 	//PivotRotate();
 
 	///ビュー行列の更新
@@ -33,74 +34,72 @@ void DebugCamera::SetDefaultCamera()
 void DebugCamera::Move()
 {
 
-	///*-----------------------------------------------------------------------*///
-	///							マウスホイールで奥に移動						   ///
-	///*-----------------------------------------------------------------------*///
 
-	///マウスホイールが動かされたときのみ
-	if (InputManager::GetInstance()->GetMouseWheel()) {
-		const float speed = InputManager::GetInstance()->GetMouseWheel() * 0.005f;
-		//カメラ移動ベクトル
-		Vector3 move = { 0,0,speed };
-		translation_ = Vector3Add(translation_, move);
-	}
+	//移動速度を定めておく
+	const float speed = 0.1f;
+	const float wheelSpeed = InputManager::GetInstance()->GetMouseWheel() * 0.005f;
 
+	// カメラのローカル軸を回転から生成
+	Matrix4x4 rotateMatrix = MakeRotateXYZMatrix(rotation_);
+
+	Vector3 forward = TransformDirection({ 0, 0, 1 }, rotateMatrix);	//カメラの向きから見て前方ベクトル
+	Vector3 right = TransformDirection({ 1, 0, 0 }, rotateMatrix);		//カメラの向きから見て右方ベクトル
+	Vector3 up = TransformDirection({ 0, 1, 0 }, rotateMatrix);			//カメラの向きから見て上方ベクトル
+
+	//移動ベクトルを初期化
+	Vector3 move = { 0, 0, 0 };
 
 
 	///*-----------------------------------------------------------------------*///
 	///								キーボードで操作							   ///
 	///*-----------------------------------------------------------------------*///
 	//								SpaceでY軸移動								//
-
 	if (InputManager::GetInstance()->IsKeyDown(DIK_SPACE)) {
-
-		const float speed = 0.1f;
+		//					SPACE押されている場合はY軸移動						//
 
 		if (InputManager::GetInstance()->IsKeyDown(DIK_W)) {
-			//カメラ移動ベクトル
-			Vector3 move = { 0,speed,0 };
-			translation_ = Vector3Add(translation_, move);
+			move = Vector3Add(move, up);
 		}
 
 		if (InputManager::GetInstance()->IsKeyDown(DIK_S)) {
-			//カメラ移動ベクトル
-			Vector3 move = { 0,-speed,0 };
-			translation_ = Vector3Add(translation_, move);
-
+			move = Vector3Subtract(move, up);
 		}
 
 	} else {
 
 		//							通常はXZ軸移動								//
-
-		const float speed = 0.1f;
-
 		if (InputManager::GetInstance()->IsKeyDown(DIK_W)) {
-			//カメラ移動ベクトル
-			Vector3 move = { 0,0,speed };
-			translation_ = Vector3Add(translation_, move);
+			move = Vector3Add(move, forward);
 		}
-		if (InputManager::GetInstance()->IsKeyDown(DIK_A)) {
-			//カメラ移動ベクトル
-			Vector3 move = { -speed,0,0 };
-			translation_ = Vector3Add(translation_, move);
+		if (InputManager::GetInstance()->IsKeyDown(DIK_S)) {
+			move = Vector3Subtract(move, forward);
 		}
 
 		if (InputManager::GetInstance()->IsKeyDown(DIK_D)) {
-			//カメラ移動ベクトル
-			Vector3 move = { speed,0,0 };
-			translation_ = Vector3Add(translation_, move);
-
+			move = Vector3Add(move, right);
 		}
-		if (InputManager::GetInstance()->IsKeyDown(DIK_S)) {
-			//カメラ移動ベクトル
-			Vector3 move = { 0,0,-speed };
-			translation_ = Vector3Add(translation_, move);
-
+		if (InputManager::GetInstance()->IsKeyDown(DIK_A)) {
+			move = Vector3Subtract(move, right);
 		}
 	}
+	///*-----------------------------------------------------------------------*///
+	///							マウスホイールで奥に移動						   ///
+	///*-----------------------------------------------------------------------*///
 
+	///マウスホイールが動かされたときのみ
+	if (InputManager::GetInstance()->GetMouseWheel()) {
+		//マウスホイールの動きに応じて前後移動
 
+		Vector3 wheelMove = Vector3Multiply(forward, wheelSpeed);	//前方方向に、ホイールの前後移動分をかける
+		move = Vector3Add(move, wheelMove);							//現状のmoveに加算する。
+	}
+
+	// 正規化してスピードを掛ける
+	if (Vector3Length(move) > 0.0f) {
+		move = Vector3Normalize(move);
+		move = Vector3Multiply(move, speed);
+		translation_ = Vector3Add(translation_, move);
+	}
 
 
 }
@@ -123,45 +122,13 @@ void DebugCamera::Rotate() {
 			(mousePos.y - preMousePos.y)
 		};
 		//カメラ回転に反映させる
-		rotation_.x += mouseDelta.y * 0.0002f;
-		rotation_.y += mouseDelta.x * 0.0002f;
+		rotation_.x += mouseDelta.y * 0.001f;
+		rotation_.y += mouseDelta.x * 0.001f;
 
 		//rotation_.x = std::clamp(rotation_.x, -1.5f, 1.5f);
 		//rotation_.y = std::clamp(rotation_.y, -1.5f, 1.5f);
 
 	}
-
-
-
-
-
-	//	if (Novice::IsPressMouse(0)) {
-	//		//マウスの移動量を取得
-	//		int mouseX, mouseY;
-	//		Novice::GetMousePosition(&mouseX, &mouseY);
-
-
-	//		//マウスの移動量を取得
-	//		int deltaX = mouseX - (kWindowWidth / 2);
-	//		int deltaY = mouseY - (kWindowHeight / 2);
-
-
-	//		//マウスの移動量をカメラの回転に反映
-	//		cameraRotate.x += deltaY * 0.00001f;
-	//		cameraRotate.y += deltaX * 0.00001f;
-
-	//		//カメラの回転を制限
-	//		if (cameraRotate.x > 1.5f) cameraRotate.x = 1.5f;
-	//		if (cameraRotate.x < -1.5f) cameraRotate.x = -1.5f;
-	//		if (cameraRotate.y > 1.5f) cameraRotate.y = 1.5f;
-	//		if (cameraRotate.y < -1.5f) cameraRotate.y = -1.5f;
-	//		//カメラの回転を反映
-	//		cameraMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
-	//	}
-
-
-
-
 }
 
 
@@ -235,21 +202,20 @@ void DebugCamera::PivotRotate() {
 
 
 
+void DebugCamera::ImGui()
+{
 
+	ImGui::Text("DubugCamera");
 
+	// 現在の状態を表示
+	ImGui::Text("MoveCamera: %s", moveDebugCamera_ ? "ON" : "OFF");
 
-
-
-
-
-
-
-
-
-
-
-
-
+	// ボタンで切り替え
+	if (ImGui::Button(moveDebugCamera_ ? "Move Camera: ON" : "Move Camera: OFF")) {
+		moveDebugCamera_ = !moveDebugCamera_;
+	}
+	ImGui::SameLine();
+}
 
 
 

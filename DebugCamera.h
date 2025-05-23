@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include <cassert>
 #include "inputManager.h"
+#include "ImguiManager.h"
 
 /// <summary>
 /// デバッグカメラのクラス
@@ -58,6 +59,13 @@ public:
 
 	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
 
+	void SetTranslate(const Vector3& position) { translation_ = position; }
+
+	/// <summary>
+	/// ImGui
+	/// </summary>
+	void ImGui();
+
 private:
 
 	/// <summary>
@@ -69,7 +77,7 @@ private:
 	//X,Y,Z軸周りのローカル回転角
 	Vector3 rotation_ = { 0,0,0 };
 	//ローカル座標
-	Vector3 translation_ = { 0,0,-10.0f };
+	Vector3 translation_ = { 0,0,0 };
 
 	// デバッグカメラのトランスフォーム
 	Vector3Transform cameraTransform_{
@@ -87,11 +95,12 @@ private:
 
 
 	// ピボット回転用の変数
-	Vector3 pivotPoint_ = { 0, 0, 0 };  // ピボット点（回転の中心）
-	float pivotDistance_ = 10.0f;       // ピボット点からの距離
-	Vector3 pivotRotation_ = { 0, 0, 0 }; // ピボット回転角
+	Vector3 pivotPoint_ = { 0, 0, 0 };		// ピボット点（回転の中心）
+	float pivotDistance_ = 10.0f;			// ピボット点からの距離
+	Vector3 pivotRotation_ = { 0, 0, 0 };	// ピボット回転角
 
-
+	//デバッグカメラで移動するかどうか
+	bool moveDebugCamera_ = true;
 
 };
 

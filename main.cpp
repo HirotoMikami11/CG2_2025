@@ -23,12 +23,6 @@
 #include <dxcapi.h>
 #pragma comment(lib,"dxcompiler.lib")
 
-///ImGui
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 ///DirectXTex
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
@@ -44,15 +38,18 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Dump.h"
+
 #include "AudioManager.h"
 #include "InputManager.h"
 #include "TextureManager.h"
+///ImGui
+#include "ImGuiManager.h" 
 
 #include"Material.h"
 #include"Transform.h"
 //カメラ系統
-#include"Camera.h"
-#include"DebugCamera.h"
+#include"CameraController.h"
+
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -226,6 +223,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	audioManager->Initialize();
 
 
+
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
 	///*-----------------------------------------------------------------------*///
@@ -248,17 +246,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///                             カメラの初期化                              ///
 	///*-----------------------------------------------------------------------*///
 
-	Camera mainCamera;
-	mainCamera.Initialize();
-	// カメラの初期位置を設定（必要に応じて）
-	mainCamera.SetTranslate({ 0.0f, 0.0f, -10.0f });
-
-
-	//デバッグカメラの初期化
-	DebugCamera debugCamera;
-	debugCamera.Initialize();
-	
-	bool useDebugCamera = true;
+	CameraController* cameraController = CameraController::GetInstance();
+	cameraController->Initialize();
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
@@ -634,18 +623,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///								ImGuiの初期化								   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(winApp->GetHwnd());
-	ImGui_ImplDX12_Init(
-		directXCommon->GetDevice(),
-		directXCommon->GetSwapChainDesc().BufferCount,
-		directXCommon->GetRTVDesc().Format,
-		directXCommon->GetSRVDescriptorHeap(),
-		directXCommon->GetSRVDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(),
-		directXCommon->GetSRVDescriptorHeap()->GetGPUDescriptorHandleForHeapStart()
-	);
+	
+	// ImGuiの初期化
+	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
+	imguiManager->Initialize(winApp, directXCommon);
+
 
 	//								　変数宣言									//
 
@@ -685,7 +667,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			OutputDebugStringA("Left!!\n");
 		}
 
-		if (inputManager->IsMoveMouseWheel()) {	
+		if (inputManager->IsMoveMouseWheel()) {
 			std::string str = std::to_string(inputManager->GetMouseWheel());
 			OutputDebugStringA(str.c_str());
 		}
@@ -693,10 +675,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//								更新処理										//
 
-		//ImGuiにフレームが始まることを伝える
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
+
+		// ImGuiの受け付け開始
+		imguiManager->Begin();
+
+
 
 		//開発用UIの処理
 		ImGui::Begin("Debug");
@@ -782,34 +765,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 #pragma endregion
 
-#pragma region Camera
-		ImGui::Text("Camera");
-		Vector3 cameraTranslate = mainCamera.GetTranslate();
-		if (ImGui::DragFloat3("Camera_translate", &cameraTranslate.x, 0.01f)) {
-			mainCamera.SetTranslate(cameraTranslate);
-		}
-		Vector3 cameraRotate = mainCamera.GetRotate();
-		if (ImGui::DragFloat3("Camera_rotate", &cameraRotate.x, 0.01f)) {
-			mainCamera.SetRotate(cameraRotate);
-		}
-
-
-#pragma endregion
-
 		ImGui::End();
 
-		Matrix4x4 viewProjectionMatrix;
-		if (!useDebugCamera) {
-			mainCamera.Update();
-			viewProjectionMatrix = mainCamera.GetViewProjectionMatrix();
 
-		} else {
-			debugCamera.Update();
-			viewProjectionMatrix = debugCamera.GetViewProjectionMatrix();
-
-		}
-		// ビュープロジェクション行列を取得
-		Matrix4x4 viewProjectionMatrixSprite = mainCamera.GetSpriteViewProjectionMatrix();
+		cameraController->Update();
 
 
 
@@ -821,7 +780,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		triangleTransform.AddRotation({ 0.0f,0.03f,0.0f });
 
 		//行列の更新
-		triangleTransform.UpdateMatrix(viewProjectionMatrix);
+		triangleTransform.UpdateMatrix(cameraController->GetViewProjectionMatrix());
 
 		//																			//
 		//							球体用のWVP										//
@@ -831,14 +790,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sphereTransform.AddRotation({ 0.0f,0.01f,0.0f });
 
 		//行列の更新
-		sphereTransform.UpdateMatrix(viewProjectionMatrix);
+		sphereTransform.UpdateMatrix(cameraController->GetViewProjectionMatrix());
 
 		//																			//
 		//							Sprite用のWVP									//
 		//																			//
 
 		//行列の更新
-		spriteTransform.UpdateMatrix(viewProjectionMatrixSprite);
+		spriteTransform.UpdateMatrix(cameraController->GetViewProjectionMatrixSprite());
 		//uvTransformの更新
 		UpdateUVTransform(uvTransformSprite, spriteMaterial.GetMaterialDataPtr());
 
@@ -848,10 +807,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 
-		modelTransform.UpdateMatrix(viewProjectionMatrix);
+		modelTransform.UpdateMatrix(cameraController->GetViewProjectionMatrix());
 
-		//ImGuiの内部コマンドを生成する(描画処理に入る前)
-		ImGui::Render();
+		// ImGuiの受け付け終了
+		imguiManager->End();
 
 		//								描画処理										//
 		///*-----------------------------------------------------------------------*///
@@ -938,18 +897,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-		//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), directXCommon->GetCommandList());
+
+		// ImGuiの画面への描画
+		imguiManager->Draw(directXCommon->GetCommandList());
 
 		//	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
 		directXCommon->PostDraw();
 	}
 
 
-	//ImGuiの終了処理
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+	// ImGuiの終了処理
+	imguiManager->Finalize();
 
 	///*-----------------------------------------------------------------------*///
 	//																			//

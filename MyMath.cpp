@@ -616,6 +616,19 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	return RotateZMatrix;
 }
 
+Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate)
+{
+	Matrix4x4 roatateXYZMatrix = { 0 };
+
+	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
+
+	roatateXYZMatrix = Matrix4x4Multiply(rotateXMatrix, Matrix4x4Multiply(rotateYMatrix, rotateZMatrix));
+	return roatateXYZMatrix;
+
+}
+
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
 	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
@@ -729,9 +742,23 @@ Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& cameraTransform, floa
 Matrix4x4 MakeViewProjectionMatrixSprite() {
 
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
-	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f,0.0f,float(kClientWidth),float(kClientHeight),0.0f,100.0f);
+	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
 	Matrix4x4 viewProjectionMatrix = Matrix4x4Multiply(viewMatrix, projectionMatrix);
 
 	return viewProjectionMatrix;
+}
+
+Vector3 TransformDirection(const Vector3& v, const Matrix4x4& m)
+{
+	Vector3 result;
+	// 行列の回転・スケール部分（左上3x3）のみを使用
+	// 平行移動成分（m[3][0], m[3][1], m[3][2]）は無視
+	//カメラを向いている方向に移動させるために使用
+
+
+	result.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0];
+	result.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1];
+	result.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2];
+	return result;
 }
 

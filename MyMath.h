@@ -240,6 +240,10 @@ Matrix4x4 MakeRotateXMatrix(float radian);
 Matrix4x4 MakeRotateYMatrix(float radian);
 //Z軸回転行列
 Matrix4x4 MakeRotateZMatrix(float radian);
+
+//XYZ軸回転行列
+Matrix4x4 MakeRotateXYZMatrix(const Vector3& rotate);
+
 //アフィン返還行列
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
@@ -254,3 +258,12 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& camera, float aspectRatio);
 //矩形Sprite用のカメラを原点としたviewProjecton
 Matrix4x4 MakeViewProjectionMatrixSprite();
+
+/// <summary>
+/// 方向ベクトルを行列で変換する関数
+/// 平行移動成分は無視し、回転・スケール成分のみを適用する
+/// </summary>
+/// <param name="v">変換したい方向ベクトル（ローカル座標）</param>
+/// <param name="m">変換行列（回転・スケール・平行移動を含む4x4行列）</param>
+/// <returns>変換された方向ベクトル（ワールド座標）</returns>
+Vector3 TransformDirection(const Vector3& vector, const Matrix4x4& matrix);
