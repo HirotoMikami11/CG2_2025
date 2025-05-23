@@ -49,6 +49,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include "TextureManager.h"
 
 #include"Material.h"
+#include"Transform.h"
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -284,15 +285,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
 
-	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResource = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* wvpData = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-	//単位行列を書き込んでおく
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
+	//Transform変数を作る
+	Vector3Transform transformTriangle{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{2.0f,1.5f,0.0f}
+	};
+
+	Transform triangleTransform;
+	triangleTransform.Initialize(directXCommon);
+	triangleTransform.SetTransform(transformTriangle);
+
 
 	//																			//
 	//						Resourceにデータを書き込む								//
@@ -403,16 +406,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
 
-	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* wvpDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&wvpDataSphere));
-	//単位行列を書き込んでおく
-	wvpDataSphere->WVP = MakeIdentity4x4();
-	wvpDataSphere->World = MakeIdentity4x4();
+	//SphereのTransform変数を作る
+	Vector3Transform transformSphere{
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f}
+	};
 
+	Transform sphereTransform;
+	sphereTransform.Initialize(directXCommon);
+	sphereTransform.SetTransform(transformSphere);
 
 	//																			//
 	//							DirectionalLightのResourceを作る						//
@@ -509,17 +512,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
+	//SpriteのTransform変数を作る
+	Vector3Transform transformSprite{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f}
+	};
+	Transform spriteTransform;
+	spriteTransform.Initialize(directXCommon);
+	spriteTransform.SetTransform(transformSprite);
 
-	//WVP用のリソースを作る、Matrix4x4　１つ分のサイズを用意する
-	Microsoft::WRL::ComPtr <ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* transformationMatrixDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
-	//単位行列を書き込んでおく
-
-	transformationMatrixDataSprite->WVP = MakeIdentity4x4();
-	transformationMatrixDataSprite->World = MakeIdentity4x4();
 
 	//																			//
 	//						Resourceにデータを書き込む								//
@@ -589,11 +591,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
 
-	Microsoft::WRL::ComPtr <ID3D12Resource> transformMatrixResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(TransformationMatrix));
-	TransformationMatrix* transformMatrixDataModel = nullptr;
-	transformMatrixResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&transformMatrixDataModel));
-	transformMatrixDataModel->WVP = MakeIdentity4x4();
-	transformMatrixDataModel->World = MakeIdentity4x4();
+		// モデル用のTransform変数
+	Vector3Transform transformModel{
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 3.0f, 0.0f},
+		{-2.2f,-1.2f, 0.0f}
+	};
+
+	//Transform変数を作る
+	Transform modelTransform;
+	modelTransform.Initialize(directXCommon);
+	modelTransform.SetTransform(transformModel);
+
 
 	//																			//
 	//						Resourceにデータを書き込む								//
@@ -623,27 +632,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//								　変数宣言									//
 
-	//Transform変数を作る
-	Vector3Transform transform{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{2.0f,1.5f,0.0f}
-	};
-
-	//SphereのTransform変数を作る
-	Vector3Transform transformSphere{
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f}
-	};
 
 
-	//SpriteのTransform変数を作る
-	Vector3Transform transformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
-	};
+
+
 
 	Vector3Transform uvTransformSprite{
 		{1.0f,1.0f,1.0f},
@@ -655,12 +647,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
 		{0.0f,0.0f,-10.0f}
-	};
-	// モデル用のTransform変数
-	Vector3Transform transformModel{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 0.0f, 0.0f},
-		{0.0f, 0.0f, 0.0f}
 	};
 
 	//ImGuiで使用する変数
@@ -708,8 +694,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triangleMaterial.SetColor(triangleColor);
 		}
 
-		ImGui::DragFloat3("Triangle_translate", &transform.translate.x, 0.01f);
-		ImGui::DragFloat3("Triangle_rotate", &transform.rotate.x, 0.01f);
+		Vector3 triangleTranslate = triangleTransform.GetTranslate();
+		if (ImGui::DragFloat3("Triangle_translate", &triangleTranslate.x, 0.01f)) {
+			triangleTransform.SetTranslate(triangleTranslate);
+		}
+
+		Vector3 triangleRotate = triangleTransform.GetRotate();
+		if (ImGui::DragFloat3("Triangle_rotate", &triangleRotate.x, 0.01f)) {
+			triangleTransform.SetRotate(triangleRotate);
+		}
 
 #pragma endregion
 
@@ -720,8 +713,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::ColorEdit4("Sphere_Color", reinterpret_cast<float*>(&sphereColor.x))) {
 			sphereMaterial.SetColor(sphereColor);
 		}
-		ImGui::DragFloat3("Sphere_translate", &transformSphere.translate.x, 0.01f);
-		ImGui::DragFloat3("Sphere_rotate", &transformSphere.rotate.x, 0.01f);
+		Vector3 sphereTranslate = sphereTransform.GetTranslate();
+		if (ImGui::DragFloat3("Sphere_translate", &sphereTranslate.x, 0.01f)) {
+			sphereTransform.SetTranslate(sphereTranslate);
+		}
+		Vector3 sphereRotate = sphereTransform.GetRotate();
+		if (ImGui::DragFloat3("Sphere_rotate", &sphereRotate.x, 0.01f)) {
+			sphereTransform.SetRotate(sphereRotate);
+		}
 		ImGui::DragFloat3("Sphere_LightDirection", &directionalLightDataSphere->direction.x, 0.01f);
 
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
@@ -743,8 +742,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&spriteColor.x))) {
 			spriteMaterial.SetColor(spriteColor);
 		}
-		ImGui::DragFloat3("Sprite_translate", &transformSprite.translate.x, 0.01f);
-		ImGui::DragFloat3("Sprite_rotate", &transformSprite.rotate.x, 0.01f);
+
+		Vector3 spriteTranslate = spriteTransform.GetTranslate();
+		if (ImGui::DragFloat3("Sprite_translate", &spriteTranslate.x, 0.01f)) {
+			spriteTransform.SetTranslate(spriteTranslate);
+		}
+		Vector3 spriteRotate = spriteTransform.GetRotate();
+		if (ImGui::DragFloat3("Sprite_rotate", &spriteRotate.x, 0.01f)) {
+			spriteTransform.SetRotate(spriteRotate);
+		}
+
+
 		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
@@ -753,40 +761,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Model
 		ImGui::Text("Model");
-		ImGui::DragFloat3("Model_translate", &transformModel.translate.x, 0.01f);
-		ImGui::DragFloat3("Model_rotate", &transformModel.rotate.x, 0.01f);
+		Vector3 modelTranslate = modelTransform.GetTranslate();
+		if (ImGui::DragFloat3("Model_translate", &modelTranslate.x, 0.01f)) {
+			modelTransform.SetTranslate(modelTranslate);
+		}
+		Vector3 modelRotate = modelTransform.GetRotate();
+		if (ImGui::DragFloat3("Model_rotate", &modelRotate.x, 0.01f)) {
+			modelTransform.SetRotate(modelRotate);
+		}
 #pragma endregion
 		ImGui::End();
+
+
+		//viewprojectionを計算
+		Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
+
 		//																			//
 		//							三角形用のWVP										//
 		//																			//
 
 		//三角形を回転させる
-		transform.rotate.y += 0.03f;
-		//viewprojectionを計算
-		Matrix4x4 viewProjectionMatrix = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
+		triangleTransform.AddRotation({ 0.0f,0.03f,0.0f });
+
 		//行列の更新
-		UpdateMatrix4x4(transform, viewProjectionMatrix, wvpData);
+		triangleTransform.UpdateMatrix(viewProjectionMatrix);
 
 		//																			//
 		//							球体用のWVP										//
 		//																			//
 
-		transformSphere.rotate.y += 0.01f;
-
-		//viewprojectionを計算
-		Matrix4x4 viewProjectionMatrixSphere = MakeViewProjectionMatrix(cameraTransform, (float(kClientWidth) / float(kClientHeight)));
+		//三角形を回転させる
+		sphereTransform.AddRotation({ 0.0f,0.01f,0.0f });
 		//行列の更新
-		UpdateMatrix4x4(transformSphere, viewProjectionMatrix, wvpDataSphere);
+		sphereTransform.UpdateMatrix(viewProjectionMatrix);
 
 		//																			//
 		//							Sprite用のWVP									//
 		//																			//
 
+
 		//viewprojectionを計算
 		Matrix4x4 viewProjectionMatrixSprite = MakeViewProjectionMatrixSprite();
 		//行列の更新
-		UpdateMatrix4x4(transformSprite, viewProjectionMatrixSprite, transformationMatrixDataSprite);
+		spriteTransform.UpdateMatrix(viewProjectionMatrixSprite);
 		//uvTransformの更新
 		UpdateUVTransform(uvTransformSprite, spriteMaterial.GetMaterialDataPtr());
 
@@ -795,11 +812,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//							Model用のWVP									//
 		//																			//
 
-		transformModel.rotate.y = 3.0f;
-		transformModel.translate.x = -2.2f;
-		transformModel.translate.y = -1.2f;
-		UpdateMatrix4x4(transformModel, viewProjectionMatrix, transformMatrixDataModel);
 
+		modelTransform.UpdateMatrix(viewProjectionMatrix);
 
 		//ImGuiの内部コマンドを生成する(描画処理に入る前)
 		ImGui::Render();
@@ -828,7 +842,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Triangle
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleMaterial.GetResource()->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangleTransform.GetResource()->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
 		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
@@ -842,7 +856,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Sphere
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphereMaterial.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResourceSphere->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphereTransform.GetResource()->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
 		//wvp用のCBufferの場所を設定
@@ -863,11 +877,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteMaterial.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
 		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
-
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
 
 		//TransformMatrixCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, spriteTransform.GetResource()->GetGPUVirtualAddress());
 
 		// 描画（DrawCall／ドローコール)
 		//三角形を二つ描画するので6つ
@@ -881,7 +894,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Model
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelMaterial.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixResourceModel->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, modelTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));
 		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);

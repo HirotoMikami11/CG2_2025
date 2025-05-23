@@ -231,7 +231,7 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 //4x4行列の拡大縮小行列
 Matrix4x4 MakeScaleMatrix(const Vector3& Scale);
 //4x4行列の座標変換
-Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
+Vector3 Matrix4x4Transform(const Vector3& vector, const Matrix4x4& matrix);
 
 
 //X軸回転行列

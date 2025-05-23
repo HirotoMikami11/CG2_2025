@@ -5,7 +5,7 @@ void Material::Initialize(DirectXCommon* dxCommon)
 	// マテリアル用のリソースを作成
 	materialResource_ = CreateBufferResource(dxCommon->GetDevice(), sizeof(MaterialData));
 	// マテリアルデータにマップ
-	HRESULT hr = materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 	// デフォルト設定で初期化
 	SetDefaultSettings();
 

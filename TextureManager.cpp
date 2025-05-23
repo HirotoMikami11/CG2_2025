@@ -39,8 +39,7 @@ bool TextureManager::LoadTexture(const std::string& filename, const std::string&
 
 	//インデックスの数が最大値以上の場合は獲得できないとログを出す
 	if (srvIndex >= MAX_TEXTURE_COUNT) {
-		Logger::Log(Logger::GetStream(),
-			std::format("Failed to load texture '{}': No available SRV slots.\n", filename));
+		Logger::Log(Logger::GetStream(),std::format("Failed to load texture '{}': No available SRV slots.\n", filename));
 		return false;
 	}
 

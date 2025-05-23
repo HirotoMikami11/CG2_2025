@@ -18,7 +18,6 @@ public:
 	/// マテリアルを初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	/// <returns>初期化成功かどうか</returns>
 	void Initialize(DirectXCommon* dxCommon);
 
 	/// <summary>
