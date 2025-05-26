@@ -42,11 +42,12 @@
 #include "AudioManager.h"
 #include "InputManager.h"
 #include "TextureManager.h"
-///ImGui
 #include "ImGuiManager.h" 
 
 #include"Material.h"
 #include"Transform.h"
+#include"Mesh.h"
+
 //カメラ系統
 #include"CameraController.h"
 
@@ -60,112 +61,6 @@ void DumpLiveObjects() {
 		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 	}
 }
-
-MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
-	//1.中で必要となる変数の宣言
-	MaterialDataModel materialData;			//構築するMaterialData
-	std::string line;					//ファイルから読んだ1行を格納するもの
-
-	//2.ファイルを開く
-	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
-	assert(file.is_open());//開けなかった場合は停止する
-
-	//3.実際にファイルを読み、ModelDataを構築していく
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier;	//先頭の識別子を読む
-
-		//identifierに応じた処理
-		if (identifier == "map_Kd") {
-			std::string textureFilename;
-			s >> textureFilename;
-			//連結してファイルパスにする
-			materialData.textureFilePath = directoryPath + "/" + textureFilename;
-		}
-	}
-	//4.MaterialDataを返す
-	return materialData;
-}
-
-
-ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
-	//1.中で必要となる変数の宣言
-	ModelData modelData;				//構築するModelData
-	std::vector<Vector4> positions;		//位置
-	std::vector<Vector3> normals;		//法線
-	std::vector<Vector2> texcoords;		//テクスチャ座標
-	std::string line;					//ファイルから読んだ1行を格納するもの
-
-	//2.ファイルを開く
-	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
-	assert(file.is_open());//開けなかった場合は停止する
-
-	//3.実際にファイルを読み、ModelDataを構築していく
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier;	//先頭の識別子を読む
-
-		if (identifier == "v") {		//識別子がvの場合	頂点位置
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.w = 1.0f;	//w成分は1.0fで初期化
-			positions.push_back(position);//位置を格納する
-
-		} else if (identifier == "vt") {//識別子がvtの場合	頂点テクスチャ
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoords.push_back(texcoord);//テクスチャ座標を格納する
-
-		} else if (identifier == "vn") {//識別子がvnの場合	頂点法線
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normals.push_back(normal);//法線を格納する
-
-		} else if (identifier == "f") {	//識別子がfの場合	面
-			//面は三角形限定
-			VertexData triangle[3];//三角形の頂点データを格納する
-
-			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				std::string vertexDefinition;
-				s >> vertexDefinition;	//頂点の情報を読む
-				//頂点の要素へのindexは「位置/UV/法線」で格納されているので、分解してindexを取得する
-				std::stringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (int32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');// '/'区切りでインデックスを読んでいく
-					elementIndices[element] = std::stoi(index);
-				}
-
-				//要素へのindexから、実際の要素の値を取得して頂点を構成する
-				Vector4 position = positions[elementIndices[0] - 1];	//位置は1始まりなので-1する
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];	//テクスチャ座標も-1
-				Vector3 normal = normals[elementIndices[2] - 1];		//法線も-1
-
-				//右手座標系から左手座標系に変換する
-				position.x *= -1.0f;
-				normal.x *= -1.0f;
-				texcoord.y = 1.0f - texcoord.y; // Y軸反転
-				triangle[faceVertex] = { position, texcoord, normal };//頂点データを構成する
-			}
-			modelData.vertices.push_back(triangle[2]);//頂点データを格納する
-			modelData.vertices.push_back(triangle[1]);//頂点データを格納する
-			modelData.vertices.push_back(triangle[0]);//頂点データを格納する
-		} else if (identifier == "mtllib") {
-			//materialTemplateLibraryファイルの名前を取得する
-			std::string materialFilename;
-			s >> materialFilename;
-			//objファイルとmtlファイルは同じディレクトリにあるので、ディレクトリ・ファイル名を渡す
-			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
-		}
-	}
-	//4.ModelDataを返す
-	return modelData;
-
-}
-
 
 /// <summary>
 /// リソースリークチェック
@@ -256,24 +151,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Triangle
 
 	//																			//
-	//							VertexResourceの作成								//
+	//								メッシュの作成									//
 	//																			//
 
-	//実際に頂点リソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 6); //２つ三角形を作るので６個の頂点データ
-
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-
-	//頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6; //２つ三角形を作るので６個の頂点データ
-	//1頂点当たりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
+	Mesh triangleMesh;
+	triangleMesh.Initialize(directXCommon);
+	triangleMesh.CreateTriangle();
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -303,44 +186,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	triangleTransform.SetTransform(transformTriangle);
 
 
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-
-	//頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	//一つ目の三角形
-
-	//左下
-	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.5f,0.0f };
-	//右下
-	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
-
-	//二つ目の三角形
-	vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	vertexData[3].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[4].texcoord = { 0.5f,0.0f };
-	//右下
-	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	vertexData[5].texcoord = { 1.0f,1.0f };
-
-	//法線情報(三角形なので別のを後で用意)
-	for (int i = 0; i < 6; i++)
-	{
-		vertexData[i].normal.x = vertexData[i].position.x;
-		vertexData[i].normal.y = vertexData[i].position.y;
-		vertexData[i].normal.z = vertexData[i].position.z;
-	}
-
 #pragma endregion
 
 	///*-----------------------------------------------------------------------*///
@@ -348,55 +193,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 #pragma region Sphere
-
 	//																			//
-	//							VertexResourceの作成								//
-	//																			//
-
-	//実際に頂点リソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * (16 * 16 * 6)); //球用1536
-
-	//																			//
-	//							VertexBufferViewの作成							//
+	//								メッシュの作成									//
 	//																			//
 
-	//頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
-	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSphere.SizeInBytes = sizeof(VertexData) * ((16 + 1) * (16 + 1)); //分割数nの時、交点は(n+1)になるため
-	//1頂点当たりのサイズ
-	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
 
-	//																			//
-	//							indexResourceの作成								//
-	//																			//
-
-	//実際にインデックスリソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 16 * 16 * 6); //２つ三角形を作るので６個の頂点データ
-
-
-	//																			//
-	//							indexBufferViewの作成							//
-	//																			//
-
-	//インデックスバッファビューを作成
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSphere{};
-	//リソースの先頭のアドレスから使う
-	indexBufferViewSphere.BufferLocation = indexResourceSphere->GetGPUVirtualAddress();
-	//使用するリソースのサイズはインデックス6つ分のサイズ
-	indexBufferViewSphere.SizeInBytes = sizeof(uint32_t) * 16 * 16 * 6; //三角リスト方式の頂点数と同じ
-	//1頂点当たりのサイズはuint32_t
-	indexBufferViewSphere.Format = DXGI_FORMAT_R32_UINT;
-
-
-	//インデックスリソースにデータを書き込む
-	uint32_t* indexDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	indexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSphere));
-	CreateSphereIndexData(indexDataSphere);
-
+	Mesh sphereMesh;
+	sphereMesh.Initialize(directXCommon);
+	sphereMesh.CreateSphere(16); // 分割数16
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -437,17 +241,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightDataSphere->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightDataSphere->intensity = 1.0f;
 
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-
-	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSphere = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
-
-	//球体のデータ
-	CreateSphereVertexData(vertexDataSphere);
 
 #pragma endregion
 
@@ -458,52 +251,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region "Sprite"
 
 	//																			//
-	//							VertexResourceの作成								//
+	//								メッシュの作成									//
 	//																			//
 
-	//実際に頂点リソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * 4); //２つ三角形で矩形を作るので頂点データ6つ
-
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-
-	//頂点バッファビューを作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
-	//リソースの戦闘のアドレスから使う
-	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
-	//仕様数リソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 4; //２つ三角形を作るので６個の頂点データ
-	//1頂点当たりのサイズ
-	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-
-	//																			//
-	//							indexResourceの作成								//
-	//																			//
-
-	//実際にインデックスリソースを生成
-	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSprite = CreateBufferResource(directXCommon->GetDevice(), sizeof(uint32_t) * 6); //２つ三角形を作るので６個の頂点データ
-
-	//																			//
-	//							indexBufferViewの作成							//
-	//																			//
-	//インデックスバッファビューを作成
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-	//リソースの先頭のアドレスから使う
-	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	//使用するリソースのサイズはインデックス6つ分のサイズ
-	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6; //２つ三角形を作るので６個の頂点データ
-	//1頂点当たりのサイズはuint32_t
-	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-
-
-	//インデックスリソースにデータを書き込む
-	uint32_t* indexDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
-
+	Mesh spriteMesh;
+	spriteMesh.Initialize(directXCommon);
+	spriteMesh.CreateSprite({ 160.0f, 90.0f }, { 320.0f, 180.0f });
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -529,16 +282,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	spriteTransform.SetTransform(transformSprite);
 
 
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-
-	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSprite = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-	//Spriteを表示するための四頂点
-	CreateSpriteVertexData(vertexDataSprite, { 320.0f,180.0f }, { 320.0f,180.0f });
 #pragma endregion
 
 	///*-----------------------------------------------------------------------*///
@@ -547,24 +290,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Model"
 
-	//モデルデータ作成
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
-	//モデルデータの読み込み
-	textureManager->LoadTexture(modelData.material.textureFilePath, "planeTexture");
+	//																			//
+	//								メッシュの作成									//
+	//																			//
 
-	//																			//
-	//							VertexResourceの作成								//
-	//																			//
-	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
-
-	//																			//
-	//							VertexBufferViewの作成							//
-	//																			//
-	//頂点バッファビュー作成
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewModel{};
-	vertexBufferViewModel.BufferLocation = vertexResourceModel->GetGPUVirtualAddress();			//リソースの戦闘のアドレスから使う
-	vertexBufferViewModel.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size());	//使用するリソースのサイズは頂点のサイズ
-	vertexBufferViewModel.StrideInBytes = sizeof(VertexData);									//1頂点当たりのサイズ
+	Mesh modelMesh;
+	modelMesh.Initialize(directXCommon);
+	//モデルデータからメッシュを作成(中身でメッシュも作成される)
+	modelMesh.LoadFromOBJ("resources", "plane.obj");
+	// Meshから読み込んだマテリアル情報を使ってテクスチャを読み込み
+	if (modelMesh.HasMaterialInfo()) {//読み込んだデータがあるか？
+		textureManager->LoadTexture(modelMesh.GetTextureFilePath(), "planeTexture");
+	}
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -573,9 +310,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Material modelMaterial;
 	// マテリアル用のリソースを作る
 	modelMaterial.Initialize(directXCommon);
-	//デフォルトの状態で設定
+	//ライト付きオブジェクト用設定
 	modelMaterial.SetLitObjectSettings();
-
 
 
 	//																			//
@@ -597,7 +333,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
 
-		// モデル用のTransform変数
+	// モデル用のTransform変数
 	Vector3Transform transformModel{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 3.0f, 0.0f},
@@ -610,20 +346,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	modelTransform.SetTransform(transformModel);
 
 
-	//																			//
-	//						Resourceにデータを書き込む								//
-	//																			//
-	VertexData* vertexDataModel = nullptr;
-	vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));						//書き込むためのアドレス取得
-	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());	//頂点データをリソースにコピー
-
 #pragma endregion
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///								ImGuiの初期化								   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	
+
 	// ImGuiの初期化
 	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
 	imguiManager->Initialize(winApp, directXCommon);
@@ -678,8 +407,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// ImGuiの受け付け開始
 		imguiManager->Begin();
-
-
 
 		//開発用UIの処理
 		ImGui::Begin("Debug");
@@ -767,10 +494,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::End();
 
+		//																			//
+		//							カメラの更新										//
+		//																			//
 
 		cameraController->Update();
-
-
 
 		//																			//
 		//							三角形用のWVP										//
@@ -838,9 +566,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleMaterial.GetResource()->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangleTransform.GetResource()->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);	//VBを設定
-		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-		directXCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+		triangleMesh.Bind(directXCommon->GetCommandList());			// メッシュをバインド
+		triangleMesh.Draw(directXCommon->GetCommandList());			// メッシュを描画
 
 #pragma endregion
 
@@ -855,12 +582,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
 		//wvp用のCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureManager->GetTextureHandle("monsterBall") : textureManager->GetTextureHandle("uvChecker"));
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);	//VBを設定
-		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSphere);//Index
-		///indexBufferで表示するため、VertexBufferはコメントアウト
-		// 描画！（DrawCall／ドローコール）。３頂点で1つのインスタンス
-		//directXCommon->GetCommandList()->DrawInstanced(16 * 16 * 6, 1, 0, 0);
-		directXCommon->GetCommandList()->DrawIndexedInstanced(16 * 16 * 6, 1, 0, 0, 0);
+		sphereMesh.Bind(directXCommon->GetCommandList());			// メッシュをバインド
+		sphereMesh.Draw(directXCommon->GetCommandList());			// メッシュを描画
 
 #pragma endregion
 		//																			//
@@ -869,16 +592,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Sprite
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteMaterial.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);//Vertex
-		directXCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);//Index
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
-
 		//TransformMatrixCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, spriteTransform.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
+		spriteMesh.Bind(directXCommon->GetCommandList());				// メッシュをバインド
+		spriteMesh.Draw(directXCommon->GetCommandList());				// メッシュを描画
 
-		// 描画（DrawCall／ドローコール)
-		//三角形を二つ描画するので6つ
-		directXCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 #pragma endregion
 
@@ -891,9 +610,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, modelTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));
-		directXCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewModel);
-		// インデックスバッファがない場合は直接頂点で描画
-		directXCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+		modelMesh.Bind(directXCommon->GetCommandList());				// メッシュをバインド
+		modelMesh.Draw(directXCommon->GetCommandList());				// メッシュを描画
 
 #pragma endregion
 

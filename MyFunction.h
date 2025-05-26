@@ -5,6 +5,7 @@
 #pragma comment(lib,"d3d12.lib")
 #include<cassert>
 #include<wrl.h>
+#include <numbers>
 
 /// <summary>
 /// 球体
@@ -50,30 +51,7 @@ struct DirectionalLight {
 
 Microsoft::WRL::ComPtr <ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr <ID3D12Device> device, size_t sizeInBytes);
 
-/// <summary>
-/// 矩形スプライトvertexDataに情報を書き込む関数
-/// </summary>
-/// <returns></returns>
-void CreateSpriteVertexData(VertexData vertexDataSprite[], Vector2 center, Vector2 radius);
 
-
-/// <summary>
-/// 三角形リスト方式のVetrtexDataを作成する関数
-/// </summary>
-/// <param name="vertexData"></param>
-//void CreateSphereVertexData(VertexData vertexData[]);
-
-/// <summary>
-/// インデックス方式の球体VetrtexDataを作成する関数
-/// </summary>
-/// <param name="vertexData"></param>
-void CreateSphereVertexData(VertexData vertexData[]);
-
-/// <summary>
-/// インデックス方式の球体IndexDataを作成する関数
-/// </summary>
-/// <param name="indexData"></param>
-void CreateSphereIndexData(uint32_t indexData[]);
 
 
 

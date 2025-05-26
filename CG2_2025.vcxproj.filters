@@ -45,9 +45,6 @@
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="MyFunction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -96,23 +93,11 @@
     <ClCompile Include="GameObject.cpp">
       <Filter>ソース ファイル\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Triangle.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Sphere.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>ソース ファイル\Texture</Filter>
     </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>ソース ファイル\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>ソース ファイル\Camera</Filter>
@@ -125,6 +110,18 @@
     </ClCompile>
     <ClCompile Include="CameraController.cpp">
       <Filter>ソース ファイル\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>ソース ファイル\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMath.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>ソース ファイル\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -186,23 +183,11 @@
     <ClInclude Include="GameObject.h">
       <Filter>ヘッダー ファイル\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Triangle.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>ヘッダー ファイル\Texture</Filter>
     </ClInclude>
     <ClInclude Include="TextureManager.h">
       <Filter>ヘッダー ファイル\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>ヘッダー ファイル\Camera</Filter>
@@ -215,6 +200,15 @@
     </ClInclude>
     <ClInclude Include="CameraController.h">
       <Filter>ヘッダー ファイル\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>ヘッダー ファイル\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>ヘッダー ファイル\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

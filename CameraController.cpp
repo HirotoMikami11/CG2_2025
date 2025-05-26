@@ -66,7 +66,6 @@ void CameraController::ImGui()
 	} else {
 		// メインカメラの情報表示（必要に応じて）
 		ImGui::Text("MainCamera is active");
-		// メインカメラの設定があればここに追加
 	}
 	ImGui::End();
 
