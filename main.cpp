@@ -138,7 +138,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//audioManager->SetVolume("Alarm", 0.1f);
 
 	///*-----------------------------------------------------------------------*///
-	///                             カメラの初期化                              ///
+	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 
 	CameraController* cameraController = CameraController::GetInstance();
@@ -189,7 +189,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 	///*-----------------------------------------------------------------------*///
-	///									球体									///
+	///									球体										///
 	///*-----------------------------------------------------------------------*///
 
 #pragma region Sphere
@@ -388,18 +388,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		inputManager->Update();
 
 
-		if (inputManager->IsKeyTrigger(DIK_1)) {
-			OutputDebugStringA("Trigger 1!!\n");
-		}
+		//if (inputManager->IsKeyTrigger(DIK_1)) {
+		//	OutputDebugStringA("Trigger 1!!\n");
+		//}
 
-		if (inputManager->IsMouseButtonDown(0)) {
-			OutputDebugStringA("Left!!\n");
-		}
+		//if (inputManager->IsMouseButtonDown(0)) {
+		//	OutputDebugStringA("Left!!\n");
+		//}
 
-		if (inputManager->IsMoveMouseWheel()) {
-			std::string str = std::to_string(inputManager->GetMouseWheel());
-			OutputDebugStringA(str.c_str());
-		}
+		//if (inputManager->IsMoveMouseWheel()) {
+		//	std::string str = std::to_string(inputManager->GetMouseWheel());
+		//	OutputDebugStringA(str.c_str());
+		//}
 
 
 		//								更新処理										//
@@ -447,6 +447,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Sphere_LightDirection", &directionalLightDataSphere->direction.x, 0.01f);
 
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+
 		bool sphereLighting = sphereMaterial.IsLightingEnabled();
 		if (ImGui::Checkbox("useEnableLighting", &sphereLighting)) {
 			sphereMaterial.SetLightingEnable(sphereLighting);
@@ -563,8 +564,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Triangle
 
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleMaterial.GetResource()->GetGPUVirtualAddress());	//マテリアルのCBufferの場所を設定
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangleTransform.GetResource()->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleMaterial.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangleTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
 		triangleMesh.Bind(directXCommon->GetCommandList());			// メッシュをバインド
 		triangleMesh.Draw(directXCommon->GetCommandList());			// メッシュを描画
@@ -577,11 +578,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Sphere
 
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphereMaterial.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphereTransform.GetResource()->GetGPUVirtualAddress());			//wvp用のCBufferの場所を設定
-
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-		//wvp用のCBufferの場所を設定
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphereTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureManager->GetTextureHandle("monsterBall") : textureManager->GetTextureHandle("uvChecker"));
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+
+
 		sphereMesh.Bind(directXCommon->GetCommandList());			// メッシュをバインド
 		sphereMesh.Draw(directXCommon->GetCommandList());			// メッシュを描画
 
@@ -592,7 +593,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Sprite
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteMaterial.GetResource()->GetGPUVirtualAddress());
-		//TransformMatrixCBufferの場所を設定
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, spriteTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
 		spriteMesh.Bind(directXCommon->GetCommandList());				// メッシュをバインド
@@ -608,8 +608,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Model
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelMaterial.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, modelTransform.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
+
+
 		modelMesh.Bind(directXCommon->GetCommandList());				// メッシュをバインド
 		modelMesh.Draw(directXCommon->GetCommandList());				// メッシュを描画
 
