@@ -22,7 +22,7 @@ class Mesh final
 public:
 	Mesh() = default;
 	~Mesh() = default;
-	 
+
 	/// <summary>
 	/// 初期化
 	/// </summary>
@@ -32,6 +32,20 @@ public:
 	/// <param name="filename">ファイル名</param>
 	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
 		const std::string& directoryPath = "", const std::string& filename = "");
+
+
+	/// <summary>
+/// 初期化(改良版)
+/// </summary>
+/// <param name="dxCommon">DirectXCommonのポインタ</param>
+/// <param name="meshType">メッシュの形</param>
+	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
+		ModelData modelData);
+
+
+
+
+
 
 	/// <summary>
 	/// 三角形メッシュを作成
@@ -57,13 +71,6 @@ public:
 	/// </summary>
 	/// <param name="modelData">モデルデータ</param>
 	void CreateModel(const ModelData& modelData);
-
-	/// <summary>
-	/// OBJファイルからメッシュを読み込み
-	/// </summary>
-	/// <param name="directoryPath">ディレクトリパス</param>
-	/// <param name="filename">ファイル名</param>
-	void LoadFromOBJ(const std::string& directoryPath, const std::string& filename);
 
 	/// <summary>
 	/// 頂点データを直接設定
@@ -126,7 +133,12 @@ private:
    /// <returns>マテリアルデータ</returns>
 	MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 
-
+	/// <summary>
+	/// OBJファイルからメッシュを読み込み
+	/// </summary>
+	/// <param name="directoryPath">ディレクトリパス</param>
+	/// <param name="filename">ファイル名</param>
+	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
 
 private:
 	// DirectXCommon参照

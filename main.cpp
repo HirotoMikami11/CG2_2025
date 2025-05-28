@@ -48,6 +48,11 @@
 #include"Transform.h"
 #include"Mesh.h"
 
+
+///マテリアルとメッシュを統合させたmodelクラス
+#include"Model.h"
+
+
 //カメラ系統
 #include"CameraController.h"
 
@@ -151,25 +156,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Triangle
 
 	//																			//
-	//								メッシュの作成									//
+	//						メッシュとマテリアルリソースの作成						//
 	//																			//
 
-	Mesh triangleMesh;
-	triangleMesh.Initialize(directXCommon,"Triangle");
-	//triangleMesh.CreateTriangle();
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-	Material triangleMaterial;
-	// マテリアル用のリソースを作る
-	triangleMaterial.Initialize(directXCommon);
-	//デフォルトの状態で設定(イニシャライズでも同じことしてるけど明示的に書いておく)
-	//消していい
-	triangleMaterial.SetDefaultSettings();
-
-
+	Model triangleModel;
+	triangleModel.Initialize(directXCommon, "Triangle");
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
 	//																			//
@@ -193,24 +184,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 #pragma region Sphere
-	//																			//
-	//								メッシュの作成									//
-	//																			//
-
-
-	Mesh sphereMesh;
-	sphereMesh.Initialize(directXCommon,"Sphere");
-	//sphereMesh.CreateSphere(16); // 分割数16
 
 	//																			//
-	//							Material用のResourceを作る						//
+	//						メッシュとマテリアルリソースの作成						//
 	//																			//
 
-	Material sphereMaterial;
-	// マテリアル用のリソースを作る
-	sphereMaterial.Initialize(directXCommon);
-	//ライトが反映されるように設定
-	sphereMaterial.SetLitObjectSettings();
+	Model sphereModel;
+	sphereModel.Initialize(directXCommon, "Sphere");
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -231,11 +211,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//							DirectionalLightのResourceを作る						//
 	//																			//
 
-	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceSphere = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	
 	//データを書き込む
 	DirectionalLight* directionalLightDataSphere = nullptr;
 	//書き込むためのアドレスを取得
-	directionalLightResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataSphere));
+	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataSphere));
 	//単位行列を書き込んでおく
 	directionalLightDataSphere->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightDataSphere->direction = { 0.0f,-1.0f,0.0f };
@@ -250,27 +231,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//TODO: spriteはのちにGameObjectから独立させる
 	//TODO: uvTransformもspriteのみ、
-	
+
 
 #pragma region "Sprite"
 
 	//																			//
-	//								メッシュの作成									//
+	//						メッシュとマテリアルリソースの作成						//
 	//																			//
 
-	Mesh spriteMesh;
-	spriteMesh.Initialize(directXCommon,"Sprite");
-	//spriteMesh.CreateSprite({ 160.0f, 90.0f }, { 320.0f, 180.0f });
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-	Material spriteMaterial;
-	// マテリアル用のリソースを作る
-	spriteMaterial.Initialize(directXCommon);
-	//デフォルトの状態で設定
-	spriteMaterial.SetDefaultSettings();
+	Model spriteModel;
+	spriteModel.Initialize(directXCommon, "Sprite");
 
 	//																			//
 	//					TransformationMatrix用のリソースを作る						//
@@ -295,38 +265,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region "Model"
 
 	//																			//
-	//								メッシュの作成									//
+	//						メッシュとマテリアルリソースの作成						//
 	//																			//
 
-	Mesh modelMesh;
-	modelMesh.Initialize(directXCommon,"Model", "resources", "plane.obj");
-	//モデルデータからメッシュを作成(中身でメッシュも作成される)
-	//modelMesh.LoadFromOBJ("resources", "plane.obj");
-	// Meshから読み込んだマテリアル情報を使ってテクスチャを読み込み
-	if (modelMesh.HasMaterialInfo()) {//読み込んだデータがあるか？
-		textureManager->LoadTexture(modelMesh.GetTextureFilePath(), "planeTexture");
-	}
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-	Material modelMaterial;
-	// マテリアル用のリソースを作る
-	modelMaterial.Initialize(directXCommon);
-	//ライト付きオブジェクト用設定
-	modelMaterial.SetLitObjectSettings();
-
+	Model modelModel;
+	modelModel.Initialize(directXCommon, "Model", "resources", "plane.obj");
 
 	//																			//
 	//							DirectionalLightのResourceを作る						//
 	//																			//
-
-	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceModel = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
+	// 
 	//データを書き込む
 	DirectionalLight* directionalLightDataModel = nullptr;
 	//書き込むためのアドレスを取得
-	directionalLightResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
+	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataModel));
 	//単位行列を書き込んでおく
 	directionalLightDataModel->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightDataModel->direction = { 0.0f,-1.0f,0.0f };
@@ -417,9 +369,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Triangle"
 		ImGui::Text("Triangle");
-		Vector4 triangleColor = triangleMaterial.GetColor();
+		Vector4 triangleColor = triangleModel.GetMaterial().GetColor();
 		if (ImGui::ColorEdit4("Triangle_Color", reinterpret_cast<float*>(&triangleColor.x))) {
-			triangleMaterial.SetColor(triangleColor);
+			triangleModel.GetMaterial().SetColor(triangleColor);
 		}
 
 		Vector3 triangleTranslate = triangleTransform.GetTranslate();
@@ -436,9 +388,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Sphere"
 		ImGui::Text("Sphere");
-		Vector4 sphereColor = sphereMaterial.GetColor();
+		Vector4 sphereColor = sphereModel.GetMaterial().GetColor();
 		if (ImGui::ColorEdit4("Sphere_Color", reinterpret_cast<float*>(&sphereColor.x))) {
-			sphereMaterial.SetColor(sphereColor);
+			sphereModel.GetMaterial().SetColor(sphereColor);
 		}
 		Vector3 sphereTranslate = sphereTransform.GetTranslate();
 		if (ImGui::DragFloat3("Sphere_translate", &sphereTranslate.x, 0.01f)) {
@@ -452,22 +404,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 
-		bool sphereLighting = sphereMaterial.IsLightingEnabled();
+		bool sphereLighting = sphereModel.GetMaterial().IsLightingEnabled();
 		if (ImGui::Checkbox("useEnableLighting", &sphereLighting)) {
-			sphereMaterial.SetLightingEnable(sphereLighting);
+			sphereModel.GetMaterial().SetLightingEnable(sphereLighting);
 		}
-		bool sphereLambertian = sphereMaterial.IsLambertianReflectanceEnabled();
+		bool sphereLambertian = sphereModel.GetMaterial().IsLambertianReflectanceEnabled();
 		if (ImGui::Checkbox("useLambertianReflectance", &sphereLambertian)) {
-			sphereMaterial.SetLambertianReflectance(sphereLambertian);
+			sphereModel.GetMaterial().SetLambertianReflectance(sphereLambertian);
 		}
 
 #pragma endregion
 
 #pragma region Sprite
 		ImGui::Text("Sprite");
-		Vector4 spriteColor = spriteMaterial.GetColor();
+		Vector4 spriteColor = spriteModel.GetMaterial().GetColor();
 		if (ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&spriteColor.x))) {
-			spriteMaterial.SetColor(spriteColor);
+			spriteModel.GetMaterial().SetColor(spriteColor);
 		}
 
 		Vector3 spriteTranslate = spriteTransform.GetTranslate();
@@ -483,7 +435,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
-	
+
 
 #pragma endregion
 
@@ -534,7 +486,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//行列の更新
 		spriteTransform.UpdateMatrix(cameraController->GetViewProjectionMatrixSprite());
 		//uvTransformの更新
-		UpdateUVTransform(uvTransformSprite, spriteMaterial.GetMaterialDataPtr());
+		UpdateUVTransform(uvTransformSprite, spriteModel.GetMaterial().GetMaterialDataPtr());
 
 
 		//																			//
@@ -570,11 +522,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Triangle
 
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleMaterial.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangleTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
-		triangleMesh.Bind(directXCommon->GetCommandList());			// メッシュをバインド
-		triangleMesh.Draw(directXCommon->GetCommandList());			// メッシュを描画
+		triangleModel.GetMesh().Bind(directXCommon->GetCommandList());			// メッシュをバインド
+		triangleModel.GetMesh().Draw(directXCommon->GetCommandList());			// メッシュを描画
 
 #pragma endregion
 
@@ -583,14 +535,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 #pragma region Sphere
 
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphereMaterial.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphereModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphereTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureManager->GetTextureHandle("monsterBall") : textureManager->GetTextureHandle("uvChecker"));
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
-
-
-		sphereMesh.Bind(directXCommon->GetCommandList());			// メッシュをバインド
-		sphereMesh.Draw(directXCommon->GetCommandList());			// メッシュを描画
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+		sphereModel.GetMesh().Bind(directXCommon->GetCommandList());			// メッシュをバインド
+		sphereModel.GetMesh().Draw(directXCommon->GetCommandList());			// メッシュを描画
 
 #pragma endregion
 		//																			//
@@ -598,11 +548,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 #pragma region Sprite
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteMaterial.GetResource()->GetGPUVirtualAddress());
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, spriteTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
-		spriteMesh.Bind(directXCommon->GetCommandList());				// メッシュをバインド
-		spriteMesh.Draw(directXCommon->GetCommandList());				// メッシュを描画
+		spriteModel.GetMesh().Bind(directXCommon->GetCommandList());				// メッシュをバインド
+		spriteModel.GetMesh().Draw(directXCommon->GetCommandList());				// メッシュを描画
 
 
 #pragma endregion
@@ -612,14 +562,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 #pragma region Model
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelMaterial.GetResource()->GetGPUVirtualAddress());
+
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, modelTransform.GetResource()->GetGPUVirtualAddress());
 		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResourceModel->GetGPUVirtualAddress()); // 同じライトを使用
+		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress()); // 同じライトを使用
 
-
-		modelMesh.Bind(directXCommon->GetCommandList());				// メッシュをバインド
-		modelMesh.Draw(directXCommon->GetCommandList());				// メッシュを描画
+		modelModel.GetMesh().Bind(directXCommon->GetCommandList());				// メッシュをバインド
+		modelModel.GetMesh().Draw(directXCommon->GetCommandList());				// メッシュを描画
 
 #pragma endregion
 

@@ -1,6 +1,33 @@
 #include "Mesh.h"
 void Mesh::Initialize(DirectXCommon* dxCommon, const std::string& meshType,
-const std::string& directoryPath, const std::string& filename) {
+	const std::string& directoryPath, const std::string& filename) {
+	directXCommon_ = dxCommon;
+
+	// メッシュタイプに応じて対応するcreate関数を呼び出す
+	if (meshType == "Triangle") {
+		CreateTriangle();
+	} else if (meshType == "Sphere") {
+		CreateSphere(16); // デフォルトで16分割
+	} else if (meshType == "Sprite") {
+		CreateSprite({ 160.0f, 90.0f }, { 320.0f, 180.0f }); // デフォルトサイズ
+	} else if (meshType == "Model") {
+		// モデルの場合はOBJファイルを読み込み
+		if (!directoryPath.empty() && !filename.empty()) {
+			ModelData modelData = LoadObjFile(directoryPath, filename);
+			CreateModel(modelData);
+		} else {
+			// パスが指定されていない場合はエラーまたはデフォルト処理
+			assert(false && "Model type requires directoryPath and filename");
+		}
+	} else {
+		// 不明なタイプの場合はデフォルトで三角形を作成
+		CreateTriangle();
+	}
+}
+
+void Mesh::Initialize(DirectXCommon* dxCommon, const std::string& meshType, ModelData modelData)
+{
+
 	directXCommon_ = dxCommon;
 
 	// メッシュタイプに応じて対応するcreate関数を呼び出す
@@ -11,17 +38,13 @@ const std::string& directoryPath, const std::string& filename) {
 	} else if (meshType == "Sprite") {
 		CreateSprite({ 0.0f, 0.0f }, { 1.0f, 1.0f }); // デフォルトサイズ
 	} else if (meshType == "Model") {
-		// モデルの場合はOBJファイルを読み込み
-		if (!directoryPath.empty() && !filename.empty()) {
-			LoadFromOBJ(directoryPath, filename);
-		} else {
-			// パスが指定されていない場合はエラーまたはデフォルト処理
-			assert(false && "Model type requires directoryPath and filename");
-		}
+		CreateModel(modelData);
 	} else {
-		// 不明なタイプの場合はデフォルトで三角形を作成
-		CreateTriangle();
+		// パスが指定されていない場合はエラーまたはデフォルト処理
+		assert(false && "Model type requires directoryPath and filename");
 	}
+
+
 }
 
 void Mesh::CreateTriangle()
@@ -162,96 +185,100 @@ void Mesh::CreateSprite(const Vector2& center, const Vector2& size)
 	CreateIndexBuffer();
 }
 
-void Mesh::LoadFromOBJ(const std::string& directoryPath, const std::string& filename)
+void Mesh::CreateModel(const ModelData& modelData)
 {
+	// ModelDataから頂点データをコピー
+	vertices_ = modelData.vertices;
 
-	std::vector<Vector4> positions;
-	std::vector<Vector3> normals;
-	std::vector<Vector2> texcoords;
-	std::string line;
-
-
-	// ファイルを開く
-	std::ifstream file(directoryPath + "/" + filename);
-	assert(file.is_open());
-
-	// ファイルを読み込み
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier;
-
-		if (identifier == "v") {
-			// 頂点位置
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.w = 1.0f;
-			positions.push_back(position);
-
-		} else if (identifier == "vt") {
-			// テクスチャ座標
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoords.push_back(texcoord);
-
-		} else if (identifier == "vn") {
-			// 法線
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normals.push_back(normal);
-
-		} else if (identifier == "f") {
-			// 面（三角形限定）
-			VertexData triangle[3];
-
-			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				std::string vertexDefinition;
-				s >> vertexDefinition;
-
-				std::stringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (int32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');
-					elementIndices[element] = std::stoi(index);
-				}
-
-				// 頂点データを構成
-				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
-
-				// 右手座標系から左手座標系に変換
-				position.x *= -1.0f;
-				normal.x *= -1.0f;
-				texcoord.y = 1.0f - texcoord.y;
-
-				triangle[faceVertex] = { position, texcoord, normal };
-			}
-
-			// 頂点順序を調整（時計回り→反時計回り）
-			vertices_.push_back(triangle[2]);
-			vertices_.push_back(triangle[1]);
-			vertices_.push_back(triangle[0]);
-
-		} else if (identifier == "mtllib") {
-			//materialTemplateLibraryファイルの名前を取得する
-			std::string materialFilename;
-			s >> materialFilename;
-
-			//objファイルとmtlファイルは同じディレクトリにあるので、ディレクトリ・ファイル名を渡す
-			material_ = LoadMaterialTemplateFile(directoryPath, materialFilename);
-		}
-	}
+	// マテリアル情報をコピー
+	material_ = modelData.material;
 
 	// インデックスデータを生成（順番通り）
+	indices_.clear();
 	for (uint32_t i = 0; i < vertices_.size(); ++i) {
 		indices_.push_back(i);
 	}
 
-
+	// バッファを作成
 	CreateVertexBuffer();
 	CreateIndexBuffer();
+}
+
+ModelData Mesh::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+	//1.中で必要となる変数の宣言
+	ModelData modelData;				//構築するModelData
+	std::vector<Vector4> positions;		//位置
+	std::vector<Vector3> normals;		//法線
+	std::vector<Vector2> texcoords;		//テクスチャ座標
+	std::string line;					//ファイルから読んだ1行を格納するもの
+
+	//2.ファイルを開く
+	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
+	assert(file.is_open());//開けなかった場合は停止する
+
+	//3.実際にファイルを読み、ModelDataを構築していく
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;	//先頭の識別子を読む
+
+		if (identifier == "v") {		//識別子がvの場合	頂点位置
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.w = 1.0f;	//w成分は1.0fで初期化
+			positions.push_back(position);//位置を格納する
+
+		} else if (identifier == "vt") {//識別子がvtの場合	頂点テクスチャ
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);//テクスチャ座標を格納する
+
+		} else if (identifier == "vn") {//識別子がvnの場合	頂点法線
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normals.push_back(normal);//法線を格納する
+
+		} else if (identifier == "f") {	//識別子がfの場合	面
+			//面は三角形限定
+			VertexData triangle[3];//三角形の頂点データを格納する
+
+			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+				std::string vertexDefinition;
+				s >> vertexDefinition;	//頂点の情報を読む
+				//頂点の要素へのindexは「位置/UV/法線」で格納されているので、分解してindexを取得する
+				std::stringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (int32_t element = 0; element < 3; ++element) {
+					std::string index;
+					std::getline(v, index, '/');// '/'区切りでインデックスを読んでいく
+					elementIndices[element] = std::stoi(index);
+				}
+
+				//要素へのindexから、実際の要素の値を取得して頂点を構成する
+				Vector4 position = positions[elementIndices[0] - 1];	//位置は1始まりなので-1する
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];	//テクスチャ座標も-1
+				Vector3 normal = normals[elementIndices[2] - 1];		//法線も-1
+
+				//右手座標系から左手座標系に変換する
+				position.x *= -1.0f;
+				normal.x *= -1.0f;
+				texcoord.y = 1.0f - texcoord.y; // Y軸反転
+				triangle[faceVertex] = { position, texcoord, normal };//頂点データを構成する
+			}
+			modelData.vertices.push_back(triangle[2]);//頂点データを格納する
+			modelData.vertices.push_back(triangle[1]);//頂点データを格納する
+			modelData.vertices.push_back(triangle[0]);//頂点データを格納する
+		} else if (identifier == "mtllib") {
+			//materialTemplateLibraryファイルの名前を取得する
+			std::string materialFilename;
+			s >> materialFilename;
+			//objファイルとmtlファイルは同じディレクトリにあるので、ディレクトリ・ファイル名を渡す
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+		}
+	}
+	//4.ModelDataを返す
+	return modelData;
+
 }
 
 

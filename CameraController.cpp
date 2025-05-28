@@ -19,6 +19,12 @@ void CameraController::Initialize()
 	debugCamera_.SetTranslate({ 0.0f, 0.0f, -10.0f });
 
 	useDebugCamera_ = true;
+
+
+	///デバッグカメラで開始する場合、スプライトが表示されないので初期化したタイミングで一度だけ更新する
+	camera_.Update();
+	viewProjectionMatrix_ = camera_.GetViewProjectionMatrix();
+	viewProjectionMatrixSprite_ = camera_.GetSpriteViewProjectionMatrix();
 }
 
 void CameraController::Update()
