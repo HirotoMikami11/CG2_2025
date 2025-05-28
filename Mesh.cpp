@@ -1,7 +1,27 @@
 #include "Mesh.h"
-void Mesh::Initialize(DirectXCommon* dxCommon)
-{
+void Mesh::Initialize(DirectXCommon* dxCommon, const std::string& meshType,
+const std::string& directoryPath, const std::string& filename) {
 	directXCommon_ = dxCommon;
+
+	// メッシュタイプに応じて対応するcreate関数を呼び出す
+	if (meshType == "Triangle") {
+		CreateTriangle();
+	} else if (meshType == "Sphere") {
+		CreateSphere(16); // デフォルトで16分割
+	} else if (meshType == "Sprite") {
+		CreateSprite({ 0.0f, 0.0f }, { 1.0f, 1.0f }); // デフォルトサイズ
+	} else if (meshType == "Model") {
+		// モデルの場合はOBJファイルを読み込み
+		if (!directoryPath.empty() && !filename.empty()) {
+			LoadFromOBJ(directoryPath, filename);
+		} else {
+			// パスが指定されていない場合はエラーまたはデフォルト処理
+			assert(false && "Model type requires directoryPath and filename");
+		}
+	} else {
+		// 不明なタイプの場合はデフォルトで三角形を作成
+		CreateTriangle();
+	}
 }
 
 void Mesh::CreateTriangle()

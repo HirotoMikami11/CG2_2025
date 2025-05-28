@@ -155,8 +155,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	Mesh triangleMesh;
-	triangleMesh.Initialize(directXCommon);
-	triangleMesh.CreateTriangle();
+	triangleMesh.Initialize(directXCommon,"Triangle");
+	//triangleMesh.CreateTriangle();
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -199,8 +199,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Mesh sphereMesh;
-	sphereMesh.Initialize(directXCommon);
-	sphereMesh.CreateSphere(16); // 分割数16
+	sphereMesh.Initialize(directXCommon,"Sphere");
+	//sphereMesh.CreateSphere(16); // 分割数16
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -248,6 +248,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///								矩形Sprite									///
 	///*-----------------------------------------------------------------------*///
 
+	//TODO: spriteはのちにGameObjectから独立させる
+	//TODO: uvTransformもspriteのみ、
+	
+
 #pragma region "Sprite"
 
 	//																			//
@@ -255,8 +259,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	Mesh spriteMesh;
-	spriteMesh.Initialize(directXCommon);
-	spriteMesh.CreateSprite({ 160.0f, 90.0f }, { 320.0f, 180.0f });
+	spriteMesh.Initialize(directXCommon,"Sprite");
+	//spriteMesh.CreateSprite({ 160.0f, 90.0f }, { 320.0f, 180.0f });
 
 	//																			//
 	//							Material用のResourceを作る						//
@@ -295,9 +299,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	Mesh modelMesh;
-	modelMesh.Initialize(directXCommon);
+	modelMesh.Initialize(directXCommon,"Model", "resources", "plane.obj");
 	//モデルデータからメッシュを作成(中身でメッシュも作成される)
-	modelMesh.LoadFromOBJ("resources", "plane.obj");
+	//modelMesh.LoadFromOBJ("resources", "plane.obj");
 	// Meshから読み込んだマテリアル情報を使ってテクスチャを読み込み
 	if (modelMesh.HasMaterialInfo()) {//読み込んだデータがあるか？
 		textureManager->LoadTexture(modelMesh.GetTextureFilePath(), "planeTexture");
@@ -479,6 +483,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
+	
+
 #pragma endregion
 
 #pragma region Model

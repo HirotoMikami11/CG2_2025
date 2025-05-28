@@ -22,12 +22,16 @@ class Mesh final
 public:
 	Mesh() = default;
 	~Mesh() = default;
-
+	 
 	/// <summary>
 	/// 初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	void Initialize(DirectXCommon* dxCommon);
+	/// <param name="meshType">メッシュの形</param>
+	/// <param name="directoryPath">パス</param>
+	/// <param name="filename">ファイル名</param>
+	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
+		const std::string& directoryPath = "", const std::string& filename = "");
 
 	/// <summary>
 	/// 三角形メッシュを作成
@@ -142,9 +146,5 @@ private:
 
 	//読み取り専用のデータ マテリアルクラスに送るためにいったん保持しておく用
 	MaterialDataModel material_;
-
-	//TODO:モデル以外のメッシュは作成完了、スフィアのmyfuncの関数は確認し次第削除する
-
-
 };
 
