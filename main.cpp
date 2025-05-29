@@ -44,14 +44,9 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h" 
 
-#include"Material.h"
 #include"Transform.h"
-#include"Mesh.h"
-
-
 ///マテリアルとメッシュを統合させたmodelクラス
 #include"Model.h"
-
 
 //カメラ系統
 #include"CameraController.h"
@@ -137,10 +132,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 	////ゲーム開始前に読み込む音声データ
-	//audioManager->LoadWave("resources/Alarm01.wav", "Alarm");
+	//audioManager->LoadWave("resources/Audio/Alarm01.wav", "Alarm");
+	//audioManager->LoadMP3("resources/Audio/Bgm01.mp3", "BGM");
+	//audioManager->LoadMP3("resources/Audio/Se01.mp3", "SE");
+
 	////tagを利用して再生
-	//audioManager->PlayLoop("Alarm");
-	//audioManager->SetVolume("Alarm", 0.1f);
+	//audioManager->Play("Alarm");
+	//audioManager->SetVolume("Alarm", 0.1f);	
+
+	//audioManager->PlayLoop("BGM");
+	//audioManager->SetVolume("BGM", 0.1f);
+
+	//audioManager->PlayLoop("SE");
+	//audioManager->SetVolume("SE", 0.1f);
 
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
@@ -212,7 +216,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResource = CreateBufferResource(directXCommon->GetDevice(), sizeof(DirectionalLight));
-	
+
 	//データを書き込む
 	DirectionalLight* directionalLightDataSphere = nullptr;
 	//書き込むためのアドレスを取得
@@ -405,11 +409,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 
 		bool sphereLighting = sphereModel.GetMaterial().IsLightingEnabled();
-		if (ImGui::Checkbox("useEnableLighting", &sphereLighting)) {
+		if (ImGui::Checkbox("Sphere_useEnableLighting", &sphereLighting)) {
 			sphereModel.GetMaterial().SetLightingEnable(sphereLighting);
 		}
 		bool sphereLambertian = sphereModel.GetMaterial().IsLambertianReflectanceEnabled();
-		if (ImGui::Checkbox("useLambertianReflectance", &sphereLambertian)) {
+		if (ImGui::Checkbox("Sphere_useLambertianReflectance", &sphereLambertian)) {
 			sphereModel.GetMaterial().SetLambertianReflectance(sphereLambertian);
 		}
 
@@ -449,6 +453,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::DragFloat3("Model_rotate", &modelRotate.x, 0.01f)) {
 			modelTransform.SetRotate(modelRotate);
 		}
+
+
+		bool modelLighting = modelModel.GetMaterial().IsLightingEnabled();
+		if (ImGui::Checkbox("Model_useEnableLighting", &modelLighting)) {
+			modelModel.GetMaterial().SetLightingEnable(modelLighting);
+		}
+		bool modelLambertian = modelModel.GetMaterial().IsLambertianReflectanceEnabled();
+		if (ImGui::Checkbox("Model_useLambertianReflectance", &modelLambertian)) {
+			modelModel.GetMaterial().SetLambertianReflectance(modelLambertian);
+		}
+
 #pragma endregion
 
 		ImGui::End();

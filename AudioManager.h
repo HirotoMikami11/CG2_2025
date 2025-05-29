@@ -22,11 +22,25 @@ public:
 	void Finalize();
 
 	/// <summary>
+	/// 音声データの読み込み（WAV/MP3対応）
+	/// </summary>
+	/// <param name="filename"></param>
+	/// <param name="tagName"></param>
+	void LoadAudio(const std::string& filename, const std::string& tagName);
+
+	/// <summary>
 	/// 音声データの読み込み
 	/// </summary>
 	/// <param name="filename"></param>
 	/// <param name="tagName"></param>
 	void LoadWave(const std::string& filename, const std::string& tagName);
+
+	/// <summary>
+	/// MP3音声データの読み込み
+	/// </summary>
+	/// <param name="filename"></param>
+	/// <param name="tagName"></param>
+	void LoadMP3(const std::string& filename, const std::string& tagName);
 
 	/// <summary>
 	/// 音声の再生(ループなし)
@@ -75,5 +89,6 @@ private:
 	IXAudio2MasteringVoice* masterVoice;
 	// audio
 	std::map<std::string, Audio*> audios;
+
 };
 

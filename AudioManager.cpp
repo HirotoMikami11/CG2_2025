@@ -16,6 +16,16 @@ AudioManager::~AudioManager() {
 void AudioManager::Initialize() {
 	HRESULT result;
 
+	//MediaFoundationのCOMの初期化
+	result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	assert(SUCCEEDED(result));
+	Logger::Log(Logger::GetStream(), "Complete MFCOM initialized !!\n");
+
+	//MediaFoundationのスタートアップ
+	result = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
+	assert(SUCCEEDED(result));
+	Logger::Log(Logger::GetStream(), "Complete MF initialized !!\n");
+
 	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
 	result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 	assert(SUCCEEDED(result));
@@ -45,6 +55,32 @@ void AudioManager::Finalize() {
 
 	// XAudio2の解放
 	xAudio2.Reset();
+
+	// MediaFoundationの終了処理
+	MFShutdown();
+	Logger::Log(Logger::GetStream(), "MediaFoundation shutdown\n");
+
+	// COMの終了処理
+	CoUninitialize();
+	Logger::Log(Logger::GetStream(), "COM uninitialized\n");
+
+}
+
+void AudioManager::LoadAudio(const std::string& filename, const std::string& tagName) {
+	// 既に同じタグ名で登録されていた場合は古いものを解放
+	if (audios.find(tagName) != audios.end()) {
+		if (audios[tagName]) {
+			audios[tagName]->Unload();
+			delete audios[tagName];
+		}
+		audios.erase(tagName);
+	}
+
+	// 新しい音声データを作成
+	Audio* audio = new Audio();
+	//実際に読み込む（WAV/MP3自動判別して動かす）
+	audio->LoadAudio(filename);
+	audios[tagName] = audio;
 }
 
 void AudioManager::LoadWave(const std::string& filename, const std::string& tagName) {
@@ -61,6 +97,24 @@ void AudioManager::LoadWave(const std::string& filename, const std::string& tagN
 	Audio* audio = new Audio();
 	//実際に読み込む
 	audio->LoadWave(filename);
+	audios[tagName] = audio;
+}
+
+void AudioManager::LoadMP3(const std::string& filename, const std::string& tagName) {
+
+	// 既に同じタグ名で登録されていた場合は古いものを解放
+	if (audios.find(tagName) != audios.end()) {
+		if (audios[tagName]) {
+			audios[tagName]->Unload();
+			delete audios[tagName];
+		}
+		audios.erase(tagName);
+	}
+
+	// 新しい音声データを作成
+	Audio* audio = new Audio();
+	//実際に読み込む
+	audio->LoadMP3(filename);
 	audios[tagName] = audio;
 }
 
