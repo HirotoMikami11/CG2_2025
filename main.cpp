@@ -47,10 +47,8 @@
 #include"Transform.h"
 ///マテリアルとメッシュを統合させたmodelクラス
 #include"Model.h"
-
 //カメラ系統
 #include"CameraController.h"
-
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
