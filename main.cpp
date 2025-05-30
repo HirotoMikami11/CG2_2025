@@ -195,15 +195,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Sphere
 
 	//SphereのTransform変数を作る
-	//Vector3Transform transformSphere{
-	//{1.0f,1.0f,1.0f},
-	//{0.0f,0.0f,0.0f},
-	//{0.0f,0.0f,0.0f}
-	//};
+	Vector3Transform transformSphere{
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f}
+	};
 
 	std::unique_ptr<Sphere> sphere= std::make_unique<Sphere>();				// 球体を生成
 	sphere->Initialize(directXCommon, "monsterBall");						// 初期化
-	//sphere->SetTransform(transformSphere);									// Transformを設定
+	sphere->SetTransform(transformSphere);									// Transformを設定
 
 
 #pragma endregion
@@ -239,17 +239,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Model"
 
-	//																			//
-	//						メッシュとマテリアルリソースの作成						//
-	//																			//
-
-	Model modelModel;
-	modelModel.Initialize(directXCommon, MeshType::MODEL_OBJ, "resources", "plane.obj");
-
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
-
 	// モデル用のTransform変数
 	Vector3Transform transformModel{
 		{1.0f, 1.0f, 1.0f},
@@ -257,10 +246,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{-2.2f,-1.2f, 0.0f}
 	};
 
-	//Transform変数を作る
-	Transform modelTransform;
-	modelTransform.Initialize(directXCommon);
-	modelTransform.SetTransform(transformModel);
+	std::unique_ptr<Model3D> model = std::make_unique<Model3D>();			// スプライトを生成
+	model->Initialize(directXCommon, "resources", "plane.obj");				// 初期化
+	model->SetTransform(transformModel);									// Transformを設定
 
 
 #pragma endregion
@@ -357,26 +345,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->ImGui();
 
 #pragma region Model
-		ImGui::Text("Model");
-		Vector3 modelTranslate = modelTransform.GetPosition();
-		if (ImGui::DragFloat3("Model_translate", &modelTranslate.x, 0.01f)) {
-			modelTransform.SetPosition(modelTranslate);
-		}
-		Vector3 modelRotate = modelTransform.GetRotate();
-		if (ImGui::DragFloat3("Model_rotate", &modelRotate.x, 0.01f)) {
-			modelTransform.SetRotate(modelRotate);
-		}
-
-
-		bool modelLighting = modelModel.GetMaterial().IsLightingEnabled();
-		if (ImGui::Checkbox("Model_useEnableLighting", &modelLighting)) {
-			modelModel.GetMaterial().SetLightingEnable(modelLighting);
-		}
-		bool modelLambertian = modelModel.GetMaterial().IsLambertianReflectanceEnabled();
-		if (ImGui::Checkbox("Model_useLambertianReflectance", &modelLambertian)) {
-			modelModel.GetMaterial().SetLambertianReflectance(modelLambertian);
-		}
-
+		/// モデルのデバッグUI
+		model->ImGui();
 #pragma endregion
 
 		directionalLight.ImGui("DriectonalLight");
@@ -425,8 +395,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//							Model用のWVP									//
 		//																			//
 
-
-		modelTransform.UpdateMatrix(cameraController->GetViewProjectionMatrix());
+		//プレーンモデルの更新(現状行列更新のみ)
+		model->Update(cameraController->GetViewProjectionMatrix());
 
 		// ImGuiの受け付け終了
 		imguiManager->End();
@@ -478,15 +448,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 #pragma region Model
-
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, modelTransform.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("planeTexture"));
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress()); // 同じライトを使用
-
-		modelModel.GetMesh().Bind(directXCommon->GetCommandList());				// メッシュをバインド
-		modelModel.GetMesh().Draw(directXCommon->GetCommandList());				// メッシュを描画
-
+		model->Draw(directionalLight);
+	
 #pragma endregion
 
 

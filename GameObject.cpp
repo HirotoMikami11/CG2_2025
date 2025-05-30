@@ -140,16 +140,13 @@ void GameObject::ImGui()
 			if (ImGui::SliderAngle("UVrotate", &imguiUvRotateZ_)) {
 				model_.GetMaterial().SetUVTransformRotateZ(imguiUvRotateZ_);
 			}
-
-
-
-
 		}
 
 
 		///*-----------------------------------------------------------------------*///
 		///									Texture									///
 		///*-----------------------------------------------------------------------*///
+		/// 
 		if (ImGui::CollapsingHeader("Texture")) {
 			ImGui::Text("Current Texture: %s", textureName_.c_str());
 			///テクスチャの動的切り替え
@@ -183,10 +180,6 @@ void GameObject::ImGui()
 					SetTexture("monsterBall");
 				}
 			}
-
-
-
-
 		}
 
 		///*-----------------------------------------------------------------------*///
