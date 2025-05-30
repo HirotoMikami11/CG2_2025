@@ -68,8 +68,6 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 //	行列の更新
 void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, TransformationMatrix* matrixData);
 
-void UpdateUVTransform(const Vector3Transform uvtransform, MaterialData* materialData);
-
 /*-----------------------------------------------------------------------*/
 //
 //								描画関数

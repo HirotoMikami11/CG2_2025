@@ -1,6 +1,6 @@
 #include "Model.h"
 
-void Model::Initialize(DirectXCommon* dxCommon, const std::string& meshType, const std::string& directoryPath, const std::string& filename)
+void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const std::string& directoryPath, const std::string& filename)
 {
 
 	directXCommon_ = dxCommon;
@@ -11,12 +11,10 @@ void Model::Initialize(DirectXCommon* dxCommon, const std::string& meshType, con
 
 
 	///モデルの場合は、ファイルパスなどを入れる
-	if (meshType == "Model") {
-
+	if (meshType == MeshType::MODEL_OBJ) {
 		//データを読み込む
 		modelData_ = LoadObjFile(directoryPath, filename);
-		mesh_.Initialize(directXCommon_, meshType, modelData_);
-
+		mesh_.InitializeFromData(directXCommon_, modelData_);
 		// Meshから読み込んだマテリアル情報を使ってテクスチャを読み込み
 		TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, "planeTexture");
 	} else {

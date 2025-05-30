@@ -14,9 +14,19 @@
 
 
 
+/// <summary>
+/// メッシュの種類
+/// </summary>
+enum class MeshType {
+	TRIANGLE,       // 三角形
+	SPHERE,         // 球体
+	SPRITE,         // スプライト（矩形）
+	MODEL_OBJ,      // OBJファイル読み込み
+};
 
-
-
+/// <summary>
+/// メッシュのクラス
+/// </summary>
 class Mesh final
 {
 public:
@@ -24,24 +34,19 @@ public:
 	~Mesh() = default;
 
 	/// <summary>
-	/// 初期化
-	/// </summary>
-	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	/// <param name="meshType">メッシュの形</param>
-	/// <param name="directoryPath">パス</param>
-	/// <param name="filename">ファイル名</param>
-	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
-		const std::string& directoryPath = "", const std::string& filename = "");
+   /// プリミティブメッシュの初期化
+   /// </summary>
+   /// <param name="dxCommon">DirectXCommonのポインタ</param>
+   /// <param name="meshType">メッシュの種類</param>
+	void Initialize(DirectXCommon* dxCommon, MeshType meshType);
 
 
 	/// <summary>
-/// 初期化(改良版)
-/// </summary>
-/// <param name="dxCommon">DirectXCommonのポインタ</param>
-/// <param name="meshType">メッシュの形</param>
-	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
-		ModelData modelData);
-
+	/// カスタムデータからメッシュを初期化
+	/// </summary>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	/// <param name="modelData">モデルデータ</param>
+	void InitializeFromData(DirectXCommon* dxCommon, const ModelData& modelData);
 
 
 
@@ -98,6 +103,7 @@ public:
 	void Draw(ID3D12GraphicsCommandList* commandList, uint32_t instanceCount = 1);
 
 	//Getter
+	MeshType GetMeshType() const { return meshType_; }
 	uint32_t GetVertexCount() const { return static_cast<uint32_t>(vertices_.size()); }
 	uint32_t GetIndexCount() const { return static_cast<uint32_t>(indices_.size()); }
 	bool HasIndices() const { return !indices_.empty(); }
@@ -109,6 +115,12 @@ public:
 	bool HasMaterialInfo() const { return !material_.textureFilePath.empty(); }			//ファイルパスがあるかどうか
 	const MaterialDataModel& GetMaterialInfo() const { return material_; }				//マテリアルデータがあるか
 
+	/// <summary>
+	/// メッシュタイプを文字列に変換（デバッグ用）
+	/// </summary>
+	/// <param name="type">メッシュタイプ</param>
+	/// <returns>タイプ名</returns>
+	static std::string MeshTypeToString(MeshType type);
 private:
 	/// <summary>
 	/// バッファリソースを作成・更新
@@ -125,24 +137,12 @@ private:
 	/// </summary>
 	void CreateIndexBuffer();
 
-	/// <summary>
-   /// マテリアルファイルを読み込み
-   /// </summary>
-   /// <param name="directoryPath">ディレクトリパス</param>
-   /// <param name="filename">ファイル名</param>
-   /// <returns>マテリアルデータ</returns>
-	MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
-
-	/// <summary>
-	/// OBJファイルからメッシュを読み込み
-	/// </summary>
-	/// <param name="directoryPath">ディレクトリパス</param>
-	/// <param name="filename">ファイル名</param>
-	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
-
 private:
 	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
+
+	//メッシュの種類
+	MeshType meshType_ = MeshType::TRIANGLE; // デフォルトは三角形
 
 	// 頂点・インデックスデータ
 	std::vector<VertexData> vertices_;
@@ -158,5 +158,10 @@ private:
 
 	//読み取り専用のデータ マテリアルクラスに送るためにいったん保持しておく用
 	MaterialDataModel material_;
+
+
+	//三角形の面法線を計算する関数
+	void CalculateTriangleNormals();
+
 };
 

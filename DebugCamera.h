@@ -102,5 +102,8 @@ private:
 	//デバッグカメラで移動するかどうか
 	bool moveDebugCamera_ = true;
 
+
+	InputManager* input_;
+
 };
 

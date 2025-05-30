@@ -34,3 +34,12 @@ void Material::SetLitObjectSettings()
 	materialData_->padding[1] = 0.0f;
 	materialData_->uvTransform = MakeIdentity4x4();
 }
+
+void Material::UpdateUVTransform(const Vector3Transform uvtransform)
+{
+	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvtransform.scale);
+	uvTransformMatrix = Matrix4x4Multiply(uvTransformMatrix, MakeRotateZMatrix(uvtransform.rotate.z));
+	uvTransformMatrix = Matrix4x4Multiply(uvTransformMatrix, MakeTranslateMatrix(uvtransform.translate));
+	materialData_->uvTransform = uvTransformMatrix;
+
+}

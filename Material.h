@@ -30,13 +30,15 @@ public:
 	/// </summary>
 	void SetLitObjectSettings();
 
+	void UpdateUVTransform(const Vector3Transform uvtransform);
+
 	//Getter
 
 	//色
 	Vector4 GetColor() const { return materialData_->color; }
-	//ライティング
+	//ライティング(halfLambert)
 	bool IsLightingEnabled() const {return materialData_->enableLighting;}
-	// ランベルト反射
+	// Lambert
 	bool IsLambertianReflectanceEnabled() const { return materialData_->useLambertianReflectance ; }
 	// UVトランスフォーム
 	Matrix4x4 GetUVTransform() const { return materialData_->uvTransform; };
@@ -50,7 +52,7 @@ public:
 	void SetColor(const Vector4& color) { materialData_->color = color; }
 	// ライティングの有効/無効
 	void SetLightingEnable(bool enable) { materialData_->enableLighting = enable ? 1 : 0; }
-	//ランベルト反射
+	//Lambert
 	void SetLambertianReflectance(bool enable) {materialData_->useLambertianReflectance = enable ? 1 : 0;}
 	// UVトランスフォーム
 	void SetUVTransform(const Matrix4x4& uvTransform) { materialData_->uvTransform = uvTransform; }

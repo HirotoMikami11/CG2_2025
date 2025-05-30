@@ -24,9 +24,8 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
+	void Initialize(DirectXCommon* dxCommon, const MeshType meshType,
 		const std::string& directoryPath = "", const std::string& filename = "");
-
 
 
 	Material GetMaterial() const { return material_; }
@@ -38,11 +37,11 @@ private:
 	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	///material（bool型でlight用のセットか、defaultかどうかをinitilizeで決める。通常はｄｅｆａｕｌｔ）
+	///material（bool型でlight用のセットか、defaultかどうかをinitilizeで決める。通常はdefault）
 	//実際のマテリアル
 	Material material_;
 
-	///mesh("Triangle"とストリングで引数に入れたらinitilizeでcreateTriangleできるようにする（他の図形でも）)
+	///mesh(meeshTypeを引数に入れたらinitilizeでcreateTriangleできるようにする（他の図形でも）)
 	//実際のメッシュ
 	Mesh mesh_;
 

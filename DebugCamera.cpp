@@ -3,6 +3,7 @@
 void DebugCamera::Initialize()
 {
 	SetDefaultCamera();
+	input_ = InputManager::GetInstance();
 }
 
 void DebugCamera::Update()
@@ -13,6 +14,11 @@ void DebugCamera::Update()
 		Rotate();
 	}
 	//PivotRotate();
+
+	if (input_->IsKeyTrigger(DIK_TAB)) {
+		moveDebugCamera_ = !moveDebugCamera_;  //フラグ反転させる
+	}
+
 
 	///ビュー行列の更新
 	UpdateMatrix();
