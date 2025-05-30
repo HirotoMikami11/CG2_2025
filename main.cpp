@@ -51,9 +51,13 @@
 //ライト
 #include"Light.h"
 
+///トランスフォームと、モデルを統合させたGameObjectクラス
+#include "GameObject.h"
 
 //カメラ系統
 #include"CameraController.h"
+
+
 
 
 /// <summary>
@@ -157,23 +161,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CameraController* cameraController = CameraController::GetInstance();
 	cameraController->Initialize();
 
-	
+
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
 
 #pragma region Triangle
-
-	//																			//
-	//						メッシュとマテリアルリソースの作成						//
-	//																			//
-
-	Model triangleModel;
-	triangleModel.Initialize(directXCommon, MeshType::TRIANGLE);
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
 
 	//Transform変数を作る
 	Vector3Transform transformTriangle{
@@ -182,10 +176,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{2.0f,1.5f,0.0f}
 	};
 
-	Transform triangleTransform;
-	triangleTransform.Initialize(directXCommon);
-	triangleTransform.SetTransform(transformTriangle);
 
+	std::unique_ptr<Triangle> triangle[2];								// 三角形の配列を宣言
+	const int kMaxTriangleIndex = 2;									//三角形の最大数
+
+	for (int i = 0; i < kMaxTriangleIndex; i++) {
+		triangle[i] = std::make_unique<Triangle>();						// 三角形を生成
+		triangle[i]->Initialize(directXCommon, "uvChecker");			// 初期化
+		triangle[i]->SetTransform(transformTriangle);					// Transformを設定
+	}
 
 #pragma endregion
 
@@ -195,30 +194,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Sphere
 
-	//																			//
-	//						メッシュとマテリアルリソースの作成						//
-	//																			//
-
-	Model sphereModel;
-	sphereModel.Initialize(directXCommon, MeshType::SPHERE);
-	sphereModel.GetMaterial().SetLightingEnable(true);
-
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
-
 	//SphereのTransform変数を作る
-	Vector3Transform transformSphere{
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f}
-	};
+	//Vector3Transform transformSphere{
+	//{1.0f,1.0f,1.0f},
+	//{0.0f,0.0f,0.0f},
+	//{0.0f,0.0f,0.0f}
+	//};
 
-	Transform sphereTransform;
-	sphereTransform.Initialize(directXCommon);
-	sphereTransform.SetTransform(transformSphere);
-
-	
+	std::unique_ptr<Sphere> sphere= std::make_unique<Sphere>();				// 球体を生成
+	sphere->Initialize(directXCommon, "monsterBall");						// 初期化
+	//sphere->SetTransform(transformSphere);									// Transformを設定
 
 
 #pragma endregion
@@ -233,16 +218,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Sprite"
 
-	//																			//
-	//						メッシュとマテリアルリソースの作成						//
-	//																			//
-
-	Model spriteModel;
-	spriteModel.Initialize(directXCommon, MeshType::SPRITE);
-
-	//																			//
-	//					TransformationMatrix用のリソースを作る						//
-	//																			//
 	//SpriteのTransform変数を作る
 	Vector3Transform transformSprite{
 		{1.0f,1.0f,1.0f},
@@ -250,9 +225,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f}
 	};
 
-	Transform spriteTransform;
-	spriteTransform.Initialize(directXCommon);
-	spriteTransform.SetTransform(transformSprite);
+	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();			// スプライトを生成
+	sprite->Initialize(directXCommon, "uvChecker");							// 初期化
+	sprite->SetTransform(transformSprite);									// Transformを設定
 
 
 #pragma endregion
@@ -260,6 +235,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 	///									model									///
 	///*-----------------------------------------------------------------------*///
+
 
 #pragma region "Model"
 
@@ -288,6 +264,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma endregion
+
+
+
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
@@ -359,93 +338,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//開発用UIの処理
 		ImGui::Begin("Debug");
 
-#pragma region "Triangle"
-		ImGui::Text("Triangle");
-		Vector4 triangleColor = triangleModel.GetMaterial().GetColor();
-		if (ImGui::ColorEdit4("Triangle_Color", reinterpret_cast<float*>(&triangleColor.x))) {
-			triangleModel.GetMaterial().SetColor(triangleColor);
-		}
 
-		Vector3 triangleTranslate = triangleTransform.GetTranslate();
-		if (ImGui::DragFloat3("Triangle_translate", &triangleTranslate.x, 0.01f)) {
-			triangleTransform.SetTranslate(triangleTranslate);
-		}
+		///三角形のImgui
 
-		Vector3 triangleRotate = triangleTransform.GetRotate();
-		if (ImGui::DragFloat3("Triangle_rotate", &triangleRotate.x, 0.01f)) {
-			triangleTransform.SetRotate(triangleRotate);
-		}
-
-		bool triangleLighting = triangleModel.GetMaterial().IsLightingEnabled();
-		if (ImGui::Checkbox("triangle_useEnableLighting", &triangleLighting)) {
-			triangleModel.GetMaterial().SetLightingEnable(triangleLighting);
-		}
-		bool triangleLambertian = triangleModel.GetMaterial().IsLambertianReflectanceEnabled();
-		if (ImGui::Checkbox("triangle_useLambertianReflectance", &triangleLambertian)) {
-			triangleModel.GetMaterial().SetLambertianReflectance(triangleLambertian);
+		for (int i = 0; i < kMaxTriangleIndex; i++)
+		{
+			triangle[i]->ImGui();
 		}
 
 
-#pragma endregion
+		/// 球体のデバッグUI
+		
+		sphere->ImGui();
 
-#pragma region "Sphere"
-		ImGui::Text("Sphere");
-		Vector4 sphereColor = sphereModel.GetMaterial().GetColor();
-		if (ImGui::ColorEdit4("Sphere_Color", reinterpret_cast<float*>(&sphereColor.x))) {
-			sphereModel.GetMaterial().SetColor(sphereColor);
-		}
-		Vector3 sphereTranslate = sphereTransform.GetTranslate();
-		if (ImGui::DragFloat3("Sphere_translate", &sphereTranslate.x, 0.01f)) {
-			sphereTransform.SetTranslate(sphereTranslate);
-		}
-		Vector3 sphereRotate = sphereTransform.GetRotate();
-		if (ImGui::DragFloat3("Sphere_rotate", &sphereRotate.x, 0.01f)) {
-			sphereTransform.SetRotate(sphereRotate);
-		}
 	
 
-		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-
-		bool sphereLighting = sphereModel.GetMaterial().IsLightingEnabled();
-		if (ImGui::Checkbox("Sphere_useEnableLighting", &sphereLighting)) {
-			sphereModel.GetMaterial().SetLightingEnable(sphereLighting);
-		}
-		bool sphereLambertian = sphereModel.GetMaterial().IsLambertianReflectanceEnabled();
-		if (ImGui::Checkbox("Sphere_useLambertianReflectance", &sphereLambertian)) {
-			sphereModel.GetMaterial().SetLambertianReflectance(sphereLambertian);
-		}
-
-#pragma endregion
-
-#pragma region Sprite
-		ImGui::Text("Sprite");
-		Vector4 spriteColor = spriteModel.GetMaterial().GetColor();
-		if (ImGui::ColorEdit4("Sprite_Color", reinterpret_cast<float*>(&spriteColor.x))) {
-			spriteModel.GetMaterial().SetColor(spriteColor);
-		}
-
-		Vector3 spriteTranslate = spriteTransform.GetTranslate();
-		if (ImGui::DragFloat3("Sprite_translate", &spriteTranslate.x, 0.01f)) {
-			spriteTransform.SetTranslate(spriteTranslate);
-		}
-		Vector3 spriteRotate = spriteTransform.GetRotate();
-		if (ImGui::DragFloat3("Sprite_rotate", &spriteRotate.x, 0.01f)) {
-			spriteTransform.SetRotate(spriteRotate);
-		}
-
-
-		ImGui::DragFloat2("Sprite_UVtranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat2("Sprite_UVscale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-		ImGui::SliderAngle("Sprite_UVrotate", &uvTransformSprite.rotate.z);
-
-
-#pragma endregion
+		/// スプライトのデバッグUI
+		sprite->ImGui();
 
 #pragma region Model
 		ImGui::Text("Model");
-		Vector3 modelTranslate = modelTransform.GetTranslate();
+		Vector3 modelTranslate = modelTransform.GetPosition();
 		if (ImGui::DragFloat3("Model_translate", &modelTranslate.x, 0.01f)) {
-			modelTransform.SetTranslate(modelTranslate);
+			modelTransform.SetPosition(modelTranslate);
 		}
 		Vector3 modelRotate = modelTransform.GetRotate();
 		if (ImGui::DragFloat3("Model_rotate", &modelRotate.x, 0.01f)) {
@@ -478,31 +393,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//							三角形用のWVP										//
 		//																			//
 
-		//三角形を回転させる
-		triangleTransform.AddRotation({ 0.0f,0.03f,0.0f });
-
-		//行列の更新
-		triangleTransform.UpdateMatrix(cameraController->GetViewProjectionMatrix());
+		
+		// 三角形を回転させる
+		triangle[0]->AddRotation({0.0f, 0.03f, 0.0f});
+		
+		//三角形の更新(現状行列更新のみ)
+		for (int i = 0; i < kMaxTriangleIndex; i++)
+		{
+			triangle[i]->Update(cameraController->GetViewProjectionMatrix());
+		}
 
 		//																			//
 		//							球体用のWVP										//
 		//																			//
 
 		//球体を回転させる
-		sphereTransform.AddRotation({ 0.0f,0.01f,0.0f });
+		//isActiveの判定は行列更新にしかかかってないので現状isAciveは死んでる
+		sphere->AddRotation({ 0.0f,0.01f,0.0f });
 
-		//行列の更新
-		sphereTransform.UpdateMatrix(cameraController->GetViewProjectionMatrix());
+		//球体の更新(現状行列更新のみ)
+		sphere->Update(cameraController->GetViewProjectionMatrix());
 
 		//																			//
 		//							Sprite用のWVP									//
 		//																			//
 
-		//行列の更新
-		spriteTransform.UpdateMatrix(cameraController->GetViewProjectionMatrixSprite());
-		//uvTransformの更新
-		spriteModel.GetMaterial().UpdateUVTransform(uvTransformSprite);
-
+		//スプライトの更新(現状行列更新のみ)
+		sprite->Update(cameraController->GetViewProjectionMatrixSprite());
 
 		//																			//
 		//							Model用のWVP									//
@@ -534,43 +451,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		//								三角形用の描画									//
 		//																			//
-
-#pragma region Triangle
-
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangleModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangleTransform.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));	//uvChecker
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
-		triangleModel.GetMesh().Bind(directXCommon->GetCommandList());			// メッシュをバインド
-		triangleModel.GetMesh().Draw(directXCommon->GetCommandList());			// メッシュを描画
-
-#pragma endregion
+		for (int i = 0; i < kMaxTriangleIndex; i++)
+		{
+			triangle[i]->Draw(directionalLight);
+		}
 
 		//																			//
 		//								Sphereの描画									//
 		//																			//
-#pragma region Sphere
 
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphereModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphereTransform.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureManager->GetTextureHandle("monsterBall") : textureManager->GetTextureHandle("uvChecker"));
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
-		sphereModel.GetMesh().Bind(directXCommon->GetCommandList());			// メッシュをバインド
-		sphereModel.GetMesh().Draw(directXCommon->GetCommandList());			// メッシュを描画
+		sphere->Draw(directionalLight);
 
-#pragma endregion
 		//																			//
 		//								Spriteの描画									//
 		//																			//
 
 #pragma region Sprite
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, spriteModel.GetMaterial().GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, spriteTransform.GetResource()->GetGPUVirtualAddress());
-		directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureManager->GetTextureHandle("uvChecker"));
-		directXCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
-
-		spriteModel.GetMesh().Bind(directXCommon->GetCommandList());				// メッシュをバインド
-		spriteModel.GetMesh().Draw(directXCommon->GetCommandList());				// メッシュを描画
+		 // スプライトの描画（別のビュープロジェクション）
+		sprite->DrawSprite(directionalLight);
 
 
 #pragma endregion

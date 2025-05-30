@@ -100,7 +100,7 @@ private:
 	Vector3 pivotRotation_ = { 0, 0, 0 };	// ピボット回転角
 
 	//デバッグカメラで移動するかどうか
-	bool moveDebugCamera_ = true;
+	bool moveDebugCamera_ = false;
 
 
 	InputManager* input_;

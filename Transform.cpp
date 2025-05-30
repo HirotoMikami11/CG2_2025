@@ -32,6 +32,13 @@ void Transform::SetDefaultTransform() {
 	transformData_->WVP = MakeIdentity4x4();
 }
 
+void Transform::AddPosition(const Vector3& Position)
+{
+	transform_.translate.x += Position.x;
+	transform_.translate.y += Position.y;
+	transform_.translate.z += Position.z;
+}
+
 void Transform::AddRotation(const Vector3& rotation)
 {
 	transform_.rotate.x += rotation.x;
@@ -39,3 +46,12 @@ void Transform::AddRotation(const Vector3& rotation)
 	transform_.rotate.z += rotation.z;
 
 }
+
+void Transform::AddScale(const Vector3& Scale)
+{
+	transform_.scale.x += Scale.x;
+	transform_.scale.y += Scale.y;
+	transform_.scale.z += Scale.z;
+}
+
+

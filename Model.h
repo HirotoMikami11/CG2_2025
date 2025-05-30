@@ -27,9 +27,12 @@ public:
 	void Initialize(DirectXCommon* dxCommon, const MeshType meshType,
 		const std::string& directoryPath = "", const std::string& filename = "");
 
-
-	Material GetMaterial() const { return material_; }
-	Mesh GetMesh() const {return mesh_;}
+	//非const
+	Material& GetMaterial() { return material_; }
+	Mesh& GetMesh() { return mesh_; }
+	//const
+	const Material& GetMaterial() const { return material_; }
+	const Mesh& GetMesh() const { return mesh_; }
 
 private:
 

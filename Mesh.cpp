@@ -74,7 +74,7 @@ void Mesh::CreateTriangle()
 	vertices_[2].normal = { 0.0f, 0.0f, -1.0f };
 
 	// インデックスデータ（反時計回り）
-	indices_ = { 0, 1, 2 };
+	indices_ = { 2, 1, 0 };
 
 
 	// 面法線を計算して設定
