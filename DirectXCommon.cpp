@@ -84,6 +84,7 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 	InitalizeDXC();
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///								PSOを生成する									///
@@ -307,8 +308,8 @@ void DirectXCommon::MakeDescriptorHeap()
 
 
 	//DescriptorSizeを取得する（ゲームの実行中に変化することがないため、この時点で）
-	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 
@@ -320,6 +321,9 @@ void DirectXCommon::MakeDescriptorHeap()
 	srvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	Logger::Log(Logger::GetStream(), "Complete create SRVDescriptorHeap!!\n");//SRVディスクリプタヒープ生成完了のログを出す
 
+	//DSV用ヒープでディスクリプタの数は1，DSVはShader内で触れないのでShaderVisibleはfalse
+	dsvDescriptorHeap = CreateDesctiptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	Logger::Log(Logger::GetStream(), "Complete create DSVDescriptorHeap!!\n");//DSVディスクリプタヒープ生成完了のログを出す
 
 	///　SwapChainからResourceを引っ張ってくる
 	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
@@ -374,117 +378,17 @@ void DirectXCommon::MakeRTV()
 
 }
 
-//
-//void DirectXCommon::LoadTextureResourceForSRV(const std::string& textureFileName, uint32_t index)
-//{
-//	// テクスチャを読み込んで転送する
-//	DirectX::ScratchImage mipImages = LoadTexture(textureFileName);
-//	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-//	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource = CreateTextureResource(device.Get(), metadata);
-//	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device.Get(), commandList);
-//	// CPU・GPUハンドルをずらしてセット
-//		// // ImGuiが先頭を使ってるので i+1
-//	D3D12_CPU_DESCRIPTOR_HANDLE currentCpuHandle = GetCPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
-//	D3D12_GPU_DESCRIPTOR_HANDLE currentGpuHandle = GetGPUDescriptorHandle(srvDescriptorHeap.Get(), descriptorSizeSRV, uint32_t(index + 1));
-//
-//	// 解放するときのために
-//	textureResources.push_back(textureResource);
-//	intermediateResources.push_back(intermediateResource);
-//	metadatas.push_back(metadata);
-//	textureCPUSrvHandles.push_back(currentCpuHandle);
-//	textureGPUSrvHandles.push_back(currentGpuHandle);
-//
-//}
-//void DirectXCommon::MakeSRV(const std::string& textureFileNames, uint32_t index)
-//{
-//	// SRV設定
-//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-//	srvDesc.Format = metadatas[index].format;
-//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-//	srvDesc.Texture2D.MipLevels = UINT(metadatas[index].mipLevels);
-//
-//	// SRVの生成
-//	device->CreateShaderResourceView(textureResources[index].Get(), &srvDesc, textureCPUSrvHandles[index]);
-//}
-//
-//DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
-//{
-//	//テクスチャファイルを読んでプログラムで扱える
-//	DirectX::ScratchImage image{};
-//	std::wstring filePathW = Logger::ConvertString(filePath);
-//	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-//	assert(SUCCEEDED(hr));
-//
-//	// ミップマップ
-//	DirectX::ScratchImage mipImages{};
-//	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0,
-//		mipImages);
-//	assert(SUCCEEDED(hr));
-//	// ミップマップ付きのデータを返す
-//	return mipImages;
-//}
-//Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata)
-//{
-//	//metadataを基にResourceの設定
-//	D3D12_RESOURCE_DESC resourceDesc{ };
-//	resourceDesc.Width = UINT(metadata.width);								//textureの幅
-//	resourceDesc.Height = UINT(metadata.height);							//textureの高さ
-//	resourceDesc.MipLevels = UINT16(metadata.mipLevels);					//mipmapの数
-//	resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize);				//奥行 or配列Textureの配列数
-//	resourceDesc.Format = metadata.format;									//textureのFormat
-//	resourceDesc.SampleDesc.Count = 1;										//サンプリングカウント。1固定
-//	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);	//textureの次元数
-//
-//	//利用するHeapの設定（非常に特殊な運用方法）
-//	D3D12_HEAP_PROPERTIES heapProperties{};
-//	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;							//細かい設定を行う
-//
-//	//Resourceの生成
-//	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
-//	HRESULT hr = device->CreateCommittedResource(
-//		&heapProperties,							//heapの設定
-//		D3D12_HEAP_FLAG_NONE,						//heapの特殊な設定。特になし
-//		&resourceDesc,								//resourceの設定
-//		D3D12_RESOURCE_STATE_COPY_DEST,			//初回のresourceState。textureは基本読むだけ
-//		nullptr,									//clear最適地。使わないのでnullptr
-//		IID_PPV_ARGS(&resource));					//作成するResourceポインタへのポインタ
-//	assert(SUCCEEDED(hr));
-//	return resource;
-//
-////}
-//Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList)
-//{
-//	std::vector<D3D12_SUBRESOURCE_DATA> subresource;
-//	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresource);
-//	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresource.size()));
-//	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = CreateBufferResource(device.Get(), intermediateSize);
-//	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresource.size()), subresource.data());
-//	//textureへの転送後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する
-//	D3D12_RESOURCE_BARRIER barrier{};
-//	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-//	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-//	barrier.Transition.pResource = texture.Get();
-//	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-//	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-//	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-//	commandList->ResourceBarrier(1, &barrier);
-//	return intermediateResource;
-//
-//
-//}
-
 void DirectXCommon::MakeDSV()
 {
 
 	//DepthStencilTextureをウィンドウサイズで作成
 	depthStencilResource = CreateDepthStencilTextureResource(device.Get(), kClientWidth, kClientHeight);
-	//DSV用のヒープでディスクリプタヒープの数は1。DSVのShader内で触れないのでfalse
-	dsvDescriptorHeap = CreateDesctiptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;				//Formatは基本的にResourceに合わせる
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;		//2Dtexture
+	
 	//DSVHeapの先頭にDSVをつくる
 	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 

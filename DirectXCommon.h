@@ -78,7 +78,6 @@ public:
 
 	//SRVはテクスチャの部分で作成
 
-
 	/// <summary>
 	/// DSVを作成する
 	/// </summary>
