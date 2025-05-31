@@ -201,7 +201,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	{0.0f,0.0f,0.0f}
 	};
 
-	std::unique_ptr<Sphere> sphere= std::make_unique<Sphere>();				// 球体を生成
+	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();				// 球体を生成
 	sphere->Initialize(directXCommon, "monsterBall");						// 初期化
 	sphere->SetTransform(transformSphere);									// Transformを設定
 
@@ -336,10 +336,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		/// 球体のデバッグUI
-		
+
 		sphere->ImGui();
 
-	
+
 
 		/// スプライトのデバッグUI
 		sprite->ImGui();
@@ -363,10 +363,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//							三角形用のWVP										//
 		//																			//
 
-		
+
 		// 三角形を回転させる
-		triangle[0]->AddRotation({0.0f, 0.03f, 0.0f});
-		
+		triangle[0]->AddRotation({ 0.0f, 0.03f, 0.0f });
+
 		//三角形の更新(現状行列更新のみ)
 		for (int i = 0; i < kMaxTriangleIndex; i++)
 		{
@@ -436,21 +436,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//								Spriteの描画									//
 		//																			//
 
-#pragma region Sprite
-		 // スプライトの描画（別のビュープロジェクション）
+
+		// スプライトの描画（別のビュープロジェクション）
 		sprite->DrawSprite(directionalLight);
 
-
-#pragma endregion
 
 		//																			//
 		//								Modelの描画									//
 		//																			//
 
-#pragma region Model
+
 		model->Draw(directionalLight);
-	
-#pragma endregion
+
+
 
 
 		// ImGuiの画面への描画
