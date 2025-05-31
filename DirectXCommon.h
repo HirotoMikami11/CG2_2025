@@ -70,27 +70,14 @@ public:
 	///desctipotorHeapを生成する関数
 	 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
-	///// <summary>
-	///// 
-	///// </summary>
-	//void LoadTextureResourceForSRV(const std::string& textureFilename, uint32_t index);
-
-	///// <summary>
-	///// SRVを作成する
-	///// </summary>
-	///// <param name="textureFileNames"></param>
-	//void MakeSRV(const std::string& textureFileNames, uint32_t index);
 
 	/// <summary>
 	/// RTVを作成する
 	/// </summary>
 	void MakeRTV();
 
-	//static Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);   // MYFunctionに移動
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
-	[[nodiscard]]
-	static Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList);
+	//SRVはテクスチャの部分で作成
+
 
 	/// <summary>
 	/// DSVを作成する
