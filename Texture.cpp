@@ -1,6 +1,5 @@
 #include "Texture.h"
 
-
 bool Texture::LoadTexture(const std::string& filePath, DirectXCommon* dxCommon, uint32_t srvIndex) {
 	// 既に読み込み済みの場合はスキップ
 	if (IsValid() && filePath_ == filePath) {
@@ -18,35 +17,120 @@ bool Texture::LoadTexture(const std::string& filePath, DirectXCommon* dxCommon, 
 	// メタデータを保存
 	metadata_ = mipImages.GetMetadata();
 
-	// テクスチャリソースを作成（参照を使用してリークを防止）
+	// テクスチャリソースを作成
 	textureResource_ = CreateTextureResource(dxCommon->GetDeviceComPtr(), metadata_);
 	if (!textureResource_) {
 		return false;
 	}
 
-	// テクスチャデータをアップロード（参照を使用してリークを防止）
+	// テクスチャデータをアップロード
 	intermediateResource_ = UploadTextureData(
 		textureResource_,
 		mipImages,
 		dxCommon->GetDeviceComPtr(),
 		dxCommon->GetCommandListComPtr());
 
-	// ディスクリプタハンドルを取得（ImGui用にインデックス+1）
-	cpuHandle_ = dxCommon->GetCPUDescriptorHandle(
-		dxCommon->GetSRVDescriptorHeapComPtr(),
-		dxCommon->GetDescriptorSizeSRV(),
-		srvIndex + 1);
+	// DescriptorHeapManagerからSRVを割り当て
+	auto descriptorManager = dxCommon->GetDescriptorManager();
+	if (!descriptorManager) {
+		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
+		return false;
+	}
 
-	gpuHandle_ = dxCommon->GetGPUDescriptorHandle(
-		dxCommon->GetSRVDescriptorHeapComPtr(),
-		dxCommon->GetDescriptorSizeSRV(),
-		srvIndex + 1);
+	// 指定されたインデックスでSRVを予約
+	auto handleOpt = descriptorManager->ReserveSRV(srvIndex);
+	if (!handleOpt.has_value()) {
+		Logger::Log(Logger::GetStream(), std::format("Failed to reserve SRV at index: {}\n", srvIndex));
+		return false;
+	}
 
-	// SRVを作成（参照を使用してリークを防止）
+	// ハンドルを保存
+	descriptorHandle_ = handleOpt.value();
+	cpuHandle_ = descriptorHandle_.cpuHandle;
+	gpuHandle_ = descriptorHandle_.gpuHandle;
+	srvIndex_ = srvIndex;
+
+	// SRVを作成
 	CreateSRV(dxCommon->GetDeviceComPtr(), cpuHandle_);
-	//ロード完了のログ
-	Logger::Log(Logger::GetStream(), std::format("Complete Texture loaded : {}\n", filePath));
+
+	// ロード完了のログ
+	Logger::Log(Logger::GetStream(), std::format("Complete Texture loaded : {} (SRV Index: {})\n", filePath, srvIndex));
 	return true;
+}
+
+bool Texture::LoadTextureWithHandle(const std::string& filePath, DirectXCommon* dxCommon,
+	const DescriptorHeapManager::DescriptorHandle& descriptorHandle) {
+	// 既に読み込み済みの場合はスキップ
+	if (IsValid() && filePath_ == filePath) {
+		return true;
+	}
+
+	filePath_ = filePath;
+
+	// テクスチャファイルを読み込み
+	DirectX::ScratchImage mipImages = LoadTextureFile(filePath);
+	if (mipImages.GetImageCount() == 0) {
+		return false;
+	}
+
+	// メタデータを保存
+	metadata_ = mipImages.GetMetadata();
+
+	// テクスチャリソースを作成
+	textureResource_ = CreateTextureResource(dxCommon->GetDeviceComPtr(), metadata_);
+	if (!textureResource_) {
+		return false;
+	}
+
+	// テクスチャデータをアップロード
+	intermediateResource_ = UploadTextureData(
+		textureResource_,
+		mipImages,
+		dxCommon->GetDeviceComPtr(),
+		dxCommon->GetCommandListComPtr());
+
+	// ハンドルを保存（既に割り当て済み）
+	descriptorHandle_ = descriptorHandle;
+	cpuHandle_ = descriptorHandle_.cpuHandle;
+	gpuHandle_ = descriptorHandle_.gpuHandle;
+	srvIndex_ = descriptorHandle_.index;
+
+	// SRVを作成
+	CreateSRV(dxCommon->GetDeviceComPtr(), cpuHandle_);
+
+	// ロード完了のログ
+	Logger::Log(Logger::GetStream(), std::format("Complete Texture loaded with handle : {} (SRV Index: {})\n", filePath, srvIndex_));
+	return true;
+}
+
+void Texture::Unload(DirectXCommon* dxCommon) {
+	if (!IsValid()) {
+		return;
+	}
+
+	// SRVを解放
+	if (srvIndex_ != INVALID_INDEX) {
+		auto descriptorManager = dxCommon->GetDescriptorManager();
+		if (descriptorManager) {
+			descriptorManager->ReleaseSRV(srvIndex_);
+		}
+		srvIndex_ = INVALID_INDEX;
+	}
+
+	// リソースをクリア
+	textureResource_.Reset();
+	intermediateResource_.Reset();
+
+	// ハンドルをクリア
+	cpuHandle_ = {};
+	gpuHandle_ = {};
+	descriptorHandle_ = {};
+
+	// その他の情報をクリア
+	metadata_ = {};
+	filePath_.clear();
+
+	Logger::Log(Logger::GetStream(), std::format("Texture unloaded: {}\n", filePath_));
 }
 
 DirectX::ScratchImage Texture::LoadTextureFile(const std::string& filePath) {

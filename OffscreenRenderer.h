@@ -6,13 +6,12 @@
 #include <string>
 
 #include "DirectXCommon.h"
-#include "TextureManager.h"
 #include "Logger.h"
 #include "MyMath.h"
 #include "MyFunction.h"
 
 /// <summary>
-/// オフスクリーンレンダリングを管理するクラス
+/// オフスクリーンレンダリングを管理するクラス（DescriptorHeapManager対応版）
 /// </summary>
 class OffscreenRenderer {
 public:
@@ -55,7 +54,7 @@ public:
 	/// オフスクリーンテクスチャのハンドルを取得
 	/// </summary>
 	/// <returns>GPUハンドル</returns>
-	D3D12_GPU_DESCRIPTOR_HANDLE GetOffscreenTextureHandle() const { return srvGpuHandle_; }
+	D3D12_GPU_DESCRIPTOR_HANDLE GetOffscreenTextureHandle() const { return srvHandle_.gpuHandle; }
 
 	/// <summary>
 	/// オフスクリーンレンダリングが有効かチェック
@@ -109,7 +108,6 @@ private:
 private:
 	// DirectXCommonへの参照
 	DirectXCommon* dxCommon_ = nullptr;
-	TextureManager* textureManager_ = nullptr;
 
 	// レンダーターゲットのサイズ
 	uint32_t width_ = 0;
@@ -119,16 +117,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTexture_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilTexture_;
 
-	// ディスクリプタハンドル
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvCpuHandle_{};
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvCpuHandle_{};
-	D3D12_CPU_DESCRIPTOR_HANDLE srvCpuHandle_{};
-	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle_{};
-
-	// RTV/DSVのインデックス（ヒープ内での位置）
-	uint32_t rtvIndex_ = 0;
-	uint32_t dsvIndex_ = 0;
-	uint32_t srvIndex_ = 0;
+	// DescriptorHeapManagerからのディスクリプタハンドル
+	DescriptorHeapManager::DescriptorHandle rtvHandle_;
+	DescriptorHeapManager::DescriptorHandle dsvHandle_;
+	DescriptorHeapManager::DescriptorHandle srvHandle_;
 
 	// オフスクリーン描画用PSO（簡素化されたもの）
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;

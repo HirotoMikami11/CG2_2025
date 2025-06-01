@@ -2,7 +2,6 @@
 
 void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint32_t height) {
 	dxCommon_ = dxCommon;
-	textureManager_ = TextureManager::GetInstance();
 	width_ = width;
 	height_ = height;
 
@@ -32,26 +31,40 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized !!\n");
 }
 
-
 void OffscreenRenderer::Finalize() {
+	// 頂点データのマッピング解除
 	if (vertexData_) {
 		vertexBuffer_->Unmap(0, nullptr);
 		vertexData_ = nullptr;
 	}
 
+	// マテリアルデータのマッピング解除
 	if (materialData_) {
 		materialBuffer_->Unmap(0, nullptr);
 		materialData_ = nullptr;
 	}
+
+	// Transformデータのマッピング解除
 	if (transformData_) {
 		transformBuffer_->Unmap(0, nullptr);
 		transformData_ = nullptr;
 	}
 
-	// SRVインデックスを解放
-	if (textureManager_) {
-		textureManager_->ReleaseSRVIndex(srvIndex_);
+	// DescriptorHeapManagerからディスクリプタを解放
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (descriptorManager) {
+		if (rtvHandle_.isValid) {
+			descriptorManager->ReleaseRTV(rtvHandle_.index);
+		}
+		if (dsvHandle_.isValid) {
+			descriptorManager->ReleaseDSV(dsvHandle_.index);
+		}
+		if (srvHandle_.isValid) {
+			descriptorManager->ReleaseSRV(srvHandle_.index);
+		}
 	}
+
+	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized.\n");
 }
 
 void OffscreenRenderer::PreDraw() {
@@ -66,19 +79,21 @@ void OffscreenRenderer::PreDraw() {
 	commandList->ResourceBarrier(1, &barrier_);
 
 	// レンダーターゲットとデプスステンシルを設定
-	commandList->OMSetRenderTargets(1, &rtvCpuHandle_, false, &dsvCpuHandle_);
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandle_.cpuHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHandle_.cpuHandle;
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
 	// クリア
 	float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
-	commandList->ClearRenderTargetView(rtvCpuHandle_, clearColor, 0, nullptr);
-	commandList->ClearDepthStencilView(dsvCpuHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	// ビューポートとシザー矩形を設定
 	commandList->RSSetViewports(1, &viewport_);
 	commandList->RSSetScissorRects(1, &scissorRect_);
 
-	// 描画用のデスクリプタヒープを設定（通常の描画と同じ）
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { dxCommon_->GetSRVDescriptorHeap() };
+	// 描画用のデスクリプタヒープを設定
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = { dxCommon_->GetDescriptorManager()->GetSRVHeapComPtr() };
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 	// 通常の描画設定を適用（既存のPSOを使用）
@@ -98,8 +113,8 @@ void OffscreenRenderer::PostDraw() {
 
 void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, float height) {
 	auto commandList = dxCommon_->GetCommandList();
-	
-	///引数
+
+	// 引数を使用（警告対策）
 	x, y;
 
 	// マテリアルデータ更新
@@ -121,7 +136,7 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	// CBVを設定（簡素化されたRootSignature用）
 	commandList->SetGraphicsRootConstantBufferView(0, materialBuffer_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformBuffer_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, srvGpuHandle_);
+	commandList->SetGraphicsRootDescriptorTable(2, srvHandle_.gpuHandle);
 
 	// 描画
 	commandList->DrawInstanced(6, 1, 0, 0);
@@ -170,7 +185,6 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 }
 
 void OffscreenRenderer::CreateDepthStencilTexture() {
-	// 既存のCreateDepthStencilTextureResourceと同様の実装
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = width_;
 	resourceDesc.Height = height_;
@@ -201,15 +215,18 @@ void OffscreenRenderer::CreateDepthStencilTexture() {
 }
 
 void OffscreenRenderer::CreateRTV() {
-	// RTVヒープから次の空きスロットを取得
-	// 現在は既存の2つのRTV（スワップチェーン用）の後に配置
-	rtvIndex_ = GraphicsConfig::GetOffscreenRTVIndex();
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (!descriptorManager) {
+		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
+		return;
+	}
 
-	// DirectXCommonのGetCPUDescriptorHandle関数を使用
-	rtvCpuHandle_ = dxCommon_->GetCPUDescriptorHandle(
-		dxCommon_->GetRTVDescriptorHeapComPtr(),
-		dxCommon_->GetDescriptorSizeRTV(),
-		rtvIndex_);
+	// RTVを割り当て
+	rtvHandle_ = descriptorManager->AllocateRTV();
+	if (!rtvHandle_.isValid) {
+		Logger::Log(Logger::GetStream(), "Failed to allocate RTV for offscreen renderer\n");
+		return;
+	}
 
 	// RTV作成
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -219,21 +236,24 @@ void OffscreenRenderer::CreateRTV() {
 	dxCommon_->GetDevice()->CreateRenderTargetView(
 		renderTargetTexture_.Get(),
 		&rtvDesc,
-		rtvCpuHandle_);
+		rtvHandle_.cpuHandle);
 
-	Logger::Log(Logger::GetStream(), "Complete create offscreen RTV!!\n");
+	Logger::Log(Logger::GetStream(), std::format("Complete create offscreen RTV (Index: {})!!\n", rtvHandle_.index));
 }
 
 void OffscreenRenderer::CreateDSV() {
-	// DSVヒープから次の空きスロットを取得
-	// 現在は既存の1つのDSV（メイン用）の後に配置
-	dsvIndex_ = GraphicsConfig::GetOffscreenDSVIndex();
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (!descriptorManager) {
+		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
+		return;
+	}
 
-	// DirectXCommonのGetCPUDescriptorHandle関数を使用
-	dsvCpuHandle_ = dxCommon_->GetCPUDescriptorHandle(
-		dxCommon_->GetDSVDescriptorHeapComPtr(),
-		dxCommon_->GetDescriptorSizeDSV(),
-		dsvIndex_);
+	// DSVを割り当て
+	dsvHandle_ = descriptorManager->AllocateDSV();
+	if (!dsvHandle_.isValid) {
+		Logger::Log(Logger::GetStream(), "Failed to allocate DSV for offscreen renderer\n");
+		return;
+	}
 
 	// DSV作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -243,30 +263,24 @@ void OffscreenRenderer::CreateDSV() {
 	dxCommon_->GetDevice()->CreateDepthStencilView(
 		depthStencilTexture_.Get(),
 		&dsvDesc,
-		dsvCpuHandle_);
+		dsvHandle_.cpuHandle);
 
-	Logger::Log(Logger::GetStream(), "Complete create offscreen DSV!!\n");
+	Logger::Log(Logger::GetStream(), std::format("Complete create offscreen DSV (Index: {})!!\n", dsvHandle_.index));
 }
 
 void OffscreenRenderer::CreateSRV() {
-	// TextureManagerのSRVインデックス管理を使用
-	srvIndex_ = textureManager_->GetAvailableSRVIndex();
-
-	if (srvIndex_ >= GraphicsConfig::kMaxTextureCount) { 
-		Logger::Log(Logger::GetStream(), "Failed to create offscreen SRV: No available slots\n");
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (!descriptorManager) {
+		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
 		return;
 	}
 
-	// ディスクリプタハンドル取得（ImGui用に+1）
-	srvCpuHandle_ = dxCommon_->GetCPUDescriptorHandle(
-		dxCommon_->GetSRVDescriptorHeap(),
-		dxCommon_->GetDescriptorSizeSRV(),
-		srvIndex_ + 1);
-
-	srvGpuHandle_ = dxCommon_->GetGPUDescriptorHandle(
-		dxCommon_->GetSRVDescriptorHeap(),
-		dxCommon_->GetDescriptorSizeSRV(),
-		srvIndex_ + 1);
+	// SRVを割り当て
+	srvHandle_ = descriptorManager->AllocateSRV();
+	if (!srvHandle_.isValid) {
+		Logger::Log(Logger::GetStream(), "Failed to allocate SRV for offscreen renderer\n");
+		return;
+	}
 
 	// SRV作成
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -278,14 +292,13 @@ void OffscreenRenderer::CreateSRV() {
 	dxCommon_->GetDevice()->CreateShaderResourceView(
 		renderTargetTexture_.Get(),
 		&srvDesc,
-		srvCpuHandle_);
+		srvHandle_.cpuHandle);
 
-	Logger::Log(Logger::GetStream(), "Complete create offscreen SRV!!\n");
+	Logger::Log(Logger::GetStream(), std::format("Complete create offscreen SRV (Index: {})!!\n", srvHandle_.index));
 }
 
 void OffscreenRenderer::CreatePSO() {
 	// オフスクリーン描画用の簡素化されたRootSignature作成
-
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -341,7 +354,7 @@ void OffscreenRenderer::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定（既存と同じ）
+	// InputLayout設定
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -409,7 +422,7 @@ void OffscreenRenderer::CreatePSO() {
 }
 
 void OffscreenRenderer::CreateVertexBuffer() {
-	// 4頂点のクアッド用頂点バッファ作成
+	// 6頂点のクアッド用頂点バッファ作成
 	vertexBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), sizeof(VertexData) * 6);
 
 	// 頂点バッファビュー作成
@@ -421,34 +434,33 @@ void OffscreenRenderer::CreateVertexBuffer() {
 	vertexBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 
 	// 初期の頂点データ設定（フルスクリーンクアッド）
-	//一つ目の三角形
-	//左下
-	vertexData_[0].position = { 0.0f,static_cast<float>(GraphicsConfig::kClientHeight),0.0f,1.0f };
-	vertexData_[0].texcoord = { 0.0f,1.0f };
-	vertexData_[0].normal = { 0.0f,0.0f,-1.0f };
-	//左上
-	vertexData_[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData_[1].texcoord = { 0.0f,0.0f };
-	vertexData_[1].normal = { 0.0f,0.0f,-1.0f };
-	//右下
-	vertexData_[2].position = { static_cast<float>(GraphicsConfig::kClientWidth),static_cast<float>(GraphicsConfig::kClientHeight),0.0f,1.0f };
-	vertexData_[2].texcoord = { 1.0f,1.0f };
-	vertexData_[2].normal = { 0.0f,0.0f,-1.0f };
-	//二つ目の三角形
-	//左上
-	vertexData_[3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData_[3].texcoord = { 0.0f,0.0f };
-	vertexData_[3].normal = { 0.0f,0.0f,-1.0f };
-	//右上
-	vertexData_[4].position = { static_cast<float>(GraphicsConfig::kClientWidth),0.0f,0.0f,1.0f };
-	vertexData_[4].texcoord = { 1.0f,0.0f };
-	vertexData_[4].normal = { 0.0f,0.0f,-1.0f };
-	//右下
-	vertexData_[5].position = { static_cast<float>(GraphicsConfig::kClientWidth),static_cast<float>(GraphicsConfig::kClientHeight),0.0f,1.0f };
-	vertexData_[5].texcoord = { 1.0f,1.0f };
-	vertexData_[5].normal = { 0.0f,0.0f,-1.0f };
+	// 一つ目の三角形
+	// 左下
+	vertexData_[0].position = { 0.0f, static_cast<float>(GraphicsConfig::kClientHeight), 0.0f, 1.0f };
+	vertexData_[0].texcoord = { 0.0f, 1.0f };
+	vertexData_[0].normal = { 0.0f, 0.0f, -1.0f };
+	// 左上
+	vertexData_[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vertexData_[1].texcoord = { 0.0f, 0.0f };
+	vertexData_[1].normal = { 0.0f, 0.0f, -1.0f };
+	// 右下
+	vertexData_[2].position = { static_cast<float>(GraphicsConfig::kClientWidth), static_cast<float>(GraphicsConfig::kClientHeight), 0.0f, 1.0f };
+	vertexData_[2].texcoord = { 1.0f, 1.0f };
+	vertexData_[2].normal = { 0.0f, 0.0f, -1.0f };
+	// 二つ目の三角形
+	// 左上
+	vertexData_[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vertexData_[3].texcoord = { 0.0f, 0.0f };
+	vertexData_[3].normal = { 0.0f, 0.0f, -1.0f };
+	// 右上
+	vertexData_[4].position = { static_cast<float>(GraphicsConfig::kClientWidth), 0.0f, 0.0f, 1.0f };
+	vertexData_[4].texcoord = { 1.0f, 0.0f };
+	vertexData_[4].normal = { 0.0f, 0.0f, -1.0f };
+	// 右下
+	vertexData_[5].position = { static_cast<float>(GraphicsConfig::kClientWidth), static_cast<float>(GraphicsConfig::kClientHeight), 0.0f, 1.0f };
+	vertexData_[5].texcoord = { 1.0f, 1.0f };
+	vertexData_[5].normal = { 0.0f, 0.0f, -1.0f };
 
-	
 	// マテリアルバッファ作成
 	materialBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), sizeof(MaterialData));
 	materialBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));

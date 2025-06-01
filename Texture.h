@@ -13,17 +13,35 @@ class DirectXCommon; // 前方宣言
 /// </summary>
 class Texture {
 public:
+	static constexpr uint32_t INVALID_INDEX = UINT32_MAX;
+
 	Texture() = default;
 	~Texture() = default;
 
 	/// <summary>
-	/// テクスチャを読み込む
+	/// テクスチャを読み込む（従来の方法）
 	/// </summary>
 	/// <param name="filePath">テクスチャファイルのパス</param>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	/// <param name="srvIndex">SRVヒープでのインデックス（ImGui用に+1される）</param>
+	/// <param name="srvIndex">SRVヒープでのインデックス</param>
 	/// <returns>読み込み成功かどうか</returns>
 	bool LoadTexture(const std::string& filePath, DirectXCommon* dxCommon, uint32_t srvIndex);
+
+	/// <summary>
+	/// テクスチャを読み込む（ハンドル指定版）
+	/// </summary>
+	/// <param name="filePath">テクスチャファイルのパス</param>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	/// <param name="descriptorHandle">既に割り当て済みのディスクリプタハンドル</param>
+	/// <returns>読み込み成功かどうか</returns>
+	bool LoadTextureWithHandle(const std::string& filePath, DirectXCommon* dxCommon,
+		const DescriptorHeapManager::DescriptorHandle& descriptorHandle);
+
+	/// <summary>
+	/// テクスチャをアンロード
+	/// </summary>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	void Unload(DirectXCommon* dxCommon);
 
 	/// <summary>
 	/// リソースの取得
@@ -39,6 +57,11 @@ public:
 	/// GPU側ディスクリプタハンドルの取得
 	/// </summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle() const { return gpuHandle_; }
+
+	/// <summary>
+	/// SRVインデックスの取得
+	/// </summary>
+	uint32_t GetSRVIndex() const { return srvIndex_; }
 
 	/// <summary>
 	/// テクスチャのメタデータ取得
@@ -61,9 +84,11 @@ private:
 	// アップロード用の中間リソース（転送完了まで保持が必要）
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource_;
 
-	// ディスクリプタハンドル
+	// ディスクリプタハンドル情報
+	DescriptorHeapManager::DescriptorHandle descriptorHandle_;
 	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle_{};
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle_{};
+	uint32_t srvIndex_ = INVALID_INDEX;
 
 	// テクスチャの情報
 	DirectX::TexMetadata metadata_{};
