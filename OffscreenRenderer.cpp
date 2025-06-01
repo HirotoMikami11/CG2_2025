@@ -32,11 +32,13 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized !!\n");
 }
 
+
 void OffscreenRenderer::Finalize() {
 	if (vertexData_) {
 		vertexBuffer_->Unmap(0, nullptr);
 		vertexData_ = nullptr;
 	}
+
 	if (materialData_) {
 		materialBuffer_->Unmap(0, nullptr);
 		materialData_ = nullptr;
@@ -97,25 +99,11 @@ void OffscreenRenderer::PostDraw() {
 void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, float height) {
 	auto commandList = dxCommon_->GetCommandList();
 
-	// 頂点データを更新（フルスクリーン用）
-	vertexData_[0].position = { x, y, 0.0f, 1.0f };
-	vertexData_[0].texcoord = { 0.0f, 1.0f };
-	vertexData_[0].normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData_[1].position = { x + width, y, 0.0f, 1.0f };
-	vertexData_[1].texcoord = { 1.0f, 1.0f };
-	vertexData_[1].normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData_[2].position = { x, y + height, 0.0f, 1.0f };
-	vertexData_[2].texcoord = { 0.0f, 0.0f };
-	vertexData_[2].normal = { 0.0f, 0.0f, -1.0f };
-
-	vertexData_[3].position = { x + width, y + height, 0.0f, 1.0f };
-	vertexData_[3].texcoord = { 1.0f, 0.0f };
-	vertexData_[3].normal = { 0.0f, 0.0f, -1.0f };
+	// 頂点データを更新（UV座標のY成分を反転）
+	x, y;
 
 	// マテリアルデータ更新
-	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialData_->color = { 1.0f, 0.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = false;
 	materialData_->useLambertianReflectance = false;
 	materialData_->uvTransform = MakeIdentity4x4();
@@ -130,14 +118,13 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 
 	// 頂点バッファを設定
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-
 	// CBVを設定（簡素化されたRootSignature用）
 	commandList->SetGraphicsRootConstantBufferView(0, materialBuffer_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformBuffer_->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootDescriptorTable(2, srvGpuHandle_);
 
 	// 描画
-	commandList->DrawInstanced(4, 1, 0, 0);
+	commandList->DrawInstanced(6, 1, 0, 0);
 
 	// 通常の描画設定を適用
 	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
@@ -423,22 +410,45 @@ void OffscreenRenderer::CreatePSO() {
 
 void OffscreenRenderer::CreateVertexBuffer() {
 	// 4頂点のクアッド用頂点バッファ作成
-	vertexBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), sizeof(VertexData) * 4);
+	vertexBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), sizeof(VertexData) * 6);
 
 	// 頂点バッファビュー作成
 	vertexBufferView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 6;
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 
 	// 頂点データのマッピング
 	vertexBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 
 	// 初期の頂点データ設定（フルスクリーンクアッド）
-	vertexData_[0] = { {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f} };
-	vertexData_[1] = { {static_cast<float>(kClientWidth), 0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f} };
-	vertexData_[2] = { {0.0f, static_cast<float>(kClientHeight), 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f} };
-	vertexData_[3] = { {static_cast<float>(kClientWidth), static_cast<float>(kClientHeight), 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f} };
+	//一つ目の三角形
+	//左下
+	vertexData_[0].position = { 0.0f,static_cast<float>(kClientHeight),0.0f,1.0f };
+	vertexData_[0].texcoord = { 0.0f,1.0f };
+	vertexData_[0].normal = { 0.0f,0.0f,-1.0f };
+	//左上
+	vertexData_[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData_[1].texcoord = { 0.0f,0.0f };
+	vertexData_[1].normal = { 0.0f,0.0f,-1.0f };
+	//右下
+	vertexData_[2].position = { static_cast<float>(kClientWidth),static_cast<float>(kClientHeight),0.0f,1.0f };
+	vertexData_[2].texcoord = { 1.0f,1.0f };
+	vertexData_[2].normal = { 0.0f,0.0f,-1.0f };
+	//二つ目の三角形
+	//左上
+	vertexData_[3].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData_[3].texcoord = { 0.0f,0.0f };
+	vertexData_[3].normal = { 0.0f,0.0f,-1.0f };
+	//右上
+	vertexData_[4].position = { static_cast<float>(kClientWidth),0.0f,0.0f,1.0f };
+	vertexData_[4].texcoord = { 1.0f,0.0f };
+	vertexData_[4].normal = { 0.0f,0.0f,-1.0f };
+	//右下
+	vertexData_[5].position = { static_cast<float>(kClientWidth),static_cast<float>(kClientHeight),0.0f,1.0f };
+	vertexData_[5].texcoord = { 1.0f,1.0f };
+	vertexData_[5].normal = { 0.0f,0.0f,-1.0f };
 
+	
 	// マテリアルバッファ作成
 	materialBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), sizeof(MaterialData));
 	materialBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));

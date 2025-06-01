@@ -410,38 +410,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///				画面をクリアする処理が含まれたコマンドリストを作る				   ///
 		//																			//
 		///*-----------------------------------------------------------------------*///
-			// 描画そのもののBeginFrame
+		
+	
 		directXCommon->BeginFrame();
 
-		// 描画の準備関数（特に何もしない - コメントのみ）
-
-		// オフスクリーンのPreDraw
+		///																			///
+		///						オフスクリーンレンダリング								///
+		///																			///
+		// オフスクリーンの描画準備
 		offscreenRenderer->PreDraw();
 
+
 		// Sphereの描画
-		//sphere->Draw(directionalLight);
+		sphere->Draw(directionalLight);
 
-		// オフスクリーンのPostDraw
+
+		// オフスクリーンの描画終了
 		offscreenRenderer->PostDraw();
+		///																			///
+		///								通常レンダリング								///
+		///																			///
 
-		// 通常描画のPreDraw
+		// 通常描画の描画準備
 		directXCommon->PreDraw();
 
 		//// オフスクリーンの画面の実態描画
-		//offscreenRenderer->DrawOffscreenTexture();
+		offscreenRenderer->DrawOffscreenTexture();
 
-		// それ以外のもの描画
+		
 		for (int i = 0; i < kMaxTriangleIndex; i++) {
-			//triangle[i]->Draw(directionalLight);
+			triangle[i]->Draw(directionalLight);
 		}
 
 
 		model->Draw(directionalLight);
-		//sprite->DrawSprite(directionalLight);
+
+		sprite->DrawSprite(directionalLight);
+
+
+
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());
 
-		// 通常描画のPostDraw
+		// 通常描画の描画終わり
 		directXCommon->PostDraw();
 
 		// 描画そのもののEndFrame
@@ -458,6 +469,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
+	offscreenRenderer->Finalize();
 	// Audioの終了処理
 	audioManager->Finalize();
 	//inputの終了処理(中身は何もない)
