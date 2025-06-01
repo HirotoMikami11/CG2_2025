@@ -313,16 +313,18 @@ void DirectXCommon::MakeDescriptorHeap()
 	descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 
-	//RTV用ヒープでディスクリプタの数は2，RTVはShader内で触れるものではないのでShaderVisibleはfalse
-	rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+	//RTV用ヒープでディスクリプタの数は3，RTVはShader内で触れるものではないのでShaderVisibleはfalse
+	//スワップチェーンとオフスクリーン
+	rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3, false);
 	Logger::Log(Logger::GetStream(), "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
 
 	//SRV用ヒープでディスクリプタの数は128，SRVはShader内で触れるものなのでShaderVisibleはtrue
 	srvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	Logger::Log(Logger::GetStream(), "Complete create SRVDescriptorHeap!!\n");//SRVディスクリプタヒープ生成完了のログを出す
 
-	//DSV用ヒープでディスクリプタの数は1，DSVはShader内で触れないのでShaderVisibleはfalse
-	dsvDescriptorHeap = CreateDesctiptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	//DSV用ヒープでディスクリプタの数は２，DSVはShader内で触れないのでShaderVisibleはfalse
+	//オフスクリーンの分で＋１子
+	dsvDescriptorHeap = CreateDesctiptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 2, false);
 	Logger::Log(Logger::GetStream(), "Complete create DSVDescriptorHeap!!\n");//DSVディスクリプタヒープ生成完了のログを出す
 
 	///　SwapChainからResourceを引っ張ってくる
@@ -797,36 +799,38 @@ void DirectXCommon::PostDraw()
 	//TransitionBarrierを張る
 	commandList->ResourceBarrier(1, &barrier);
 
+	
 
-	//コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること
+}
+void DirectXCommon::BeginFrame() {
+
+}
+
+void DirectXCommon::EndFrame() {
+	// コマンドリストの内容を確定させる
 	hr = commandList->Close();
-	assert(SUCCEEDED(hr));//ダメなら起動できない
+	assert(SUCCEEDED(hr));
 
-	///コマンドをキックする
+	// コマンドをキックする
 	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
 	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
-	//GPUとOSに画面の交換を行うように通知
+
+	// GPUとOSに画面の交換を行うように通知
 	swapChain->Present(1, 0);
 
-	///GPUにSignalを送る
-	//Fenceの値を更新
+	// GPUにSignalを送る
 	fenceValue++;
-	//GPUがここまでたどり着いたときに、Fenceの値を指定した値に代入するようにSignalを送る
 	commandQueue->Signal(fence.Get(), fenceValue);
 
-	//Fenceの値が指定したSignal値にたどり着いているか確認する
-	//GetCompleteValueの初期値はFence作成時に渡した初期値
+	// Fenceの値が指定したSignal値にたどり着いているか確認する
 	if (fence->GetCompletedValue() < fenceValue) {
-		//指定したSignalにたどり着いていないので，たどり着くまで待つようにイベントを設定する
 		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		//イベント待つ
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 
-	//次のフレーム用のコマンドリストを準備
+	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
 	assert(SUCCEEDED(hr));
-
 }

@@ -79,17 +79,6 @@ public:
 	/// </summary>
 	/// <returns>テクスチャ数</returns>
 	size_t GetTextureCount() const { return textures_.size(); }
-
-private:
-	// コンストラクタ
-	TextureManager() = default;
-	// デストラクタ
-	~TextureManager();
-
-	// コピーを禁止
-	TextureManager(const TextureManager&) = delete;
-	TextureManager& operator=(const TextureManager&) = delete;
-
 	/// <summary>
 	/// 空いているSRVインデックスを取得
 	/// </summary>
@@ -103,6 +92,16 @@ private:
 	void ReleaseSRVIndex(uint32_t index);
 
 private:
+	// コンストラクタ
+	TextureManager() = default;
+	// デストラクタ
+	~TextureManager();
+
+	// コピーを禁止
+	TextureManager(const TextureManager&) = delete;
+	TextureManager& operator=(const TextureManager&) = delete;
+
+
 	// DirectXCommonへのポインタ
 	DirectXCommon* dxCommon_ = nullptr;
 

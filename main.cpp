@@ -58,7 +58,7 @@
 #include"CameraController.h"
 
 
-
+#include "OffscreenRenderer.h"
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -162,6 +162,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	cameraController->Initialize();
 
 
+	// オフスクリーンレンダラーの初期化（DirectX初期化後に追加）
+	std::unique_ptr<OffscreenRenderer> offscreenRenderer = std::make_unique<OffscreenRenderer>();
+	offscreenRenderer->Initialize(directXCommon);
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
@@ -407,55 +410,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///				画面をクリアする処理が含まれたコマンドリストを作る				   ///
 		//																			//
 		///*-----------------------------------------------------------------------*///
+			// 描画そのもののBeginFrame
+		directXCommon->BeginFrame();
 
+		// 描画の準備関数（特に何もしない - コメントのみ）
 
+		// オフスクリーンのPreDraw
+		offscreenRenderer->PreDraw();
+
+		// Sphereの描画
+		//sphere->Draw(directionalLight);
+
+		// オフスクリーンのPostDraw
+		offscreenRenderer->PostDraw();
+
+		// 通常描画のPreDraw
 		directXCommon->PreDraw();
 
+		//// オフスクリーンの画面の実態描画
+		//offscreenRenderer->DrawOffscreenTexture();
 
-		///*-----------------------------------------------------------------------*///
-		//																			//
-		///							描画に必要コマンドを積む						   ///
-		//																			//
-		///*-----------------------------------------------------------------------*///
-
-		//																			//
-		//								三角形用の描画									//
-		//																			//
-		for (int i = 0; i < kMaxTriangleIndex; i++)
-		{
-			triangle[i]->Draw(directionalLight);
+		// それ以外のもの描画
+		for (int i = 0; i < kMaxTriangleIndex; i++) {
+			//triangle[i]->Draw(directionalLight);
 		}
-
-		//																			//
-		//								Sphereの描画									//
-		//																			//
-
-		sphere->Draw(directionalLight);
-
-		//																			//
-		//								Spriteの描画									//
-		//																			//
-
-
-		// スプライトの描画（別のビュープロジェクション）
-		sprite->DrawSprite(directionalLight);
-
-
-		//																			//
-		//								Modelの描画									//
-		//																			//
 
 
 		model->Draw(directionalLight);
-
-
-
-
+		//sprite->DrawSprite(directionalLight);
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());
 
-		//	画面に描く処理はすべて終わり、画面に映すので、状態を遷移
+		// 通常描画のPostDraw
 		directXCommon->PostDraw();
+
+		// 描画そのもののEndFrame
+		directXCommon->EndFrame();
 	}
 
 

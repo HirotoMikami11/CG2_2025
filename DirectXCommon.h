@@ -33,10 +33,10 @@ public:
 
 	void Initialize(WinApp* winApp);
 	void Finalize();
-	
+
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
-	
+
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
 
@@ -68,7 +68,7 @@ public:
 	void MakeDescriptorHeap();
 
 	///desctipotorHeapを生成する関数
-	 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDesctiptorHeap(Microsoft::WRL::ComPtr<ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 
 	/// <summary>
@@ -119,7 +119,15 @@ public:
 	/// 描画後の処理
 	/// </summary>
 	void PostDraw();
+	/// <summary>
+	/// フレーム開始処理（コマンドリストの準備）
+	/// </summary>
+	void BeginFrame();
 
+	/// <summary>
+	/// フレーム終了処理（コマンドリストの実行と次フレーム準備）
+	/// </summary>
+	void EndFrame();
 	///ゲッター
 
 	ID3D12Device* GetDevice() const { return device.Get(); }
@@ -143,11 +151,25 @@ public:
 	uint32_t GetDescriptorSizeSRV() const { return descriptorSizeSRV; }
 	uint32_t GetDescriptorSizeRTV() const { return descriptorSizeRTV; }
 	uint32_t GetDescriptorSizeDSV() const { return descriptorSizeDSV; }
+	// ComPtr版のゲッター関数（オフスクリーンレンダリング用）
+	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& GetRTVDescriptorHeapComPtr() const { return rtvDescriptorHeap; }
+	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& GetDSVDescriptorHeapComPtr() const { return dsvDescriptorHeap; }
+
+
 	///参照で返すゲッター？
 	const Microsoft::WRL::ComPtr<ID3D12Device>& GetDeviceComPtr() const { return device; }
 	const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& GetCommandListComPtr() const { return commandList; }
 	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& GetSRVDescriptorHeapComPtr() const { return srvDescriptorHeap; }
+	// オフスクリーンレンダリング用のゲッター関数
+	ID3D12RootSignature* GetRootSignature() const { return rootSignature.Get(); }
+	ID3D12PipelineState* GetPipelineState() const { return graphicsPipelineState.Get(); }
+	ID3D12DescriptorHeap* GetRTVDescriptorHeap() const { return rtvDescriptorHeap.Get(); }
+	ID3D12DescriptorHeap* GetDSVDescriptorHeap() const { return dsvDescriptorHeap.Get(); }
 
+	// DXC関連のゲッター
+	IDxcUtils* GetDxcUtils() const { return dxcUtils.Get(); }
+	IDxcCompiler3* GetDxcCompiler() const { return dxcCompiler.Get(); }
+	IDxcIncludeHandler* GetIncludeHandler() const { return includeHandler.Get(); }
 
 private:
 

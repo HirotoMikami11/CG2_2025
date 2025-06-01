@@ -1,0 +1,158 @@
+#pragma once
+#include <Windows.h>
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <wrl.h>
+#include <string>
+
+#include "DirectXCommon.h"
+#include "TextureManager.h"
+#include "Logger.h"
+#include "MyMath.h"
+#include "MyFunction.h"
+
+/// <summary>
+/// オフスクリーンレンダリングを管理するクラス
+/// </summary>
+class OffscreenRenderer {
+public:
+	OffscreenRenderer() = default;
+	~OffscreenRenderer() = default;
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	/// <param name="width">レンダーターゲットの幅</param>
+	/// <param name="height">レンダーターゲットの高さ</param>
+	void Initialize(DirectXCommon* dxCommon, uint32_t width = kClientWidth, uint32_t height = kClientHeight);
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize();
+
+	/// <summary>
+	/// オフスクリーンレンダリング開始（PreDraw）
+	/// </summary>
+	void PreDraw();
+
+	/// <summary>
+	/// オフスクリーンレンダリング終了（PostDraw）
+	/// </summary>
+	void PostDraw();
+
+	/// <summary>
+	/// オフスクリーンテクスチャを描画（通常の描画パスで使用）
+	/// </summary>
+	/// <param name="x">描画位置X</param>
+	/// <param name="y">描画位置Y</param>
+	/// <param name="width">描画幅</param>
+	/// <param name="height">描画高さ</param>
+	void DrawOffscreenTexture(float x = 0.0f, float y = 0.0f, float width = kClientWidth, float height = kClientHeight);
+
+	/// <summary>
+	/// オフスクリーンテクスチャのハンドルを取得
+	/// </summary>
+	/// <returns>GPUハンドル</returns>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetOffscreenTextureHandle() const { return srvGpuHandle_; }
+
+	/// <summary>
+	/// オフスクリーンレンダリングが有効かチェック
+	/// </summary>
+	/// <returns>有効かどうか</returns>
+	bool IsValid() const { return renderTargetTexture_ != nullptr; }
+
+private:
+	/// <summary>
+	/// レンダーターゲットテクスチャを作成
+	/// </summary>
+	void CreateRenderTargetTexture();
+
+	/// <summary>
+	/// 深度ステンシルテクスチャを作成
+	/// </summary>
+	void CreateDepthStencilTexture();
+
+	/// <summary>
+	/// RTVを作成
+	/// </summary>
+	void CreateRTV();
+
+	/// <summary>
+	/// DSVを作成
+	/// </summary>
+	void CreateDSV();
+
+	/// <summary>
+	/// SRVを作成
+	/// </summary>
+	void CreateSRV();
+
+	/// <summary>
+	/// オフスクリーン描画用のPSOを作成
+	/// </summary>
+	void CreatePSO();
+
+	/// <summary>
+	/// フルスクリーン描画用の頂点バッファを作成
+	/// </summary>
+	void CreateVertexBuffer();
+
+	/// <summary>
+	/// シェーダーをコンパイル
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile);
+
+private:
+	// DirectXCommonへの参照
+	DirectXCommon* dxCommon_ = nullptr;
+	TextureManager* textureManager_ = nullptr;
+
+	// レンダーターゲットのサイズ
+	uint32_t width_ = 0;
+	uint32_t height_ = 0;
+
+	// レンダーターゲット用リソース
+	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTexture_;
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilTexture_;
+
+	// ディスクリプタハンドル
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvCpuHandle_{};
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvCpuHandle_{};
+	D3D12_CPU_DESCRIPTOR_HANDLE srvCpuHandle_{};
+	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle_{};
+
+	// RTV/DSVのインデックス（ヒープ内での位置）
+	uint32_t rtvIndex_ = 0;
+	uint32_t dsvIndex_ = 0;
+	uint32_t srvIndex_ = 0;
+
+	// オフスクリーン描画用PSO（簡素化されたもの）
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
+
+	// フルスクリーン描画用の頂点バッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	VertexData* vertexData_ = nullptr;
+
+	// マテリアル用バッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffer_;
+	MaterialData* materialData_ = nullptr;
+
+	// Transform用バッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformBuffer_;
+	TransformationMatrix* transformData_ = nullptr;
+
+	// バリア
+	D3D12_RESOURCE_BARRIER barrier_{};
+
+	// ビューポート（オフスクリーン用）
+	D3D12_VIEWPORT viewport_{};
+	D3D12_RECT scissorRect_{};
+};
