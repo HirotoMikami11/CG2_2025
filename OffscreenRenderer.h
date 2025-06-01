@@ -10,6 +10,8 @@
 #include "MyMath.h"
 #include "MyFunction.h"
 
+#include "GlitchEffect.h"	//グリッチエフェクト
+
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス（DescriptorHeapManager対応版）
 /// </summary>
@@ -30,6 +32,13 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize();
+
+	/// <summary>
+	/// 更新処理（エフェクトの更新）
+	/// </summary>
+	/// <param name="deltaTime">フレーム時間</param>
+	void Update(float deltaTime = 1.0f / 60.0f);
+
 
 	/// <summary>
 	/// オフスクリーンレンダリング開始（PreDraw）
@@ -61,6 +70,23 @@ public:
 	/// </summary>
 	/// <returns>有効かどうか</returns>
 	bool IsValid() const { return renderTargetTexture_ != nullptr; }
+
+	/// <summary>
+	/// グリッチエフェクト用のImGui
+	/// </summary>
+	void ImGui();
+
+	/// <summary>
+	/// グリッチエフェクトを取得
+	/// </summary>
+	GlitchEffect* GetGlitchEffect() { return glitchEffect_.get(); }
+
+	/// <summary>
+	/// グリッチエフェクトを設定
+	/// </summary>
+	void SetGlitchEffect(std::unique_ptr<GlitchEffect> glitchEffect) {
+		glitchEffect_ = std::move(glitchEffect);
+	}
 
 private:
 	/// <summary>
@@ -147,4 +173,7 @@ private:
 	// ビューポート（オフスクリーン用）
 	D3D12_VIEWPORT viewport_{};
 	D3D12_RECT scissorRect_{};
+
+	// グリッチエフェクト
+	std::unique_ptr<GlitchEffect> glitchEffect_;
 };

@@ -344,7 +344,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		directionalLight.ImGui("DriectonalLight");
-
+		// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
+		offscreenRenderer->ImGui();
 		ImGui::End();
 
 		//																			//
@@ -367,6 +368,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sphere->AddRotation({ 0.0f,0.01f,0.0f });
 
 
+		// オフスクリーンレンダラーの更新（エフェクト含む
+		offscreenRenderer->Update();
 
 
 		//																			//
@@ -395,8 +398,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///				画面をクリアする処理が含まれたコマンドリストを作る				   ///
 		//																			//
 		///*-----------------------------------------------------------------------*///
-		
-	
+
+
 		directXCommon->BeginFrame();
 
 		///																			///
@@ -419,17 +422,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 通常描画の描画準備
 		directXCommon->PreDraw();
 
-		/// オフスクリーンの画面の実態描画
-		offscreenRenderer->DrawOffscreenTexture();
+	
 
-		///通常描画
+	///通常描画
 		for (int i = 0; i < kMaxTriangleIndex; i++) {
 			triangle[i]->Draw(directionalLight);
 		}
 		model->Draw(directionalLight);
 		sprite->DrawSprite(directionalLight);
 
-
+		/// オフスクリーンの画面の実態描画
+		offscreenRenderer->DrawOffscreenTexture();
 
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());

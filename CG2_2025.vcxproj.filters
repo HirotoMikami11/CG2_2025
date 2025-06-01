@@ -58,6 +58,21 @@
     <Filter Include="ヘッダー ファイル\MyMath">
       <UniqueIdentifier>{a73fe585-58a8-4075-bfa2-59097dffb1df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader">
+      <UniqueIdentifier>{d7f24bbd-081a-4210-811f-21c946777cc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\offscreenShader">
+      <UniqueIdentifier>{dc34ea8e-ffb2-4c29-8b3a-52c6dcd901dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\Object3d">
+      <UniqueIdentifier>{f62798c6-8783-48ac-be17-fe2377478ecb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Glitch">
+      <UniqueIdentifier>{aa144500-32ba-4932-8650-3aac004b5405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Glitch">
+      <UniqueIdentifier>{b92610dd-7304-427c-b53b-12d47c481ead}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -153,12 +168,29 @@
     <ClCompile Include="DescriptorHeapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GlitchEffect.cpp">
+      <Filter>ソース ファイル\Glitch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Object3d.VS.hlsl" />
-    <FxCompile Include="Object3d.PS.hlsl" />
-    <FxCompile Include="Fullscreen.PS.hlsl" />
-    <FxCompile Include="Fullscreen.VS.hlsl" />
+    <FxCompile Include="Fullscreen.PS.hlsl">
+      <Filter>リソース ファイル\Shader\offscreenShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Fullscreen.VS.hlsl">
+      <Filter>リソース ファイル\Shader\offscreenShader</Filter>
+    </FxCompile>
+    <FxCompile Include="Object3d.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="Object3d.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="Glitch.PS.hlsl">
+      <Filter>リソース ファイル\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Glitch.VS.hlsl">
+      <Filter>リソース ファイル\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -257,10 +289,23 @@
     <ClInclude Include="DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GlitchEffect.h">
+      <Filter>ヘッダー ファイル\Glitch</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Object3d.hlsli" />
-    <None Include="Fullscreen.hlsli" />
+    <None Include="Fullscreen.hlsli">
+      <Filter>リソース ファイル\Shader\offscreenShader</Filter>
+    </None>
+    <None Include="Object3d.hlsli">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </None>
+    <None Include="Glitch.hlsli">
+      <Filter>リソース ファイル\Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

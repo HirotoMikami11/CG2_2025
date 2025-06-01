@@ -28,10 +28,22 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	scissorRect_.top = 0;
 	scissorRect_.bottom = height_;
 
+
+	// グリッチエフェクトを初期化
+	glitchEffect_ = std::make_unique<GlitchEffect>();
+	glitchEffect_->Initialize(dxCommon);
+
+
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized !!\n");
 }
 
 void OffscreenRenderer::Finalize() {
+	// グリッチエフェクトの終了処理
+	if (glitchEffect_) {
+		glitchEffect_->Finalize();
+		glitchEffect_.reset();
+	}
+
 	// 頂点データのマッピング解除
 	if (vertexData_) {
 		vertexBuffer_->Unmap(0, nullptr);
@@ -65,6 +77,13 @@ void OffscreenRenderer::Finalize() {
 	}
 
 	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized.\n");
+}
+
+void OffscreenRenderer::Update(float deltaTime) {
+	// グリッチエフェクトの更新
+	if (glitchEffect_) {
+		glitchEffect_->Update(deltaTime);
+	}
 }
 
 void OffscreenRenderer::PreDraw() {
@@ -117,31 +136,55 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	// 引数を使用（警告対策）
 	x, y;
 
-	// マテリアルデータ更新
-	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_->enableLighting = false;
-	materialData_->useLambertianReflectance = false;
-	materialData_->uvTransform = MakeIdentity4x4();
-
 	// Transform更新（スプライト用のビュープロジェクション使用）
 	transformData_->World = MakeIdentity4x4();
 	transformData_->WVP = MakeViewProjectionMatrixSprite();
 
-	// オフスクリーン描画用のPSOを設定
-	commandList->SetGraphicsRootSignature(rootSignature_.Get());
-	commandList->SetPipelineState(pipelineState_.Get());
+	// グリッチエフェクトが有効かどうかで描画方法を分岐
+	if (glitchEffect_ && glitchEffect_->IsEnabled()) {
+		// =================
+		// グリッチエフェクト描画
+		// =================
 
-	// 頂点バッファを設定
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-	// CBVを設定（簡素化されたRootSignature用）
-	commandList->SetGraphicsRootConstantBufferView(0, materialBuffer_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(1, transformBuffer_->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootDescriptorTable(2, srvHandle_.gpuHandle);
+		// グリッチエフェクト用のPSOを設定
+		commandList->SetGraphicsRootSignature(glitchEffect_->GetRootSignature());
+		commandList->SetPipelineState(glitchEffect_->GetPipelineState());
 
-	// 描画
+		// 頂点バッファを設定
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+
+		// CBVを設定（グリッチマテリアル、Transform、テクスチャ）
+		commandList->SetGraphicsRootConstantBufferView(0, glitchEffect_->GetMaterialBuffer()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(1, transformBuffer_->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootDescriptorTable(2, srvHandle_.gpuHandle);
+	} else {
+		// =================
+		// 通常描画
+		// =================
+
+		// マテリアルデータ更新
+		materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		materialData_->enableLighting = false;
+		materialData_->useLambertianReflectance = false;
+		materialData_->uvTransform = MakeIdentity4x4();
+
+		// 通常のオフスクリーン描画用のPSOを設定
+		commandList->SetGraphicsRootSignature(rootSignature_.Get());
+		commandList->SetPipelineState(pipelineState_.Get());
+
+		// 頂点バッファを設定
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+
+		// CBVを設定（通常のマテリアル、Transform、テクスチャ）
+		commandList->SetGraphicsRootConstantBufferView(0, materialBuffer_->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(1, transformBuffer_->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootDescriptorTable(2, srvHandle_.gpuHandle);
+	}
+
+	// 描画実行
 	commandList->DrawInstanced(6, 1, 0, 0);
 
-	// 通常の描画設定を適用
+	// 通常の描画設定に戻す
 	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
 	commandList->SetPipelineState(dxCommon_->GetPipelineState());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -493,4 +536,20 @@ Microsoft::WRL::ComPtr<IDxcBlob> OffscreenRenderer::CompileShader(
 		dxCommon_->GetDxcUtils(),
 		dxCommon_->GetDxcCompiler(),
 		dxCommon_->GetIncludeHandler());
+}
+
+void OffscreenRenderer::ImGui() {
+	if (ImGui::CollapsingHeader("Offscreen Renderer")) {
+		ImGui::Text("Render Target Size: %dx%d", width_, height_);
+		ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
+
+		if (srvHandle_.isValid) {
+			ImGui::Text("SRV Index: %d", srvHandle_.index);
+		}
+
+		// グリッチエフェクトのImGui
+		if (glitchEffect_) {
+			glitchEffect_->ImGui();
+		}
+	}
 }
