@@ -107,7 +107,7 @@ protected:
 
 	//DirectX
 	DirectXCommon* directXCommon_ = nullptr;
-
+	TextureManager* textureManager_ = TextureManager::GetInstance();
 private:
 
 	// ImGui用の内部状態
@@ -176,12 +176,6 @@ public:
 		GameObject::Initialize(dxCommon, MeshType::SPRITE, textureName);
 		name_ = SettingName("Sprite");
 	}
-	static int spriteCount_;
-	/// 名前の後ろに番号をつけて識別しやすくする関数
-	static std::string SettingName(const std::string& baseName) {
-		return baseName + "_" + std::to_string(++spriteCount_);
-	}
-
 
 	/// <summary>
 	/// スプライト専用の描画（異なるビュープロジェクション使用）
@@ -196,12 +190,22 @@ public:
 		commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());
 		commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
 		if (!textureName_.empty()) {
-			commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureHandle(textureName_));
+			commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));
 		}
 		commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
 		model_.GetMesh().Bind(commandList);
 		model_.GetMesh().Draw(commandList);
 	}
+
+private:
+	static int spriteCount_;
+	/// 名前の後ろに番号をつけて識別しやすくする関数
+	static std::string SettingName(const std::string& baseName) {
+		return baseName + "_" + std::to_string(++spriteCount_);
+	}
+
+
+
 
 };
 
@@ -216,10 +220,29 @@ public:
 		name_ = SettingName("Model (" + filename + ")");
 		SetLightingEnable(true);
 	}
+	void Draw(const Light& directionalLight) {
+
+		// 描画処理
+		ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
+		commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());			// マテリアルを設定
+		commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());					// トランスフォームを設定
+		// テクスチャ名が設定されている場合のみ
+		// テクスチャのSRVをバインド（OBJの場合は自動で読み込まれたテクスチャを使用）
+		if (model_.HasTexture()) {
+			commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(model_.GetTextureTagName()));
+		}
+
+		commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());				// ライトを設定
+
+		// メッシュをバインドして描画
+		model_.GetMesh().Bind(commandList);
+		model_.GetMesh().Draw(commandList);
+	}
+
+private:
 	static int modelCount_;
 	/// 名前の後ろに番号をつけて識別しやすくする関数
 	static std::string SettingName(const std::string& baseName) {
 		return baseName + "_" + std::to_string(++modelCount_);
 	}
-
 };

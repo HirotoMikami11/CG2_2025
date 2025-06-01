@@ -15,8 +15,9 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 		//データを読み込む
 		modelData_ = LoadObjFile(directoryPath, filename);
 		mesh_.InitializeFromData(directXCommon_, modelData_);
-		// Meshから読み込んだマテリアル情報を使ってテクスチャを読み込み
-		TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, "planeTexture");
+		// OBJファイル用の固有タグ名を生成
+		textureTagName_ = filename + "_obj_texture";
+		TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, textureTagName_);
 	} else {
 
 		///モデル以外の場合は、パス入れないで生成
