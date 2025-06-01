@@ -25,7 +25,7 @@ public:
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	/// <param name="width">レンダーターゲットの幅</param>
 	/// <param name="height">レンダーターゲットの高さ</param>
-	void Initialize(DirectXCommon* dxCommon, uint32_t width = kClientWidth, uint32_t height = kClientHeight);
+	void Initialize(DirectXCommon* dxCommon, uint32_t width = GraphicsConfig::kClientWidth, uint32_t height = GraphicsConfig::kClientHeight);
 
 	/// <summary>
 	/// 終了処理
@@ -49,7 +49,7 @@ public:
 	/// <param name="y">描画位置Y</param>
 	/// <param name="width">描画幅</param>
 	/// <param name="height">描画高さ</param>
-	void DrawOffscreenTexture(float x = 0.0f, float y = 0.0f, float width = kClientWidth, float height = kClientHeight);
+	void DrawOffscreenTexture(float x = 0.0f, float y = 0.0f, float width = GraphicsConfig::kClientWidth, float height = GraphicsConfig::kClientHeight);
 
 	/// <summary>
 	/// オフスクリーンテクスチャのハンドルを取得

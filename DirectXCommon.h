@@ -23,6 +23,8 @@
 #include<cassert>
 #include"Logger.h"
 #include"WinApp.h"
+//ウィンドウサイズなど
+#include"GraphicsConfig.h" 
 
 /// <summary>
 /// DirectX

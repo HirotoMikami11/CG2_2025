@@ -32,7 +32,7 @@ void DebugCamera::SetDefaultCamera()
 	translation_ = { 0,0,-10.0f };
 	Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1,1,1 }, rotation_, translation_);
 	viewMatrix_ = Matrix4x4Inverse(cameraMatrix);
-	projectionMatrix_ = MakePerspectiveFovMatrix(0.45f, (float(kClientWidth) / float(kClientHeight)), 0.1f, 100.0f);
+	projectionMatrix_ = MakePerspectiveFovMatrix(0.45f, (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight)), 0.1f, 100.0f);
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);
 
 }
@@ -229,7 +229,7 @@ void DebugCamera::UpdateMatrix()
 {
 	Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1,1,1 }, rotation_, translation_);
 	viewMatrix_ = Matrix4x4Inverse(cameraMatrix);
-	projectionMatrix_ = MakePerspectiveFovMatrix(0.45f, (float(kClientWidth) / float(kClientHeight)), 0.1f, 100.0f);
+	projectionMatrix_ = MakePerspectiveFovMatrix(0.45f, (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight)), 0.1f, 100.0f);
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);
 
 }

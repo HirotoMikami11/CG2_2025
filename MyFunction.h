@@ -7,6 +7,7 @@
 #include<wrl.h>
 #include <numbers>
 
+
 /// <summary>
 /// 球体
 /// </summary>

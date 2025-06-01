@@ -287,8 +287,8 @@ void DirectXCommon::MakeSwapChain(WinApp* winApp)
 
 	//スワップチェーン（バブルバッファリングの２枚の画面を管理するもの）を生成する
 	swapChain = nullptr;
-	swapChainDesc.Width = kClientWidth;								//画面の幅、ウィンドウのクライアント領域を同じものにしておく
-	swapChainDesc.Height = kClientHeight;							//画面の高さ、ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Width = GraphicsConfig::kClientWidth;								//画面の幅、ウィンドウのクライアント領域を同じものにしておく
+	swapChainDesc.Height = GraphicsConfig::kClientHeight;							//画面の高さ、ウィンドウのクライアント領域を同じものにしておく
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;				//色の形式
 	swapChainDesc.SampleDesc.Count = 1;								//マルチサンプル市内
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;	//描画のターゲットとして利用する
@@ -315,16 +315,16 @@ void DirectXCommon::MakeDescriptorHeap()
 
 	//RTV用ヒープでディスクリプタの数は3，RTVはShader内で触れるものではないのでShaderVisibleはfalse
 	//スワップチェーンとオフスクリーン
-	rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3, false);
+	rtvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, GraphicsConfig::kRTVHeapSize, false);
 	Logger::Log(Logger::GetStream(), "Complete create RTVDescriptorHeap!!\n");//RTVディスクリプタヒープ生成完了のログを出す
 
 	//SRV用ヒープでディスクリプタの数は128，SRVはShader内で触れるものなのでShaderVisibleはtrue
-	srvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+	srvDescriptorHeap = CreateDesctiptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, GraphicsConfig::kSRVHeapSize, true);
 	Logger::Log(Logger::GetStream(), "Complete create SRVDescriptorHeap!!\n");//SRVディスクリプタヒープ生成完了のログを出す
 
 	//DSV用ヒープでディスクリプタの数は２，DSVはShader内で触れないのでShaderVisibleはfalse
 	//オフスクリーンの分で＋１子
-	dsvDescriptorHeap = CreateDesctiptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 2, false);
+	dsvDescriptorHeap = CreateDesctiptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, GraphicsConfig::kDSVHeapSize, false);
 	Logger::Log(Logger::GetStream(), "Complete create DSVDescriptorHeap!!\n");//DSVディスクリプタヒープ生成完了のログを出す
 
 	///　SwapChainからResourceを引っ張ってくる
@@ -384,7 +384,7 @@ void DirectXCommon::MakeDSV()
 {
 
 	//DepthStencilTextureをウィンドウサイズで作成
-	depthStencilResource = CreateDepthStencilTextureResource(device.Get(), kClientWidth, kClientHeight);
+	depthStencilResource = CreateDepthStencilTextureResource(device.Get(), GraphicsConfig::kClientWidth, GraphicsConfig::kClientHeight);
 
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -720,8 +720,8 @@ void DirectXCommon::MakeViewport()
 {
 	//ビューポート
 	//クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = kClientWidth;
-	viewport.Height = kClientHeight;
+	viewport.Width = GraphicsConfig::kClientWidth;
+	viewport.Height = GraphicsConfig::kClientHeight;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -730,9 +730,9 @@ void DirectXCommon::MakeViewport()
 
 	//基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = kClientWidth;
+	scissorRect.right = GraphicsConfig::kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = kClientHeight;
+	scissorRect.bottom = GraphicsConfig::kClientHeight;
 }
 
 void DirectXCommon::PreDraw()

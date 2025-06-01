@@ -423,7 +423,7 @@ void OffscreenRenderer::CreateVertexBuffer() {
 	// 初期の頂点データ設定（フルスクリーンクアッド）
 	//一つ目の三角形
 	//左下
-	vertexData_[0].position = { 0.0f,static_cast<float>(kClientHeight),0.0f,1.0f };
+	vertexData_[0].position = { 0.0f,static_cast<float>(GraphicsConfig::kClientHeight),0.0f,1.0f };
 	vertexData_[0].texcoord = { 0.0f,1.0f };
 	vertexData_[0].normal = { 0.0f,0.0f,-1.0f };
 	//左上
@@ -431,7 +431,7 @@ void OffscreenRenderer::CreateVertexBuffer() {
 	vertexData_[1].texcoord = { 0.0f,0.0f };
 	vertexData_[1].normal = { 0.0f,0.0f,-1.0f };
 	//右下
-	vertexData_[2].position = { static_cast<float>(kClientWidth),static_cast<float>(kClientHeight),0.0f,1.0f };
+	vertexData_[2].position = { static_cast<float>(GraphicsConfig::kClientWidth),static_cast<float>(GraphicsConfig::kClientHeight),0.0f,1.0f };
 	vertexData_[2].texcoord = { 1.0f,1.0f };
 	vertexData_[2].normal = { 0.0f,0.0f,-1.0f };
 	//二つ目の三角形
@@ -440,11 +440,11 @@ void OffscreenRenderer::CreateVertexBuffer() {
 	vertexData_[3].texcoord = { 0.0f,0.0f };
 	vertexData_[3].normal = { 0.0f,0.0f,-1.0f };
 	//右上
-	vertexData_[4].position = { static_cast<float>(kClientWidth),0.0f,0.0f,1.0f };
+	vertexData_[4].position = { static_cast<float>(GraphicsConfig::kClientWidth),0.0f,0.0f,1.0f };
 	vertexData_[4].texcoord = { 1.0f,0.0f };
 	vertexData_[4].normal = { 0.0f,0.0f,-1.0f };
 	//右下
-	vertexData_[5].position = { static_cast<float>(kClientWidth),static_cast<float>(kClientHeight),0.0f,1.0f };
+	vertexData_[5].position = { static_cast<float>(GraphicsConfig::kClientWidth),static_cast<float>(GraphicsConfig::kClientHeight),0.0f,1.0f };
 	vertexData_[5].texcoord = { 1.0f,1.0f };
 	vertexData_[5].normal = { 0.0f,0.0f,-1.0f };
 

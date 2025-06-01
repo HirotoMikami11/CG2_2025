@@ -47,11 +47,11 @@ void Camera::SetDefaultCamera()
 	fov_ = 0.45f;
 	nearClip_ = 0.1f;
 	farClip_ = 100.0f;
-	aspectRatio = (float(kClientWidth) / float(kClientHeight));
+	aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
 
 	//プロジェクション行列は最初に作っておく
 	projectionMatrix_ = MakePerspectiveFovMatrix(fov_, aspectRatio, nearClip_, farClip_);
-	spriteProjectionMatrix_ = MakeOrthograpicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+	spriteProjectionMatrix_ = MakeOrthograpicMatrix(0.0f, 0.0f, float(GraphicsConfig::kClientWidth), float(GraphicsConfig::kClientHeight), 0.0f, 100.0f);
 
 	// 行列を単位行列で初期化
 	viewProjectionMatrix_ = MakeIdentity4x4();

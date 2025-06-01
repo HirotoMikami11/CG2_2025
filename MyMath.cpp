@@ -742,7 +742,7 @@ Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& cameraTransform, floa
 Matrix4x4 MakeViewProjectionMatrixSprite() {
 
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
-	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f, 0.0f, float(GraphicsConfig::kClientWidth), float(GraphicsConfig::kClientHeight), 0.0f, 100.0f);
 	Matrix4x4 viewProjectionMatrix = Matrix4x4Multiply(viewMatrix, projectionMatrix);
 
 	return viewProjectionMatrix;
