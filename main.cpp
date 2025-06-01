@@ -354,12 +354,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		cameraController->Update();
 
 		//																			//
-		//							三角形用のWVP										//
+		//								更新処理										//
 		//																			//
 
 
 		// 三角形を回転させる
 		triangle[0]->AddRotation({ 0.0f, 0.03f, 0.0f });
+
+
+		//球体を回転させる
+		//isActiveの判定は行列更新にしかかかってないので現状isAciveは死んでる
+		sphere->AddRotation({ 0.0f,0.01f,0.0f });
+
+
+
+
+		//																			//
+		//								行列更新										//
+		//																			//
 
 		//三角形の更新(現状行列更新のみ)
 		for (int i = 0; i < kMaxTriangleIndex; i++)
@@ -367,28 +379,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triangle[i]->Update(cameraController->GetViewProjectionMatrix());
 		}
 
-		//																			//
-		//							球体用のWVP										//
-		//																			//
-
-		//球体を回転させる
-		//isActiveの判定は行列更新にしかかかってないので現状isAciveは死んでる
-		sphere->AddRotation({ 0.0f,0.01f,0.0f });
-
 		//球体の更新(現状行列更新のみ)
 		sphere->Update(cameraController->GetViewProjectionMatrix());
-
-		//																			//
-		//							Sprite用のWVP									//
-		//																			//
-
 		//スプライトの更新(現状行列更新のみ)
 		sprite->Update(cameraController->GetViewProjectionMatrixSprite());
-
-		//																			//
-		//							Model用のWVP									//
-		//																			//
-
 		//プレーンモデルの更新(現状行列更新のみ)
 		model->Update(cameraController->GetViewProjectionMatrix());
 
@@ -425,17 +419,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 通常描画の描画準備
 		directXCommon->PreDraw();
 
-		//// オフスクリーンの画面の実態描画
+		/// オフスクリーンの画面の実態描画
 		offscreenRenderer->DrawOffscreenTexture();
 
-		
+		///通常描画
 		for (int i = 0; i < kMaxTriangleIndex; i++) {
 			triangle[i]->Draw(directionalLight);
 		}
-
-
 		model->Draw(directionalLight);
-
 		sprite->DrawSprite(directionalLight);
 
 
