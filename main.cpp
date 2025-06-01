@@ -331,26 +331,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		///三角形のImgui
-
 		for (int i = 0; i < kMaxTriangleIndex; i++)
 		{
 			triangle[i]->ImGui();
 		}
-
-
-		/// 球体のデバッグUI
-
+		/// 球体のImgui
 		sphere->ImGui();
-
-
-
-		/// スプライトのデバッグUI
+		/// スプライトのImgui
 		sprite->ImGui();
-
-#pragma region Model
-		/// モデルのデバッグUI
+		/// モデルのImgui
 		model->ImGui();
-#pragma endregion
+
 
 		directionalLight.ImGui("DriectonalLight");
 

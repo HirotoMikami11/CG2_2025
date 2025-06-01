@@ -98,12 +98,12 @@ void OffscreenRenderer::PostDraw() {
 
 void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, float height) {
 	auto commandList = dxCommon_->GetCommandList();
-
-	// 頂点データを更新（UV座標のY成分を反転）
+	
+	///引数
 	x, y;
 
 	// マテリアルデータ更新
-	materialData_->color = { 1.0f, 0.0f, 1.0f, 1.0f };
+	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_->enableLighting = false;
 	materialData_->useLambertianReflectance = false;
 	materialData_->uvTransform = MakeIdentity4x4();
@@ -203,7 +203,7 @@ void OffscreenRenderer::CreateDepthStencilTexture() {
 void OffscreenRenderer::CreateRTV() {
 	// RTVヒープから次の空きスロットを取得
 	// 現在は既存の2つのRTV（スワップチェーン用）の後に配置
-	rtvIndex_ = 2; // スワップチェーン用のRTV（0,1）の後
+	rtvIndex_ = GraphicsConfig::GetOffscreenRTVIndex();
 
 	// DirectXCommonのGetCPUDescriptorHandle関数を使用
 	rtvCpuHandle_ = dxCommon_->GetCPUDescriptorHandle(
@@ -227,7 +227,7 @@ void OffscreenRenderer::CreateRTV() {
 void OffscreenRenderer::CreateDSV() {
 	// DSVヒープから次の空きスロットを取得
 	// 現在は既存の1つのDSV（メイン用）の後に配置
-	dsvIndex_ = 1; // メイン用のDSV（0）の後
+	dsvIndex_ = GraphicsConfig::GetOffscreenDSVIndex();
 
 	// DirectXCommonのGetCPUDescriptorHandle関数を使用
 	dsvCpuHandle_ = dxCommon_->GetCPUDescriptorHandle(
@@ -252,7 +252,7 @@ void OffscreenRenderer::CreateSRV() {
 	// TextureManagerのSRVインデックス管理を使用
 	srvIndex_ = textureManager_->GetAvailableSRVIndex();
 
-	if (srvIndex_ >= 127) { // MAX_TEXTURE_COUNT
+	if (srvIndex_ >= GraphicsConfig::kMaxTextureCount) { 
 		Logger::Log(Logger::GetStream(), "Failed to create offscreen SRV: No available slots\n");
 		return;
 	}

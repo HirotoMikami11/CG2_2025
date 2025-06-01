@@ -115,5 +115,5 @@ private:
 	std::vector<bool> usedIndices_;
 
 	// 最大テクスチャ数（SRVヒープのサイズ-1）
-	static constexpr uint32_t MAX_TEXTURE_COUNT = 127; // ImGui用に1つ予約するため128-1
+	//static constexpr uint32_t MAX_TEXTURE_COUNT = 127; // ImGui用に1つ予約するため128-1
 };

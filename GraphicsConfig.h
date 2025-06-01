@@ -6,29 +6,58 @@
 /// </summary>
 class GraphicsConfig {
 public:
-	// ウィンドウサイズ
+	///*-----------------------------------------------------------------------*///
+	///								ウィンドウ									///
+	///*-----------------------------------------------------------------------*///
 	static const uint32_t kClientWidth = 1280;
 	static const uint32_t kClientHeight = 720;
-	// テクスチャ管理
-	static const uint32_t kMaxTextureCount = 127; // ImGui用に1つ開ける
 
-	// ディスクリプタヒープサイズ
+	///*-----------------------------------------------------------------------*///
+	///							ディスクリプタヒープサイズ							///
+	///*-----------------------------------------------------------------------*///
+
 	static const uint32_t kRTVHeapSize = 3;   // スワップチェーン2 + オフスクリーン1
 	static const uint32_t kDSVHeapSize = 2;   // メイン + オフスクリーン
 	static const uint32_t kSRVHeapSize = 128; // テクスチャ + ImGui
+	///*-----------------------------------------------------------------------*///
+	///							ディスクリプタインデックス							///
+	///*-----------------------------------------------------------------------*///
 
-	// オフスクリーンレンダリング設定
-	// オフスクリーンレンダリングのサイズはクライアント領域と同じ
-	static const uint32_t kOffscreenWidth = kClientWidth;
-	static const uint32_t kOffscreenHeight = kClientHeight;
-
-	// インデックス定義
 	// RTV[0]SwapChain0, [1]SwapChain1, [2]Offscreen
 	static const uint32_t kSwapChainRTV0Index = 0;
 	static const uint32_t kSwapChainRTV1Index = 1;
-	static const uint32_t kOffscreenRTVIndex = 2;
+	static const uint32_t kOffscreenRTVIndex = 2;	//オフスクリーン用
 
 	// DSV[0]Main, [1]Offscreen
 	static const uint32_t kMainDSVIndex = 0;
 	static const uint32_t kOffscreenDSVIndex = 1;
+
+	///*-----------------------------------------------------------------------*///
+	///								テクスチャ管理用								///
+	///*-----------------------------------------------------------------------*///
+
+	static const uint32_t kMaxTextureCount = 127; // ImGui用に1つ開ける
+	static const uint32_t kImGuiSRVIndex = 0;           // ImGui専用SRVインデックス
+	static const uint32_t kTextureSRVStartIndex = 1;    // テクスチャ用SRV開始インデックス
+
+	/// <summary>
+	/// オフスクリーン用RTVインデックスを取得(これから複数実装する場合に何個目か入れれば特定できる)
+	/// </summary>
+	static uint32_t GetOffscreenRTVIndex(uint32_t offset = 0) {
+		return kOffscreenRTVIndex + offset;
+	}
+
+	/// <summary>
+	/// オフスクリーン用DSVインデックスを取得(これから複数実装する場合に何個目か入れれば特定できる)
+	/// </summary>
+	static uint32_t GetOffscreenDSVIndex(uint32_t offset = 0) {
+		return kOffscreenDSVIndex + offset;
+	}
+private:
+
+	// ::で呼び出すためにインスタンス化しないように設定
+	GraphicsConfig() = delete;
+	~GraphicsConfig() = delete;
+	GraphicsConfig(const GraphicsConfig&) = delete;
+	GraphicsConfig& operator=(const GraphicsConfig&) = delete;
 };

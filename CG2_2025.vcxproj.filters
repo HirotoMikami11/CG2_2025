@@ -40,12 +40,27 @@
     <Filter Include="ソース ファイル\Camera">
       <UniqueIdentifier>{551458e2-8d93-44e4-bfac-08bda869c068}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\DirectXCommon">
+      <UniqueIdentifier>{301b57c6-bc9c-4099-a7b4-de54192c3064}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\DirectXCommon">
+      <UniqueIdentifier>{b07e9775-06a7-40a9-9b02-b90fcd54ea71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\DirectXCommon\Logger">
+      <UniqueIdentifier>{1c9c37a2-60e3-4494-b794-cdccf350ef4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\DirectXCommon\Logger">
+      <UniqueIdentifier>{510abd56-8856-4809-a4d3-050564b9bfbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyMath">
+      <UniqueIdentifier>{c74472ed-5339-4e39-b559-12214c196116}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\MyMath">
+      <UniqueIdentifier>{a73fe585-58a8-4075-bfa2-59097dffb1df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="MyFunction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
@@ -69,16 +84,7 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="WinApp.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectXCommon.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Dump.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Audio.cpp">
@@ -114,9 +120,6 @@
     <ClCompile Include="Transform.cpp">
       <Filter>ソース ファイル\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>ソース ファイル\GameObject</Filter>
     </ClCompile>
@@ -132,6 +135,21 @@
     <ClCompile Include="OffscreenRenderer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="DirectXCommon.cpp">
+      <Filter>ソース ファイル\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Dump.cpp">
+      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMath.cpp">
+      <Filter>ソース ファイル\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="MyFunction.cpp">
+      <Filter>ソース ファイル\MyMath</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
@@ -140,9 +158,6 @@
     <FxCompile Include="Fullscreen.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyMath.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -167,16 +182,7 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="WinApp.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectXCommon.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Dump.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Audio.h">
@@ -218,9 +224,6 @@
     <ClInclude Include="Mesh.h">
       <Filter>ヘッダー ファイル\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="MyFunction.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>ヘッダー ファイル\GameObject</Filter>
     </ClInclude>
@@ -230,8 +233,23 @@
     <ClInclude Include="OffscreenRenderer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="DirectXCommon.h">
+      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Dump.h">
+      <Filter>ヘッダー ファイル\DirectXCommon\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>ヘッダー ファイル\DirectXCommon\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMath.h">
+      <Filter>ヘッダー ファイル\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="MyFunction.h">
+      <Filter>ヘッダー ファイル\MyMath</Filter>
+    </ClInclude>
     <ClInclude Include="GraphicsConfig.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\MyMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

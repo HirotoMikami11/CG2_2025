@@ -15,7 +15,7 @@ void TextureManager::Initialize(DirectXCommon* dxCommon) {
 	dxCommon_ = dxCommon;
 
 	// インデックス管理用配列を初期化
-	usedIndices_.resize(MAX_TEXTURE_COUNT, false);
+	usedIndices_.resize(GraphicsConfig::kMaxTextureCount, false);
 	//初期化できたらログを出す
 	Logger::Log(Logger::GetStream(), "Complete TextureManager initialized !!\n");
 }
@@ -38,7 +38,7 @@ bool TextureManager::LoadTexture(const std::string& filename, const std::string&
 	uint32_t srvIndex = GetAvailableSRVIndex();
 
 	//インデックスの数が最大値以上の場合は獲得できないとログを出す
-	if (srvIndex >= MAX_TEXTURE_COUNT) {
+	if (srvIndex >= GraphicsConfig::kMaxTextureCount) {
 		Logger::Log(Logger::GetStream(),std::format("Failed to load texture '{}': No available SRV slots.\n", filename));
 		return false;
 	}
@@ -116,7 +116,7 @@ bool TextureManager::HasTexture(const std::string& tagName) const {
 uint32_t TextureManager::GetAvailableSRVIndex() {
 	// 空いているインデックスを探す（0から順番に）
 	// falseのインデックスを探して、見つかったらtrueにしてそのインデックスを返す
-	for (uint32_t i = 0; i < MAX_TEXTURE_COUNT; ++i) {
+	for (uint32_t i = 0; i < GraphicsConfig::kMaxTextureCount; ++i) {
 		if (!usedIndices_[i]) {
 			usedIndices_[i] = true;
 			return i;
@@ -124,11 +124,11 @@ uint32_t TextureManager::GetAvailableSRVIndex() {
 	}
 
 	// 空きがない場合は無効な値を返す
-	return MAX_TEXTURE_COUNT;
+	return GraphicsConfig::kMaxTextureCount;
 }
 
 void TextureManager::ReleaseSRVIndex(uint32_t index) {
-	if (index < MAX_TEXTURE_COUNT) {
+	if (index < GraphicsConfig::kMaxTextureCount) {
 		usedIndices_[index] = false;
 	}
 }
