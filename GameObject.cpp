@@ -65,9 +65,8 @@ void GameObject::Draw(const Light& directionalLight)
 	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
 	commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());			// マテリアルを設定
 	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());					// トランスフォームを設定
-	if (!textureName_.empty()) {																							// テクスチャ名が設定されている場合のみ
-		commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureHandle(textureName_));		// テクスチャを設定
-	}
+	// テクスチャ名が設定されている場合のみ
+	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));		// テクスチャを設定
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());				// ライトを設定
 
 	// メッシュをバインドして描画

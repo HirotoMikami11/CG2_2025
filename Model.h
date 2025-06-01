@@ -33,7 +33,10 @@ public:
 	//const
 	const Material& GetMaterial() const { return material_; }
 	const Mesh& GetMesh() const { return mesh_; }
-
+	// テクスチャタグ名の設定と取得
+	void SetTextureTagName(const std::string& tagName) { textureTagName_ = tagName; }
+	const std::string& GetTextureTagName() const { return textureTagName_; }
+	bool HasTexture() const { return !textureTagName_.empty(); }
 private:
 
 
@@ -48,10 +51,10 @@ private:
 	//実際のメッシュ
 	Mesh mesh_;
 
-	///メッシュの中にあるloadObjをここに移動させる
-
 	//ロードしたデータを保持しておく、material meshに渡すためのもの
 	ModelData modelData_;
+	// テクスチャのタグ名を保存
+	std::string textureTagName_;
 
 	MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
