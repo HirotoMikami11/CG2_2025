@@ -24,27 +24,33 @@ void TextureManager::Finalize() {
 }
 
 bool TextureManager::LoadTexture(const std::string& filename, const std::string& tagName) {
+	
+	
 	// 既に同じタグ名で登録されていた場合は古いものを解放
 	if (HasTexture(tagName)) {
-		UnloadTexture(tagName);
+		UnloadTexture(tagName);		//古いテクスチャを解放
 	}
 
 	// DescriptorHeapManagerからSRVを割り当て
 	auto descriptorManager = dxCommon_->GetDescriptorManager();
 	if (!descriptorManager) {
+		// DescriptorManagerが無効な場合はログを出力
 		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
 		return false;
 	}
 
 	// 使用可能なSRVスロットを割り当て
+	// Allotateで自動であいてるスロットに確保する
 	auto descriptorHandle = descriptorManager->AllocateSRV();
 	if (!descriptorHandle.isValid) {
+		// SRVのヒープが最大値の場合はログを出力して失敗
 		Logger::Log(Logger::GetStream(), std::format("Failed to allocate SRV for texture '{}': No available slots.\n", filename));
 		return false;
 	}
 
 	// 新しいテクスチャを作成し、既に割り当てられたハンドルを使用
 	auto texture = std::make_unique<Texture>();
+	// テクスチャをロード
 	if (!texture->LoadTextureWithHandle(filename, dxCommon_, descriptorHandle)) {
 		// ロードに失敗した場合はSRVを解放
 		descriptorManager->ReleaseSRV(descriptorHandle.index);

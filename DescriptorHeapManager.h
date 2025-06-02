@@ -3,7 +3,7 @@
 #include <wrl.h>
 #include <vector>
 #include <cassert>
-#include <optional>
+#include <optional>		//値がない可能性のある型を使用数かもしれない場合に使用std::optional
 
 #include "GraphicsConfig.h"
 #include "Logger.h"
@@ -27,10 +27,10 @@ public:
 	/// ディスクリプタハンドル情報
 	/// </summary>
 	struct DescriptorHandle {
-		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;  // SRVのみ有効にしたい
-		uint32_t index;
-		bool isValid;
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;	//CPUハンドル
+		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;	//GPUハンドル SRVのみ有効にしたい
+		uint32_t index;							//ヒープ内のインデックス
+		bool isValid;							//有効かどうかのフラグ	()
 
 		DescriptorHandle() : cpuHandle{}, gpuHandle{}, index(0), isValid(false) {}
 		DescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE cpu, D3D12_GPU_DESCRIPTOR_HANDLE gpu, uint32_t idx)
@@ -53,9 +53,9 @@ public:
 	/// </summary>
 	void Finalize();
 
-	//=============================================================================
-	// ディスクリプタヒープ取得
-	//=============================================================================
+	//																			//
+	//						ディスクリプタヒープ取得								//
+	//																			//
 
 	/// <summary>
 	/// RTVヒープを取得
@@ -75,17 +75,17 @@ public:
 	ID3D12DescriptorHeap* GetSRVHeap() const { return srvHeap_.Get(); }
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetSRVHeapComPtr() const { return srvHeap_; }
 
-	//=============================================================================
-	// ディスクリプタサイズ取得
-	//=============================================================================
+	//																			//
+	//						ディスクリプタサイズ取得								//
+	//																			//
 
 	uint32_t GetRTVDescriptorSize() const { return rtvDescriptorSize_; }
 	uint32_t GetDSVDescriptorSize() const { return dsvDescriptorSize_; }
 	uint32_t GetSRVDescriptorSize() const { return srvDescriptorSize_; }
 
-	//=============================================================================
-	// ディスクリプタ割り当て・解放
-	//=============================================================================
+	//																			//
+	//							割り当てと解放										//
+	//																			//
 
 	/// <summary>
 	/// RTVディスクリプタを割り当て
@@ -123,9 +123,9 @@ public:
 	/// <param name="index">解放するインデックス</param>
 	void ReleaseSRV(uint32_t index);
 
-	//=============================================================================
-	// 特定インデックスでの割り当て（予約済みスロット用）
-	//=============================================================================
+	//																			//
+	//						指定したインデックスを予約								//
+	//																			//
 
 	/// <summary>
 	/// 指定インデックスでRTVを予約
@@ -148,9 +148,8 @@ public:
 	/// <returns>成功時はディスクリプタハンドル</returns>
 	std::optional<DescriptorHandle> ReserveSRV(uint32_t index);
 
-	//=============================================================================
-	// ユーティリティ関数
-	//=============================================================================
+
+
 
 	/// <summary>
 	/// 指定したインデックスのCPUハンドルを取得
@@ -178,10 +177,6 @@ public:
 	bool IsIndexUsed(HeapType type, uint32_t index) const;
 
 private:
-	//=============================================================================
-	// 内部関数
-	//=============================================================================
-
 	/// <summary>
 	/// ディスクリプタヒープを作成
 	/// </summary>
@@ -214,7 +209,8 @@ private:
 	uint32_t dsvDescriptorSize_ = 0;
 	uint32_t srvDescriptorSize_ = 0;
 
-	// 使用状況管理
+	// 使用状況を管理するフラグ
+	//　使用されているものはTure
 	std::vector<bool> rtvUsedFlags_;
 	std::vector<bool> dsvUsedFlags_;
 	std::vector<bool> srvUsedFlags_;

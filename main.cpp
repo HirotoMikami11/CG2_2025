@@ -411,6 +411,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// Sphereの描画
 		sphere->Draw(directionalLight);
+		for (int i = 0; i < kMaxTriangleIndex; i++) {
+			triangle[i]->Draw(directionalLight);
+		}
+		model->Draw(directionalLight);
+		sprite->DrawSprite(directionalLight);
 
 
 		// オフスクリーンの描画終了
@@ -422,17 +427,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 通常描画の描画準備
 		directXCommon->PreDraw();
 
-	
-
-	///通常描画
-		for (int i = 0; i < kMaxTriangleIndex; i++) {
-			triangle[i]->Draw(directionalLight);
-		}
-		model->Draw(directionalLight);
-		sprite->DrawSprite(directionalLight);
 
 		/// オフスクリーンの画面の実態描画
 		offscreenRenderer->DrawOffscreenTexture();
+		///通常描画
+
+
 
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());

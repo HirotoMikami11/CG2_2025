@@ -83,6 +83,7 @@ bool Texture::LoadTextureWithHandle(const std::string& filePath, DirectXCommon* 
 	}
 
 	// テクスチャデータをアップロード
+	//CPU側のデータをGPUに転送
 	intermediateResource_ = UploadTextureData(
 		textureResource_,
 		mipImages,
@@ -90,6 +91,7 @@ bool Texture::LoadTextureWithHandle(const std::string& filePath, DirectXCommon* 
 		dxCommon->GetCommandListComPtr());
 
 	// ハンドルを保存（既に割り当て済み）
+	// 既に割り当てられたハンドルを使用
 	descriptorHandle_ = descriptorHandle;
 	cpuHandle_ = descriptorHandle_.cpuHandle;
 	gpuHandle_ = descriptorHandle_.gpuHandle;
@@ -105,7 +107,7 @@ bool Texture::LoadTextureWithHandle(const std::string& filePath, DirectXCommon* 
 
 void Texture::Unload(DirectXCommon* dxCommon) {
 	if (!IsValid()) {
-		return;
+		return;	//すでに向こうなら何もしない
 	}
 
 	// SRVを解放
@@ -130,6 +132,7 @@ void Texture::Unload(DirectXCommon* dxCommon) {
 	metadata_ = {};
 	filePath_.clear();
 
+	// ログ出力
 	Logger::Log(Logger::GetStream(), std::format("Texture unloaded: {}\n", filePath_));
 }
 
