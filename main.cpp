@@ -33,7 +33,6 @@
 #include<cassert>
 #include "MyFunction.h"
 
-
 #include "Logger.h"
 #include "WinApp.h"
 #include "DirectXCommon.h"
@@ -141,8 +140,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	////ゲーム開始前に読み込む音声データ
 	//audioManager->LoadWave("resources/Audio/Alarm01.wav", "Alarm");
-	//audioManager->LoadMP3("resources/Audio/Bgm01.mp3", "BGM");
-	//audioManager->LoadMP3("resources/Audio/Se01.mp3", "SE");
+	//audioManager->LoadWithMediaFoundation("resources/Audio/Bgm01.mp3", "BGM");
+	//audioManager->LoadWithMediaFoundation("resources/Audio/Se01.mp3", "SE");
 
 	////tagを利用して再生
 	//audioManager->Play("Alarm");
@@ -279,15 +278,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//								　変数宣言									//
 
-	Vector3Transform uvTransformSprite{
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f}
-	};
-
-
-
-
 
 	//ImGuiで使用する変数
 	bool useMonsterBall = true;
@@ -341,7 +331,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->ImGui();
 		/// モデルのImgui
 		model->ImGui();
-
 
 		directionalLight.ImGui("DriectonalLight");
 		// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui

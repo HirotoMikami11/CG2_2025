@@ -9,12 +9,14 @@ Audio::~Audio() {
 }
 void Audio::LoadAudio(const std::string& filename) {
 	// ファイル拡張子を取得して適切な読み込み方法を選択
-	std::string extension = GetFileExtension(filename);//この関数のせいで多分メモリ3MBくらい増える
+	std::string extension = GetFileExtension(filename);
 
 	if (extension == ".wav") {
-		LoadWave(filename);					//Waveファイルを読みこむ
+		//Waveファイルを読みこむ
+		LoadWave(filename);
 	} else if (extension == ".mp3") {
-		LoadMP3(filename);					//MP3ファイルを読み込む
+		// MP3はMedia Foundationを使用
+		LoadWithMediaFoundation(filename);
 	} else {
 		assert(false && "Not Wave Of MP3");	//知らない拡張子なら止める
 	}
@@ -97,7 +99,7 @@ void Audio::LoadWave(const std::string& filename) {
 	soundData.bufferSize = data.size;						// 波型データのサイズ
 }
 
-void Audio::LoadMP3(const std::string& filename) {
+void Audio::LoadWithMediaFoundation(const std::string& filename) {
 	// MediaFoundationを使用してMP3をPCMに変換
 	ConvertMP3ToPCM(filename);
 }
@@ -196,7 +198,7 @@ void Audio::ConvertMP3ToPCM(const std::string& filename) {
 	///*-----------------------------------------------------------------------*///
 	///							データをメンバ変数に渡す							///
 	///*-----------------------------------------------------------------------*///
-	
+
 	soundData.bufferSize = static_cast<unsigned int>(mediaData.size());
 	soundData.pBuffer = new BYTE[soundData.bufferSize];
 	memcpy(soundData.pBuffer, mediaData.data(), soundData.bufferSize);

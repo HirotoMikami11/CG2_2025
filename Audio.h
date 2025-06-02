@@ -73,17 +73,17 @@ public:
 	/// <param name="filename">ファイルパス</param>
 	void LoadAudio(const std::string& filename);
 	/// <summary>
-	/// 音声データの読み込み
+	/// 音声データの読み込み(WAVE)
 	/// </summary>
 	/// <param name="filename">ファイルパス</param>
 	/// <returns></returns>
 	void LoadWave(const std::string& filename);
 
 	/// <summary>
-	/// MP3音声データの読み込み
+	/// 音声データの読み込み（Microsoft Media FoundationでWAVE/MP3）
 	/// </summary>
 	/// <param name="filename">ファイルパス</param>
-	void LoadMP3(const std::string& filename);
+	void LoadWithMediaFoundation(const std::string& filename);
 
 	/// <summary>
 	/// 音声の再生（ループなし）
@@ -129,6 +129,7 @@ private:
 
 	/// <summary>
 	/// MediaFoundationを使用してMP3をPCMに変換
+	/// WAVEもMP3も両方いける
 	/// </summary>
 	/// <param name="filename"></param>
 	/// <returns></returns>

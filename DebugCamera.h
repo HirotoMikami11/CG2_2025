@@ -41,25 +41,12 @@ public:
 	/// </summary>
 	void Rotate();
 
-	/// <summary>
-	 /// ピボット回転させる
-	 /// </summary>
-	void PivotRotate();
-
-	/// <summary>
-	/// ピボット点を設定
-	/// </summary>
-	void SetPivotPoint(const Vector3& pivot) { pivotPoint_ = pivot; }
-
-	/// <summary>
-	/// ピボット点を取得
-	/// </summary>
-	Vector3 GetPivotPoint() const { return pivotPoint_; }
 
 
 	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
+	void SetTranslate(const Vector3& position) { cameraTransform_.translate = position; }
+	void SetRotation(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
 
-	void SetTranslate(const Vector3& position) { translation_ = position; }
 
 	/// <summary>
 	/// ImGui
@@ -74,34 +61,23 @@ private:
 	void UpdateMatrix();
 
 
-	//X,Y,Z軸周りのローカル回転角
-	Vector3 rotation_ = { 0,0,0 };
-	//ローカル座標
-	Vector3 translation_ = { 0,0,0 };
-
 	// デバッグカメラのトランスフォーム
 	Vector3Transform cameraTransform_{
-		.scale{1.0f, 1.0f, 1.0f},
-		.rotate{rotation_},
-		.translate{translation_}
+	.scale{1.0f, 1.0f, 1.0f},
+	.rotate{0.0f, 0.0f, 0.0f},
+	.translate{0.0f, 0.0f, -10.0f}
 	};
 
-	//ビュー行列
+	//行列
 	Matrix4x4 viewMatrix_;
-	//射影行列
+	//プロジェクション行列
 	Matrix4x4 projectionMatrix_;
-
+	//ビュープロジェクション行列
 	Matrix4x4 viewProjectionMatrix_;
 
 
-	// ピボット回転用の変数
-	Vector3 pivotPoint_ = { 0, 0, 0 };		// ピボット点（回転の中心）
-	float pivotDistance_ = 10.0f;			// ピボット点からの距離
-	Vector3 pivotRotation_ = { 0, 0, 0 };	// ピボット回転角
-
 	//デバッグカメラで移動するかどうか
 	bool moveDebugCamera_ = false;
-
 
 	InputManager* input_;
 

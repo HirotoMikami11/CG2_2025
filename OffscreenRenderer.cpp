@@ -33,7 +33,7 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	glitchEffect_ = std::make_unique<GlitchEffect>();
 	glitchEffect_->Initialize(dxCommon);
 
-
+	//初期化完了のログを出す
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized !!\n");
 }
 
@@ -192,9 +192,10 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 
 void OffscreenRenderer::CreateRenderTargetTexture() {
 	// リソース設定
+	///オフスクリーン描画先となるテクスチャを作成
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = width_;
-	resourceDesc.Height = height_;
+	resourceDesc.Width = UINT(width_);			//横幅
+	resourceDesc.Height = UINT(height_);			//高さ
 	resourceDesc.MipLevels = 1;
 	resourceDesc.DepthOrArraySize = 1;
 	resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -206,7 +207,8 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
-	// クリア値
+
+	// オフスクリーンレンダリング用のクリアカラーを設定
 	D3D12_CLEAR_VALUE clearValue{};
 	clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	clearValue.Color[0] = 0.1f;
@@ -224,6 +226,8 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 		IID_PPV_ARGS(&renderTargetTexture_));
 
 	assert(SUCCEEDED(hr));
+
+	// レンダーターゲットビューを作成するためのハンドルを取得
 	Logger::Log(Logger::GetStream(), "Complete create offscreen render target texture!!\n");
 }
 
@@ -341,6 +345,11 @@ void OffscreenRenderer::CreateSRV() {
 }
 
 void OffscreenRenderer::CreatePSO() {
+
+	//																			//
+	//								RootSignature作成							//
+	//																			//
+
 	// オフスクリーン描画用の簡素化されたRootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -371,9 +380,11 @@ void OffscreenRenderer::CreatePSO() {
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;	//0~1の範囲リピートする
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;	//
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;	//
+
 	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 	staticSamplers[0].ShaderRegister = 0;
@@ -397,6 +408,11 @@ void OffscreenRenderer::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
+
+	//																			//
+	//							InputLayoutの設定								//
+	//																			//
+
 	// InputLayout設定
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
@@ -418,9 +434,18 @@ void OffscreenRenderer::CreatePSO() {
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
+
+	//																			//
+	//							BlendStateの設定									//
+	//																			//
+
 	// BlendState設定
 	D3D12_BLEND_DESC blendDesc{};
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	//																			//
+	//						RasterizerStateの設定								//
+	//																			//
 
 	// RasterizerState設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -434,11 +459,21 @@ void OffscreenRenderer::CreatePSO() {
 	pixelShaderBlob_ = CompileShader(L"Fullscreen.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob_ != nullptr);
 
+	//																			//
+	//						DepthStencilStateの設定								//
+	//																			//
+
 	// DepthStencilState設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = false; // オフスクリーン描画では深度テストを無効
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+
+
+
+	//																			//
+	//								PSOの設定									//
+	//																			//
 
 	// PSO作成
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -448,19 +483,27 @@ void OffscreenRenderer::CreatePSO() {
 	graphicsPipelineStateDesc.PS = { pixelShaderBlob_->GetBufferPointer(), pixelShaderBlob_->GetBufferSize() };
 	graphicsPipelineStateDesc.BlendState = blendDesc;
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
+	
+	//書き込むRTVの情報
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	
+	//どのように画面に色を打ち込むかの設定
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+	
+	// 深度ステンシルの設定
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	// PSO生成
+
+	// 実際にPSO生成
 	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
+	// PSOの生成が成功したことをログに出力
 	Logger::Log(Logger::GetStream(), "Complete create offscreen PSO!!\n");
 }
 
@@ -539,10 +582,13 @@ Microsoft::WRL::ComPtr<IDxcBlob> OffscreenRenderer::CompileShader(
 }
 
 void OffscreenRenderer::ImGui() {
+	///閉じたり開いたりできる
 	if (ImGui::CollapsingHeader("Offscreen Renderer")) {
+		// オフスクリーンのサイズ
 		ImGui::Text("Render Target Size: %dx%d", width_, height_);
+	
 		ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
-
+		// レンダーターゲットのハンドル情報
 		if (srvHandle_.isValid) {
 			ImGui::Text("SRV Index: %d", srvHandle_.index);
 		}

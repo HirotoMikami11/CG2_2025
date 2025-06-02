@@ -38,14 +38,14 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
 	descriptorManager_->Initialize(device);
 
-	///RTVの部分で作成しているが、AIがここに生成するべきだと判断していた。もう一度確認してから移行
-	
+
 	//　SwapChainからResourceを引っ張ってくる
 	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
 	//　うまく取得できなければ起動できない
 	assert(SUCCEEDED(hr));
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
 	assert(SUCCEEDED(hr));
+
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									RTVを生成							   ///
@@ -73,7 +73,6 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	///							FenceとEventを生成する							///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-
 	MakeFenceEvent();
 
 
@@ -305,7 +304,7 @@ void DirectXCommon::MakeRTV()
 	rtvHandles[1] = descriptorManager_->GetCPUHandle(DescriptorHeapManager::HeapType::RTV, GraphicsConfig::kSwapChainRTV1Index);
 	device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
 
-Logger::Log(Logger::GetStream(), "Complete create RTV!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create RTV!!\n");
 }
 
 void DirectXCommon::MakeDSV()

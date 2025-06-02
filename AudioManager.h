@@ -29,18 +29,18 @@ public:
 	void LoadAudio(const std::string& filename, const std::string& tagName);
 
 	/// <summary>
-	/// 音声データの読み込み
+	/// 音声データの読み込み(WAVE)
 	/// </summary>
 	/// <param name="filename"></param>
 	/// <param name="tagName"></param>
 	void LoadWave(const std::string& filename, const std::string& tagName);
 
 	/// <summary>
-	/// MP3音声データの読み込み
+	/// 音声データの読み込み（Microsoft Media FoundationでWAVE/MP3）
 	/// </summary>
 	/// <param name="filename"></param>
 	/// <param name="tagName"></param>
-	void LoadMP3(const std::string& filename, const std::string& tagName);
+	void LoadWithMediaFoundation(const std::string& filename, const std::string& tagName);
 
 	/// <summary>
 	/// 音声の再生(ループなし)
@@ -59,15 +59,15 @@ public:
 	/// </summary>
 	/// <param name="tagName"></param>
 	void Stop(const std::string& tagName);
-	
-	
+
+
 	/// <summary>
 	/// 音量の設定
 	/// </summary>
 	/// <param name="tagName"></param>
 	/// <param name="volume"></param>
 	void SetVolume(const std::string& tagName, float volume);
-	
+
 	/// <summary>
 	/// 全ての音声を停止
 	/// </summary>

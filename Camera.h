@@ -43,6 +43,11 @@ public:
 	/// </summary>
 	void SetDefaultCamera();
 
+	/// <summary>
+	/// imguiの表示
+	/// </summary>
+	void ImGui();
+
 	//Getter
 
 	// 3Dカメラ用
@@ -77,7 +82,6 @@ private:
 	float aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
 
 	// 行列 
-	
 	Matrix4x4 viewMatrix_;
 
 	//プロジェクション行列

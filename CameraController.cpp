@@ -60,7 +60,7 @@ void CameraController::ImGui()
 	// カメラモード切り替え
 	ImGui::Text("CameraMode: %s", useDebugCamera_ ? "DebugCamera" : "MainCamera");
 
-	if (ImGui::Button(useDebugCamera_ ? "Use DebugCamera" : "Use MainCamera")) {
+	if (ImGui::Button(useDebugCamera_ ? "Use MainCamera" : "Use DebugCamera")) {
 		useDebugCamera_ = !useDebugCamera_;
 	}
 
@@ -68,12 +68,19 @@ void CameraController::ImGui()
 
 	// デバッグカメラが有効な場合のみ、デバッグカメラのImGuiを表示
 	if (useDebugCamera_) {
-		debugCamera_.ImGui(); // ここでデバッグカメラのImGuiを呼び出す
+
+		// デバッグカメラ
+		debugCamera_.ImGui();
+
 	} else {
-		// メインカメラの情報表示（必要に応じて）
-		ImGui::Text("MainCamera is active");
+
+		// メインカメラ
+		camera_.ImGui();
+
 	}
+
 	ImGui::End();
 
 
 }
+

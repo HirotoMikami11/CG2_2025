@@ -42,6 +42,7 @@ private:
 	/// </summary>
 	void ImGui();
 
+
 	Camera camera_;
 	DebugCamera debugCamera_;
 
@@ -53,5 +54,8 @@ private:
 
 	// デバッグカメラを使用するかどうか
 	bool useDebugCamera_;
+
+
+
 };
 
