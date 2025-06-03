@@ -182,7 +182,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="MyFunction.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="OffscreenRenderer.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Transform.h" />
