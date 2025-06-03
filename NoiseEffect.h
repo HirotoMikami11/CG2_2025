@@ -1,0 +1,203 @@
+#pragma once
+#include <Windows.h>
+#include <d3d12.h>
+#include <wrl.h>
+#include <string>
+#include <cstddef>
+#include <random>
+
+#include "DirectXCommon.h"
+#include "Logger.h"
+#include "MyMath.h"
+#include "MyFunction.h"
+
+/// <summary>
+/// ノイズエフェクトを管理するクラス
+/// </summary>
+class NoiseEffect {
+public:
+	/// <summary>
+	/// ノイズエフェクト用のマテリアルデータ（シェーダーと対応）
+	/// </summary>
+	struct NoiseMaterialData {
+		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };                    // 16 bytes (0-15)
+		int32_t enableLighting = 0;                                       // 4 bytes  (16-19)
+		int32_t useLambertianReflectance = 0;                            // 4 bytes  (20-23)
+		Vector2 padding1 = { 0.0f, 0.0f };                              // 8 bytes  (24-31) パディング
+		Matrix4x4 uvTransform = MakeIdentity4x4();                      // 64 bytes (32-95)
+
+		// ノイズエフェクト用パラメータ
+		float time = 0.0f;                                              // 4 bytes  (96-99)
+		float noiseIntensity = 0.5f;                                    // 4 bytes  (100-103)
+		float blockSize = 32.0f;                                        // 4 bytes  (104-107)
+		float animationSpeed = 1.0f;                                    // 4 bytes  (108-111)
+
+		Vector4 noiseColor = { 0.0f, 0.3f, 1.0f, 1.0f };              // 16 bytes (112-127)
+		float colorVariation = 0.2f;                                    // 4 bytes  (128-131)
+		float blockDensity = 0.3f;                                      // 4 bytes  (132-135)
+		Vector2 padding2 = { 0.0f, 0.0f };                             // 8 bytes  (136-143) パディング
+	};
+
+	/// <summary>
+	/// エフェクトプリセット
+	/// </summary>
+	enum class NoisePreset {
+		OFF,           // エフェクトなし
+		SUBTLE,        // 軽微なノイズ
+		MEDIUM,        // 中程度のノイズ
+		HEAVY,         // 重いノイズ
+		DIGITAL_RAIN   // デジタルレインのような効果
+	};
+
+public:
+	NoiseEffect() = default;
+	~NoiseEffect() = default;
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	void Initialize(DirectXCommon* dxCommon);
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize();
+
+	/// <summary>
+	/// 更新処理（時間を進める）
+	/// </summary>
+	/// <param name="deltaTime">フレーム時間</param>
+	void Update(float deltaTime = 1.0f / 60.0f);
+
+	/// <summary>
+	/// ノイズエフェクト用のPSOを作成
+	/// </summary>
+	void CreatePSO();
+
+	/// <summary>
+	/// ノイズエフェクト用の定数バッファを作成
+	/// </summary>
+	void CreateConstantBuffer();
+
+	/// <summary>
+	/// ImGui でのパラメータ調整UI
+	/// </summary>
+	void ImGui();
+
+	/// <summary>
+	/// プリセットを適用
+	/// </summary>
+	void ApplyPreset(NoisePreset preset);
+
+	//=============================================================================
+	// Getter
+	//=============================================================================
+
+	/// <summary>
+	/// エフェクトが有効かどうか
+	/// </summary>
+	bool IsEnabled() const { return isEnabled_; }
+
+	/// <summary>
+	/// ノイズ用ルートシグネチャを取得
+	/// </summary>
+	ID3D12RootSignature* GetRootSignature() const { return rootSignature_.Get(); }
+
+	/// <summary>
+	/// ノイズ用PSOを取得
+	/// </summary>
+	ID3D12PipelineState* GetPipelineState() const { return pipelineState_.Get(); }
+
+	/// <summary>
+	/// マテリアルバッファを取得
+	/// </summary>
+	ID3D12Resource* GetMaterialBuffer() const { return materialBuffer_.Get(); }
+
+	/// <summary>
+	/// マテリアルデータを取得
+	/// </summary>
+	const NoiseMaterialData& GetMaterialData() const { return materialData_; }
+
+	//=============================================================================
+	// Setter
+	//=============================================================================
+
+	/// <summary>
+	/// エフェクトの有効/無効を設定
+	/// </summary>
+	void SetEnabled(bool enabled) { isEnabled_ = enabled; }
+
+	/// <summary>
+	/// ノイズ強度を設定
+	/// </summary>
+	void SetNoiseIntensity(float intensity) {
+		materialData_.noiseIntensity = std::clamp(intensity, 0.0f, 1.0f);
+		UpdateConstantBuffer();
+	}
+
+	/// <summary>
+	/// ブロックサイズを設定
+	/// </summary>
+	void SetBlockSize(float size) {
+		materialData_.blockSize = std::clamp(size, 8.0f, 128.0f);
+		UpdateConstantBuffer();
+	}
+
+	/// <summary>
+	/// ノイズの色を設定
+	/// </summary>
+	void SetNoiseColor(const Vector4& color) {
+		materialData_.noiseColor = color;
+		UpdateConstantBuffer();
+	}
+
+	/// <summary>
+	/// ブロック密度を設定
+	/// </summary>
+	void SetBlockDensity(float density) {
+		materialData_.blockDensity = std::clamp(density, 0.0f, 1.0f);
+		UpdateConstantBuffer();
+	}
+
+private:
+	/// <summary>
+	/// シェーダーをコンパイル
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile);
+
+	/// <summary>
+	/// 定数バッファを更新
+	/// </summary>
+	void UpdateConstantBuffer();
+
+private:
+	// DirectXCommonへの参照
+	DirectXCommon* dxCommon_ = nullptr;
+
+	// エフェクトの状態
+	bool isEnabled_ = false;
+	bool isInitialized_ = false;
+
+	// マテリアルデータ
+	NoiseMaterialData materialData_;
+
+	// ノイズエフェクト用PSO
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
+
+	// 定数バッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffer_;
+	NoiseMaterialData* mappedMaterialData_ = nullptr;
+
+	// アニメーション用
+	float animationSpeed_ = 1.0f;
+
+	// ランダム生成用
+	std::random_device randomDevice_;
+	std::mt19937 randomEngine_;
+};

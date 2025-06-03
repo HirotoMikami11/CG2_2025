@@ -11,6 +11,7 @@
 #include "MyFunction.h"
 
 #include "GlitchEffect.h"	//グリッチエフェクト
+#include "NoiseEffect.h"	
 
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス（DescriptorHeapManager対応版）
@@ -87,7 +88,17 @@ public:
 	void SetGlitchEffect(std::unique_ptr<GlitchEffect> glitchEffect) {
 		glitchEffect_ = std::move(glitchEffect);
 	}
+	///<summary>
+	/// ノイズエフェクトを取得
+	/// </summary>
+	NoiseEffect* GetNoiseEffect() { return noiseEffect_.get(); }
 
+	/// <summary>
+	/// ノイズエフェクトを設定
+	/// </summary>
+	void SetNoiseEffect(std::unique_ptr<NoiseEffect> noiseEffect) {
+		noiseEffect_ = std::move(noiseEffect);
+	}
 private:
 	/// <summary>
 	/// レンダーターゲットテクスチャを作成
@@ -148,7 +159,7 @@ private:
 	DescriptorHeapManager::DescriptorHandle dsvHandle_;
 	DescriptorHeapManager::DescriptorHandle srvHandle_;
 
-	// オフスクリーン描画用PSO（簡素化されたもの）
+	// オフスクリーン描画用PSO
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
@@ -176,4 +187,6 @@ private:
 
 	// グリッチエフェクト
 	std::unique_ptr<GlitchEffect> glitchEffect_;
+	// ノイズエフェクト
+	std::unique_ptr<NoiseEffect> noiseEffect_;
 };

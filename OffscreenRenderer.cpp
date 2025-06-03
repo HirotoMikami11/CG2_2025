@@ -33,6 +33,9 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	glitchEffect_ = std::make_unique<GlitchEffect>();
 	glitchEffect_->Initialize(dxCommon);
 
+	// ノイズエフェクトを初期化
+	noiseEffect_ = std::make_unique<NoiseEffect>();
+	noiseEffect_->Initialize(dxCommon);
 	//初期化完了のログを出す
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized !!\n");
 }
@@ -42,6 +45,11 @@ void OffscreenRenderer::Finalize() {
 	if (glitchEffect_) {
 		glitchEffect_->Finalize();
 		glitchEffect_.reset();
+	}
+
+	if (noiseEffect_) {
+		noiseEffect_->Finalize();
+		noiseEffect_.reset();
 	}
 
 	// 頂点データのマッピング解除
@@ -84,6 +92,10 @@ void OffscreenRenderer::Update(float deltaTime) {
 	if (glitchEffect_) {
 		glitchEffect_->Update(deltaTime);
 	}
+	if (noiseEffect_) {
+		noiseEffect_->Update(deltaTime);
+	}
+
 }
 
 void OffscreenRenderer::PreDraw() {
@@ -140,8 +152,19 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	transformData_->World = MakeIdentity4x4();
 	transformData_->WVP = MakeViewProjectionMatrixSprite();
 
-	// グリッチエフェクトが有効かどうかで描画方法を分岐
-	if (glitchEffect_ && glitchEffect_->IsEnabled()) {
+
+
+	if (noiseEffect_ && noiseEffect_->IsEnabled()) {
+		// =================
+		// ノイズエフェクト描画
+		// =================
+		commandList->SetGraphicsRootSignature(noiseEffect_->GetRootSignature());
+		commandList->SetPipelineState(noiseEffect_->GetPipelineState());
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+		commandList->SetGraphicsRootConstantBufferView(0, noiseEffect_->GetMaterialBuffer()->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(1, transformBuffer_->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootDescriptorTable(2, srvHandle_.gpuHandle);
+	} else if (glitchEffect_ && glitchEffect_->IsEnabled()) {// グリッチエフェクトが有効かどうかで描画方法を分岐
 		// =================
 		// グリッチエフェクト描画
 		// =================
@@ -596,6 +619,9 @@ void OffscreenRenderer::ImGui() {
 		// グリッチエフェクトのImGui
 		if (glitchEffect_) {
 			glitchEffect_->ImGui();
+		}
+		if (noiseEffect_) {
+			noiseEffect_->ImGui();
 		}
 	}
 }

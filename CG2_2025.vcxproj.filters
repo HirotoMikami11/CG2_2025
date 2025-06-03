@@ -171,6 +171,9 @@
     <ClCompile Include="DescriptorHeapManager.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
     </ClCompile>
+    <ClCompile Include="NoiseEffect.cpp">
+      <Filter>ソース ファイル\Glitch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Fullscreen.PS.hlsl">
@@ -189,6 +192,12 @@
       <Filter>リソース ファイル\Shader</Filter>
     </FxCompile>
     <FxCompile Include="Glitch.VS.hlsl">
+      <Filter>リソース ファイル\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Noise.VS.hlsl">
+      <Filter>リソース ファイル\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Noise.PS.hlsl">
       <Filter>リソース ファイル\Shader</Filter>
     </FxCompile>
   </ItemGroup>
@@ -291,6 +300,12 @@
     </ClInclude>
     <ClInclude Include="DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseEffect.h">
+      <Filter>ヘッダー ファイル\Glitch</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
