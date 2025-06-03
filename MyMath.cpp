@@ -742,7 +742,7 @@ Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& cameraTransform, floa
 Matrix4x4 MakeViewProjectionMatrixSprite() {
 
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
-	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+	Matrix4x4 projectionMatrix = MakeOrthograpicMatrix(0.0f, 0.0f, float(GraphicsConfig::kClientWidth), float(GraphicsConfig::kClientHeight), 0.0f, 100.0f);
 	Matrix4x4 viewProjectionMatrix = Matrix4x4Multiply(viewMatrix, projectionMatrix);
 
 	return viewProjectionMatrix;
@@ -754,7 +754,6 @@ Vector3 TransformDirection(const Vector3& v, const Matrix4x4& m)
 	// 行列の回転・スケール部分（左上3x3）のみを使用
 	// 平行移動成分（m[3][0], m[3][1], m[3][2]）は無視
 	//カメラを向いている方向に移動させるために使用
-
 
 	result.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0];
 	result.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1];

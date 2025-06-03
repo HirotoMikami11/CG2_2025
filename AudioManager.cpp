@@ -100,7 +100,7 @@ void AudioManager::LoadWave(const std::string& filename, const std::string& tagN
 	audios[tagName] = audio;
 }
 
-void AudioManager::LoadMP3(const std::string& filename, const std::string& tagName) {
+void AudioManager::LoadWithMediaFoundation(const std::string& filename, const std::string& tagName) {
 
 	// 既に同じタグ名で登録されていた場合は古いものを解放
 	if (audios.find(tagName) != audios.end()) {
@@ -114,7 +114,7 @@ void AudioManager::LoadMP3(const std::string& filename, const std::string& tagNa
 	// 新しい音声データを作成
 	Audio* audio = new Audio();
 	//実際に読み込む
-	audio->LoadMP3(filename);
+	audio->LoadWithMediaFoundation(filename);
 	audios[tagName] = audio;
 }
 

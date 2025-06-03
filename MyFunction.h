@@ -7,6 +7,7 @@
 #include<wrl.h>
 #include <numbers>
 
+
 /// <summary>
 /// 球体
 /// </summary>
@@ -51,10 +52,6 @@ struct DirectionalLight {
 
 Microsoft::WRL::ComPtr <ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr <ID3D12Device> device, size_t sizeInBytes);
 
-
-
-
-
 /*-----------------------------------------------------------------------*/
 //
 //								計算関数
@@ -67,8 +64,6 @@ Vector3 Project(const Vector3& v1, const Vector3& v2);
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 //	行列の更新
 void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, TransformationMatrix* matrixData);
-
-void UpdateUVTransform(const Vector3Transform uvtransform, MaterialData* materialData);
 
 /*-----------------------------------------------------------------------*/
 //

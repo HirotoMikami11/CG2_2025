@@ -35,9 +35,11 @@ public:
 
 	//Getter
 	const Vector3Transform& GetTransform() const { return transform_; }
-	Vector3 GetScale() const { return transform_.scale; }
+
+	Vector3 GetPosition() const { return transform_.translate; }
 	Vector3 GetRotate() const { return transform_.rotate; }
-	Vector3 GetTranslate() const { return transform_.translate; }
+	Vector3 GetScale() const { return transform_.scale; }
+
 	Matrix4x4 GetWorldMatrix() const { return transformData_->World; };
 	Matrix4x4 GetWVPMatrix() const { return transformData_->WVP; };
 	ID3D12Resource* GetResource() const { return transformResource_.Get(); }
@@ -49,10 +51,12 @@ public:
 	void SetTransform(const Vector3Transform& newTransform) { transform_ = newTransform; }
 	void SetScale(const Vector3& scale) { transform_.scale = scale; }
 	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
-	void SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+	void SetPosition(const Vector3& translate) { transform_.translate = translate; }
 
 	///指定した値で回転
+	void AddPosition(const Vector3& Position);
 	void AddRotation(const Vector3& rotation);
+	void AddScale(const Vector3& Scale);
 
 
 private:

@@ -1,6 +1,5 @@
 #include "TextureManager.h"
 
-
 // シングルトンインスタンス
 TextureManager* TextureManager::GetInstance() {
 	static TextureManager instance;
@@ -14,9 +13,7 @@ TextureManager::~TextureManager() {
 void TextureManager::Initialize(DirectXCommon* dxCommon) {
 	dxCommon_ = dxCommon;
 
-	// インデックス管理用配列を初期化
-	usedIndices_.resize(MAX_TEXTURE_COUNT, false);
-	//初期化できたらログを出す
+	// 初期化できたらログを出す
 	Logger::Log(Logger::GetStream(), "Complete TextureManager initialized !!\n");
 }
 
@@ -24,36 +21,47 @@ void TextureManager::Finalize() {
 	// 全てのテクスチャを解放
 	UnloadAll();
 	dxCommon_ = nullptr;
-
 }
 
 bool TextureManager::LoadTexture(const std::string& filename, const std::string& tagName) {
-
+	
+	
 	// 既に同じタグ名で登録されていた場合は古いものを解放
 	if (HasTexture(tagName)) {
-		UnloadTexture(tagName);
+		UnloadTexture(tagName);		//古いテクスチャを解放
 	}
 
-	// 使用可能なインデックスを取得
-	uint32_t srvIndex = GetAvailableSRVIndex();
-
-	//インデックスの数が最大値以上の場合は獲得できないとログを出す
-	if (srvIndex >= MAX_TEXTURE_COUNT) {
-		Logger::Log(Logger::GetStream(),std::format("Failed to load texture '{}': No available SRV slots.\n", filename));
+	// DescriptorHeapManagerからSRVを割り当て
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (!descriptorManager) {
+		// DescriptorManagerが無効な場合はログを出力
+		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
 		return false;
 	}
 
-	// 新しいテクスチャを作成
+	// 使用可能なSRVスロットを割り当て
+	// Allotateで自動であいてるスロットに確保する
+	auto descriptorHandle = descriptorManager->AllocateSRV();
+	if (!descriptorHandle.isValid) {
+		// SRVのヒープが最大値の場合はログを出力して失敗
+		Logger::Log(Logger::GetStream(), std::format("Failed to allocate SRV for texture '{}': No available slots.\n", filename));
+		return false;
+	}
+
+	// 新しいテクスチャを作成し、既に割り当てられたハンドルを使用
 	auto texture = std::make_unique<Texture>();
-	if (!texture->LoadTexture(filename, dxCommon_, srvIndex)) {
-		ReleaseSRVIndex(srvIndex);
+	// テクスチャをロード
+	if (!texture->LoadTextureWithHandle(filename, dxCommon_, descriptorHandle)) {
+		// ロードに失敗した場合はSRVを解放
+		descriptorManager->ReleaseSRV(descriptorHandle.index);
 		return false;
 	}
 
 	// マップに登録
 	textures_[tagName] = std::move(texture);
-	textureIndices_[tagName] = srvIndex;
 
+	Logger::Log(Logger::GetStream(), std::format("Texture '{}' loaded successfully with tag '{}' (SRV Index: {})\n",
+		filename, tagName, descriptorHandle.index));
 	return true;
 }
 
@@ -82,16 +90,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetTextureHandle(const std::string& 
 
 void TextureManager::UnloadTexture(const std::string& tagName) {
 	auto textureIt = textures_.find(tagName);
-	auto indexIt = textureIndices_.find(tagName);
-
-	if (textureIt != textures_.end() && indexIt != textureIndices_.end()) {
-		// インデックスを解放
-		ReleaseSRVIndex(indexIt->second);
+	if (textureIt != textures_.end()) {
+		// テクスチャをアンロード（内部でSRVも解放される）
+		textureIt->second->Unload(dxCommon_);
 
 		// マップから削除
 		textures_.erase(textureIt);
-		textureIndices_.erase(indexIt);
 
+		Logger::Log(Logger::GetStream(), std::format("Texture with tag '{}' unloaded.\n", tagName));
 	}
 }
 
@@ -100,35 +106,31 @@ void TextureManager::UnloadAll() {
 	for (const auto& pair : textures_) {
 		Logger::Log(Logger::GetStream(),
 			std::format("Unloading texture: {}\n", pair.first));
+		pair.second->Unload(dxCommon_);
 	}
 
 	textures_.clear();
-	textureIndices_.clear();
-	std::fill(usedIndices_.begin(), usedIndices_.end(), false);
+
+	Logger::Log(Logger::GetStream(), "All textures unloaded.\n");
 }
 
 bool TextureManager::HasTexture(const std::string& tagName) const {
 	// 指定されたタグ名のテクスチャが存在するかチェック
-	// なぜか画像が読み込めなかった場合に使用したので残しておく
 	return textures_.find(tagName) != textures_.end();
 }
 
-uint32_t TextureManager::GetAvailableSRVIndex() {
-	// 空いているインデックスを探す（0から順番に）
-	// falseのインデックスを探して、見つかったらtrueにしてそのインデックスを返す
-	for (uint32_t i = 0; i < MAX_TEXTURE_COUNT; ++i) {
-		if (!usedIndices_[i]) {
-			usedIndices_[i] = true;
-			return i;
-		}
+uint32_t TextureManager::GetAvailableSRVCount() const {
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (descriptorManager) {
+		return descriptorManager->GetAvailableCount(DescriptorHeapManager::HeapType::SRV);
 	}
-
-	// 空きがない場合は無効な値を返す
-	return MAX_TEXTURE_COUNT;
+	return 0;
 }
 
-void TextureManager::ReleaseSRVIndex(uint32_t index) {
-	if (index < MAX_TEXTURE_COUNT) {
-		usedIndices_[index] = false;
+uint32_t TextureManager::GetUsedSRVCount() const {
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (descriptorManager) {
+		return descriptorManager->GetUsedCount(DescriptorHeapManager::HeapType::SRV);
 	}
+	return 0;
 }

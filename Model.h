@@ -24,32 +24,37 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	void Initialize(DirectXCommon* dxCommon, const std::string& meshType,
+	void Initialize(DirectXCommon* dxCommon, const MeshType meshType,
 		const std::string& directoryPath = "", const std::string& filename = "");
 
-
-
-	Material GetMaterial() const { return material_; }
-	Mesh GetMesh() const {return mesh_;}
-
+	//非const
+	Material& GetMaterial() { return material_; }
+	Mesh& GetMesh() { return mesh_; }
+	//const
+	const Material& GetMaterial() const { return material_; }
+	const Mesh& GetMesh() const { return mesh_; }
+	// テクスチャタグ名の設定と取得
+	void SetTextureTagName(const std::string& tagName) { textureTagName_ = tagName; }
+	const std::string& GetTextureTagName() const { return textureTagName_; }
+	bool HasTexture() const { return !textureTagName_.empty(); }
 private:
 
 
 	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	///material（bool型でlight用のセットか、defaultかどうかをinitilizeで決める。通常はｄｅｆａｕｌｔ）
+	///material（bool型でlight用のセットか、defaultかどうかをinitilizeで決める。通常はdefault）
 	//実際のマテリアル
 	Material material_;
 
-	///mesh("Triangle"とストリングで引数に入れたらinitilizeでcreateTriangleできるようにする（他の図形でも）)
+	///mesh(meeshTypeを引数に入れたらinitilizeでcreateTriangleできるようにする（他の図形でも）)
 	//実際のメッシュ
 	Mesh mesh_;
 
-	///メッシュの中にあるloadObjをここに移動させる
-
 	//ロードしたデータを保持しておく、material meshに渡すためのもの
 	ModelData modelData_;
+	// テクスチャのタグ名を保存
+	std::string textureTagName_;
 
 	MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);

@@ -18,7 +18,13 @@ void CameraController::Initialize()
 	// カメラの初期位置を設定
 	debugCamera_.SetTranslate({ 0.0f, 0.0f, -10.0f });
 
+	useDebugCamera_ = false; // デフォルトではメインカメラを使用する
+
+#ifdef _DEBUG
 	useDebugCamera_ = true;
+#endif // DEBUG
+
+
 
 
 	///デバッグカメラで開始する場合、スプライトが表示されないので初期化したタイミングで一度だけ更新する
@@ -60,7 +66,7 @@ void CameraController::ImGui()
 	// カメラモード切り替え
 	ImGui::Text("CameraMode: %s", useDebugCamera_ ? "DebugCamera" : "MainCamera");
 
-	if (ImGui::Button(useDebugCamera_ ? "Use DebugCamera" : "Use MainCamera")) {
+	if (ImGui::Button(useDebugCamera_ ? "Use MainCamera" : "Use DebugCamera")) {
 		useDebugCamera_ = !useDebugCamera_;
 	}
 
@@ -68,12 +74,19 @@ void CameraController::ImGui()
 
 	// デバッグカメラが有効な場合のみ、デバッグカメラのImGuiを表示
 	if (useDebugCamera_) {
-		debugCamera_.ImGui(); // ここでデバッグカメラのImGuiを呼び出す
+
+		// デバッグカメラ
+		debugCamera_.ImGui();
+
 	} else {
-		// メインカメラの情報表示（必要に応じて）
-		ImGui::Text("MainCamera is active");
+
+		// メインカメラ
+		camera_.ImGui();
+
 	}
+
 	ImGui::End();
 
 
 }
+

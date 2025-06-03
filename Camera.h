@@ -43,6 +43,11 @@ public:
 	/// </summary>
 	void SetDefaultCamera();
 
+	/// <summary>
+	/// imguiの表示
+	/// </summary>
+	void ImGui();
+
 	//Getter
 
 	// 3Dカメラ用
@@ -74,10 +79,9 @@ private:
 	float fov_ = 0.45f;
 	float nearClip_ = 0.1f;
 	float farClip_ = 100.0f;
-	float aspectRatio = (float(kClientWidth) / float(kClientHeight));
+	float aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
 
 	// 行列 
-	
 	Matrix4x4 viewMatrix_;
 
 	//プロジェクション行列
