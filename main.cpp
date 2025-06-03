@@ -295,21 +295,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///キー入力の更新
 		inputManager->Update();
 
-
-		//if (inputManager->IsKeyTrigger(DIK_1)) {
-		//	OutputDebugStringA("Trigger 1!!\n");
-		//}
-
-		//if (inputManager->IsMouseButtonDown(0)) {
-		//	OutputDebugStringA("Left!!\n");
-		//}
-
-		//if (inputManager->IsMoveMouseWheel()) {
-		//	std::string str = std::to_string(inputManager->GetMouseWheel());
-		//	OutputDebugStringA(str.c_str());
-		//}
-
-
 		//								更新処理										//
 
 
