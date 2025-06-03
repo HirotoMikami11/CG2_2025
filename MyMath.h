@@ -81,6 +81,74 @@ Vector3 Vector3Normalize(const Vector3& v);
 //クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
+/*-----------------------------------------------------------------------*/
+//
+//                          Vector3 演算子オーバーロード
+//
+/*-----------------------------------------------------------------------*/
+
+///二項演算子
+
+// 加算 (v1 + v2)
+inline Vector3 operator+(const Vector3& v1, const Vector3& v2) { return { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z }; }
+
+// 減算 (v1 - v2)
+inline Vector3 operator-(const Vector3& v1, const Vector3& v2) { return { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z }; }
+
+// スカラー倍 (scalar * v)
+inline Vector3 operator*(float scalar, const Vector3& v) { return { v.x * scalar, v.y * scalar, v.z * scalar }; }
+
+// スカラー倍 (v * scalar)
+inline Vector3 operator*(const Vector3& v, float scalar) { return { v.x * scalar, v.y * scalar, v.z * scalar }; }
+
+// スカラー除算 (v / scalar)
+inline Vector3 operator/(const Vector3& v, float scalar) {
+	assert(scalar != 0.0f); // ゼロ除算チェック
+	return { v.x / scalar, v.y / scalar, v.z / scalar };
+}
+
+///単項演算子
+
+// 単項マイナス (-v)
+inline Vector3 operator-(const Vector3& v) { return { -v.x, -v.y, -v.z }; }
+
+// 単項プラス (+v)
+inline Vector3 operator+(const Vector3& v) { return v; }
+
+/// 代入演算子
+
+// 加算代入 (v1 += v2)
+inline Vector3& operator+=(Vector3& v1, const Vector3& v2) {
+	v1.x += v2.x;
+	v1.y += v2.y;
+	v1.z += v2.z;
+	return v1;
+}
+
+// 減算代入 (v1 -= v2)
+inline Vector3& operator-=(Vector3& v1, const Vector3& v2) {
+	v1.x -= v2.x;
+	v1.y -= v2.y;
+	v1.z -= v2.z;
+	return v1;
+}
+
+// スカラー倍代入 (v *= scalar)
+inline Vector3& operator*=(Vector3& v, float scalar) {
+	v.x *= scalar;
+	v.y *= scalar;
+	v.z *= scalar;
+	return v;
+}
+
+// スカラー除算代入 (v /= scalar)
+inline Vector3& operator/=(Vector3& v, float scalar) {
+	assert(scalar != 0.0f); // ゼロ除算チェック
+	v.x /= scalar;
+	v.y /= scalar;
+	v.z /= scalar;
+	return v;
+}
 
 /*-----------------------------------------------------------------------*/
 //
@@ -195,12 +263,12 @@ struct Matrix4x4 final {
 /// <summary>
 /// マテリアル
 /// </summary>
-struct  MaterialData final{
+struct  MaterialData final {
 	Vector4 color;						//色
 	int32_t enableLighting;				//ライティングするか
 	int32_t useLambertianReflectance;	//ランバート反射させるか
 	float padding[2];					//隙間埋める
-	Matrix4x4 uvTransform;				
+	Matrix4x4 uvTransform;
 };
 
 

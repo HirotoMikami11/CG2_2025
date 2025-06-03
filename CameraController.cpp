@@ -18,7 +18,13 @@ void CameraController::Initialize()
 	// カメラの初期位置を設定
 	debugCamera_.SetTranslate({ 0.0f, 0.0f, -10.0f });
 
+	useDebugCamera_ = false; // デフォルトではメインカメラを使用する
+
+#ifdef _DEBUG
 	useDebugCamera_ = true;
+#endif // DEBUG
+
+
 
 
 	///デバッグカメラで開始する場合、スプライトが表示されないので初期化したタイミングで一度だけ更新する
