@@ -389,7 +389,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			triangle[i]->Draw(directionalLight);
 		}
 		model->Draw(directionalLight);
-	//	sprite->DrawSprite(directionalLight);
+		//sprite->DrawSprite(directionalLight);
 
 
 		// オフスクリーンの描画終了

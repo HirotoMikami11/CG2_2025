@@ -59,34 +59,72 @@ PixelShaderOutput main(VertexShaderOutput input)
     {
         return output;
     }
-    if (input.texcoord.x < 0.5)
-    {
-        return output;
-        
-    }
-    // ブロックサイズに基づいてグリッド計算
-    float2 screenSize = float2(1280.0, 720.0); // 画面サイズ（固定）
-    float2 blockCount = screenSize / gMaterial.blockSize;
-    float2 blockPos = floor(input.texcoord * blockCount);
     
-    // 時間ベースでアニメーション
+    
+    //if (input.texcoord.x < 0.5)
+    //{
+    //    return output;
+        
+    //}
+    
+    
+    float2 uv = input.texcoord;
     float animTime = gMaterial.time * gMaterial.animationSpeed;
-    float timeStep = floor(animTime * 10.0); // 0.1秒ごとに更新
-    
-    // このブロック位置でのランダム値を生成
-    float randomValue = random(blockPos + timeStep);
-    
-    // ブロック密度に基づいてノイズを表示するかどうか決定
-    if (randomValue < gMaterial.blockDensity)
+ 
+    // グリッチの強度（断続的に発生）
+    float glitchTrigger = step(0.5, random(floor(animTime * 8.0)));
+    float glitchIntensity = gMaterial.noiseIntensity * glitchTrigger;
+ 
+    if (glitchIntensity > 0.0)
     {
-        // ブロック内での色のバリエーション
-        float colorVar = random(blockPos + timeStep * 1.3) - 0.5;
-        float3 noiseCol = gMaterial.noiseColor.rgb;
-        noiseCol += colorVar * gMaterial.colorVariation;
-        noiseCol = saturate(noiseCol); // 0-1にクランプ
-        
-        // 元のテクスチャ色とノイズ色をブレンド
-        output.color.rgb = lerp(textureColor.rgb, noiseCol, gMaterial.noiseIntensity);
+        // 1. 水平ピクセルずれ（Horizontal displacement）
+        float lineNoise = random(floor(uv.y * 200.0) + floor(animTime * 20.0));
+        float displacement = (lineNoise - 0.5) * glitchIntensity * 0.1;
+        uv.x += displacement;
+     
+         // 2. ブロック状の破損
+        float2 blockPos = floor(uv * float2(40.0, 20.0));
+        float blockRandom = random(blockPos + floor(animTime * 5.0));
+        if (blockRandom > 0.95)
+        {
+         // ブロック単位で画像をずらす
+            float blockShift = (random(blockPos + 1.0) - 0.5) * 0.2;
+            uv.x += blockShift * glitchIntensity;
+        }
+     
+          // 3. RGBチャンネル分離（色収差）
+        float rgbShift = glitchIntensity * 0.02;
+        float2 redUV = uv + float2(rgbShift, 0.0);
+        float2 greenUV = uv;
+        float2 blueUV = uv - float2(rgbShift, 0.0);
+     
+          // チャンネル別にサンプリング
+        float r = gTexture.Sample(gSampler, redUV).r;
+        float g = gTexture.Sample(gSampler, greenUV).g;
+        float b = gTexture.Sample(gSampler, blueUV).b;
+        float a = gTexture.Sample(gSampler, uv).a;
+     
+        output.color = float4(r, g, b, a);
+     
+           // 4. 走査線ノイズ
+        float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
+        float scanNoise = random(float2(floor(uv.y * 400.0), floor(animTime * 30.0)));
+        if (scanNoise > 0.98)
+        {
+            output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
+        }
+     
+           // 5. デジタルアーティファクト（時々画像が反転）
+        if (blockRandom > 0.99)
+        {
+            float2 flippedUV = float2(1.0 - uv.x, uv.y);
+            output.color = gTexture.Sample(gSampler, flippedUV);
+        }
+    }
+    else
+    {
+     // グリッチが発生していない時は通常の画像
+        output.color = gTexture.Sample(gSampler, uv);
     }
     
     return output;
