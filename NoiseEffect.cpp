@@ -11,7 +11,15 @@ void NoiseEffect::Initialize(DirectXCommon* dxCommon) {
 	CreateConstantBuffer();
 
 	isInitialized_ = true;
-
+#ifdef _DEBUG
+	isEnabled_ = true;//デバッグのために有効
+	//簡単な設定
+	SetNoiseIntensity(0.1f);
+	SetNoiseInterval(0.0f);
+	SetBlockDensity(0.01f);  // 非常に少ないブロック
+	SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
+	materialData_.animationSpeed = 0.15;
+#endif // _DEBUG
 	Logger::Log(Logger::GetStream(), "NoiseEffect initialized successfully!\n");
 }
 
@@ -176,7 +184,7 @@ void NoiseEffect::CreateConstantBuffer() {
 	Logger::Log(Logger::GetStream(), std::format("uvTransform offset: {} bytes\n", offsetof(NoiseMaterialData, uvTransform)));
 	Logger::Log(Logger::GetStream(), std::format("time offset: {} bytes\n", offsetof(NoiseMaterialData, time)));
 	Logger::Log(Logger::GetStream(), std::format("noiseIntensity offset: {} bytes\n", offsetof(NoiseMaterialData, noiseIntensity)));
-	Logger::Log(Logger::GetStream(), std::format("blockSize offset: {} bytes\n", offsetof(NoiseMaterialData, blockSize)));
+	Logger::Log(Logger::GetStream(), std::format("noiseInterval offset: {} bytes\n", offsetof(NoiseMaterialData, noiseInterval)));
 	Logger::Log(Logger::GetStream(), std::format("animationSpeed offset: {} bytes\n", offsetof(NoiseMaterialData, animationSpeed)));
 	Logger::Log(Logger::GetStream(), std::format("noiseColor offset: {} bytes\n", offsetof(NoiseMaterialData, noiseColor)));
 	Logger::Log(Logger::GetStream(), std::format("colorVariation offset: {} bytes\n", offsetof(NoiseMaterialData, colorVariation)));
@@ -198,7 +206,7 @@ void NoiseEffect::CreateConstantBuffer() {
 
 	materialData_.time = 0.0f;
 	materialData_.noiseIntensity = 0.0f;  // 初期状態では無効
-	materialData_.blockSize = 32.0f;
+	materialData_.noiseInterval = 0.0f;
 	materialData_.animationSpeed = 1.0f;
 	materialData_.noiseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_.colorVariation = 0.2f;
@@ -219,7 +227,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 	case NoisePreset::SUBTLE:
 		SetEnabled(true);
 		SetNoiseIntensity(0.7f);
-		SetBlockSize(64.0f);
+		SetNoiseInterval(64.0f);
 		SetBlockDensity(0.05f);  // 密度を大幅に下げる
 		SetNoiseColor({ 0.0f, 0.3f, 1.0f, 1.0f });
 		animationSpeed_ = 0.5f;
@@ -228,7 +236,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 	case NoisePreset::MEDIUM:
 		SetEnabled(true);
 		SetNoiseIntensity(0.8f);
-		SetBlockSize(48.0f);
+		SetNoiseInterval(48.0f);
 		SetBlockDensity(0.1f);   // 密度を下げる
 		SetNoiseColor({ 0.0f, 0.4f, 1.0f, 1.0f });
 		animationSpeed_ = 1.0f;
@@ -237,7 +245,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 	case NoisePreset::HEAVY:
 		SetEnabled(true);
 		SetNoiseIntensity(0.9f);
-		SetBlockSize(32.0f);
+		SetNoiseInterval(32.0f);
 		SetBlockDensity(0.2f);   // 密度を下げる
 		SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
 		animationSpeed_ = 2.0f;
@@ -246,7 +254,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 	case NoisePreset::DIGITAL_RAIN:
 		SetEnabled(true);
 		SetNoiseIntensity(0.8f);
-		SetBlockSize(16.0f);
+		SetNoiseInterval(16.0f);
 		SetBlockDensity(0.15f);  // 密度を下げる
 		SetNoiseColor({ 0.0f, 0.8f, 0.2f, 1.0f }); // 緑系
 		animationSpeed_ = 3.0f;
@@ -264,12 +272,13 @@ void NoiseEffect::ImGui() {
 		ImGui::Checkbox("Enable Noise Effect", &isEnabled_);
 
 		// デバッグ用テストボタン
-		if (ImGui::Button("Test Single Block")) {
+		if (ImGui::Button("Test offset")) {
 			SetEnabled(true);
-			SetNoiseIntensity(1.0f);
-			SetBlockSize(128.0f);
+			SetNoiseIntensity(0.1f);
+			SetNoiseInterval(0.0f);
 			SetBlockDensity(0.01f);  // 非常に少ないブロック
 			SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
+			materialData_.animationSpeed = 0.15;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Reset")) {
@@ -303,9 +312,9 @@ void NoiseEffect::ImGui() {
 					SetNoiseIntensity(intensity);
 				}
 
-				float blockSize = materialData_.blockSize;
-				if (ImGui::SliderFloat("Block Size", &blockSize, 1.0f, 128.0f)) {
-					SetBlockSize(blockSize);
+				float noiseInterval = materialData_.noiseInterval;
+				if (ImGui::SliderFloat("noise Interval", &noiseInterval, 0.0f, 1.0f)) {
+					SetNoiseInterval(noiseInterval);
 				}
 
 				float density = materialData_.blockDensity;
@@ -335,7 +344,7 @@ void NoiseEffect::ImGui() {
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", materialData_.time);
 			ImGui::Text("Noise Intensity: %.2f", materialData_.noiseIntensity);
-			ImGui::Text("Block Size: %.2f", materialData_.blockSize);
+			ImGui::Text("noise Interval: %.2f", materialData_.noiseInterval);
 			ImGui::Text("Block Density: %.2f", materialData_.blockDensity);
 			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}

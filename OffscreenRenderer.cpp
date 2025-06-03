@@ -36,6 +36,9 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	// ノイズエフェクトを初期化
 	noiseEffect_ = std::make_unique<NoiseEffect>();
 	noiseEffect_->Initialize(dxCommon);
+
+
+
 	//初期化完了のログを出す
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized !!\n");
 }

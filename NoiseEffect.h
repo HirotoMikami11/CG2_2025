@@ -28,8 +28,10 @@ public:
 
 		// ノイズエフェクト用パラメータ
 		float time = 0.0f;                                              // 4 bytes  (96-99)
+		//強度
 		float noiseIntensity = 0.5f;                                    // 4 bytes  (100-103)
-		float blockSize = 32.0f;                                        // 4 bytes  (104-107)
+		//演出間隔
+		float noiseInterval = 0.0f;                                        // 4 bytes  (104-107)
 		float animationSpeed = 1.0f;                                    // 4 bytes  (108-111)
 
 		Vector4 noiseColor = { 0.0f, 0.3f, 1.0f, 1.0f };              // 16 bytes (112-127)
@@ -139,8 +141,8 @@ public:
 	/// <summary>
 	/// ブロックサイズを設定
 	/// </summary>
-	void SetBlockSize(float size) {
-		materialData_.blockSize = std::clamp(size, 8.0f, 128.0f);
+	void SetNoiseInterval(float size) {
+		materialData_.noiseInterval = std::clamp(size, 0.0f, 1.0f);
 		UpdateConstantBuffer();
 	}
 
@@ -178,8 +180,12 @@ private:
 	DirectXCommon* dxCommon_ = nullptr;
 
 	// エフェクトの状態
+
 	bool isEnabled_ = false;
 	bool isInitialized_ = false;
+
+
+
 
 	// マテリアルデータ
 	NoiseMaterialData materialData_;

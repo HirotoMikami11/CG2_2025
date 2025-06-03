@@ -16,7 +16,7 @@ struct NoiseMaterial
     // 次の16バイトブロック：ノイズパラメータ1
     float32_t time; // 4 bytes  (96-99)
     float32_t noiseIntensity; // 4 bytes  (100-103)
-    float32_t blockSize; // 4 bytes  (104-107)
+    float32_t noiseInterval; // 4 bytes  (104-107)
     float32_t animationSpeed; // 4 bytes  (108-111)
     
     // 次の16バイトブロック：ノイズカラー
@@ -38,10 +38,31 @@ struct PixelShaderOutput
     float32_t4 color : SV_TARGET0;
 };
 
+///timeを使いつつ、値が大きくならないようにするために使うハッシュ関数
+float hash(float2 st)
+{
+    //元のランダム関数
+    return frac(sin(dot(st.xy, float2(12.9898, 78.233)))* 43758.5453123);
+}
+
 // ランダム値を生成する関数
 float random(float2 st)
 {
-    return frac(sin(dot(st.xy, float2(12.9898, 78.233))) * 43758.5453123);
+    // 時間を使ってランダム値を生成する場合
+    float t = frac(gMaterial.time); // 0.0〜1.0で時間をループ
+    float t0 = floor(gMaterial.time);
+    float t1 = t0 + 1.0;
+
+    // 2つのランダム値を取得（異なる時間ステップ）
+    float r0 = hash(st + t0);
+    float r1 = hash(st + t1);
+
+    // 線形補間
+    return lerp(r0, r1, t);
+    
+    
+   // return frac(sin(dot(st.xy, float2(12.9898, 78.233))) * 43758.5453123);
+    
 }
 
 PixelShaderOutput main(VertexShaderOutput input)
@@ -72,7 +93,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     float animTime = gMaterial.time * gMaterial.animationSpeed;
  
     // グリッチの強度（断続的に発生）
-    float glitchTrigger = step(0.5, random(floor(animTime * 8.0)));
+    float glitchTrigger = step(gMaterial.noiseInterval, random(floor(animTime * 8.0)));//stepは0.8が適切な値
     float glitchIntensity = gMaterial.noiseIntensity * glitchTrigger;
  
     if (glitchIntensity > 0.0)
@@ -84,12 +105,15 @@ PixelShaderOutput main(VertexShaderOutput input)
      
          // 2. ブロック状の破損
         float2 blockPos = floor(uv * float2(40.0, 20.0));
-        float blockRandom = random(blockPos + floor(animTime * 5.0));
+        //float blockRandom = random(blockPos + floor(animTime * 5.0));(古いランダム)
+        float blockRandomVal = random(blockPos + floor(animTime * 5.0));
+        float blockRandom = step(0.95, blockRandomVal); // 0 or 1
         if (blockRandom > 0.95)
         {
          // ブロック単位で画像をずらす
             float blockShift = (random(blockPos + 1.0) - 0.5) * 0.2;
             uv.x += blockShift * glitchIntensity;
+
         }
      
           // 3. RGBチャンネル分離（色収差）
