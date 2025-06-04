@@ -25,7 +25,7 @@ struct NoiseMaterial
     // 次の16バイトブロック：残りのパラメータ
     float32_t colorVariation; // 4 bytes  (128-131)
     float32_t blockDensity; // 4 bytes  (132-135)
-    float32_t2 padding2; // 8 bytes  (136-143) 16バイト境界まで埋める
+    float32_t2 blockDivision; // 8 bytes  (136-143) 16バイト境界まで埋める
 };
 
 ConstantBuffer<NoiseMaterial> gMaterial : register(b0);
@@ -42,7 +42,7 @@ struct PixelShaderOutput
 float hash(float2 st)
 {
     //元のランダム関数
-    return frac(sin(dot(st.xy, float2(12.9898, 78.233)))* 43758.5453123);
+    return frac(sin(dot(st.xy, float2(12.9898, 78.233))) * 43758.5453123);
 }
 
 // ランダム値を生成する関数
@@ -65,6 +65,23 @@ float random(float2 st)
     
 }
 
+// グレースケール変換関数（人間の視覚に基づく加重平均）
+float3 toGrayscale(float3 color)
+{
+    float luminance = dot(color, float3(0.299, 0.587, 0.114));
+    return float3(luminance, luminance, luminance);
+}
+
+// カラーとグレースケールをイージングする関数
+//元の色とイージングのtの入れる
+//0に近ければ近いほど元の色に、1に近いほどグレースケールに。
+float3 applyGrayscale(float3 color, float t)
+{
+    float3 grayscale = toGrayscale(color);
+    return lerp(color, grayscale, t);
+}
+
+
 PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
@@ -81,7 +98,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         return output;
     }
     
-    
+    //半分は普通に描画する
     //if (input.texcoord.x < 0.5)
     //{
     //    return output;
@@ -93,7 +110,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     float animTime = gMaterial.time * gMaterial.animationSpeed;
  
     // グリッチの強度（断続的に発生）
-    float glitchTrigger = step(gMaterial.noiseInterval, random(floor(animTime * 8.0)));//stepは0.8が適切な値
+    float glitchTrigger = step(gMaterial.noiseInterval, random(floor(animTime * 8.0))); //stepは0.8が適切な値
     float glitchIntensity = gMaterial.noiseIntensity * glitchTrigger;
  
     if (glitchIntensity > 0.0)
@@ -104,52 +121,69 @@ PixelShaderOutput main(VertexShaderOutput input)
         uv.x += displacement;
      
          // 2. ブロック状の破損
-        float2 blockPos = floor(uv * float2(40.0, 20.0));
-        //float blockRandom = random(blockPos + floor(animTime * 5.0));(古いランダム)
+        float2 blockPos = floor(uv * float2(gMaterial.blockDivision.x, gMaterial.blockDivision.y)); //float2(40,20)画面を40x20で分割
         float blockRandomVal = random(blockPos + floor(animTime * 5.0));
-        float blockRandom = step(0.95, blockRandomVal); // 0 or 1
-        if (blockRandom > 0.95)
+        //float blockRandom = step(0.95, blockRandomVal); // 95%で何も起こらん
+        if (blockRandomVal > 0.95)//個々の値もパラメータにできる
         {
          // ブロック単位で画像をずらす
-            float blockShift = (random(blockPos + 1.0) - 0.5) * 0.2;
-            uv.x += blockShift * glitchIntensity;
+            float blockShift = (random(blockPos + 1.0) - 0.5) * 0.2; //0.2がシフト量の大きさ。個々のパラメータを用意すれば変えられる
+            uv.x += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
 
         }
      
-          // 3. RGBチャンネル分離（色収差）
-        float rgbShift = glitchIntensity * 0.02;
-        float2 redUV = uv + float2(rgbShift, 0.0);
-        float2 greenUV = uv;
-        float2 blueUV = uv - float2(rgbShift, 0.0);
+        //  // 3. RGBチャンネル分離（色収差）
+        //float rgbShift = glitchIntensity * 0.02;
+        //float2 redUV = uv + float2(rgbShift, 0.0);
+        //float2 greenUV = uv;
+        //float2 blueUV = uv - float2(rgbShift, 0.0);
      
-          // チャンネル別にサンプリング
-        float r = gTexture.Sample(gSampler, redUV).r;
-        float g = gTexture.Sample(gSampler, greenUV).g;
-        float b = gTexture.Sample(gSampler, blueUV).b;
-        float a = gTexture.Sample(gSampler, uv).a;
+        //  // チャンネル別にサンプリング
+        //float r = gTexture.Sample(gSampler, redUV).r;
+        //float g = gTexture.Sample(gSampler, greenUV).g;
+        //float b = gTexture.Sample(gSampler, blueUV).b;
+        //float a = gTexture.Sample(gSampler, uv).a;
      
-        output.color = float4(r, g, b, a);
+        //output.color = float4(r, g, b, a);
      
-           // 4. 走査線ノイズ
-        float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
-        float scanNoise = random(float2(floor(uv.y * 400.0), floor(animTime * 30.0)));
-        if (scanNoise > 0.98)
-        {
-            output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
-        }
+        //   // 4. 走査線ノイズ
+        //float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
+        //float scanNoise = random(float2(floor(uv.y * 400.0), floor(animTime * 30.0)));
+        //if (scanNoise > 0.98)
+        //{
+        //    output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
+        //}
      
-           // 5. デジタルアーティファクト（時々画像が反転）
-        if (blockRandom > 0.99)
-        {
-            float2 flippedUV = float2(1.0 - uv.x, uv.y);
-            output.color = gTexture.Sample(gSampler, flippedUV);
-        }
+        ////. デジタルアーティファクト（時々画像が反転）
+        //if (blockRandomVal > 0.99)
+        //{
+        //    float2 flippedUV = float2(1.0 - uv.x, uv.y);
+        //    output.color = gTexture.Sample(gSampler, flippedUV);
+        //}
+            
+        //// 6.グレースケールを適用
+        //output.color.rgb = applyGrayscale(output.color.rgb, 1.0f); //この1はtなのでパラメータにできる
+        
+        //それぞれ出力するときにコメントアウトを外す
+        //output.color = gTexture.Sample(gSampler, uv);
+        //// デバッグ：ブロック効果を色で可視化
+        //if (blockRandomVal > 0.99)
+        //{
+        //    output.color = float4(1.0, 0.0, 0.0, 1.0); // 反転ブロックを赤で表示
+        //    return output;
+        //}
+        //else if (blockRandomVal > 0.95)
+        //{
+        //    output.color = float4(0.0, 1.0, 0.0, 1.0); // シフトブロックを緑で表示
+        //    return output;
+        //}
     }
     else
     {
      // グリッチが発生していない時は通常の画像
         output.color = gTexture.Sample(gSampler, uv);
     }
+
     
     return output;
 }

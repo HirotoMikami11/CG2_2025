@@ -20,24 +20,26 @@ public:
 	/// ノイズエフェクト用のマテリアルデータ（シェーダーと対応）
 	/// </summary>
 	struct NoiseMaterialData {
+		//もともとある奴らのデータ
 		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };                    // 16 bytes (0-15)
 		int32_t enableLighting = 0;                                       // 4 bytes  (16-19)
 		int32_t useLambertianReflectance = 0;                            // 4 bytes  (20-23)
 		Vector2 padding1 = { 0.0f, 0.0f };                              // 8 bytes  (24-31) パディング
 		Matrix4x4 uvTransform = MakeIdentity4x4();                      // 64 bytes (32-95)
 
-		// ノイズエフェクト用パラメータ
-		float time = 0.0f;                                              // 4 bytes  (96-99)
-		//強度
-		float noiseIntensity = 0.5f;                                    // 4 bytes  (100-103)
-		//演出間隔
-		float noiseInterval = 0.0f;                                        // 4 bytes  (104-107)
-		float animationSpeed = 1.0f;                                    // 4 bytes  (108-111)
 
-		Vector4 noiseColor = { 0.0f, 0.3f, 1.0f, 1.0f };              // 16 bytes (112-127)
-		float colorVariation = 0.2f;                                    // 4 bytes  (128-131)
-		float blockDensity = 0.3f;                                      // 4 bytes  (132-135)
-		Vector2 padding2 = { 0.0f, 0.0f };                             // 8 bytes  (136-143) パディング
+
+		// ノイズエフェクト用パラメータ
+		float time = 0.0f;                                              // 4 bytes  (96-99)			//受け取る時間
+		float noiseIntensity = 0.5f;                                    // 4 bytes  (100-103)		//ノイズの強度
+		float noiseInterval = 0.0f;                                        // 4 bytes  (104-107)	//演出間隔
+		float animationSpeed = 1.0f;                                    // 4 bytes  (108-111)		//アニメーションの速さ
+
+
+		Vector4 noiseColor = { 0.0f, 0.3f, 1.0f, 1.0f };              // 16 bytes (112-127)			//ノイズの色(現在使用してない)
+		float colorVariation = 0.2f;                                    // 4 bytes  (128-131)		//
+		float blockDensity = 0.3f;                                      // 4 bytes  (132-135)		//
+		Vector2	blockDivision = { 0.0f, 0.0f };                             // 8 bytes  (136-143)	//ブロックずらしの画面分割数
 	};
 
 	/// <summary>
@@ -162,6 +164,16 @@ public:
 		UpdateConstantBuffer();
 	}
 
+	/// <summary>
+	/// ブロックずらしの画面分割数を設定
+	/// </summary>
+	/// <param name="division"></param>
+	void SetBlockDivision(Vector2 division){
+		materialData_.blockDivision.x = std::clamp(division.x, 0.0f, 50.0f);		//
+		materialData_.blockDivision.y = std::clamp(division.y, 0.0f, 30.0f);		//
+		UpdateConstantBuffer();
+	
+	}
 private:
 	/// <summary>
 	/// シェーダーをコンパイル

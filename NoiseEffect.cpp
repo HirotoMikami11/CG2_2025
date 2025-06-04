@@ -211,6 +211,7 @@ void NoiseEffect::CreateConstantBuffer() {
 	materialData_.noiseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	materialData_.colorVariation = 0.2f;
 	materialData_.blockDensity = 0.05f;   // 非常に低い密度から開始
+	materialData_.blockDivision = { 40.0f,20.0f };
 
 	// 初期データを設定
 	UpdateConstantBuffer();
@@ -279,6 +280,7 @@ void NoiseEffect::ImGui() {
 			SetBlockDensity(0.01f);  // 非常に少ないブロック
 			SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
 			materialData_.animationSpeed = 0.15;
+			materialData_.blockDivision = { 40.0f,20.0f };
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Reset")) {
@@ -326,6 +328,13 @@ void NoiseEffect::ImGui() {
 				if (ImGui::ColorEdit4("Noise Color", reinterpret_cast<float*>(&noiseColor.x))) {
 					SetNoiseColor(noiseColor);
 				}
+				Vector2 blockDivision = materialData_.blockDivision;
+				if (ImGui::SliderFloat("Block DivisionX", &blockDivision.x, 1.0f, 50.0f)) { // 最大値を画面のxの半分にする
+					SetBlockDivision(blockDivision);
+				}
+				if (ImGui::SliderFloat("Block DivisionY", &blockDivision.y, 1.0f, 30.0f)) { // 最大値を画面のyの半分にする
+					SetBlockDivision(blockDivision);
+				}
 
 				if (ImGui::SliderFloat("Animation Speed", &animationSpeed_, 0.0f, 5.0f)) {
 					// アニメーション速度の変更は即座に反映
@@ -346,6 +355,7 @@ void NoiseEffect::ImGui() {
 			ImGui::Text("Noise Intensity: %.2f", materialData_.noiseIntensity);
 			ImGui::Text("noise Interval: %.2f", materialData_.noiseInterval);
 			ImGui::Text("Block Density: %.2f", materialData_.blockDensity);
+			ImGui::Text("Block Division: x.%.2f,y.%.2", materialData_.blockDivision.x, materialData_.blockDivision.y);
 			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 	}
