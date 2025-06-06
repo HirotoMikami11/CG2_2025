@@ -16,7 +16,7 @@ void Mesh::Initialize(DirectXCommon* dxCommon, MeshType meshType)
 		break;
 
 	case MeshType::SPRITE:
-		CreateSprite({ 1280.0f/2, 720.0f/2 }, { 1280.0f, 720.0f });
+		CreateSprite({ 1280.0f/2, 720.0f/2 }, { 512.0f, 512.0f });
 		break;
 
 	case MeshType::MODEL_OBJ:

@@ -73,20 +73,6 @@ void OffscreenRenderer::Finalize() {
 		transformData_ = nullptr;
 	}
 
-	// DescriptorHeapManagerからディスクリプタを解放
-	auto descriptorManager = dxCommon_->GetDescriptorManager();
-	if (descriptorManager) {
-		if (rtvHandle_.isValid) {
-			descriptorManager->ReleaseRTV(rtvHandle_.index);
-		}
-		if (dsvHandle_.isValid) {
-			descriptorManager->ReleaseDSV(dsvHandle_.index);
-		}
-		if (srvHandle_.isValid) {
-			descriptorManager->ReleaseSRV(srvHandle_.index);
-		}
-	}
-
 	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized.\n");
 }
 

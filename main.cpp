@@ -132,7 +132,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	textureManager->LoadTexture("resources/uvChecker.png", "uvChecker");
 	textureManager->LoadTexture("resources/monsterBall.png", "monsterBall");
-	textureManager->LoadTexture("resources/windows7.jpg", "windows");
+	//textureManager->LoadTexture("resources/windows7.jpg", "windows");
 
 
 	///*-----------------------------------------------------------------------*///
@@ -229,7 +229,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 
 	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();			// スプライトを生成
-	sprite->Initialize(directXCommon, "windows");							// 初期化
+	sprite->Initialize(directXCommon, "uvChecker");							// 初期化
 	sprite->SetTransform(transformSprite);									// Transformを設定
 	//デバッグのために一旦非表示
 	sprite->SetVisible(false);

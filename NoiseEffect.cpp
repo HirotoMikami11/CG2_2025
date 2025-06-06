@@ -16,7 +16,7 @@ void NoiseEffect::Initialize(DirectXCommon* dxCommon) {
 	//簡単な設定
 	SetNoiseIntensity(0.1f);
 	SetNoiseInterval(0.0f);
-	SetBlockDensity(0.01f);  // 非常に少ないブロック
+	SetcolorNoiseInternsity(0.4f);  // 非常に少ないブロック
 	SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
 	materialData_.animationSpeed = 0.15;
 #endif // _DEBUG
@@ -187,8 +187,8 @@ void NoiseEffect::CreateConstantBuffer() {
 	Logger::Log(Logger::GetStream(), std::format("noiseInterval offset: {} bytes\n", offsetof(NoiseMaterialData, noiseInterval)));
 	Logger::Log(Logger::GetStream(), std::format("animationSpeed offset: {} bytes\n", offsetof(NoiseMaterialData, animationSpeed)));
 	Logger::Log(Logger::GetStream(), std::format("noiseColor offset: {} bytes\n", offsetof(NoiseMaterialData, noiseColor)));
-	Logger::Log(Logger::GetStream(), std::format("colorVariation offset: {} bytes\n", offsetof(NoiseMaterialData, colorVariation)));
-	Logger::Log(Logger::GetStream(), std::format("blockDensity offset: {} bytes\n", offsetof(NoiseMaterialData, blockDensity)));
+	Logger::Log(Logger::GetStream(), std::format("blackIntensity offset: {} bytes\n", offsetof(NoiseMaterialData, blackIntensity)));
+	Logger::Log(Logger::GetStream(), std::format("colorNoiseInternsity offset: {} bytes\n", offsetof(NoiseMaterialData, colorNoiseInternsity)));
 
 	// 256バイト境界に揃える（DirectX12の要件）
 	size_t alignedSize = (structSize + 255) & ~255;
@@ -209,8 +209,8 @@ void NoiseEffect::CreateConstantBuffer() {
 	materialData_.noiseInterval = 0.0f;
 	materialData_.animationSpeed = 1.0f;
 	materialData_.noiseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	materialData_.colorVariation = 0.2f;
-	materialData_.blockDensity = 0.05f;   // 非常に低い密度から開始
+	materialData_.blackIntensity = 0.8f;
+	materialData_.colorNoiseInternsity = 0.1f;   // 非常に低い密度から開始
 	materialData_.blockDivision = { 40.0f,20.0f };
 
 	// 初期データを設定
@@ -229,7 +229,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 		SetEnabled(true);
 		SetNoiseIntensity(0.7f);
 		SetNoiseInterval(64.0f);
-		SetBlockDensity(0.05f);  // 密度を大幅に下げる
+		SetcolorNoiseInternsity(0.05f);  // 密度を大幅に下げる
 		SetNoiseColor({ 0.0f, 0.3f, 1.0f, 1.0f });
 		animationSpeed_ = 0.5f;
 		break;
@@ -238,7 +238,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 		SetEnabled(true);
 		SetNoiseIntensity(0.8f);
 		SetNoiseInterval(48.0f);
-		SetBlockDensity(0.1f);   // 密度を下げる
+		SetcolorNoiseInternsity(0.1f);   // 密度を下げる
 		SetNoiseColor({ 0.0f, 0.4f, 1.0f, 1.0f });
 		animationSpeed_ = 1.0f;
 		break;
@@ -247,7 +247,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 		SetEnabled(true);
 		SetNoiseIntensity(0.9f);
 		SetNoiseInterval(32.0f);
-		SetBlockDensity(0.2f);   // 密度を下げる
+		SetcolorNoiseInternsity(0.2f);   // 密度を下げる
 		SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
 		animationSpeed_ = 2.0f;
 		break;
@@ -256,7 +256,7 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 		SetEnabled(true);
 		SetNoiseIntensity(0.8f);
 		SetNoiseInterval(16.0f);
-		SetBlockDensity(0.15f);  // 密度を下げる
+		SetcolorNoiseInternsity(0.15f);  // 密度を下げる
 		SetNoiseColor({ 0.0f, 0.8f, 0.2f, 1.0f }); // 緑系
 		animationSpeed_ = 3.0f;
 		break;
@@ -277,7 +277,7 @@ void NoiseEffect::ImGui() {
 			SetEnabled(true);
 			SetNoiseIntensity(0.1f);
 			SetNoiseInterval(0.0f);
-			SetBlockDensity(0.01f);  // 非常に少ないブロック
+			SetcolorNoiseInternsity(0.8f);  // 非常に少ないブロック
 			SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
 			materialData_.animationSpeed = 0.15;
 			materialData_.blockDivision = { 40.0f,20.0f };
@@ -314,14 +314,20 @@ void NoiseEffect::ImGui() {
 					SetNoiseIntensity(intensity);
 				}
 
+				float colorNoiseInternsity = materialData_.colorNoiseInternsity;
+				if (ImGui::SliderFloat("color NoiseInternsity", &colorNoiseInternsity, 0.0f, 1.0f)) { 
+					SetcolorNoiseInternsity(colorNoiseInternsity);
+				}
+
+				float blackIntensity = materialData_.blackIntensity;
+				if (ImGui::SliderFloat("Black Intensity", &blackIntensity, 0.0f, 1.0f)) {
+					materialData_.blackIntensity = blackIntensity;
+					UpdateConstantBuffer();
+				}
+
 				float noiseInterval = materialData_.noiseInterval;
 				if (ImGui::SliderFloat("noise Interval", &noiseInterval, 0.0f, 1.0f)) {
 					SetNoiseInterval(noiseInterval);
-				}
-
-				float density = materialData_.blockDensity;
-				if (ImGui::SliderFloat("Block Density", &density, 0.0f, 1.0f)) { // 最大値を0.5に制限
-					SetBlockDensity(density);
 				}
 
 				Vector4 noiseColor = materialData_.noiseColor;
@@ -340,11 +346,7 @@ void NoiseEffect::ImGui() {
 					// アニメーション速度の変更は即座に反映
 				}
 
-				float colorVariation = materialData_.colorVariation;
-				if (ImGui::SliderFloat("Color Variation", &colorVariation, 0.0f, 1.0f)) {
-					materialData_.colorVariation = colorVariation;
-					UpdateConstantBuffer();
-				}
+
 
 				ImGui::TreePop();
 			}
@@ -354,7 +356,7 @@ void NoiseEffect::ImGui() {
 			ImGui::Text("Current Time: %.2f", materialData_.time);
 			ImGui::Text("Noise Intensity: %.2f", materialData_.noiseIntensity);
 			ImGui::Text("noise Interval: %.2f", materialData_.noiseInterval);
-			ImGui::Text("Block Density: %.2f", materialData_.blockDensity);
+			ImGui::Text("Color NoiseInternsity: %.2f", materialData_.colorNoiseInternsity);
 			ImGui::Text("Block Division: x.%.2f,y.%.2", materialData_.blockDivision.x, materialData_.blockDivision.y);
 			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}

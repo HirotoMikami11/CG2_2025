@@ -37,8 +37,8 @@ public:
 
 
 		Vector4 noiseColor = { 0.0f, 0.3f, 1.0f, 1.0f };              // 16 bytes (112-127)			//ノイズの色(現在使用してない)
-		float colorVariation = 0.2f;                                    // 4 bytes  (128-131)		//
-		float blockDensity = 0.3f;                                      // 4 bytes  (132-135)		//
+		float blackIntensity = 0.2f;                                    // 4 bytes  (128-131)		//グレー―スケールの強さ
+		float colorNoiseInternsity = 0.3f;                                      // 4 bytes  (132-135)		//
 		Vector2	blockDivision = { 0.0f, 0.0f };                             // 8 bytes  (136-143)	//ブロックずらしの画面分割数
 	};
 
@@ -159,8 +159,8 @@ public:
 	/// <summary>
 	/// ブロック密度を設定
 	/// </summary>
-	void SetBlockDensity(float density) {
-		materialData_.blockDensity = std::clamp(density, 0.0f, 1.0f);
+	void SetcolorNoiseInternsity(float density) {
+		materialData_.colorNoiseInternsity = std::clamp(density, 0.0f, 1.0f);
 		UpdateConstantBuffer();
 	}
 
