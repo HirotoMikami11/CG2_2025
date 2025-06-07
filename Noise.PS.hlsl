@@ -21,6 +21,10 @@ struct NoiseMaterial
     
     // 次の16バイトブロック：ノイズカラー
     float32_t4 noiseColor; // 16 bytes (112-127)                                    //未使用(小分けにして4つパラメータを用意できる)
+    //flaot32_t blockIntensity;                                                       //ブロックずらしの強さ
+    //flaot32_t blockProbability;                                                     //ブロックずらしの確率
+    //flaot32_t reverseProbability;                                                   //ブロック反転の確率
+    //flaot32_t scanLineProbability;                                                  //走査線の確率
     
     // 次の16バイトブロック：残りのパラメータ
     float32_t blackIntensity; // 4 bytes  (128-131)                                 //グレースケールの補間率(0に近いほど画像の色,1ほどグレースケール画像)
@@ -139,37 +143,37 @@ PixelShaderOutput main(VertexShaderOutput input)
  
     if (glitchIntensity > 0.0)
     {
-        //// 1. 水平ピクセルずれ（Horizontal displacement）
-        //float lineNoise = random(floor(uv.y * 200.0) + floor(animTime * 20.0));
-        //float displacement = (lineNoise - 0.5) * glitchIntensity * 0.1;
-        //uv.x += displacement;
-        
-        //// 2. ブロック状の破損
-        //float2 blockPos = floor(uv * float2(gMaterial.blockDivision.x, gMaterial.blockDivision.y)); //float2(40,20)画面を40x20で分割
-        //float blockRandomVal = random(blockPos + floor(animTime * 5.0)); //animTime*5.0は50くらいにしてもいいかも
+ 
+        // 2. ブロック状の破損
+        float2 blockPos = floor(uv * float2(gMaterial.blockDivision.x, gMaterial.blockDivision.y)); //float2(40,20)画面を40x20で分割
+        float blockRandomVal = random(blockPos + floor(animTime * 5.0)); //animTime*5.0は50くらいにしてもいいかも
    
-        //if (blockRandomVal > 0.95)//個々の値もパラメータにできる
-        //{
-        // // ブロック単位で画像をずらす
-        //    float blockShift = (random(blockPos + 1.0) - 0.5) * 0.8; //0.2がシフト量の大きさ。個々のパラメータを用意すれば変えられる
-        //    uv.x += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
-        //    uv.y += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
-        //}
+        if (blockRandomVal > 0.95)//個々の値もパラメータにできる
+        {
+         // ブロック単位で画像をずらす
+            float blockShift = (random(blockPos + 1.0) - 0.5) * 0.8; //0.2がシフト量の大きさ。個々のパラメータを用意すれば変えられる
+            uv.x += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
+            uv.y += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
+        }
+               // 1. 水平ピクセルずれ（Horizontal displacement）
+        float lineNoise = random(floor(uv.y * 200.0) + floor(animTime * 20.0));
+        float displacement = (lineNoise - 0.5) * glitchIntensity * 0.1;
+        uv.x += displacement;
         
         
-        //// 3. RGBチャンネル分離（色収差）
-        //float rgbShift = gMaterial.colorNoiseInternsity * 0.02;
-        //float2 redUV = uv + float2(rgbShift, 0.0);
-        //float2 greenUV = uv;
-        //float2 blueUV = uv - float2(rgbShift, 0.0);
+        // 3. RGBチャンネル分離（色収差）
+        float rgbShift = gMaterial.colorNoiseInternsity * 0.02;
+        float2 redUV = uv + float2(rgbShift, 0.0);
+        float2 greenUV = uv;
+        float2 blueUV = uv - float2(rgbShift, 0.0);
      
-        ////チャンネル別にサンプリング
-        //float r = gTexture.Sample(gSampler, redUV).r;
-        //float g = gTexture.Sample(gSampler, greenUV).g;
-        //float b = gTexture.Sample(gSampler, blueUV).b;
-        //float a = gTexture.Sample(gSampler, uv).a;
+        //チャンネル別にサンプリング
+        float r = gTexture.Sample(gSampler, redUV).r;
+        float g = gTexture.Sample(gSampler, greenUV).g;
+        float b = gTexture.Sample(gSampler, blueUV).b;
+        float a = gTexture.Sample(gSampler, uv).a;
      
-        //output.color = float4(r, g, b, a);
+        output.color = float4(r, g, b, a);
 
         // 4. 走査線ノイズ
         float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
@@ -179,15 +183,15 @@ PixelShaderOutput main(VertexShaderOutput input)
             output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
         }
      
-        ////. デジタルアーティファクト（時々画像が反転）
-        //if (blockRandomVal > 0.99)
-        //{
-        //    float2 flippedUV = float2(1.0 - uv.x, uv.y);
-        //    output.color = gTexture.Sample(gSampler, flippedUV);
-        //}
+        //. デジタルアーティファクト（時々画像が反転）
+        if (blockRandomVal > 0.99)
+        {
+            float2 flippedUV = float2(1.0 - uv.x, uv.y);
+            output.color = gTexture.Sample(gSampler, flippedUV);
+        }
             
-        //// 6.グレースケールを適用
-        //output.color.rgb = applyGrayscale(output.color.rgb, gMaterial.blackIntensity); //この1はtなのでパラメータにできる
+        // 6.グレースケールを適用
+        output.color.rgb = applyGrayscale(output.color.rgb, gMaterial.blackIntensity); //この1はtなのでパラメータにできる
         
         
    
