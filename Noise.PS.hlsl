@@ -157,40 +157,27 @@ PixelShaderOutput main(VertexShaderOutput input)
         //}
         
         
-        // 3. RGBチャンネル分離（色収差）
-        float rgbShift = gMaterial.colorNoiseInternsity * 0.02;
-        float2 redUV = uv + float2(rgbShift, 0.0);
-        float2 greenUV = uv;
-        float2 blueUV = uv - float2(rgbShift, 0.0);
+        //// 3. RGBチャンネル分離（色収差）
+        //float rgbShift = gMaterial.colorNoiseInternsity * 0.02;
+        //float2 redUV = uv + float2(rgbShift, 0.0);
+        //float2 greenUV = uv;
+        //float2 blueUV = uv - float2(rgbShift, 0.0);
      
-        //チャンネル別にサンプリング
-        float r = gTexture.Sample(gSampler, redUV).r;
-        float g = gTexture.Sample(gSampler, greenUV).g;
-        float b = gTexture.Sample(gSampler, blueUV).b;
-        float a = gTexture.Sample(gSampler, uv).a;
-     
-        output.color = float4(r, g, b, a);
-            
-        //output.color = gTexture.Sample(gSampler,uv);
-        
-             ////gTextureの仕様理解するためにコメントアウトを外す
-        //float r = gTexture.Sample(gSampler, uv).r;
-        //float g = gTexture.Sample(gSampler, uv).g;
-        //float b = gTexture.Sample(gSampler, uv).b;
+        ////チャンネル別にサンプリング
+        //float r = gTexture.Sample(gSampler, redUV).r;
+        //float g = gTexture.Sample(gSampler, greenUV).g;
+        //float b = gTexture.Sample(gSampler, blueUV).b;
         //float a = gTexture.Sample(gSampler, uv).a;
-        //output.color = float4(0, 0, b, a);
-        
-        
-        
-        
-        
-        //   // 4. 走査線ノイズ
-        //float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
-        //float scanNoise = random(float2(floor(uv.y * 400.0), floor(animTime * 30.0)));
-        //if (scanNoise > 0.98)
-        //{
-        //    output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
-        //}
+     
+        //output.color = float4(r, g, b, a);
+
+        // 4. 走査線ノイズ
+        float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
+        float scanNoise = random(float2(floor(uv.y * 400.0), floor(animTime * 30.0)));
+        if (scanNoise > 0.97)
+        {
+            output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
+        }
      
         ////. デジタルアーティファクト（時々画像が反転）
         //if (blockRandomVal > 0.99)
@@ -225,6 +212,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     else
     {
      // グリッチが発生していない時は通常の画像
+
         output.color = gTexture.Sample(gSampler, uv);
 
     }
