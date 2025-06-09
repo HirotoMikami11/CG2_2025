@@ -19,12 +19,11 @@ struct NoiseMaterial
     float32_t noiseInterval; // 4 bytes  (104-107)                                  //ノイズが起こる頻度(0近ければ近いほど起こりやすく、増やすほど起こりにくくなる)
     float32_t animationSpeed; // 4 bytes  (108-111)                                 //全体に適応する時間(内部時間にかける値)
     
-    // 次の16バイトブロック：ノイズカラー
-    float32_t4 noiseColor; // 16 bytes (112-127)                                    //未使用(小分けにして4つパラメータを用意できる)
-    //flaot32_t blockIntensity;                                                       //ブロックずらしの強さ
-    //flaot32_t blockProbability;                                                     //ブロックずらしの確率
-    //flaot32_t reverseProbability;                                                   //ブロック反転の確率
-    //flaot32_t scanLineProbability;                                                  //走査線の確率
+    // 次の16バイトブロック：ノイズパラメータ2// 16 bytes (112-127)
+    float32_t blockIntensity; //ブロックずらしの強さ
+    float32_t blockProbability; //ブロックずらしの確率
+    float32_t reverseProbability; //ブロック反転の確率
+    float32_t scanLineProbability; //走査線の確率
     
     // 次の16バイトブロック：残りのパラメータ
     float32_t blackIntensity; // 4 bytes  (128-131)                                 //グレースケールの補間率(0に近いほど画像の色,1ほどグレースケール画像)
@@ -148,12 +147,12 @@ PixelShaderOutput main(VertexShaderOutput input)
         float2 blockPos = floor(uv * float2(gMaterial.blockDivision.x, gMaterial.blockDivision.y)); //float2(40,20)画面を40x20で分割
         float blockRandomVal = random(blockPos + floor(animTime * 5.0)); //animTime*5.0は50くらいにしてもいいかも
    
-        if (blockRandomVal > 0.95)//個々の値もパラメータにできる
+        if (blockRandomVal > (1 - gMaterial.blockProbability))//個々の値もパラメータにできる
         {
          // ブロック単位で画像をずらす
-            float blockShift = (random(blockPos + 1.0) - 0.5) * 0.8; //0.2がシフト量の大きさ。個々のパラメータを用意すれば変えられる
-            uv.x += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
-            uv.y += blockShift * glitchIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
+            float blockShift = (random(blockPos + 1.0) - 0.5) * 0.8; //0.8がシフト量の大きさ。個々のパラメータを用意すれば変えられる
+            uv.x += blockShift * gMaterial.blackIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
+            uv.y += blockShift * gMaterial.blackIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
         }
                // 1. 水平ピクセルずれ（Horizontal displacement）
         float lineNoise = random(floor(uv.y * 200.0) + floor(animTime * 20.0));
@@ -176,15 +175,19 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color = float4(r, g, b, a);
 
         // 4. 走査線ノイズ
-        float scanLine = sin(uv.y * 800.0 + animTime * 10.0) * 0.5 + 0.5;
+        float scanLine = sin(uv.y * 800.0 + animTime * 100.0) * 0.5 + 0.5;
         float scanNoise = random(float2(floor(uv.y * 400.0), floor(animTime * 30.0)));
-        if (scanNoise > 0.97)
+        if (scanNoise > (1 - gMaterial.scanLineProbability))
         {
             output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
         }
      
+        //// 走査線
+        //float color = sin(uv.y * 分割数) * 0.5 + 0.5;
+        //output.color = float4(color, color, color, 透明度);
+        
         //. デジタルアーティファクト（時々画像が反転）
-        if (blockRandomVal > 0.99)
+        if (blockRandomVal > (1 - gMaterial.reverseProbability))
         {
             float2 flippedUV = float2(1.0 - uv.x, uv.y);
             output.color = gTexture.Sample(gSampler, flippedUV);
@@ -199,8 +202,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         ////それぞれ出力するときにコメントアウトを外す
         //output.color = gTexture.Sample(gSampler, uv);
         
-       //// ブロック境界線を適用（グリッチ効果と合成）
-       // output.color = DrawBlockGr 9id(input.texcoord, output.color);
+
         //// デバッグ：ブロック効果を色で可視化
         //if (blockRandomVal > 0.99)
         //{
@@ -220,7 +222,8 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color = gTexture.Sample(gSampler, uv);
 
     }
+    //       // ブロック境界線を適用（グリッチ効果と合成）
+    //output.color = DrawBlockGrid(input.texcoord, output.color);
 
-    
     return output;
 }

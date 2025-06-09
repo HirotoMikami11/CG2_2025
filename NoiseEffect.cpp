@@ -16,9 +16,13 @@ void NoiseEffect::Initialize(DirectXCommon* dxCommon) {
 	//簡単な設定
 	SetNoiseIntensity(0.1f);
 	SetNoiseInterval(0.0f);
-	SetcolorNoiseInternsity(0.4f);  // 非常に少ないブロック
-	SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
+	SetcolorNoiseInternsity(0.4f);
+	materialData_.blockIntensity = 0.2f;											//ブロックずらしの強さ
+	materialData_.blockProbability = 0.05f;											//ブロックずらしの確率
+	materialData_.reverseProbability = 0.01f;										//ブロック反転の確率
+	materialData_.scanLineProbability = 0.03f;										//走査線の確率
 	materialData_.animationSpeed = 0.15;
+
 #endif // _DEBUG
 	Logger::Log(Logger::GetStream(), "NoiseEffect initialized successfully!\n");
 }
@@ -186,7 +190,10 @@ void NoiseEffect::CreateConstantBuffer() {
 	Logger::Log(Logger::GetStream(), std::format("noiseIntensity offset: {} bytes\n", offsetof(NoiseMaterialData, noiseIntensity)));
 	Logger::Log(Logger::GetStream(), std::format("noiseInterval offset: {} bytes\n", offsetof(NoiseMaterialData, noiseInterval)));
 	Logger::Log(Logger::GetStream(), std::format("animationSpeed offset: {} bytes\n", offsetof(NoiseMaterialData, animationSpeed)));
-	Logger::Log(Logger::GetStream(), std::format("noiseColor offset: {} bytes\n", offsetof(NoiseMaterialData, noiseColor)));
+	Logger::Log(Logger::GetStream(), std::format("blockIntensity offset: {} bytes\n", offsetof(NoiseMaterialData, blockIntensity)));
+	Logger::Log(Logger::GetStream(), std::format("blockProbability offset: {} bytes\n", offsetof(NoiseMaterialData, blockProbability)));
+	Logger::Log(Logger::GetStream(), std::format("reverseProbability offset: {} bytes\n", offsetof(NoiseMaterialData, reverseProbability)));
+	Logger::Log(Logger::GetStream(), std::format("scanLineProbability offset: {} bytes\n", offsetof(NoiseMaterialData, scanLineProbability)));
 	Logger::Log(Logger::GetStream(), std::format("blackIntensity offset: {} bytes\n", offsetof(NoiseMaterialData, blackIntensity)));
 	Logger::Log(Logger::GetStream(), std::format("colorNoiseInternsity offset: {} bytes\n", offsetof(NoiseMaterialData, colorNoiseInternsity)));
 
@@ -205,10 +212,13 @@ void NoiseEffect::CreateConstantBuffer() {
 	materialData_.uvTransform = MakeIdentity4x4();
 
 	materialData_.time = 0.0f;
-	materialData_.noiseIntensity = 0.0f;  // 初期状態では無効
+	materialData_.noiseIntensity = 0.2f;  // 初期状態では無効
 	materialData_.noiseInterval = 0.0f;
 	materialData_.animationSpeed = 1.0f;
-	materialData_.noiseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialData_.blockIntensity = 0.2f;				//ブロックずらしの強さ
+	materialData_.blockProbability = 0.05f;				//ブロックずらしの確率
+	materialData_.reverseProbability = 0.01f;				//ブロック反転の確率
+	materialData_.scanLineProbability = 0.03f;				//走査線の確率
 	materialData_.blackIntensity = 0.8f;
 	materialData_.colorNoiseInternsity = 0.1f;   // 非常に低い密度から開始
 	materialData_.blockDivision = { 40.0f,20.0f };
@@ -227,38 +237,82 @@ void NoiseEffect::ApplyPreset(NoisePreset preset) {
 
 	case NoisePreset::SUBTLE:
 		SetEnabled(true);
-		SetNoiseIntensity(0.7f);
-		SetNoiseInterval(64.0f);
-		SetcolorNoiseInternsity(0.05f);  // 密度を大幅に下げる
-		SetNoiseColor({ 0.0f, 0.3f, 1.0f, 1.0f });
-		animationSpeed_ = 0.5f;
+		materialData_.time = 1000.0f;
+		///全体に影響を与えるパラメータ
+		materialData_.noiseIntensity = 0.28f;
+		materialData_.noiseInterval = 0.735f;
+		materialData_.animationSpeed = 0.33f;
+		///色収差
+		materialData_.colorNoiseInternsity = 0.5f;
+		///グレースケール
+		materialData_.blackIntensity = 0.5f;
+		///ブロックずらし
+		materialData_.blockIntensity = 0.2f;
+		materialData_.blockProbability = 0.065f;
+		materialData_.reverseProbability = 0.032f;
+		materialData_.blockDivision = { 7.5f,25.0f };
+		///走査線
+		materialData_.scanLineProbability = 0.025f;
 		break;
 
 	case NoisePreset::MEDIUM:
 		SetEnabled(true);
-		SetNoiseIntensity(0.8f);
-		SetNoiseInterval(48.0f);
-		SetcolorNoiseInternsity(0.1f);   // 密度を下げる
-		SetNoiseColor({ 0.0f, 0.4f, 1.0f, 1.0f });
-		animationSpeed_ = 1.0f;
+		materialData_.time = 0.0f;
+		///全体に影響を与えるパラメータ
+		materialData_.noiseIntensity = 0.28f;
+		materialData_.noiseInterval = 0.735f;
+		materialData_.animationSpeed = 1.0f;
+		///色収差
+		materialData_.colorNoiseInternsity = 0.5f;
+		///グレースケール
+		materialData_.blackIntensity = 0.5f;
+		///ブロックずらし
+		materialData_.blockIntensity = 0.2f;
+		materialData_.blockProbability = 0.065f;
+		materialData_.reverseProbability = 0.032f;
+		materialData_.blockDivision = { 7.5f,25.0f };
+		///走査線
+		materialData_.scanLineProbability = 0.025f;
 		break;
 
 	case NoisePreset::HEAVY:
 		SetEnabled(true);
-		SetNoiseIntensity(0.9f);
-		SetNoiseInterval(32.0f);
-		SetcolorNoiseInternsity(0.2f);   // 密度を下げる
-		SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
-		animationSpeed_ = 2.0f;
+		materialData_.time = 0.0f;
+		///全体に影響を与えるパラメータ
+		materialData_.noiseIntensity = 0.28f;
+		materialData_.noiseInterval = 0.735f;
+		materialData_.animationSpeed = 1.0f;
+		///色収差
+		materialData_.colorNoiseInternsity = 0.5f;
+		///グレースケール
+		materialData_.blackIntensity = 0.5f;
+		///ブロックずらし
+		materialData_.blockIntensity = 0.2f;
+		materialData_.blockProbability = 0.065f;
+		materialData_.reverseProbability = 0.032f;
+		materialData_.blockDivision = { 7.5f,25.0f };
+		///走査線
+		materialData_.scanLineProbability = 0.025f;
 		break;
 
 	case NoisePreset::DIGITAL_RAIN:
 		SetEnabled(true);
-		SetNoiseIntensity(0.8f);
-		SetNoiseInterval(16.0f);
-		SetcolorNoiseInternsity(0.15f);  // 密度を下げる
-		SetNoiseColor({ 0.0f, 0.8f, 0.2f, 1.0f }); // 緑系
-		animationSpeed_ = 3.0f;
+		materialData_.time = 0.0f;
+		///全体に影響を与えるパラメータ
+		materialData_.noiseIntensity = 0.28f;
+		materialData_.noiseInterval = 0.735f;
+		materialData_.animationSpeed = 1.0f;
+		///色収差
+		materialData_.colorNoiseInternsity = 0.5f;
+		///グレースケール
+		materialData_.blackIntensity = 0.5f;
+		///ブロックずらし
+		materialData_.blockIntensity = 0.2f;
+		materialData_.blockProbability = 0.065f;
+		materialData_.reverseProbability = 0.032f;
+		materialData_.blockDivision = { 7.5f,25.0f };
+		///走査線
+		materialData_.scanLineProbability = 0.025f;
 		break;
 	}
 }
@@ -272,67 +326,75 @@ void NoiseEffect::ImGui() {
 		// エフェクトのオン/オフ
 		ImGui::Checkbox("Enable Noise Effect", &isEnabled_);
 
-		// デバッグ用テストボタン
-		if (ImGui::Button("Test offset")) {
-			SetEnabled(true);
-			SetNoiseIntensity(0.1f);
-			SetNoiseInterval(0.0f);
-			SetcolorNoiseInternsity(0.8f);  // 非常に少ないブロック
-			SetNoiseColor({ 0.0f, 0.5f, 1.0f, 1.0f });
-			materialData_.animationSpeed = 0.15;
-			materialData_.blockDivision = { 40.0f,20.0f };
+
+		// プリセットボタン
+		ImGui::Text("Presets");
+		if (ImGui::Button("Subtle Noise")) {
+			ApplyPreset(NoisePreset::SUBTLE);
 		}
 		ImGui::SameLine();
+		if (ImGui::Button("Medium Noise")) {
+			ApplyPreset(NoisePreset::MEDIUM);
+		}
+		if (ImGui::Button("Heavy Noise")) {
+			ApplyPreset(NoisePreset::HEAVY);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Digital Rain")) {
+			ApplyPreset(NoisePreset::DIGITAL_RAIN);
+		}
+		ImGui::Separator();
+
 		if (ImGui::Button("Reset")) {
 			SetEnabled(false);
 		}
 
+		ImGui::Separator();
 		if (isEnabled_) {
-			// プリセットボタン
-			if (ImGui::TreeNode("Presets")) {
-				if (ImGui::Button("Subtle Noise")) {
-					ApplyPreset(NoisePreset::SUBTLE);
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Medium Noise")) {
-					ApplyPreset(NoisePreset::MEDIUM);
-				}
-				if (ImGui::Button("Heavy Noise")) {
-					ApplyPreset(NoisePreset::HEAVY);
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Digital Rain")) {
-					ApplyPreset(NoisePreset::DIGITAL_RAIN);
-				}
-				ImGui::TreePop();
-			}
-
 			// 個別パラメータ調整
-			if (ImGui::TreeNode("Manual Settings")) {
+			if (ImGui::TreeNode("Settings")) {
+
+				ImGui::Text("master");
+
 				float intensity = materialData_.noiseIntensity;
 				if (ImGui::SliderFloat("Noise Intensity", &intensity, 0.0f, 1.0f)) {
 					SetNoiseIntensity(intensity);
 				}
+				float noiseInterval = materialData_.noiseInterval;
+				if (ImGui::SliderFloat("noise Interval", &noiseInterval, 0.0f, 1.0f)) {
+					SetNoiseInterval(noiseInterval);
+				}
+				if (ImGui::SliderFloat("Animation Speed", &animationSpeed_, 0.0f, 5.0f)) {
+					// アニメーション速度の変更は即座に反映
+				}
 
+				ImGui::Text("colorNoise");
 				float colorNoiseInternsity = materialData_.colorNoiseInternsity;
-				if (ImGui::SliderFloat("color NoiseInternsity", &colorNoiseInternsity, 0.0f, 1.0f)) { 
+				if (ImGui::SliderFloat("color NoiseInternsity", &colorNoiseInternsity, 0.0f, 1.0f)) {
 					SetcolorNoiseInternsity(colorNoiseInternsity);
 				}
 
+				ImGui::Text("grayScale");
 				float blackIntensity = materialData_.blackIntensity;
 				if (ImGui::SliderFloat("Black Intensity", &blackIntensity, 0.0f, 1.0f)) {
 					materialData_.blackIntensity = blackIntensity;
 					UpdateConstantBuffer();
 				}
+				ImGui::Text("blockNoise");
 
-				float noiseInterval = materialData_.noiseInterval;
-				if (ImGui::SliderFloat("noise Interval", &noiseInterval, 0.0f, 1.0f)) {
-					SetNoiseInterval(noiseInterval);
+				float blockIntensity = materialData_.blockIntensity;
+				if (ImGui::SliderFloat("block Intensity", &blockIntensity, 0.0f, 1.0f)) {
+					materialData_.blockIntensity = blockIntensity;
 				}
 
-				Vector4 noiseColor = materialData_.noiseColor;
-				if (ImGui::ColorEdit4("Noise Color", reinterpret_cast<float*>(&noiseColor.x))) {
-					SetNoiseColor(noiseColor);
+				float blockProbability = materialData_.blockProbability;
+				if (ImGui::SliderFloat("block Probability", &blockProbability, 0.0f, 1.0f)) {
+					materialData_.blockProbability = blockProbability;
+				}
+
+				float reverseProbability = materialData_.reverseProbability;
+				if (ImGui::SliderFloat("reverse Probability", &reverseProbability, 0.0f, 1.0f)) {
+					materialData_.reverseProbability = reverseProbability;
 				}
 				Vector2 blockDivision = materialData_.blockDivision;
 				if (ImGui::SliderFloat("Block DivisionX", &blockDivision.x, 1.0f, 50.0f)) { // 最大値を画面のxの半分にする
@@ -341,11 +403,12 @@ void NoiseEffect::ImGui() {
 				if (ImGui::SliderFloat("Block DivisionY", &blockDivision.y, 1.0f, 30.0f)) { // 最大値を画面のyの半分にする
 					SetBlockDivision(blockDivision);
 				}
+				ImGui::Text("scanLineNoise");
 
-				if (ImGui::SliderFloat("Animation Speed", &animationSpeed_, 0.0f, 5.0f)) {
-					// アニメーション速度の変更は即座に反映
+				float scanLineProbability = materialData_.scanLineProbability;
+				if (ImGui::SliderFloat("scanLine Probability", &scanLineProbability, 0.0f, 1.0f)) {
+					materialData_.scanLineProbability = scanLineProbability;
 				}
-
 
 
 				ImGui::TreePop();
