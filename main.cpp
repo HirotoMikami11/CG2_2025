@@ -318,8 +318,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		model->ImGui();
 
 		directionalLight.ImGui("DriectonalLight");
-		// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
+
+		/// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
 		offscreenRenderer->ImGui();
+
 		ImGui::End();
 
 		//																			//
@@ -400,11 +402,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 通常描画の描画準備
 		directXCommon->PreDraw();
-
+		///通常描画
 
 		/// オフスクリーンの画面の実態描画
 		offscreenRenderer->DrawOffscreenTexture();
-		///通常描画
+
 
 
 

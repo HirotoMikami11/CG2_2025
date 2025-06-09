@@ -11,7 +11,6 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	CreateRTV();
 	CreateDSV();
 	CreateSRV();
-	CreatePSO();
 	CreateVertexBuffer();
 
 	// ビューポート設定
@@ -168,9 +167,9 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 		materialData_->useLambertianReflectance = false;
 		materialData_->uvTransform = MakeIdentity4x4();
 
-		// 通常のオフスクリーン描画用のPSOを設定
-		commandList->SetGraphicsRootSignature(rootSignature_.Get());
-		commandList->SetPipelineState(pipelineState_.Get());
+		// オフスクリーンのルートシグネチャを設定
+		commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
+		commandList->SetPipelineState(dxCommon_->GetPipelineState());
 
 		// 頂点バッファを設定
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
@@ -181,10 +180,13 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 		commandList->SetGraphicsRootDescriptorTable(2, srvHandle_.gpuHandle);
 	}
 
+
 	// 描画実行
 	commandList->DrawInstanced(6, 1, 0, 0);
 
-	// 通常の描画設定に戻す
+
+
+	// 通常の描画設定に戻す(オフスクリーンに描画しないものをこの先描画するため)
 	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
 	commandList->SetPipelineState(dxCommon_->GetPipelineState());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -316,8 +318,10 @@ void OffscreenRenderer::CreateDSV() {
 }
 
 void OffscreenRenderer::CreateSRV() {
+	//ディスクリプタマネージャーを持ってくる。
 	auto descriptorManager = dxCommon_->GetDescriptorManager();
 	if (!descriptorManager) {
+		//持ってこれなかったらエラー
 		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
 		return;
 	}
@@ -325,6 +329,7 @@ void OffscreenRenderer::CreateSRV() {
 	// SRVを割り当て
 	srvHandle_ = descriptorManager->AllocateSRV();
 	if (!srvHandle_.isValid) {
+		//割り当てられなかったエラー
 		Logger::Log(Logger::GetStream(), "Failed to allocate SRV for offscreen renderer\n");
 		return;
 	}
@@ -353,8 +358,9 @@ void OffscreenRenderer::CreatePSO() {
 	// オフスクリーン描画用の簡素化されたRootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-	// DescriptorRange
+	
+	//DescriptorRange=shaderがアクセスするリソース(テクスチャ、バッファなど)をまとめて定義する
+	//DescriptorRangeを作る
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
@@ -599,3 +605,10 @@ void OffscreenRenderer::ImGui() {
 		}
 	}
 }
+
+
+
+//:TODO スプライトをobject3Dから独立させる
+//	独立させたスプライトをオフスクリーンに適用
+//	結果として、PSOやvertexBufferなどを削減
+//	ポストエフェクトはスプライトにかける効果だと割り切る

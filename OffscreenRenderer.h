@@ -17,6 +17,23 @@
 /// </summary>
 class OffscreenRenderer {
 public:
+
+	/// <summary>
+/// マテリアル
+/// </summary>
+	struct  offscreenMaterialData final {
+		Vector4 color;						//色
+		int32_t enableLighting;				//ライティングするか
+		int32_t useLambertianReflectance;	//ランバート反射させるか
+		float padding[2];					//隙間埋める
+		Matrix4x4 uvTransform;
+	};
+
+
+
+
+
+
 	OffscreenRenderer() = default;
 	~OffscreenRenderer() = default;
 
