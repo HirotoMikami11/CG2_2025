@@ -154,6 +154,8 @@ PixelShaderOutput main(VertexShaderOutput input)
             uv.x += blockShift * gMaterial.blackIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
             uv.y += blockShift * gMaterial.blackIntensity; //ノイズの強度で動かしてるので、別の値を用意しないとずれ幅がピクセルずれと連動してわかりずらいかも、だが、blockShift出かけるので結局上の列をパラメータとして持つべき
         }
+        
+        
                // 1. 水平ピクセルずれ（Horizontal displacement）
         float lineNoise = random(floor(uv.y * 200.0) + floor(animTime * 20.0));
         float displacement = (lineNoise - 0.5) * glitchIntensity * 0.1;
@@ -181,11 +183,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         {
             output.color.rgb = lerp(output.color.rgb, float3(scanLine, scanLine, scanLine), 0.3);
         }
-     
-        //// 走査線
-        //float color = sin(uv.y * 分割数) * 0.5 + 0.5;
-        //output.color = float4(color, color, color, 透明度);
-        
+             
         //. デジタルアーティファクト（時々画像が反転）
         if (blockRandomVal > (1 - gMaterial.reverseProbability))
         {
@@ -196,34 +194,18 @@ PixelShaderOutput main(VertexShaderOutput input)
         // 6.グレースケールを適用
         output.color.rgb = applyGrayscale(output.color.rgb, gMaterial.blackIntensity); //この1はtなのでパラメータにできる
         
-        
-   
-
         ////それぞれ出力するときにコメントアウトを外す
         //output.color = gTexture.Sample(gSampler, uv);
-        
-
-        //// デバッグ：ブロック効果を色で可視化
-        //if (blockRandomVal > 0.99)
-        //{
-        //    output.color = float4(1.0, 0.0, 0.0, 1.0); // 反転ブロックを赤で表示
-        //    return output;
-        //}
-        //else if (blockRandomVal > 0.95)
-        //{
-        //    output.color = float4(0.0, 1.0, 0.0, 1.0); // シフトブロックを緑で表示
-        //    return output;
-        //}
     }
     else
     {
      // グリッチが発生していない時は通常の画像
 
         output.color = gTexture.Sample(gSampler, uv);
-
+        
     }
     //       // ブロック境界線を適用（グリッチ効果と合成）
     //output.color = DrawBlockGrid(input.texcoord, output.color);
 
-    return output;
-}
+        return output;
+    }
