@@ -83,41 +83,6 @@ void AudioManager::LoadAudio(const std::string& filename, const std::string& tag
 	audios[tagName] = audio;
 }
 
-void AudioManager::LoadWave(const std::string& filename, const std::string& tagName) {
-	// 既に同じタグ名で登録されていた場合は古いものを解放
-	if (audios.find(tagName) != audios.end()) {
-		if (audios[tagName]) {
-			audios[tagName]->Unload();
-			delete audios[tagName];
-		}
-		audios.erase(tagName);
-	}
-
-	// 新しい音声データを作成
-	Audio* audio = new Audio();
-	//実際に読み込む
-	audio->LoadWave(filename);
-	audios[tagName] = audio;
-}
-
-void AudioManager::LoadWithMediaFoundation(const std::string& filename, const std::string& tagName) {
-
-	// 既に同じタグ名で登録されていた場合は古いものを解放
-	if (audios.find(tagName) != audios.end()) {
-		if (audios[tagName]) {
-			audios[tagName]->Unload();
-			delete audios[tagName];
-		}
-		audios.erase(tagName);
-	}
-
-	// 新しい音声データを作成
-	Audio* audio = new Audio();
-	//実際に読み込む
-	audio->LoadWithMediaFoundation(filename);
-	audios[tagName] = audio;
-}
-
 void AudioManager::Play(const std::string& tagName) {
 	// 指定したタグ名の音声が見つからなければ何もしない
 	if (audios.find(tagName) == audios.end()) {

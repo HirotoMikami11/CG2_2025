@@ -138,20 +138,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///								音声データの読み込み							///
 	///*-----------------------------------------------------------------------*///
 
-	////ゲーム開始前に読み込む音声データ
-	//audioManager->LoadWave("resources/Audio/Alarm01.wav", "Alarm");
-	//audioManager->LoadWithMediaFoundation("resources/Audio/Bgm01.mp3", "BGM");
-	//audioManager->LoadWithMediaFoundation("resources/Audio/Se01.mp3", "SE");
+	//ゲーム開始前に読み込む音声データ
+	audioManager->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
+	audioManager->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
+	audioManager->LoadAudio("resources/Audio/Se01.mp3", "SE");
 
-	////tagを利用して再生
-	//audioManager->Play("Alarm");
-	//audioManager->SetVolume("Alarm", 0.1f);	
+	//tagを利用して再生
+	audioManager->Play("Alarm");
+	audioManager->SetVolume("Alarm", 0.1f);	
 
-	//audioManager->PlayLoop("BGM");
-	//audioManager->SetVolume("BGM", 0.1f);
+	audioManager->PlayLoop("BGM");
+	audioManager->SetVolume("BGM", 0.1f);
 
-	//audioManager->PlayLoop("SE");
-	//audioManager->SetVolume("SE", 0.1f);
+	audioManager->PlayLoop("SE");
+	audioManager->SetVolume("SE", 0.1f);
 
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///

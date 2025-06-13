@@ -29,20 +29,6 @@ public:
 	void LoadAudio(const std::string& filename, const std::string& tagName);
 
 	/// <summary>
-	/// 音声データの読み込み(WAVE)
-	/// </summary>
-	/// <param name="filename"></param>
-	/// <param name="tagName"></param>
-	void LoadWave(const std::string& filename, const std::string& tagName);
-
-	/// <summary>
-	/// 音声データの読み込み（Microsoft Media FoundationでWAVE/MP3）
-	/// </summary>
-	/// <param name="filename"></param>
-	/// <param name="tagName"></param>
-	void LoadWithMediaFoundation(const std::string& filename, const std::string& tagName);
-
-	/// <summary>
 	/// 音声の再生(ループなし)
 	/// </summary>
 	/// <param name="tagName"></param>

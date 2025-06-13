@@ -8,104 +8,7 @@ Audio::~Audio() {
 	Unload();
 }
 void Audio::LoadAudio(const std::string& filename) {
-	// ファイル拡張子を取得して適切な読み込み方法を選択
-	std::string extension = GetFileExtension(filename);
-
-	if (extension == ".wav") {
-		//Waveファイルを読みこむ
-		LoadWave(filename);
-	} else if (extension == ".mp3") {
-		// MP3はMedia Foundationを使用
-		LoadWithMediaFoundation(filename);
-	} else {
-		assert(false && "Not Wave Of MP3");	//知らない拡張子なら止める
-	}
-}
-
-std::string Audio::GetFileExtension(const std::string& filename) {
-	// ファイル名から最後のドット（.）の位置を検索
-	size_t dotPos = filename.find_last_of('.');
-
-	// ドットが見つからない場合は空文字列を返す
-	if (dotPos == std::string::npos) {
-		return "";
-	}
-
-	// ドット位置から末尾までの文字列を抽出（ドットも含む）
-	std::string extension = filename.substr(dotPos);
-
-	// 拡張子を小文字に変換
-	// ".MP3" なら".mp3",".WAV"なら".wav"
-	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-	return extension;
-}
-
-void Audio::LoadWave(const std::string& filename) {
-	// ファイルを開く
-	std::ifstream file;
-	file.open(filename, std::ios_base::binary);
-	// 失敗したら終了
-	assert(file.is_open());
-
-	// .wavデータ読み込み
-	// RIFFヘッダーを読む
-	RiffHeader riff;
-	file.read((char*)&riff, sizeof(riff));
-	// ファイルがRIFFかどうか
-	if (strncmp(riff.chunk.id, "RIFF", 4) != 0) {
-		assert(0);
-	}
-	// タイプがWAVEかどうか
-	if (strncmp(riff.type, "WAVE", 4) != 0) {
-		assert(0);
-	}
-
-	// Formatチャンク読み込み
-	FormatChunk format = {};
-	// チャンクヘッダーの確認
-	file.read((char*)&format, sizeof(ChunkHeader));
-	if (strncmp(format.chunk.id, "fmt ", 4) != 0) {
-		assert(0);
-	}
-	// チャンク本体の読み込み
-	assert(format.chunk.size <= sizeof(format.fmt));
-	file.read((char*)&format.fmt, format.chunk.size);
-
-	// Dataチャンクの読み込み
-	ChunkHeader data;
-	file.read((char*)&data, sizeof(data));
-	// JUNKチャンクはダミーデータなので、検出した場合はそれを読み飛ばす
-	if (strncmp(data.id, "JUNK", 4) == 0) {
-		// 読み取りの位置をJUNKチャンクの終わりまで進める
-		file.seekg(data.size, std::ios_base::cur);
-		// 再読み込み
-		file.read((char*)&data, sizeof(data));
-	}
-
-	if (strncmp(data.id, "data", 4) != 0) {
-		assert(0);
-	}
-
-	// Dataチャンクの波型データを読み込む
-	char* pBuffer = new char[data.size];
-	file.read(pBuffer, data.size);
-
-	// ファイルを閉じる
-	file.close();
-
-	// 読み込んだ音声データを設定
-	soundData.wfex = format.fmt;							// 波型フォーマット
-	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);	// 波型データ
-	soundData.bufferSize = data.size;						// 波型データのサイズ
-}
-
-void Audio::LoadWithMediaFoundation(const std::string& filename) {
-	// MediaFoundationを使用してMP3をPCMに変換
-	ConvertMP3ToPCM(filename);
-}
-
-void Audio::ConvertMP3ToPCM(const std::string& filename) {
-	HRESULT hr = S_OK;//S_OK入れるとなぜか1MBだけメモリ軽くなる
+	HRESULT hr = S_OK;//S_OK入れるとなぜか1MBだけメモリ軽くなる??
 
 	///*-----------------------------------------------------------------------*///
 	///								ソースリーダーの作成							///
@@ -204,7 +107,6 @@ void Audio::ConvertMP3ToPCM(const std::string& filename) {
 	memcpy(soundData.pBuffer, mediaData.data(), soundData.bufferSize);
 
 }
-
 
 
 void Audio::Play(IXAudio2* xAudio2) {
