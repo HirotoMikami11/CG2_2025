@@ -12,9 +12,16 @@
 ///ウィンドウサイズ
 #include"GraphicsConfig.h"
 
-// クライアント領域のサイズ
-//static const int32_t kClientWidth = 1280;
-//static const int32_t kClientHeight = 720;
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+///																		///
+///								float
+///																		///
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+float Lerp(const float& min, const float& max, float t);
+
 
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
@@ -37,6 +44,109 @@ struct Vector2 final {
 	float x;
 	float y;
 };
+
+// 長さ（座標から）
+float Vector2Length(const float x, const float y);
+
+// 長さ（Vector2から）
+float Vector2Length(const Vector2& v);
+
+// 加算
+Vector2 Vector2Add(const Vector2& v1, const Vector2& v2);
+
+// 減算
+Vector2 Vector2Subtract(const Vector2& v1, const Vector2& v2);
+
+// スカラー倍
+Vector2 Vector2Multiply(float scalar, const  Vector2& v);
+
+// 内積
+float Vector2Dot(const  Vector2& v1, const  Vector2& v2);
+
+// 正規化
+Vector2 Vector2Normalize(const  Vector2& v);
+
+// 距離
+float Vector2Distance(const Vector2& v1, const Vector2& v2);
+
+// 2Dクロス積（スカラー値を返す）
+float Vector2Cross(const Vector2& v1, const  Vector2& v2);
+
+// 線形補間
+Vector2 Lerp(const Vector2& v1, const  Vector2& v2, float t);
+
+// 垂直ベクトル（90度回転）
+Vector2 Vector2Perpendicular(const Vector2& v);
+
+// 回転
+Vector2 Vector2Rotate(const Vector2& v, float radian);
+
+
+/*-----------------------------------------------------------------------*/
+//
+//						Vector2 演算子オーバーロード
+//
+/*-----------------------------------------------------------------------*/
+
+// ===== 二項演算子 =====
+
+// 加算 (v1 + v2)
+inline Vector2 operator+(const Vector2& v1, const Vector2& v2) { return { v1.x + v2.x, v1.y + v2.y }; }
+
+// 減算 (v1 - v2)
+inline Vector2 operator-(const Vector2& v1, const Vector2& v2) { return { v1.x - v2.x, v1.y - v2.y }; }
+
+// スカラー倍 (scalar * v)
+inline Vector2 operator*(float scalar, const Vector2& v) { return { v.x * scalar, v.y * scalar }; }
+
+// スカラー倍 (v * scalar)
+inline Vector2 operator*(const Vector2& v, float scalar) { return { v.x * scalar, v.y * scalar }; }
+
+// スカラー除算 (v / scalar)
+inline Vector2 operator/(const Vector2& v, float scalar) {
+	assert(scalar != 0.0f); // ゼロ除算チェック
+	return { v.x / scalar, v.y / scalar };
+}
+
+// ===== 単項演算子 =====
+
+// 単項マイナス (-v)
+inline Vector2 operator-(const Vector2& v) { return { -v.x, -v.y }; }
+
+// 単項プラス (+v)
+inline Vector2 operator+(const Vector2& v) { return v; }
+
+// ===== 複合代入演算子 =====
+
+// 加算代入 (v1 += v2)
+inline Vector2& operator+=(Vector2& v1, const Vector2& v2) {
+	v1.x += v2.x;
+	v1.y += v2.y;
+	return v1;
+}
+
+// 減算代入 (v1 -= v2)
+inline Vector2& operator-=(Vector2& v1, const Vector2& v2) {
+	v1.x -= v2.x;
+	v1.y -= v2.y;
+	return v1;
+}
+
+// スカラー倍代入 (v *= scalar)
+inline Vector2& operator*=(Vector2& v, float scalar) {
+	v.x *= scalar;
+	v.y *= scalar;
+	return v;
+}
+
+// スカラー除算代入 (v /= scalar)
+inline Vector2& operator/=(Vector2& v, float scalar) {
+	assert(scalar != 0.0f); // ゼロ除算チェック
+	v.x /= scalar;
+	v.y /= scalar;
+	return v;
+}
+
 
 /*-----------------------------------------------------------------------*/
 //
@@ -81,9 +191,16 @@ Vector3 Vector3Normalize(const Vector3& v);
 //クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
+
+//線形補間
+//min,max
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
+
+
 /*-----------------------------------------------------------------------*/
 //
-//                          Vector3 演算子オーバーロード
+//							Vector3 演算子オーバーロード
 //
 /*-----------------------------------------------------------------------*/
 

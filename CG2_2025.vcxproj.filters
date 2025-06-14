@@ -73,6 +73,9 @@
     <Filter Include="ヘッダー ファイル\Glitch">
       <UniqueIdentifier>{b92610dd-7304-427c-b53b-12d47c481ead}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader\Glitch">
+      <UniqueIdentifier>{14713c3b-3f84-4702-8ff1-261f2346693d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -186,10 +189,10 @@
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </FxCompile>
     <FxCompile Include="Glitch.PS.hlsl">
-      <Filter>リソース ファイル\Shader</Filter>
+      <Filter>リソース ファイル\Shader\Glitch</Filter>
     </FxCompile>
     <FxCompile Include="Glitch.VS.hlsl">
-      <Filter>リソース ファイル\Shader</Filter>
+      <Filter>リソース ファイル\Shader\Glitch</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -301,7 +304,7 @@
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </None>
     <None Include="Glitch.hlsli">
-      <Filter>リソース ファイル\Shader</Filter>
+      <Filter>リソース ファイル\Shader\Glitch</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

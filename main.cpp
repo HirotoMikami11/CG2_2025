@@ -139,19 +139,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 	//ゲーム開始前に読み込む音声データ
-	audioManager->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
-	audioManager->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
-	audioManager->LoadAudio("resources/Audio/Se01.mp3", "SE");
+	//audioManager->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
+	//audioManager->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
+	//audioManager->LoadAudio("resources/Audio/Se01.mp3", "SE");
 
-	//tagを利用して再生
-	audioManager->Play("Alarm");
-	audioManager->SetVolume("Alarm", 0.1f);	
+	////tagを利用して再生
+	//audioManager->Play("Alarm");
+	//audioManager->SetVolume("Alarm", 0.1f);	
 
-	audioManager->PlayLoop("BGM");
-	audioManager->SetVolume("BGM", 0.1f);
+	//audioManager->PlayLoop("BGM");
+	//audioManager->SetVolume("BGM", 0.1f);
 
-	audioManager->PlayLoop("SE");
-	audioManager->SetVolume("SE", 0.1f);
+	//audioManager->PlayLoop("SE");
+	//audioManager->SetVolume("SE", 0.1f);
 
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
@@ -215,7 +215,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 	//TODO: spriteはのちにGameObjectから独立させる
-	//TODO: uvTransformもspriteのみ、
 
 
 #pragma region "Sprite"
@@ -381,21 +380,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///																			///
 		///						オフスクリーンレンダリング								///
 		///																			///
-		// オフスクリーンの描画準備
-		offscreenRenderer->PreDraw();
+		//// オフスクリーンの描画準備
+		//offscreenRenderer->PreDraw();
 
 
-		// Sphereの描画
-		sphere->Draw(directionalLight);
-		for (int i = 0; i < kMaxTriangleIndex; i++) {
-			triangle[i]->Draw(directionalLight);
-		}
-		model->Draw(directionalLight);
-		sprite->DrawSprite(directionalLight);
 
 
-		// オフスクリーンの描画終了
-		offscreenRenderer->PostDraw();
+
+		//// オフスクリーンの描画終了
+		//offscreenRenderer->PostDraw();
 		///																			///
 		///								通常レンダリング								///
 		///																			///
@@ -404,10 +397,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		directXCommon->PreDraw();
 		///通常描画
 
-		/// オフスクリーンの画面の実態描画
-		offscreenRenderer->DrawOffscreenTexture();
+		///// オフスクリーンの画面の実態描画
+		//offscreenRenderer->DrawOffscreenTexture();
 
-
+		// Sphereの描画
+		sphere->Draw(directionalLight);
+		for (int i = 0; i < kMaxTriangleIndex; i++) {
+			triangle[i]->Draw(directionalLight);
+		}
+		model->Draw(directionalLight);
+		sprite->DrawSprite(directionalLight);
 
 
 		// ImGuiの画面への描画

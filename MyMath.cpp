@@ -1,5 +1,23 @@
 #include "MyMath.h"
 
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+///																		///
+///								float
+///																		///
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+float Lerp(const float& min, const float& max, float t) { return min + (max - min) * t; };
+
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+///																		///
+///								ベクトル
+///																		///
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
 /*-----------------------------------------------------------------------*/
 //
@@ -7,12 +25,87 @@
 //
 /*-----------------------------------------------------------------------*/
 
+// 既存の関数（座標から長さを計算）
+float Vector2Length(const float x, const float y) {
+	float result = sqrtf(x * x + y * y);
+	return result;
+}
 
+// Vector2から長さを計算
+float Vector2Length(const Vector2& v) {
+	float result = sqrtf(v.x * v.x + v.y * v.y);
+	return result;
+}
 
+// 加算
+Vector2 Vector2Add(const Vector2& v1, const Vector2& v2) {
+	Vector2 result = { v1.x + v2.x, v1.y + v2.y };
+	return result;
+}
 
+// 減算
+Vector2 Vector2Subtract(const Vector2& v1, const Vector2& v2) {
+	Vector2 result = { v1.x - v2.x, v1.y - v2.y };
+	return result;
+}
 
+// スカラー倍
+Vector2 Vector2Multiply(float scalar, const Vector2& v) {
+	Vector2 result = { v.x * scalar, v.y * scalar };
+	return result;
+}
 
+// 内積
+float Vector2Dot(const Vector2& v1, const Vector2& v2) {
+	float result = (v1.x * v2.x) + (v1.y * v2.y);
+	return result;
+}
 
+// 正規化
+Vector2 Vector2Normalize(const Vector2& v) {
+	Vector2 result = { 0, 0 };
+	float length = Vector2Length(v);
+
+	if (length != 0) {
+		result.x = v.x / length;
+		result.y = v.y / length;
+	}
+
+	return result;
+}
+
+// 距離
+float Vector2Distance(const Vector2& v1, const Vector2& v2) {
+	float result = sqrtf(powf(v2.x - v1.x, 2) + powf(v2.y - v1.y, 2));
+	return result;
+}
+
+// 2Dクロス積（スカラー値を返す）
+float Vector2Cross(const Vector2& v1, const Vector2& v2) {
+	float result = (v1.x * v2.y) - (v1.y * v2.x);
+	return result;
+}
+
+// 線形補間（Vector2 版）- 既存の実装を保持
+Vector2 Lerp(const Vector2& v1, const Vector2& v2, float t) { return Vector2(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t); }
+
+// 垂直ベクトル（90度回転）
+Vector2 Vector2Perpendicular(const Vector2& v) {
+	Vector2 result = { -v.y, v.x };
+	return result;
+}
+
+// 回転
+Vector2 Vector2Rotate(const Vector2& v, float radian) {
+	Vector2 result;
+	float cosTheta = std::cosf(radian);
+	float sinTheta = std::sinf(radian);
+
+	result.x = v.x * cosTheta - v.y * sinTheta;
+	result.y = v.x * sinTheta + v.y * cosTheta;
+
+	return result;
+}
 
 /*-----------------------------------------------------------------------*/
 //
@@ -89,6 +182,17 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 }
 
 
+// 線形補間（Vector3 版）
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) { return Vector3(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t, v1.z + (v2.z - v1.z) * t); }
+
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+
+///																		///
+///								行列
+///																		///
+
+///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
 
 
