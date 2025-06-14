@@ -42,13 +42,14 @@ Microsoft::WRL::ComPtr <ID3D12Resource> CreateBufferResource(Microsoft::WRL::Com
 
 //	正射影ベクトルを求める関数
 Vector3 Project(const Vector3& v1, const Vector3& v2) {
-	Vector3 project = Vector3Multiply(Vector3Normalize(v2), Vector3Dot(v1, Vector3Normalize(v2)));
+	Vector3 project = Multiply(Normalize(v2), Dot(v1, Normalize(v2)));
 	return project;
 }
+
 //　最近接点を求める関数
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-	Vector3 project = Project(Vector3Subtract(point, segment.origin), segment.diff);
-	Vector3 closestPoint = Vector3Add(segment.origin, project);
+	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
+	Vector3 closestPoint = Add(segment.origin, project);
 
 	return closestPoint;
 }
@@ -182,9 +183,9 @@ void DrawSphere(const SphereMath& sphere, const Matrix4x4& viewProjectionMatrix,
 			};
 
 			//球体の中心座標と半径を加味して、a,b,cをワールド座標に変換
-			a = Vector3Add(sphere.center, Vector3Multiply(a, sphere.radius));
-			b = Vector3Add(sphere.center, Vector3Multiply(b, sphere.radius));
-			c = Vector3Add(sphere.center, Vector3Multiply(c, sphere.radius));
+			a = Add(sphere.center, Multiply(a, sphere.radius));
+			b = Add(sphere.center, Multiply(b, sphere.radius));
+			c = Add(sphere.center, Multiply(c, sphere.radius));
 
 			//a,b,cをスクリーン座標に変換
 			Vector3 aNdcPos = Matrix4x4Transform(a, viewProjectionMatrix);
@@ -216,7 +217,6 @@ void DrawSphere(const SphereMath& sphere, const Matrix4x4& viewProjectionMatrix,
 
 }
 
-
 /// <summary>
 /// 線分を描画する関数
 /// </summary>
@@ -228,7 +228,7 @@ void DrawLine(const Segment& segment, const Matrix4x4& viewProjectionMatrix, con
 {
 	///線分の両端を求める
 	Vector3 start = segment.origin;
-	Vector3 end = Vector3Add(segment.origin, segment.diff);
+	Vector3 end = Add(segment.origin, segment.diff);
 	///スクリーン座標に変換
 	Vector3 screenStart = Matrix4x4Transform(Matrix4x4Transform(start, viewProjectionMatrix), viewportMatrix);
 	Vector3 screenEnd = Matrix4x4Transform(Matrix4x4Transform(end, viewProjectionMatrix), viewportMatrix);
@@ -239,6 +239,5 @@ void DrawLine(const Segment& segment, const Matrix4x4& viewProjectionMatrix, con
 		static_cast<int>(screenEnd.x),
 		static_cast<int>(screenEnd.y),
 		color);*/
-
 
 }

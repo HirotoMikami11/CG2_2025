@@ -18,53 +18,52 @@ float Lerp(const float& min, const float& max, float t) { return min + (max - mi
 ///																		///
 
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
-
 /*-----------------------------------------------------------------------*/
 //
 //								2次元ベクトル
 //
 /*-----------------------------------------------------------------------*/
 
-// 既存の関数（座標から長さを計算）
-float Vector2Length(const float x, const float y) {
+// 長さ（座標から）
+float Length(const float x, const float y) {
 	float result = sqrtf(x * x + y * y);
 	return result;
 }
 
-// Vector2から長さを計算
-float Vector2Length(const Vector2& v) {
+// 長さ（Vector2から）
+float Length(const Vector2& v) {
 	float result = sqrtf(v.x * v.x + v.y * v.y);
 	return result;
 }
 
-// 加算
-Vector2 Vector2Add(const Vector2& v1, const Vector2& v2) {
+// 加算（Vector2版）
+Vector2 Add(const Vector2& v1, const Vector2& v2) {
 	Vector2 result = { v1.x + v2.x, v1.y + v2.y };
 	return result;
 }
 
-// 減算
-Vector2 Vector2Subtract(const Vector2& v1, const Vector2& v2) {
+// 減算（Vector2版）
+Vector2 Subtract(const Vector2& v1, const Vector2& v2) {
 	Vector2 result = { v1.x - v2.x, v1.y - v2.y };
 	return result;
 }
 
-// スカラー倍
-Vector2 Vector2Multiply(float scalar, const Vector2& v) {
+// スカラー倍（Vector2版）
+Vector2 Multiply(float scalar, const Vector2& v) {
 	Vector2 result = { v.x * scalar, v.y * scalar };
 	return result;
 }
 
-// 内積
-float Vector2Dot(const Vector2& v1, const Vector2& v2) {
+// 内積（Vector2版）
+float Dot(const Vector2& v1, const Vector2& v2) {
 	float result = (v1.x * v2.x) + (v1.y * v2.y);
 	return result;
 }
 
-// 正規化
-Vector2 Vector2Normalize(const Vector2& v) {
+// 正規化（Vector2版）
+Vector2 Normalize(const Vector2& v) {
 	Vector2 result = { 0, 0 };
-	float length = Vector2Length(v);
+	float length = Length(v);
 
 	if (length != 0) {
 		result.x = v.x / length;
@@ -74,29 +73,31 @@ Vector2 Vector2Normalize(const Vector2& v) {
 	return result;
 }
 
-// 距離
-float Vector2Distance(const Vector2& v1, const Vector2& v2) {
+// 距離（Vector2版）
+float Distance(const Vector2& v1, const Vector2& v2) {
 	float result = sqrtf(powf(v2.x - v1.x, 2) + powf(v2.y - v1.y, 2));
 	return result;
 }
 
-// 2Dクロス積（スカラー値を返す）
-float Vector2Cross(const Vector2& v1, const Vector2& v2) {
+// 2Dクロス積（Vector2版 - スカラー値を返す）
+float Cross(const Vector2& v1, const Vector2& v2) {
 	float result = (v1.x * v2.y) - (v1.y * v2.x);
 	return result;
 }
 
-// 線形補間（Vector2 版）- 既存の実装を保持
-Vector2 Lerp(const Vector2& v1, const Vector2& v2, float t) { return Vector2(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t); }
+// 線形補間（Vector2版）
+Vector2 Lerp(const Vector2& v1, const Vector2& v2, float t) {
+	return Vector2(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t);
+}
 
 // 垂直ベクトル（90度回転）
-Vector2 Vector2Perpendicular(const Vector2& v) {
+Vector2 Perpendicular(const Vector2& v) {
 	Vector2 result = { -v.y, v.x };
 	return result;
 }
 
 // 回転
-Vector2 Vector2Rotate(const Vector2& v, float radian) {
+Vector2 Rotate(const Vector2& v, float radian) {
 	Vector2 result;
 	float cosTheta = std::cosf(radian);
 	float sinTheta = std::sinf(radian);
@@ -113,7 +114,8 @@ Vector2 Vector2Rotate(const Vector2& v, float radian) {
 //
 /*-----------------------------------------------------------------------*/
 
-Vector3 Vector3Add(const Vector3& v1, const Vector3& v2) {
+// 加算（Vector3版）
+Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	Vector3 result = {
 		v1.x + v2.x,
 		v1.y + v2.y,
@@ -122,7 +124,8 @@ Vector3 Vector3Add(const Vector3& v1, const Vector3& v2) {
 	return result;
 }
 
-Vector3 Vector3Subtract(const Vector3& v1, const Vector3& v2) {
+// 減算（Vector3版）
+Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
 	Vector3 result = {
 	v1.x - v2.x,
 	v1.y - v2.y,
@@ -131,7 +134,8 @@ Vector3 Vector3Subtract(const Vector3& v1, const Vector3& v2) {
 	return result;
 }
 
-Vector3 Vector3Multiply(const Vector3& v, float scalar) {
+// スカラー倍（Vector3版）
+Vector3 Multiply(const Vector3& v, float scalar) {
 	Vector3 result = {
 	v.x * scalar,
 	v.y * scalar,
@@ -140,7 +144,8 @@ Vector3 Vector3Multiply(const Vector3& v, float scalar) {
 	return result;
 }
 
-float Vector3Dot(const Vector3& v1, const Vector3& v2) {
+// 内積（Vector3版）
+float Dot(const Vector3& v1, const Vector3& v2) {
 	float result =
 		v1.x * v2.x +
 		v1.y * v2.y +
@@ -149,7 +154,8 @@ float Vector3Dot(const Vector3& v1, const Vector3& v2) {
 	return result;
 }
 
-float Vector3Length(const Vector3& v) {
+// 長さ（Vector3版）
+float Length(const Vector3& v) {
 	float result = sqrtf(
 		v.x * v.x +
 		v.y * v.y +
@@ -158,9 +164,10 @@ float Vector3Length(const Vector3& v) {
 	return result;
 }
 
-Vector3 Vector3Normalize(const Vector3& v) {
+// 正規化（Vector3版）
+Vector3 Normalize(const Vector3& v) {
 	Vector3 result = { 0,0,0 };
-	float length = Vector3Length(v);
+	float length = Length(v);
 
 	if (length != 0) {
 		result.x = v.x / length;
@@ -171,8 +178,7 @@ Vector3 Vector3Normalize(const Vector3& v) {
 	return result;
 }
 
-
-//クロス積
+// クロス積（Vector3版）
 Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 	Vector3 result = {
 	(v1.y * v2.z) - (v1.z * v2.y),
@@ -181,10 +187,16 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 	return result;
 }
 
+// 距離（Vector3版）
+float Distance(const Vector3& v1, const Vector3& v2) {
+	float result = sqrtf(powf(v2.x - v1.x, 2) + powf(v2.y - v1.y, 2) + powf(v2.z - v1.z, 2));
+	return result;
+}
 
-// 線形補間（Vector3 版）
-Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) { return Vector3(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t, v1.z + (v2.z - v1.z) * t); }
-
+// 線形補間（Vector3版）
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+	return Vector3(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t, v1.z + (v2.z - v1.z) * t);
+}
 
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 

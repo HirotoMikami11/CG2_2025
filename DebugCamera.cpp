@@ -8,7 +8,7 @@ void DebugCamera::Initialize()
 
 	// 累積回転行列の初期化
 	matRot_ = MakeIdentity4x4();
-	distance_ = Vector3Length(Vector3Subtract(cameraTransform_.translate, target_));
+	distance_ = Length(Subtract(cameraTransform_.translate, target_));
 
 	//ピボット回転用のメンバ変数
 	target_ = { 0.0f, 0.0f, 0.0f };	// ピボットの中心座標
@@ -73,13 +73,6 @@ void DebugCamera::SetDefaultCamera()
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);
 }
 
-
-
-
-
-
-
-
 void DebugCamera::Move()
 {
 	//移動速度を定めておく
@@ -101,24 +94,24 @@ void DebugCamera::Move()
 	if (input_->IsKeyDown(DIK_SPACE)) {
 		//					SPACE押されている場合はY軸移動							//
 		if (input_->IsKeyDown(DIK_W)) {
-			move = Vector3Add(move, up);
+			move = Add(move, up);
 		}
 		if (input_->IsKeyDown(DIK_S)) {
-			move = Vector3Subtract(move, up);
+			move = Subtract(move, up);
 		}
 	} else {
 		//							通常はXZ軸移動								//
 		if (input_->IsKeyDown(DIK_W)) {
-			move = Vector3Add(move, forward);
+			move = Add(move, forward);
 		}
 		if (input_->IsKeyDown(DIK_S)) {
-			move = Vector3Subtract(move, forward);
+			move = Subtract(move, forward);
 		}
 		if (input_->IsKeyDown(DIK_D)) {
-			move = Vector3Add(move, right);
+			move = Add(move, right);
 		}
 		if (input_->IsKeyDown(DIK_A)) {
-			move = Vector3Subtract(move, right);
+			move = Subtract(move, right);
 		}
 	}
 
@@ -129,15 +122,15 @@ void DebugCamera::Move()
 	///マウスホイールが動かされたときのみ
 	if (input_->GetMouseWheel()) {
 		//マウスホイールの動きに応じて前後移動
-		Vector3 wheelMove = Vector3Multiply(forward, wheelSpeed);	//前方方向に、ホイールの前後移動分をかける
-		move = Vector3Add(move, wheelMove);							//現状のmoveに加算する。
+		Vector3 wheelMove = Multiply(forward, wheelSpeed);	//前方方向に、ホイールの前後移動分をかける
+		move = Add(move, wheelMove);						//現状のmoveに加算する。
 	}
 
 	// 正規化してスピードを掛ける
-	if (Vector3Length(move) > 0.0f) {
-		move = Vector3Normalize(move);
-		move = Vector3Multiply(move, speed);
-		cameraTransform_.translate = Vector3Add(cameraTransform_.translate, move);
+	if (Length(move) > 0.0f) {
+		move = Normalize(move);
+		move = Multiply(move, speed);
+		cameraTransform_.translate = Add(cameraTransform_.translate, move);
 	}
 }
 
@@ -175,7 +168,7 @@ void DebugCamera::Rotate() {
 		Vector3 forward = TransformDirection({ 0, 0, 1 }, matRot_);
 		Vector3 worldUp = { 0, 1, 0 };
 
-		Vector3 right = Vector3Normalize(Cross(worldUp, forward));
+		Vector3 right = Normalize(Cross(worldUp, forward));
 		Vector3 up = Cross(forward, right);
 
 		// 回転行列を再構築
@@ -221,12 +214,11 @@ void DebugCamera::PivotMove()
 		}
 	}
 
-
 	// 正規化してスピードを掛ける
-	if (Vector3Length(move) > 0.0f) {
-		move = Vector3Normalize(move);
-		move = Vector3Multiply(move, speed);
-		target_ = Vector3Add(target_, move);
+	if (Length(move) > 0.0f) {
+		move = Normalize(move);
+		move = Multiply(move, speed);
+		target_ = Add(target_, move);
 	}
 
 	// マウスホイールで距離調整
@@ -254,7 +246,6 @@ void DebugCamera::PivotRotate()
 			(mousePos.x - preMousePos.x),
 			(mousePos.y - preMousePos.y)
 		};
-
 
 		// 今回の回転行列を作成（deltamatRot）
 		float deltaYaw = mouseDelta.x * 0.002f;   // Y軸回転（水平方向）
@@ -338,6 +329,7 @@ void DebugCamera::ImGui()
 		ImGui::Text("  SPACE+WS: Vertical movement");
 	}
 }
+
 void DebugCamera::UpdateMatrix()
 {
 	// 累積回転行列を使用してカメラのワールド行列を作成
@@ -351,7 +343,6 @@ void DebugCamera::UpdateMatrix()
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);
 }
 
-
 void DebugCamera::UpdatePivotMatrix()
 {
 	// ターゲットからカメラへの相対位置ベクトル（初期状態：後ろにdistance_分離れた位置）
@@ -361,7 +352,7 @@ void DebugCamera::UpdatePivotMatrix()
 	relativePos = TransformDirection(relativePos, matRot_);
 
 	// ターゲット座標に回転後の相対位置を加算してカメラの最終位置を決定
-	Vector3 cameraPos = Vector3Add(target_, relativePos);
+	Vector3 cameraPos = Add(target_, relativePos);
 
 	// 平行移動行列を作成
 	Matrix4x4 translateMatrix = MakeTranslateMatrix(cameraPos);
@@ -389,7 +380,7 @@ void DebugCamera::ChangeRotationMode()
 		Vector3 forward = TransformDirection({ 0, 0, 1 }, matRot_);		// カメラの前方向を定める
 		distance_ = 10.0f;												// デフォルト距離
 		//ピボットポイント(target)の位置を決める
-		target_ = Vector3Add(cameraTransform_.translate, Vector3Multiply(forward, distance_));
+		target_ = Add(cameraTransform_.translate, Multiply(forward, distance_));
 
 	} else {
 		// ピボット回転から通常回転への切り替え
@@ -400,7 +391,7 @@ void DebugCamera::ChangeRotationMode()
 		relativePos = TransformDirection(relativePos, matRot_);
 
 		//ピボットの位置からカメラの位置を逆算しそこを通常回転のカメラ座標にする
-		cameraTransform_.translate = Vector3Add(target_, relativePos);
+		cameraTransform_.translate = Add(target_, relativePos);
 
 	}
 }

@@ -314,12 +314,12 @@ void Mesh::CalculateTriangleNormals()
 	Vector3 v2 = { vertices_[2].position.x, vertices_[2].position.y, vertices_[2].position.z };
 
 	// エッジベクトルを計算
-	Vector3 edge1 = Vector3Subtract(v1, v0);
-	Vector3 edge2 = Vector3Subtract(v2, v0);
+	Vector3 edge1 = Subtract(v1, v0);
+	Vector3 edge2 = Subtract(v2, v0);
 
 	// 外積で面法線を計算
 	Vector3 normal = Cross(edge1, edge2);
-	normal = Vector3Normalize(normal);  // 正規化
+	normal = Normalize(normal);  // 正規化
 
 	// 全ての頂点に同じ法線を設定（平面なので）
 	for (size_t i = 0; i < vertices_.size(); ++i) {

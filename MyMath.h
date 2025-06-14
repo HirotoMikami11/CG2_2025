@@ -30,7 +30,6 @@ float Lerp(const float& min, const float& max, float t);
 ///																		///
 
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
-
 /*-----------------------------------------------------------------------*/
 //
 //								2次元ベクトル
@@ -46,40 +45,40 @@ struct Vector2 final {
 };
 
 // 長さ（座標から）
-float Vector2Length(const float x, const float y);
+float Length(const float x, const float y);
 
 // 長さ（Vector2から）
-float Vector2Length(const Vector2& v);
+float Length(const Vector2& v);
 
 // 加算
-Vector2 Vector2Add(const Vector2& v1, const Vector2& v2);
+Vector2 Add(const Vector2& v1, const Vector2& v2);
 
 // 減算
-Vector2 Vector2Subtract(const Vector2& v1, const Vector2& v2);
+Vector2 Subtract(const Vector2& v1, const Vector2& v2);
 
 // スカラー倍
-Vector2 Vector2Multiply(float scalar, const  Vector2& v);
+Vector2 Multiply(float scalar, const Vector2& v);
 
 // 内積
-float Vector2Dot(const  Vector2& v1, const  Vector2& v2);
+float Dot(const Vector2& v1, const Vector2& v2);
 
 // 正規化
-Vector2 Vector2Normalize(const  Vector2& v);
+Vector2 Normalize(const Vector2& v);
 
 // 距離
-float Vector2Distance(const Vector2& v1, const Vector2& v2);
+float Distance(const Vector2& v1, const Vector2& v2);
 
 // 2Dクロス積（スカラー値を返す）
-float Vector2Cross(const Vector2& v1, const  Vector2& v2);
+float Cross(const Vector2& v1, const Vector2& v2);
 
 // 線形補間
-Vector2 Lerp(const Vector2& v1, const  Vector2& v2, float t);
+Vector2 Lerp(const Vector2& v1, const Vector2& v2, float t);
 
 // 垂直ベクトル（90度回転）
-Vector2 Vector2Perpendicular(const Vector2& v);
+Vector2 Perpendicular(const Vector2& v);
 
 // 回転
-Vector2 Vector2Rotate(const Vector2& v, float radian);
+Vector2 Rotate(const Vector2& v, float radian);
 
 
 /*-----------------------------------------------------------------------*/
@@ -162,7 +161,6 @@ struct Vector3 final {
 	float z;
 };
 
-
 /// <summary>
 /// トランスフォーム
 /// </summary>
@@ -172,31 +170,24 @@ struct Vector3Transform final {
 	Vector3 translate;
 };
 
-
-
-
 //加算
-Vector3 Vector3Add(const Vector3& v1, const Vector3& v2);
+Vector3 Add(const Vector3& v1, const Vector3& v2);
 //減算
-Vector3 Vector3Subtract(const Vector3& v1, const Vector3& v2);
+Vector3 Subtract(const Vector3& v1, const Vector3& v2);
 //スカラー倍
-Vector3 Vector3Multiply(const Vector3& v, float scalar);
+Vector3 Multiply(const Vector3& v, float scalar);
 //内積
-float Vector3Dot(const Vector3& v1, const Vector3& v2);
+float Dot(const Vector3& v1, const Vector3& v2);
 //長さ
-float Vector3Length(const Vector3& v);
+float Length(const Vector3& v);
 //正規化
-Vector3 Vector3Normalize(const Vector3& v);
-
+Vector3 Normalize(const Vector3& v);
 //クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
-
-
+//距離
+float Distance(const Vector3& v1, const Vector3& v2);
 //線形補間
-//min,max
 Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
-
-
 
 /*-----------------------------------------------------------------------*/
 //
@@ -266,7 +257,6 @@ inline Vector3& operator/=(Vector3& v, float scalar) {
 	v.z /= scalar;
 	return v;
 }
-
 /*-----------------------------------------------------------------------*/
 //
 //								4次元ベクトル
