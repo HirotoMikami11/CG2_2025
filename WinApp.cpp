@@ -61,9 +61,6 @@ void WinApp::Initialize() {
 
 void WinApp::Finalize() {
 	CloseWindow(hwnd);
-
-	//COMの終了処理
-//	CoUninitialize();
 }
 
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {

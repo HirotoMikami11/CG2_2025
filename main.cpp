@@ -46,18 +46,20 @@
 #include"Transform.h"
 ///マテリアルとメッシュを統合させたmodelクラス
 #include"Model.h"
+///トランスフォームと、モデルを統合させたGameObjectクラス
+#include "GameObject.h"
 
 //ライト
 #include"Light.h"
 
-///トランスフォームと、モデルを統合させたGameObjectクラス
-#include "GameObject.h"
 
 //カメラ系統
 #include"CameraController.h"
 
-
+//オフスクリーン
 #include "OffscreenRenderer.h"
+//FPS関連
+#include "FrameTimer.h"
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -125,7 +127,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	audioManager->Initialize();
 
 
-
+	// FPS関連
+	FrameTimer& frameTimer = FrameTimer::GetInstance();
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
 	///*-----------------------------------------------------------------------*///
@@ -290,10 +293,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウのxボタンが押されるまでループ
 	while (winApp->ProsessMessege()) {
 		//							　ゲームの処理										//
-
 		///キー入力の更新
 		inputManager->Update();
 
+		///FPSの開始
+		frameTimer.BeginFrame();
 		//								更新処理										//
 
 
@@ -303,6 +307,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//開発用UIの処理
 		ImGui::Begin("Debug");
 
+		//FPS関連
+		frameTimer.ImGui();
 
 		///三角形のImgui
 		for (int i = 0; i < kMaxTriangleIndex; i++)
@@ -315,11 +321,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->ImGui();
 		/// モデルのImgui
 		model->ImGui();
-
+		//ライト
 		directionalLight.ImGui("DriectonalLight");
 
 		/// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
-		offscreenRenderer->ImGui();
+		//offscreenRenderer->ImGui();
 
 		ImGui::End();
 
@@ -344,7 +350,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		// オフスクリーンレンダラーの更新（エフェクト含む
-		offscreenRenderer->Update();
+		//offscreenRenderer->Update();
 
 
 		//																			//

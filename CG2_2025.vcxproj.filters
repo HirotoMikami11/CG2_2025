@@ -174,6 +174,9 @@
     <ClCompile Include="DescriptorHeapManager.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
     </ClCompile>
+    <ClCompile Include="FrameTimer.cpp">
+      <Filter>ソース ファイル\MyMath</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Fullscreen.PS.hlsl">
@@ -294,6 +297,9 @@
     </ClInclude>
     <ClInclude Include="DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameTimer.h">
+      <Filter>ヘッダー ファイル\MyMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
