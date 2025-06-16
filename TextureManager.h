@@ -14,11 +14,11 @@
 class DirectXCommon;
 
 /// <summary>
-/// テクスチャを管理する管理クラス（DescriptorHeapManager対応版）
+/// テクスチャを管理する管理クラス
 /// </summary>
 class TextureManager {
 public:
-	// ゲームアプリケーション全体で一つのインスタンスを使う（シングルトン）
+	//シングルトン
 	static TextureManager* GetInstance();
 
 	/// <summary>
@@ -103,6 +103,6 @@ private:
 	// DirectXCommonへのポインタ
 	DirectXCommon* dxCommon_ = nullptr;
 
-	// テクスチャの管理用マップ（tagName -> Texture）
+	// テクスチャの管理用マップ（tagNameからTextureを見つける）
 	std::map<std::string, std::unique_ptr<Texture>> textures_;
 };

@@ -128,6 +128,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// FPS関連
 	FrameTimer& frameTimer = FrameTimer::GetInstance();
+
+	// オフスクリーンレンダラーの初期化
+	std::unique_ptr<OffscreenRenderer> offscreenRenderer = std::make_unique<OffscreenRenderer>();
+	offscreenRenderer->Initialize(directXCommon);
+
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
 	///*-----------------------------------------------------------------------*///
@@ -163,9 +168,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	cameraController->Initialize();
 
 
-	// オフスクリーンレンダラーの初期化（DirectX初期化後に追加）
-	std::unique_ptr<OffscreenRenderer> offscreenRenderer = std::make_unique<OffscreenRenderer>();
-	offscreenRenderer->Initialize(directXCommon);
+
 
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///

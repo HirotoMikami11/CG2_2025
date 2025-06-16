@@ -608,7 +608,7 @@ void OffscreenRenderer::ImGui() {
 
 
 
-//:TODO スプライトをobject3Dから独立させる
+//TODO: スプライトをobject3Dから独立させる
 //	独立させたスプライトをオフスクリーンに適用
 //	結果として、PSOやvertexBufferなどを削減
 //	ポストエフェクトはスプライトにかける効果だと割り切る
