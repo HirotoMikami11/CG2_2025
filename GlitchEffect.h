@@ -9,7 +9,7 @@
 #include "Logger.h"
 #include "MyMath.h"
 #include "MyFunction.h"
-
+#include "ImGuiManager.h" 
 /// <summary>
 /// グリッチエフェクトを管理するクラス
 /// </summary>

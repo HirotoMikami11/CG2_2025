@@ -7,6 +7,8 @@
 
 #include <string>
 #include <memory>
+
+#include "ImGuiManager.h" 
 /// <summary>
 /// ゲームオブジェクト
 /// </summary>

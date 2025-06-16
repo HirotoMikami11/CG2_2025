@@ -4,6 +4,7 @@
 #include "DirectXCommon.h"
 #include "MyFunction.h"
 
+#include "ImGuiManager.h" 
 /// <summary>
 /// ライトクラス
 /// </summary>

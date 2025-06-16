@@ -6,7 +6,7 @@
 #include "MyFunction.h"
 #include "Logger.h"
 #include <cassert>
-
+#include "ImGuiManager.h" 
 /// <summary>
 /// cameraのクラス
 /// </summary>

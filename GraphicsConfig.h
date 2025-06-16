@@ -35,10 +35,7 @@ public:
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャ管理用								///
 	///*-----------------------------------------------------------------------*///
-
-	static const uint32_t kMaxTextureCount = 127; // ImGui用に1つ開ける
 	static const uint32_t kImGuiSRVIndex = 0;           // ImGui専用SRVインデックス
-	static const uint32_t kTextureSRVStartIndex = 1;    // テクスチャ用SRV開始インデックス
 
 	/// <summary>
 	/// オフスクリーン用RTVインデックスを取得(これから複数実装する場合に何個目か入れれば特定できる)

@@ -12,6 +12,7 @@
 
 #include "GlitchEffect.h"	//グリッチエフェクト
 
+#include "ImGuiManager.h" 
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス（DescriptorHeapManager対応版）
 /// </summary>

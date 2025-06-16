@@ -126,7 +126,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	AudioManager* audioManager = AudioManager::GetInstance();
 	audioManager->Initialize();
 
-
 	// FPS関連
 	FrameTimer& frameTimer = FrameTimer::GetInstance();
 	///*-----------------------------------------------------------------------*///
@@ -293,11 +292,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウのxボタンが押されるまでループ
 	while (winApp->ProsessMessege()) {
 		//							　ゲームの処理										//
-		///キー入力の更新
-		inputManager->Update();
-
 		///FPSの開始
 		frameTimer.BeginFrame();
+
+		///キー入力の更新
+		inputManager->Update();
 		//								更新処理										//
 
 
@@ -350,7 +349,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		// オフスクリーンレンダラーの更新（エフェクト含む
-		//offscreenRenderer->Update();
+		offscreenRenderer->Update();
 
 
 		//																			//
@@ -387,24 +386,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///						オフスクリーンレンダリング								///
 		///																			///
 		//// オフスクリーンの描画準備
-		//offscreenRenderer->PreDraw();
-
-
-
-
-
-		//// オフスクリーンの描画終了
-		//offscreenRenderer->PostDraw();
-		///																			///
-		///								通常レンダリング								///
-		///																			///
-
-		// 通常描画の描画準備
-		directXCommon->PreDraw();
-		///通常描画
-
-		///// オフスクリーンの画面の実態描画
-		//offscreenRenderer->DrawOffscreenTexture();
+		offscreenRenderer->PreDraw();
 
 		// Sphereの描画
 		sphere->Draw(directionalLight);
@@ -413,6 +395,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		model->Draw(directionalLight);
 		sprite->DrawSprite(directionalLight);
+
+
+
+		//// オフスクリーンの描画終了
+		offscreenRenderer->PostDraw();
+		///																			///
+		///								通常レンダリング								///
+		///																			///
+
+		// 通常描画の描画準備
+		directXCommon->PreDraw();
+		///通常描画
+
+		// オフスクリーンの画面の実態描画
+		offscreenRenderer->DrawOffscreenTexture();
+
+
 
 
 		// ImGuiの画面への描画
