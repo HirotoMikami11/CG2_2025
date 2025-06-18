@@ -20,9 +20,9 @@ void Sprite::Initialize(DirectXCommon* dxCommon, const std::string& textureName,
 
 	// centerとsizeをTransform2Dに設定
 	Vector2Transform initialTransform{
-		size,         // scale = size
-		0.0f,         // rotateZ
-		center        // translate = center
+		size,			// scale = size
+		0.0f,			// rotateZ
+		center			// translate = center
 	};
 	transform_.SetTransform(initialTransform);
 
@@ -57,7 +57,7 @@ void Sprite::Draw()
 		return;
 	}
 
-	// 通常のUI用スプライト描画処理（変更なし）
+	// 通常のUI用スプライト描画処理
 	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
 
 	// スプライト専用のPSOを設定
@@ -125,7 +125,7 @@ void Sprite::DrawWithCustomPSO(
 	// 描画
 	commandList->DrawIndexedInstanced(static_cast<UINT>(indices_.size()), 1, 0, 0, 0);
 
-	// ※PSO復元は呼び出し元で行う
+	// PSO復元は呼び出し元で行う
 }
 
 void Sprite::ImGui()
@@ -328,8 +328,8 @@ void Sprite::CreateBuffers()
 	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
 
 	// SpriteMaterial初期化
-	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };  // 白色
-	UpdateUVTransform();  // UVTransformを初期化
+	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };	// 白色
+	UpdateUVTransform();								// UVTransformを初期化
 }
 
 void Sprite::UpdateUVTransform()

@@ -16,7 +16,7 @@ public:
 	///							ディスクリプタヒープサイズ							///
 	///*-----------------------------------------------------------------------*///
 
-	static const uint32_t kRTVHeapSize = 4;   // スワップチェーン2 + オフスクリーン1
+	static const uint32_t kRTVHeapSize = 5;   // スワップチェーン2+ オフスクリーン描画1、+pingpong切り替えで2
 	static const uint32_t kDSVHeapSize = 2;   // メイン + オフスクリーン
 	static const uint32_t kSRVHeapSize = 128; // テクスチャ + ImGui
 	///*-----------------------------------------------------------------------*///

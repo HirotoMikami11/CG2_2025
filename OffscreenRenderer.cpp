@@ -29,20 +29,29 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	// オフスクリーン描画用Spriteを初期化
 	InitializeOffscreenSprite();
 
-	// グリッチエフェクトを初期化
-	glitchEffect_ = std::make_unique<GlitchEffect>();
-	glitchEffect_->Initialize(dxCommon);
+	// ポストプロセスチェーンを初期化
+	postProcessChain_ = std::make_unique<PostProcessChain>();
+	postProcessChain_->Initialize(dxCommon_, width_, height_);
+
+
+	///ここにエフェクトを追加していく
+	// グリッチエフェクトを追加
+	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
+
+
+
 
 	// 初期化完了のログを出す
-	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (Role Separated)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (PostProcess Chain)!!\n");
 }
 
 void OffscreenRenderer::Finalize() {
-	// グリッチエフェクトの終了処理
-	if (glitchEffect_) {
-		glitchEffect_->Finalize();
-		glitchEffect_.reset();
+	// ポストプロセスチェーンの終了処理
+	if (postProcessChain_) {
+		postProcessChain_->Finalize();
+		postProcessChain_.reset();
 	}
+	RGBShiftEffect_ = nullptr;
 
 	// オフスクリーンSprite削除
 	offscreenSprite_.reset();
@@ -61,13 +70,13 @@ void OffscreenRenderer::Finalize() {
 		}
 	}
 
-	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized (Role Separated).\n");
+	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized (PostProcess Chain).\n");
 }
 
 void OffscreenRenderer::Update(float deltaTime) {
-	// グリッチエフェクトの更新
-	if (glitchEffect_) {
-		glitchEffect_->Update(deltaTime);
+	// ポストプロセスチェーンの更新
+	if (postProcessChain_) {
+		postProcessChain_->Update(deltaTime);
 	}
 
 	// オフスクリーンSpriteの更新
@@ -76,18 +85,20 @@ void OffscreenRenderer::Update(float deltaTime) {
 		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
 		offscreenSprite_->Update(spriteViewProjection);
 	}
-}
-
-void OffscreenRenderer::PreDraw() {
+}void OffscreenRenderer::PreDraw() {
 	auto commandList = dxCommon_->GetCommandList();
 
-	// レンダーターゲットをレンダーターゲット状態に遷移
-	barrier_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier_.Transition.pResource = renderTargetTexture_.Get();
-	barrier_.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	barrier_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	commandList->ResourceBarrier(1, &barrier_);
+	// バリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
+	D3D12_RESOURCE_BARRIER preDrawBarrier{};
+	preDrawBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	preDrawBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	preDrawBarrier.Transition.pResource = renderTargetTexture_.Get();
+	preDrawBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	preDrawBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	preDrawBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// バリア実行
+	commandList->ResourceBarrier(1, &preDrawBarrier);
 
 	// レンダーターゲットとデプスステンシルを設定
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandle_.cpuHandle;
@@ -116,17 +127,25 @@ void OffscreenRenderer::PreDraw() {
 void OffscreenRenderer::PostDraw() {
 	auto commandList = dxCommon_->GetCommandList();
 
-	// レンダーターゲットをシェーダーリソース状態に遷移
-	barrier_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	commandList->ResourceBarrier(1, &barrier_);
+	// バリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
+	D3D12_RESOURCE_BARRIER postDrawBarrier{};
+	postDrawBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	postDrawBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	postDrawBarrier.Transition.pResource = renderTargetTexture_.Get();
+	postDrawBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	postDrawBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	postDrawBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// バリア実行
+	commandList->ResourceBarrier(1, &postDrawBarrier);
 }
 
 void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, float height) {
 	if (!offscreenSprite_) {
-		Logger::Log(Logger::GetStream(), "OffscreenSprite is not initialized\n");
 		return;
 	}
+
+	auto commandList = dxCommon_->GetCommandList();
 
 	// 引数からSpriteの位置とサイズを設定
 	Vector2 position = { x + width * 0.5f, y + height * 0.5f };  // 中心座標
@@ -135,47 +154,37 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	offscreenSprite_->SetPosition(position);
 	offscreenSprite_->SetSize(size);
 
-	// グリッチエフェクトが有効かどうかで描画方法を分岐
-	if (glitchEffect_ && glitchEffect_->IsEnabled()) {
-		// グリッチエフェクト付きで描画
-		DrawWithGlitchEffect();
-	} else {
-		// 通常のオフスクリーン描画
-		DrawNormalOffscreen();
+	// ポストプロセスチェーンを適用
+	D3D12_GPU_DESCRIPTOR_HANDLE finalTexture = srvHandle_.gpuHandle;
+	if (postProcessChain_) {
+		finalTexture = postProcessChain_->ApplyEffects(srvHandle_.gpuHandle);
 	}
-}
 
-void OffscreenRenderer::DrawNormalOffscreen() {
-	// 通常のスプライト描画（スプライト用PSO使用）
+	// PostProcessChain実行後に描画状態を完全にリセット
+	// バックバッファのレンダーターゲットを再設定
+	UINT backBufferIndex = dxCommon_->GetSwapChain()->GetCurrentBackBufferIndex();
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = dxCommon_->GetRTVHandle(backBufferIndex);
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+	// ディスクリプタヒープを再設定
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = {
+		dxCommon_->GetDescriptorManager()->GetSRVHeapComPtr()
+	};
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
+
+	// 最終結果を描画
 	offscreenSprite_->DrawWithCustomPSO(
 		dxCommon_->GetSpriteRootSignature(),
 		dxCommon_->GetSpritePipelineState(),
-		srvHandle_.gpuHandle
-		// materialBufferGPUAddressは0（Sprite内部のマテリアルを使用）
+		finalTexture
 	);
 
 	// スプライト用PSOから通常描画用PSOに戻す
-	auto commandList = dxCommon_->GetCommandList();
 	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
 	commandList->SetPipelineState(dxCommon_->GetPipelineState());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void OffscreenRenderer::DrawWithGlitchEffect() {
-	// グリッチエフェクト用のPSOを設定して描画
-	offscreenSprite_->DrawWithCustomPSO(
-		glitchEffect_->GetRootSignature(),
-		glitchEffect_->GetPipelineState(),
-		srvHandle_.gpuHandle,
-		glitchEffect_->GetMaterialBuffer()->GetGPUVirtualAddress()
-	);
-
-	// 通常描画用PSOに戻す
-	auto commandList = dxCommon_->GetCommandList();
-	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
-	commandList->SetPipelineState(dxCommon_->GetPipelineState());
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-}
 
 void OffscreenRenderer::InitializeOffscreenSprite() {
 	// オフスクリーン描画用Spriteを作成
@@ -190,7 +199,6 @@ void OffscreenRenderer::InitializeOffscreenSprite() {
 
 	Logger::Log(Logger::GetStream(), "Complete initialize offscreen sprite!!\n");
 }
-
 void OffscreenRenderer::CreateRenderTargetTexture() {
 	// リソース設定
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -215,7 +223,7 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 	clearValue.Color[2] = 0.5f;
 	clearValue.Color[3] = 1.0f;
 
-	// リソース作成
+	// 初期状態をPIXEL_SHADER_RESOURCEに変更（バリアとの整合性のため）
 	HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
@@ -225,7 +233,7 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 		IID_PPV_ARGS(&renderTargetTexture_));
 
 	assert(SUCCEEDED(hr));
-	Logger::Log(Logger::GetStream(), "Complete create offscreen render target texture!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create offscreen render target texture (PIXEL_SHADER_RESOURCE initial state)!!\n");
 }
 
 void OffscreenRenderer::CreateDepthStencilTexture() {
@@ -342,7 +350,7 @@ void OffscreenRenderer::CreateSRV() {
 }
 
 void OffscreenRenderer::ImGui() {
-	if (ImGui::CollapsingHeader("Offscreen Renderer (Role Separated)")) {
+	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain)")) {
 		// オフスクリーンのサイズ
 		ImGui::Text("Render Target Size: %dx%d", width_, height_);
 		ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
@@ -365,10 +373,10 @@ void OffscreenRenderer::ImGui() {
 			ImGui::Text("Active: %s", offscreenSprite_->IsActive() ? "Yes" : "No");
 		}
 
-		// グリッチエフェクトのImGui
-		if (glitchEffect_) {
+		// ポストプロセスチェーンのImGui
+		if (postProcessChain_) {
 			ImGui::Separator();
-			glitchEffect_->ImGui();
+			postProcessChain_->ImGui();
 		}
 	}
 }

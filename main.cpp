@@ -54,7 +54,7 @@
 #include"Light.h"//ライト
 #include"CameraController.h"//カメラ系統
 #include "OffscreenRenderer.h"//オフスクリーン
-
+#include "RGBShiftPostEffect.h"//色をずらすエフェクト
 
 
 
@@ -131,6 +131,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// オフスクリーンレンダラーの初期化
 	std::unique_ptr<OffscreenRenderer> offscreenRenderer = std::make_unique<OffscreenRenderer>();
 	offscreenRenderer->Initialize(directXCommon);
+
+	// グリッチエフェクトの設定
+	//auto RGBShiftEffect = offscreenRenderer->GetRGBShiftEffect();
+	//if (RGBShiftEffect) {
+	//	RGBShifthEffect->SetEnabled(true);
+	//	RGBShifthEffect->ApplyPreset(RGBShiftPostEffect::EffectPreset::MEDIUM);
+	//}
 
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
@@ -336,7 +343,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		// オフスクリーンレンダラーの更新（エフェクト含む)
-		offscreenRenderer->Update();
+		offscreenRenderer->Update(frameTimer.GetDeltaTime());
 
 
 		//																			//
@@ -368,12 +375,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
-
+		// フレーム開始
 		directXCommon->BeginFrame();
 
 		///																			///
 		///						オフスクリーンレンダリング								///
 		///																			///
+
+
 		//// オフスクリーンの描画準備
 		offscreenRenderer->PreDraw();
 
@@ -394,6 +403,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///																			///
 
 		// 通常描画の描画準備
+
 		directXCommon->PreDraw();
 		///通常描画
 
@@ -403,11 +413,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());
 
-		// 通常描画の描画終わり
+		// 通常描画の終わり
 		directXCommon->PostDraw();
+
+
 
 		// 描画そのもののEndFrame
 		directXCommon->EndFrame();
+
 	}
 
 

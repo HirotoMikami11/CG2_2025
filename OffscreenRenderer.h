@@ -11,13 +11,14 @@
 #include "MyFunction.h"
 
 #include "Sprite.h"				// 拡張されたSpriteクラスを使用
-#include "GlitchEffect.h"		// グリッチエフェクト
+#include "PostProcessChain.h"	// ポストプロセスチェーン
+#include "RGBShiftPostEffect.h"	// RGBシフトエフェクト
 
 #include "ImGuiManager.h" 
 
 /// <summary>
-/// オフスクリーンレンダリングを管理するクラス（役割分離版）
-/// 通常のSpriteとは異なる役割を持つオフスクリーン専用の描画機能を提供
+/// オフスクリーンレンダリングを管理するクラス
+/// ポストプロセスチェーンで複数エフェクトの重ね掛けできる
 /// </summary>
 class OffscreenRenderer {
 public:
@@ -38,7 +39,7 @@ public:
 	void Finalize();
 
 	/// <summary>
-	/// 更新処理（エフェクトの更新など）
+	/// 更新処理（ポストプロセスチェーンの更新など）
 	/// </summary>
 	/// <param name="deltaTime">フレーム時間</param>
 	void Update(float deltaTime = 1.0f / 60.0f);
@@ -54,8 +55,9 @@ public:
 	void PostDraw();
 
 	/// <summary>
-	/// オフスクリーンテクスチャを描画（ポストエフェクト対応）
+	/// オフスクリーンテクスチャを描画（ポストプロセスチェーン対応）
 	/// 通常のUI用Spriteとは異なる、オフスクリーン専用の描画処理
+	/// ポストプロセスチェーンを通して複数エフェクトを適用
 	/// </summary>
 	/// <param name="x">描画位置X</param>
 	/// <param name="y">描画位置Y</param>
@@ -81,10 +83,16 @@ public:
 	void ImGui();
 
 	/// <summary>
-	/// グリッチエフェクトを取得
+	/// グリッチエフェクトを取得（PostProcessChain版）
 	/// </summary>
-	/// <returns>グリッチエフェクトのポインタ</returns>
-	GlitchEffect* GetGlitchEffect() { return glitchEffect_.get(); }
+	/// <returns>RGBシフトポストエフェクトのポインタ</returns>
+	RGBShiftPostEffect* GetGlitchEffect() { return RGBShiftEffect_; }
+
+	/// <summary>
+	/// ポストプロセスチェーンを取得
+	/// </summary>
+	/// <returns>ポストプロセスチェーンのポインタ</returns>
+	PostProcessChain* GetPostProcessChain() { return postProcessChain_.get(); }
 
 	/// <summary>
 	/// オフスクリーン用Spriteを取得（デバッグ用）
@@ -106,16 +114,6 @@ private:
 	/// オフスクリーン描画用のSpriteを初期化
 	/// </summary>
 	void InitializeOffscreenSprite();
-
-	/// <summary>
-	/// 通常のオフスクリーン描画（スプライト用PSO使用）
-	/// </summary>
-	void DrawNormalOffscreen();
-
-	/// <summary>
-	/// グリッチエフェクト付きオフスクリーン描画
-	/// </summary>
-	void DrawWithGlitchEffect();
 
 private:
 	// DirectXCommonへの参照
@@ -142,6 +140,9 @@ private:
 	D3D12_VIEWPORT viewport_{};
 	D3D12_RECT scissorRect_{};
 
-	// グリッチエフェクト
-	std::unique_ptr<GlitchEffect> glitchEffect_;
+	// ポストプロセスチェーン
+	std::unique_ptr<PostProcessChain> postProcessChain_;
+
+	// 個別エフェクトへの参照（設定用）
+	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
 };

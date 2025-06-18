@@ -64,12 +64,6 @@
     <Filter Include="リソース ファイル\Shader\Object3d">
       <UniqueIdentifier>{f62798c6-8783-48ac-be17-fe2377478ecb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Glitch">
-      <UniqueIdentifier>{aa144500-32ba-4932-8650-3aac004b5405}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Glitch">
-      <UniqueIdentifier>{b92610dd-7304-427c-b53b-12d47c481ead}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Glitch">
       <UniqueIdentifier>{14713c3b-3f84-4702-8ff1-261f2346693d}</UniqueIdentifier>
     </Filter>
@@ -81,6 +75,12 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\Sprite">
       <UniqueIdentifier>{e36e23c7-8f1c-4343-8852-618966b22da6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostEffect">
+      <UniqueIdentifier>{a9c21117-45d5-4bd9-8564-7b331f6714c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostEffect\RGBShift">
+      <UniqueIdentifier>{9c6be5dc-041d-4c3c-9931-219339b7c751}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -174,9 +174,6 @@
     <ClCompile Include="MyFunction.cpp">
       <Filter>ソース ファイル\MyMath</Filter>
     </ClCompile>
-    <ClCompile Include="GlitchEffect.cpp">
-      <Filter>ソース ファイル\Glitch</Filter>
-    </ClCompile>
     <ClCompile Include="DescriptorHeapManager.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
     </ClCompile>
@@ -188,6 +185,15 @@
     </ClCompile>
     <ClCompile Include="Transform2D.cpp">
       <Filter>ソース ファイル\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="PostEffect.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessChain.cpp">
+      <Filter>PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="RGBShiftPostEffect.cpp">
+      <Filter>PostEffect\RGBShift</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -304,9 +310,6 @@
     <ClInclude Include="GraphicsConfig.h">
       <Filter>ヘッダー ファイル\MyMath</Filter>
     </ClInclude>
-    <ClInclude Include="GlitchEffect.h">
-      <Filter>ヘッダー ファイル\Glitch</Filter>
-    </ClInclude>
     <ClInclude Include="DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
     </ClInclude>
@@ -321,6 +324,15 @@
     </ClInclude>
     <ClInclude Include="Transform2D.h">
       <Filter>ヘッダー ファイル\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="PostEffect.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessChain.h">
+      <Filter>PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="RGBShiftPostEffect.h">
+      <Filter>PostEffect\RGBShift</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

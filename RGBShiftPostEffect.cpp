@@ -1,6 +1,6 @@
-#include "GlitchEffect.h"
+#include "RGBShiftPostEffect.h"
 
-void GlitchEffect::Initialize(DirectXCommon* dxCommon) {
+void RGBShiftPostEffect::Initialize(DirectXCommon* dxCommon) {
 	dxCommon_ = dxCommon;
 
 	// PSOを作成
@@ -11,10 +11,10 @@ void GlitchEffect::Initialize(DirectXCommon* dxCommon) {
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "RGBShift Effect initialized successfully!\n");
+	Logger::Log(Logger::GetStream(), "RGBShiftPostEffect initialized successfully (Sprite version)!\n");
 }
 
-void GlitchEffect::Finalize() {
+void RGBShiftPostEffect::Finalize() {
 	// パラメータデータのマッピング解除
 	if (mappedParameters_) {
 		parameterBuffer_->Unmap(0, nullptr);
@@ -22,10 +22,10 @@ void GlitchEffect::Finalize() {
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "RGBShift Effect finalized.\n");
+	Logger::Log(Logger::GetStream(), "RGBShiftPostEffect finalized (Sprite version).\n");
 }
 
-void GlitchEffect::Update(float deltaTime) {
+void RGBShiftPostEffect::Update(float deltaTime) {
 	if (!isEnabled_ || !isInitialized_) {
 		return;
 	}
@@ -37,32 +37,32 @@ void GlitchEffect::Update(float deltaTime) {
 	UpdateParameterBuffer();
 }
 
-void GlitchEffect::ApplyPreset(EffectPreset preset) {
-	switch (preset) {
-	case EffectPreset::OFF:
-		SetEnabled(false);
-		break;
+void RGBShiftPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
+	auto commandList = dxCommon_->GetCommandList();
 
-	case EffectPreset::SUBTLE:
-		parameters_.rgbShiftStrength = 0.5f;
-		SetEnabled(true);
-		break;
+	// レンダーターゲットを設定
+	commandList->OMSetRenderTargets(1, &outputRTV, false, nullptr);
 
-	case EffectPreset::MEDIUM:
-		parameters_.rgbShiftStrength = 2.0f;
-		SetEnabled(true);
-		break;
+	// クリア
+	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	commandList->ClearRenderTargetView(outputRTV, clearColor, 0, nullptr);
 
-	case EffectPreset::INTENSE:
-		parameters_.rgbShiftStrength = 5.0f;
-		SetEnabled(true);
-		break;
-	}
+	// ディスクリプタヒープを設定
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = {
+		dxCommon_->GetDescriptorManager()->GetSRVHeapComPtr()
+	};
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	UpdateParameterBuffer();
+	// Spriteを使用してカスタムPSOで描画
+	renderSprite->DrawWithCustomPSO(
+		rootSignature_.Get(),
+		pipelineState_.Get(),
+		inputSRV,
+		parameterBuffer_->GetGPUVirtualAddress()
+	);
 }
 
-void GlitchEffect::CreatePSO() {
+void RGBShiftPostEffect::CreatePSO() {
 	// グリッチエフェクト用のルートシグネチャ作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -122,7 +122,7 @@ void GlitchEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定（normalを削除）
+	// InputLayout設定
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -186,7 +186,7 @@ void GlitchEffect::CreatePSO() {
 	Logger::Log(Logger::GetStream(), "Complete create RGB shift PSO!!\n");
 }
 
-void GlitchEffect::CreateParameterBuffer() {
+void RGBShiftPostEffect::CreateParameterBuffer() {
 	// 構造体サイズをデバッグ出力
 	size_t structSize = sizeof(GlitchParameters);
 	Logger::Log(Logger::GetStream(), std::format("GlitchParameters size: {} bytes\n", structSize));
@@ -202,17 +202,62 @@ void GlitchEffect::CreateParameterBuffer() {
 	// 初期データを設定
 	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create RGB shift parameter buffer!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create Glitch parameter buffer (Sprite version)!!\n");
 }
 
-void GlitchEffect::ImGui() {
-	if (ImGui::CollapsingHeader("RGB Shift Effect")) {
+Microsoft::WRL::ComPtr<IDxcBlob> RGBShiftPostEffect::CompileShader(
+	const std::wstring& filePath, const wchar_t* profile) {
+
+	// DirectXCommonのCompileShader関数を使用
+	return DirectXCommon::CompileShader(
+		filePath,
+		profile,
+		dxCommon_->GetDxcUtils(),
+		dxCommon_->GetDxcCompiler(),
+		dxCommon_->GetIncludeHandler());
+}
+
+void RGBShiftPostEffect::UpdateParameterBuffer() {
+	if (mappedParameters_) {
+		*mappedParameters_ = parameters_;
+	}
+}
+
+void RGBShiftPostEffect::ApplyPreset(EffectPreset preset) {
+	switch (preset) {
+	case EffectPreset::OFF:
+		SetEnabled(false);
+		break;
+
+	case EffectPreset::SUBTLE:
+		parameters_.rgbShiftStrength = 0.5f;
+		SetEnabled(true);
+		break;
+
+	case EffectPreset::MEDIUM:
+		parameters_.rgbShiftStrength = 2.0f;
+		SetEnabled(true);
+		break;
+
+	case EffectPreset::INTENSE:
+		parameters_.rgbShiftStrength = 5.0f;
+		SetEnabled(true);
+		break;
+	}
+
+	UpdateParameterBuffer();
+}
+
+void RGBShiftPostEffect::SetRGBShiftStrength(float strength) {
+	parameters_.rgbShiftStrength = std::clamp(strength, 0.0f, 10.0f);
+	UpdateParameterBuffer();
+}
+
+void RGBShiftPostEffect::ImGui() {
+	if (ImGui::TreeNode(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
-
-		// エフェクトのオン/オフ
-		ImGui::Checkbox("Enable RGB Shift Effect", &isEnabled_);
 
 		if (isEnabled_) {
 			// プリセット選択
@@ -245,24 +290,7 @@ void GlitchEffect::ImGui() {
 			ImGui::Text("RGB Shift: %.2f", parameters_.rgbShiftStrength);
 			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
-	}
-}
 
-Microsoft::WRL::ComPtr<IDxcBlob> GlitchEffect::CompileShader(
-	const std::wstring& filePath,
-	const wchar_t* profile) {
-
-	// DirectXCommonのCompileShader関数を使用
-	return DirectXCommon::CompileShader(
-		filePath,
-		profile,
-		dxCommon_->GetDxcUtils(),
-		dxCommon_->GetDxcCompiler(),
-		dxCommon_->GetIncludeHandler());
-}
-
-void GlitchEffect::UpdateParameterBuffer() {
-	if (mappedParameters_) {
-		*mappedParameters_ = parameters_;
+		ImGui::TreePop();
 	}
 }

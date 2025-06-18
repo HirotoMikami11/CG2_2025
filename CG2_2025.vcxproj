@@ -103,7 +103,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
-    <ClCompile Include="GlitchEffect.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -116,6 +115,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="MyFunction.cpp" />
     <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="OffscreenRenderer.cpp" />
+    <ClCompile Include="PostEffect.cpp" />
+    <ClCompile Include="PostProcessChain.cpp" />
+    <ClCompile Include="RGBShiftPostEffect.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -173,7 +175,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="FrameTimer.h" />
-    <ClInclude Include="GlitchEffect.h" />
     <ClInclude Include="GraphicsConfig.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="InputManager.h" />
@@ -186,7 +187,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="MyFunction.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="OffscreenRenderer.h" />
+    <ClInclude Include="PostEffect.h" />
+    <ClInclude Include="PostProcessChain.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="RGBShiftPostEffect.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureManager.h" />
