@@ -57,7 +57,7 @@ void Sprite::Draw()
 		return;
 	}
 
-	// スプライト専用の描画処理
+	// 通常のUI用スプライト描画処理（変更なし）
 	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
 
 	// スプライト専用のPSOを設定
@@ -89,6 +89,45 @@ void Sprite::Draw()
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
+void Sprite::DrawWithCustomPSO(
+	ID3D12RootSignature* rootSignature,
+	ID3D12PipelineState* pipelineState,
+	D3D12_GPU_DESCRIPTOR_HANDLE textureHandle,
+	D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress)
+{
+	// 非表示、アクティブでない場合は描画しない
+	if (!isVisible_ || !isActive_) {
+		return;
+	}
+
+	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
+
+	// 外部で指定されたPSOを設定
+	commandList->SetGraphicsRootSignature(rootSignature);
+	commandList->SetPipelineState(pipelineState);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// マテリアル（外部指定があればそれを使用、なければ内部のものを使用）
+	D3D12_GPU_VIRTUAL_ADDRESS materialAddress = materialBufferGPUAddress != 0 ?
+		materialBufferGPUAddress : materialResource_->GetGPUVirtualAddress();
+	commandList->SetGraphicsRootConstantBufferView(0, materialAddress);
+
+	// トランスフォーム（Transform2Dを使用）
+	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
+
+	// 外部指定のテクスチャを使用
+	commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
+
+	// 頂点バッファをバインド
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	commandList->IASetIndexBuffer(&indexBufferView_);
+
+	// 描画
+	commandList->DrawIndexedInstanced(static_cast<UINT>(indices_.size()), 1, 0, 0, 0);
+
+	// ※PSO復元は呼び出し元で行う
+}
+
 void Sprite::ImGui()
 {
 	if (ImGui::TreeNode(name_.c_str())) {
@@ -112,7 +151,7 @@ void Sprite::ImGui()
 				transform_.SetRotation(imguiRotation_);
 			}
 
-			// 2Dサイズ用（XYのみ）スケールとして管理
+			// 2Dサイズ用（XYのみ）- スケールとして管理
 			if (ImGui::DragFloat2("Size", &imguiScale_.x, 1.0f, 0.1f, 1000.0f)) {
 				transform_.SetScale(imguiScale_);
 			}

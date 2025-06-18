@@ -47,9 +47,23 @@ public:
 	void Update(const Matrix4x4& viewProjectionMatrix);
 
 	/// <summary>
-	/// 描画処理（スプライト専用）
+	/// 通常の描画処理（UI用スプライト専用）
 	/// </summary>
 	void Draw();
+
+	/// <summary>
+	/// カスタムPSOを使用した描画（オフスクリーン用）
+	/// </summary>
+	/// <param name="rootSignature">使用するルートシグネチャ</param>
+	/// <param name="pipelineState">使用するパイプラインステート</param>
+	/// <param name="textureHandle">使用するテクスチャハンドル</param>
+	/// <param name="materialBufferGPUAddress">使用するマテリアルバッファのGPUアドレス（0の場合は内部マテリアルを使用）</param>
+	void DrawWithCustomPSO(
+		ID3D12RootSignature* rootSignature,
+		ID3D12PipelineState* pipelineState,
+		D3D12_GPU_DESCRIPTOR_HANDLE textureHandle,
+		D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress = 0
+	);
 
 	/// <summary>
 	/// ImGui用のデバッグ表示
@@ -166,7 +180,7 @@ private:
 	std::string name_ = "Sprite";
 	std::string textureName_ = "";
 
-	// Transform2Dクラスを使用（位置とサイズを統一管理）
+	// Transform2Dクラスを使用
 	Transform2D transform_;
 
 	// SpriteMaterial構造体に対応したマテリアルデータ

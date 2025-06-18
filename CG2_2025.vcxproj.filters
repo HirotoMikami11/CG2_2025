@@ -61,9 +61,6 @@
     <Filter Include="リソース ファイル\Shader">
       <UniqueIdentifier>{d7f24bbd-081a-4210-811f-21c946777cc9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル\Shader\offscreenShader">
-      <UniqueIdentifier>{dc34ea8e-ffb2-4c29-8b3a-52c6dcd901dc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Object3d">
       <UniqueIdentifier>{f62798c6-8783-48ac-be17-fe2377478ecb}</UniqueIdentifier>
     </Filter>
@@ -194,12 +191,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Fullscreen.PS.hlsl">
-      <Filter>リソース ファイル\Shader\offscreenShader</Filter>
-    </FxCompile>
-    <FxCompile Include="Fullscreen.VS.hlsl">
-      <Filter>リソース ファイル\Shader\offscreenShader</Filter>
-    </FxCompile>
     <FxCompile Include="Object3d.PS.hlsl">
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </FxCompile>
@@ -333,9 +324,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Fullscreen.hlsli">
-      <Filter>リソース ファイル\Shader\offscreenShader</Filter>
-    </None>
     <None Include="Object3d.hlsli">
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </None>

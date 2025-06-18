@@ -10,31 +10,17 @@
 #include "MyMath.h"
 #include "MyFunction.h"
 
-#include "GlitchEffect.h"	//グリッチエフェクト
+#include "Sprite.h"				// 拡張されたSpriteクラスを使用
+#include "GlitchEffect.h"		// グリッチエフェクト
 
 #include "ImGuiManager.h" 
+
 /// <summary>
-/// オフスクリーンレンダリングを管理するクラス（DescriptorHeapManager対応版）
+/// オフスクリーンレンダリングを管理するクラス（役割分離版）
+/// 通常のSpriteとは異なる役割を持つオフスクリーン専用の描画機能を提供
 /// </summary>
 class OffscreenRenderer {
 public:
-
-	/// <summary>
-/// マテリアル
-/// </summary>
-	struct  offscreenMaterialData final {
-		Vector4 color;						//色
-		int32_t enableLighting;				//ライティングするか
-		int32_t useLambertianReflectance;	//ランバート反射させるか
-		float padding[2];					//隙間埋める
-		Matrix4x4 uvTransform;
-	};
-
-
-
-
-
-
 	OffscreenRenderer() = default;
 	~OffscreenRenderer() = default;
 
@@ -52,24 +38,24 @@ public:
 	void Finalize();
 
 	/// <summary>
-	/// 更新処理（エフェクトの更新）
+	/// 更新処理（エフェクトの更新など）
 	/// </summary>
 	/// <param name="deltaTime">フレーム時間</param>
 	void Update(float deltaTime = 1.0f / 60.0f);
 
-
 	/// <summary>
-	/// オフスクリーンレンダリング開始（PreDraw）
+	/// オフスクリーンレンダリング開始
 	/// </summary>
 	void PreDraw();
 
 	/// <summary>
-	/// オフスクリーンレンダリング終了（PostDraw）
+	/// オフスクリーンレンダリング終了
 	/// </summary>
 	void PostDraw();
 
 	/// <summary>
-	/// オフスクリーンテクスチャを描画（通常の描画パスで使用）
+	/// オフスクリーンテクスチャを描画（ポストエフェクト対応）
+	/// 通常のUI用Spriteとは異なる、オフスクリーン専用の描画処理
 	/// </summary>
 	/// <param name="x">描画位置X</param>
 	/// <param name="y">描画位置Y</param>
@@ -90,64 +76,46 @@ public:
 	bool IsValid() const { return renderTargetTexture_ != nullptr; }
 
 	/// <summary>
-	/// グリッチエフェクト用のImGui
+	/// ImGui表示
 	/// </summary>
 	void ImGui();
 
 	/// <summary>
 	/// グリッチエフェクトを取得
 	/// </summary>
+	/// <returns>グリッチエフェクトのポインタ</returns>
 	GlitchEffect* GetGlitchEffect() { return glitchEffect_.get(); }
 
 	/// <summary>
-	/// グリッチエフェクトを設定
+	/// オフスクリーン用Spriteを取得（デバッグ用）
 	/// </summary>
-	void SetGlitchEffect(std::unique_ptr<GlitchEffect> glitchEffect) {
-		glitchEffect_ = std::move(glitchEffect);
-	}
+	/// <returns>オフスクリーン用Spriteのポインタ</returns>
+	Sprite* GetOffscreenSprite() { return offscreenSprite_.get(); }
 
 private:
 	/// <summary>
-	/// レンダーターゲットテクスチャを作成
+	/// レンダーターゲット関連の作成
 	/// </summary>
 	void CreateRenderTargetTexture();
-
-	/// <summary>
-	/// 深度ステンシルテクスチャを作成
-	/// </summary>
 	void CreateDepthStencilTexture();
-
-	/// <summary>
-	/// RTVを作成
-	/// </summary>
 	void CreateRTV();
-
-	/// <summary>
-	/// DSVを作成
-	/// </summary>
 	void CreateDSV();
-
-	/// <summary>
-	/// SRVを作成
-	/// </summary>
 	void CreateSRV();
 
 	/// <summary>
-	/// オフスクリーン描画用のPSOを作成
+	/// オフスクリーン描画用のSpriteを初期化
 	/// </summary>
-	void CreatePSO();
+	void InitializeOffscreenSprite();
 
 	/// <summary>
-	/// フルスクリーン描画用の頂点バッファを作成
+	/// 通常のオフスクリーン描画（スプライト用PSO使用）
 	/// </summary>
-	void CreateVertexBuffer();
+	void DrawNormalOffscreen();
 
 	/// <summary>
-	/// シェーダーをコンパイル
+	/// グリッチエフェクト付きオフスクリーン描画
 	/// </summary>
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
-		const std::wstring& filePath,
-		const wchar_t* profile);
+	void DrawWithGlitchEffect();
 
 private:
 	// DirectXCommonへの参照
@@ -161,34 +129,16 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTexture_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilTexture_;
 
-	// DescriptorHeapManagerからのディスクリプタハンドル
+	// ディスクリプタハンドル
 	DescriptorHeapManager::DescriptorHandle rtvHandle_;
 	DescriptorHeapManager::DescriptorHandle dsvHandle_;
 	DescriptorHeapManager::DescriptorHandle srvHandle_;
 
-	// オフスクリーン描画用PSO（簡素化されたもの）
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
+	// オフスクリーン描画専用Sprite（UI用Spriteとは役割が異なる）
+	std::unique_ptr<Sprite> offscreenSprite_;
 
-	// フルスクリーン描画用の頂点バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-	VertexData* vertexData_ = nullptr;
-
-	// マテリアル用バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffer_;
-	MaterialData* materialData_ = nullptr;
-
-	// Transform用バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformBuffer_;
-	TransformationMatrix* transformData_ = nullptr;
-
-	// バリア
+	// バリア、ビューポート
 	D3D12_RESOURCE_BARRIER barrier_{};
-
-	// ビューポート（オフスクリーン用）
 	D3D12_VIEWPORT viewport_{};
 	D3D12_RECT scissorRect_{};
 
