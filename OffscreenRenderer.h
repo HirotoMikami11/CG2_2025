@@ -9,12 +9,15 @@
 #include "Logger.h"
 #include "MyMath.h"
 #include "MyFunction.h"
-
-#include "Sprite.h"				// 拡張されたSpriteクラスを使用
-#include "PostProcessChain.h"	// ポストプロセスチェーン
-#include "RGBShiftPostEffect.h"	// RGBシフトエフェクト
-
 #include "ImGuiManager.h" 
+
+#include "Sprite.h"				// Spriteクラスを使用
+#include "PostProcessChain.h"	// ポストプロセスチェーン
+
+#include "RGBShiftPostEffect.h"	// RGBシフトエフェクト
+#include "GrayscalePostEffect.h"// グレースケールエフェクト
+
+
 
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス
@@ -89,6 +92,12 @@ public:
 	RGBShiftPostEffect* GetGlitchEffect() { return RGBShiftEffect_; }
 
 	/// <summary>
+	/// グレースケールエフェクトを取得
+	/// </summary>
+	/// <returns>グレースケールポストエフェクトのポインタ</returns>
+	GrayscalePostEffect* GetGrayscaleEffect() { return grayscaleEffect_; }
+
+	/// <summary>
 	/// ポストプロセスチェーンを取得
 	/// </summary>
 	/// <returns>ポストプロセスチェーンのポインタ</returns>
@@ -145,4 +154,5 @@ private:
 
 	// 個別エフェクトへの参照（設定用）
 	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
+	GrayscalePostEffect* grayscaleEffect_ = nullptr;
 };

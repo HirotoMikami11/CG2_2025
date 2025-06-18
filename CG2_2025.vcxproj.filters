@@ -94,6 +94,9 @@
     <Filter Include="リソース ファイル\Shader\Grayscale">
       <UniqueIdentifier>{199393d8-3b85-4dd1-bd73-032f83314bd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Offscreen\PostEffect\Grayscale">
+      <UniqueIdentifier>{bf51a594-c662-43d5-879b-1078219b28d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -206,6 +209,9 @@
     </ClCompile>
     <ClCompile Include="OffscreenRenderer.cpp">
       <Filter>Offscreen\OffscreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GrayscalePostEffect.cpp">
+      <Filter>Offscreen\PostEffect\Grayscale</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -351,6 +357,9 @@
     </ClInclude>
     <ClInclude Include="OffscreenRenderer.h">
       <Filter>Offscreen\OffscreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GrayscalePostEffect.h">
+      <Filter>Offscreen\PostEffect\Grayscale</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

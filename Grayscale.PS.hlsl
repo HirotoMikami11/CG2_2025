@@ -13,14 +13,13 @@ float3 toGrayscale(float3 color)
 }
 
 // カラーとグレースケールをイージングする関数
-//元の色とイージングのtの入れる
-//0に近ければ近いほど元の色に、1に近いほどグレースケールに。
+// 元の色とイージングのtの入れる
+// 0に近ければ近いほど元の色に、1に近いほどグレースケールに。
 float3 applyGrayscale(float3 color, float t)
 {
     float3 grayscale = toGrayscale(color);
     return lerp(color, grayscale, t);
 }
-
 
 struct PixelShaderOutput
 {
@@ -30,6 +29,13 @@ struct PixelShaderOutput
 PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
-    output.color.rgb = applyGrayscale(output.color.rgb, 1.0f); //この1はtなのでパラメータにできる
+    
+    // テクスチャをサンプリング
+    float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    
+    // グレースケールを適用
+    output.color.rgb = applyGrayscale(textureColor.rgb, GrayscaleParameter.grayIntensity);
+    output.color.a = textureColor.a;
+    
     return output;
 }

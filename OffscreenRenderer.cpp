@@ -37,7 +37,8 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	///ここにエフェクトを追加していく
 	// グリッチエフェクトを追加
 	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
-
+	// グレースケールエフェクトを追加
+	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 
 
 
@@ -52,7 +53,7 @@ void OffscreenRenderer::Finalize() {
 		postProcessChain_.reset();
 	}
 	RGBShiftEffect_ = nullptr;
-
+	grayscaleEffect_ = nullptr;
 	// オフスクリーンSprite削除
 	offscreenSprite_.reset();
 
