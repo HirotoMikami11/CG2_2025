@@ -64,9 +64,6 @@
     <Filter Include="リソース ファイル\Shader\Object3d">
       <UniqueIdentifier>{f62798c6-8783-48ac-be17-fe2377478ecb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル\Shader\Glitch">
-      <UniqueIdentifier>{14713c3b-3f84-4702-8ff1-261f2346693d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Sprite">
       <UniqueIdentifier>{ae8040b9-f52c-42fc-84d3-5e698849411b}</UniqueIdentifier>
     </Filter>
@@ -76,11 +73,23 @@
     <Filter Include="ヘッダー ファイル\Sprite">
       <UniqueIdentifier>{e36e23c7-8f1c-4343-8852-618966b22da6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PostEffect">
+    <Filter Include="Offscreen">
+      <UniqueIdentifier>{03d769a8-00a6-4692-94bd-32d7c20fd016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen\PostEffect">
       <UniqueIdentifier>{a9c21117-45d5-4bd9-8564-7b331f6714c1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PostEffect\RGBShift">
+    <Filter Include="Offscreen\PostEffect\RGBShift">
       <UniqueIdentifier>{9c6be5dc-041d-4c3c-9931-219339b7c751}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen\PostProcessChain">
+      <UniqueIdentifier>{37a00932-352c-443b-9aec-e010c8571bf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen\OffscreenRenderer">
+      <UniqueIdentifier>{cb9cb87f-e25a-458c-82d5-4abea6b28e5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\RGBShift">
+      <UniqueIdentifier>{1b05d1ae-4ce6-402e-a6fe-f5ef2717410e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -156,9 +165,6 @@
     <ClCompile Include="Light.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="OffscreenRenderer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="DirectXCommon.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
     </ClCompile>
@@ -187,13 +193,16 @@
       <Filter>ソース ファイル\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="PostEffect.cpp">
-      <Filter>PostEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="PostProcessChain.cpp">
-      <Filter>PostEffect</Filter>
+      <Filter>Offscreen\PostEffect</Filter>
     </ClCompile>
     <ClCompile Include="RGBShiftPostEffect.cpp">
-      <Filter>PostEffect\RGBShift</Filter>
+      <Filter>Offscreen\PostEffect\RGBShift</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessChain.cpp">
+      <Filter>Offscreen\PostProcessChain</Filter>
+    </ClCompile>
+    <ClCompile Include="OffscreenRenderer.cpp">
+      <Filter>Offscreen\OffscreenRenderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -203,17 +212,17 @@
     <FxCompile Include="Object3d.VS.hlsl">
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </FxCompile>
-    <FxCompile Include="Glitch.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Glitch</Filter>
-    </FxCompile>
-    <FxCompile Include="Glitch.VS.hlsl">
-      <Filter>リソース ファイル\Shader\Glitch</Filter>
-    </FxCompile>
     <FxCompile Include="Sprite.PS.hlsl">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
     </FxCompile>
     <FxCompile Include="Sprite.VS.hlsl">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="RGBShift.PS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="RGBShift.VS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -289,9 +298,6 @@
     <ClInclude Include="Light.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="OffscreenRenderer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="DirectXCommon.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
     </ClInclude>
@@ -326,24 +332,27 @@
       <Filter>ヘッダー ファイル\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="PostEffect.h">
-      <Filter>PostEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="PostProcessChain.h">
-      <Filter>PostEffect</Filter>
+      <Filter>Offscreen\PostEffect</Filter>
     </ClInclude>
     <ClInclude Include="RGBShiftPostEffect.h">
-      <Filter>PostEffect\RGBShift</Filter>
+      <Filter>Offscreen\PostEffect\RGBShift</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessChain.h">
+      <Filter>Offscreen\PostProcessChain</Filter>
+    </ClInclude>
+    <ClInclude Include="OffscreenRenderer.h">
+      <Filter>Offscreen\OffscreenRenderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </None>
-    <None Include="Glitch.hlsli">
-      <Filter>リソース ファイル\Shader\Glitch</Filter>
-    </None>
     <None Include="Sprite.hlsli">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </None>
+    <None Include="RGBShift.hlsli">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

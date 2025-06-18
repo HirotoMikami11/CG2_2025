@@ -1,6 +1,6 @@
-#include "Glitch.hlsli"
+#include "RGBShift.hlsli"
 
-ConstantBuffer<GlitchParameters> gGlitchParams : register(b0);
+ConstantBuffer<RGBShiftParameters> RGBShiftParameter : register(b0);
 
 Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
@@ -17,10 +17,10 @@ PixelShaderOutput main(VertexShaderOutput input)
     float2 uv = input.texcoord;
     
     // RGBシフトエフェクトのみ
-    float shiftAmount = gGlitchParams.rgbShiftStrength * 0.005f;
+    float shiftAmount = RGBShiftParameter.rgbShiftStrength * 0.005f;
     
     // 時間に基づく揺らぎ
-    float timeShift = sin(gGlitchParams.time * 10.0f) * 0.002f;
+    float timeShift = sin(RGBShiftParameter.time * 10.0f) * 0.002f;
     shiftAmount += timeShift;
     
     // 各色チャンネルを少しずつずらしてサンプリング

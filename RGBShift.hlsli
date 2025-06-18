@@ -5,7 +5,7 @@ struct VertexShaderOutput
 };
 
 // RGBシフト
-struct GlitchParameters
+struct RGBShiftParameters
 {
     float32_t rgbShiftStrength; // RGBシフトの強度
     float32_t time; // 時間（アニメーション用）
