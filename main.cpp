@@ -38,32 +38,27 @@
 #include "DirectXCommon.h"
 #include "Dump.h"
 
-#include "AudioManager.h"
-#include "InputManager.h"
-#include "TextureManager.h"
-#include "ImGuiManager.h" 
+#include "AudioManager.h"		//audio
+#include "InputManager.h"		//input
+#include "TextureManager.h"		//画像管理
+#include "ImGuiManager.h"		//imgui管理
+#include "FrameTimer.h"			//FPS管理
 
-#include"Transform.h"
-///マテリアルとメッシュを統合させたmodelクラス
-#include"Model.h"
+
 ///トランスフォームと、モデルを統合させたGameObjectクラス
 #include "GameObject.h"
-
-//ライト
-#include"Light.h"
-
-
-//カメラ系統
-#include"CameraController.h"
-
-//オフスクリーン
-#include "OffscreenRenderer.h"
-//FPS関連
-#include "FrameTimer.h"
-
-
-
+///2D描画スプライトクラス
 #include "Sprite.h"
+
+
+#include"Light.h"//ライト
+#include"CameraController.h"//カメラ系統
+#include "OffscreenRenderer.h"//オフスクリーン
+
+
+
+
+
 
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
@@ -171,9 +166,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CameraController* cameraController = CameraController::GetInstance();
 	cameraController->Initialize();
 
-
-
-
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
@@ -223,9 +215,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///								矩形Sprite									///
 	///*-----------------------------------------------------------------------*///
 
-	//TODO: spriteはのちにGameObjectから独立させる
-
-
 #pragma region "Sprite"
 
 	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();			// スプライトを生成
@@ -239,7 +228,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 	///									model									///
 	///*-----------------------------------------------------------------------*///
-
 
 #pragma region "Model"
 
@@ -256,9 +244,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma endregion
-
-
-
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///

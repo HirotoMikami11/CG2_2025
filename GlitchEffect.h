@@ -3,43 +3,36 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <string>
-#include <cstddef>  // offsetof用に追加
 
 #include "DirectXCommon.h"
 #include "Logger.h"
 #include "MyMath.h"
 #include "MyFunction.h"
 #include "ImGuiManager.h" 
+
 /// <summary>
-/// グリッチエフェクトを管理するクラス
+/// RGBシフトのグリッチエフェクトクラス
 /// </summary>
 class GlitchEffect {
 public:
 	/// <summary>
-	/// グリッチエフェクト用のマテリアルデータ（シェーダーと対応）
+	/// RGBシフト専用のパラメータ
 	/// </summary>
-	struct GlitchMaterialData {
-		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		int32_t enableLighting = 0;           // 使わない
-		int32_t useLambertianReflectance = 0; // 使わない
-		Matrix4x4 uvTransform = MakeIdentity4x4();
-
-		// グリッチエフェクト用パラメータ
-		float rgbShiftStrength = 1.0f;        // RGBシフトの強度 (0.0f～5.0f)
-		float time = 0.0f;                    // 時間（アニメーション用）
-		float glitchIntensity = 0.5f;         // 全体的なグリッチ強度 (0.0f～1.0f)
-		float unused = 0.0f;                  // パディング用
+	struct GlitchParameters {
+		float rgbShiftStrength = 1.0f;		// RGBシフトの強度 (0.0f～10.0f)
+		float time = 0.0f;					// 時間（アニメーション用）
+		float unused1 = 0.0f;				// パディング
+		float unused2 = 0.0f;				// パディング（16バイト境界）
 	};
 
 	/// <summary>
 	/// エフェクトプリセット
 	/// </summary>
 	enum class EffectPreset {
-		OFF,           // エフェクトなし
-		SUBTLE,        // 軽微なグリッチ
-		MEDIUM,        // 中程度のグリッチ
-		INTENSE,       // 強烈なグリッチ
-		CHAOS          // 混沌
+		OFF,			// エフェクトなし
+		SUBTLE,			// 軽微なRGBシフト
+		MEDIUM,			// 中程度のRGBシフト
+		INTENSE,		// 強烈なRGBシフト
 	};
 
 public:
@@ -64,23 +57,13 @@ public:
 	void Update(float deltaTime = 1.0f / 60.0f);
 
 	/// <summary>
-	/// グリッチエフェクト用のPSOを作成
-	/// </summary>
-	void CreatePSO();
-
-	/// <summary>
-	/// グリッチエフェクト用の定数バッファを作成
-	/// </summary>
-	void CreateConstantBuffer();
-
-	/// <summary>
 	/// ImGui でのパラメータ調整UI
 	/// </summary>
 	void ImGui();
 
-	//=============================================================================
+
+
 	// Getter
-	//=============================================================================
 
 	/// <summary>
 	/// エフェクトが有効かどうか
@@ -98,18 +81,16 @@ public:
 	ID3D12PipelineState* GetPipelineState() const { return pipelineState_.Get(); }
 
 	/// <summary>
-	/// マテリアルバッファを取得
+	/// パラメータバッファを取得
 	/// </summary>
-	ID3D12Resource* GetMaterialBuffer() const { return materialBuffer_.Get(); }
+	ID3D12Resource* GetMaterialBuffer() const { return parameterBuffer_.Get(); }
 
 	/// <summary>
-	/// マテリアルデータを取得
+	/// パラメータデータを取得
 	/// </summary>
-	const GlitchMaterialData& GetMaterialData() const { return materialData_; }
+	const GlitchParameters& GetParameters() const { return parameters_; }
 
-	//=============================================================================
 	// Setter
-	//=============================================================================
 
 	/// <summary>
 	/// エフェクトの有効/無効を設定
@@ -117,49 +98,17 @@ public:
 	void SetEnabled(bool enabled) { isEnabled_ = enabled; }
 
 	/// <summary>
+	/// プリセットを適用
+	/// </summary>
+	void ApplyPreset(EffectPreset preset);
+
+	/// <summary>
 	/// RGBシフトの強度を設定
 	/// </summary>
 	void SetRGBShiftStrength(float strength) {
-		materialData_.rgbShiftStrength = std::clamp(strength, 0.0f, 10.0f);
-		UpdateConstantBuffer();
+		parameters_.rgbShiftStrength = std::clamp(strength, 0.0f, 10.0f);
+		UpdateParameterBuffer();
 	}
-
-	/// <summary>
-	/// グリッチ強度を設定
-	/// </summary>
-	void SetGlitchIntensity(float intensity) {
-		materialData_.glitchIntensity = std::clamp(intensity, 0.0f, 1.0f);
-		UpdateConstantBuffer();
-	}
-
-	/// <summary>
-	/// 色を設定
-	/// </summary>
-	void SetColor(const Vector4& color) {
-		materialData_.color = color;
-		UpdateConstantBuffer();
-	}
-
-	/// <summary>
-	/// UVトランスフォームを設定
-	/// </summary>
-	void SetUVTransform(const Matrix4x4& transform) {
-		materialData_.uvTransform = transform;
-		UpdateConstantBuffer();
-	}
-
-private:
-	/// <summary>
-	/// シェーダーをコンパイル
-	/// </summary>
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
-		const std::wstring& filePath,
-		const wchar_t* profile);
-
-	/// <summary>
-	/// 定数バッファを更新
-	/// </summary>
-	void UpdateConstantBuffer();
 
 private:
 	// DirectXCommonへの参照
@@ -169,8 +118,8 @@ private:
 	bool isEnabled_ = false;
 	bool isInitialized_ = false;
 
-	// マテリアルデータ
-	GlitchMaterialData materialData_;
+	// RGBシフトパラメータ
+	GlitchParameters parameters_;
 
 	// グリッチエフェクト用PSO
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
@@ -178,11 +127,34 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
 
-	// 定数バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffer_;
-	GlitchMaterialData* mappedMaterialData_ = nullptr;
+	// パラメータバッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> parameterBuffer_;
+	GlitchParameters* mappedParameters_ = nullptr;
 
 	// アニメーション用
 	float animationSpeed_ = 1.0f;
+
+private:
+	/// <summary>
+	/// グリッチエフェクト用のPSOを作成
+	/// </summary>
+	void CreatePSO();
+
+	/// <summary>
+	/// パラメータバッファを作成
+	/// </summary>
+	void CreateParameterBuffer();
+
+	/// <summary>
+	/// シェーダーをコンパイル
+	/// </summary>
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile);
+
+	/// <summary>
+	/// パラメータバッファを更新
+	/// </summary>
+	void UpdateParameterBuffer();
 
 };

@@ -6,23 +6,23 @@ void GlitchEffect::Initialize(DirectXCommon* dxCommon) {
 	// PSOを作成
 	CreatePSO();
 
-	// 定数バッファを作成
-	CreateConstantBuffer();
+	// パラメータバッファを作成
+	CreateParameterBuffer();
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "GlitchEffect initialized successfully!\n");
+	Logger::Log(Logger::GetStream(), "RGBShift Effect initialized successfully!\n");
 }
 
 void GlitchEffect::Finalize() {
-	// マテリアルデータのマッピング解除
-	if (mappedMaterialData_) {
-		materialBuffer_->Unmap(0, nullptr);
-		mappedMaterialData_ = nullptr;
+	// パラメータデータのマッピング解除
+	if (mappedParameters_) {
+		parameterBuffer_->Unmap(0, nullptr);
+		mappedParameters_ = nullptr;
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "GlitchEffect finalized.\n");
+	Logger::Log(Logger::GetStream(), "RGBShift Effect finalized.\n");
 }
 
 void GlitchEffect::Update(float deltaTime) {
@@ -31,10 +31,35 @@ void GlitchEffect::Update(float deltaTime) {
 	}
 
 	// 時間を更新
-	materialData_.time += deltaTime * animationSpeed_;
+	parameters_.time += deltaTime * animationSpeed_;
 
-	// 定数バッファを更新
-	UpdateConstantBuffer();
+	// パラメータバッファを更新
+	UpdateParameterBuffer();
+}
+
+void GlitchEffect::ApplyPreset(EffectPreset preset) {
+	switch (preset) {
+	case EffectPreset::OFF:
+		SetEnabled(false);
+		break;
+
+	case EffectPreset::SUBTLE:
+		parameters_.rgbShiftStrength = 0.5f;
+		SetEnabled(true);
+		break;
+
+	case EffectPreset::MEDIUM:
+		parameters_.rgbShiftStrength = 2.0f;
+		SetEnabled(true);
+		break;
+
+	case EffectPreset::INTENSE:
+		parameters_.rgbShiftStrength = 5.0f;
+		SetEnabled(true);
+		break;
+	}
+
+	UpdateParameterBuffer();
 }
 
 void GlitchEffect::CreatePSO() {
@@ -42,22 +67,22 @@ void GlitchEffect::CreatePSO() {
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	// DescriptorRange
+	// DescriptorRange（テクスチャ用）
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter（3つ：Material、Transform、Texture）
+	// RootParameter（3つ：Parameters、Transform、Texture）
 	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
-	// Material (b0) - グリッチマテリアル
+	// GlitchParameters (b0)
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// Transform (b0)
+	// Transform (b0) - 頂点シェーダー用
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].Descriptor.ShaderRegister = 0;
@@ -71,9 +96,9 @@ void GlitchEffect::CreatePSO() {
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;  //0~1の範囲をリピートしない
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;  //0~1の範囲をリピートしない
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;  //0~1の範囲をリピートしない
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 	staticSamplers[0].ShaderRegister = 0;
@@ -97,8 +122,8 @@ void GlitchEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+	// InputLayout設定（normalを削除）
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -109,10 +134,7 @@ void GlitchEffect::CreatePSO() {
 	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	// normalはグリッチエフェクトでは不要なので消す
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -134,9 +156,9 @@ void GlitchEffect::CreatePSO() {
 	pixelShaderBlob_ = CompileShader(L"Glitch.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob_ != nullptr);
 
-	// DepthStencilState設定
+	// DepthStencilState設定（深度テストなし）
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	depthStencilDesc.DepthEnable = false; // エフェクト描画では深度テストを無効
+	depthStencilDesc.DepthEnable = false;
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
@@ -161,65 +183,57 @@ void GlitchEffect::CreatePSO() {
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create glitch PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create RGB shift PSO!!\n");
 }
 
-
-void GlitchEffect::CreateConstantBuffer() {
+void GlitchEffect::CreateParameterBuffer() {
 	// 構造体サイズをデバッグ出力
-	size_t structSize = sizeof(GlitchMaterialData);
-	Logger::Log(Logger::GetStream(), std::format("GlitchMaterialData size: {} bytes\n", structSize));
+	size_t structSize = sizeof(GlitchParameters);
+	Logger::Log(Logger::GetStream(), std::format("GlitchParameters size: {} bytes\n", structSize));
 
 	// 256バイト境界に揃える（DirectX12の要件）
 	size_t alignedSize = (structSize + 255) & ~255;
 	Logger::Log(Logger::GetStream(), std::format("Aligned buffer size: {} bytes\n", alignedSize));
 
-	// マテリアルバッファ作成
-	materialBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), alignedSize);
-	materialBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedMaterialData_));
+	// パラメータバッファ作成
+	parameterBuffer_ = CreateBufferResource(dxCommon_->GetDeviceComPtr(), alignedSize);
+	parameterBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedParameters_));
 
 	// 初期データを設定
-	UpdateConstantBuffer();
+	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create glitch constant buffer!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create RGB shift parameter buffer!!\n");
 }
 
 void GlitchEffect::ImGui() {
-	if (ImGui::CollapsingHeader("Glitch Effect")) {
+	if (ImGui::CollapsingHeader("RGB Shift Effect")) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
 
 		// エフェクトのオン/オフ
-		ImGui::Checkbox("Enable Glitch Effect", &isEnabled_);
+		ImGui::Checkbox("Enable RGB Shift Effect", &isEnabled_);
 
 		if (isEnabled_) {
-			// デバッグボタン: 即座に強いエフェクトを適用
-			if (ImGui::Button("Test Strong Effect")) {
-				materialData_.rgbShiftStrength = 20.0f;
-				materialData_.glitchIntensity = 1.0f;
-				UpdateConstantBuffer();
+			// プリセット選択
+			if (ImGui::TreeNode("Presets")) {
+				if (ImGui::Button("Subtle")) ApplyPreset(EffectPreset::SUBTLE);
+				ImGui::SameLine();
+				if (ImGui::Button("Medium")) ApplyPreset(EffectPreset::MEDIUM);
+				ImGui::SameLine();
+				if (ImGui::Button("Intense")) ApplyPreset(EffectPreset::INTENSE);
+
+				ImGui::TreePop();
 			}
 
 			// 個別パラメータ調整
 			if (ImGui::TreeNode("Manual Settings")) {
-				float rgbShift = materialData_.rgbShiftStrength;
-				if (ImGui::SliderFloat("RGB Shift Strength", &rgbShift, 0.0f, 50.0f)) { // 範囲を拡大
+				float rgbShift = parameters_.rgbShiftStrength;
+				if (ImGui::SliderFloat("RGB Shift Strength", &rgbShift, 0.0f, 10.0f)) {
 					SetRGBShiftStrength(rgbShift);
 				}
 
-				float intensity = materialData_.glitchIntensity;
-				if (ImGui::SliderFloat("Glitch Intensity", &intensity, 0.0f, 1.0f)) {
-					SetGlitchIntensity(intensity);
-				}
-
 				if (ImGui::SliderFloat("Animation Speed", &animationSpeed_, 0.0f, 3.0f)) {
-					// アニメーション速度の変更は即座に反映
-				}
-
-				Vector4 color = materialData_.color;
-				if (ImGui::ColorEdit4("Effect Color", reinterpret_cast<float*>(&color.x))) {
-					SetColor(color);
 				}
 
 				ImGui::TreePop();
@@ -227,9 +241,8 @@ void GlitchEffect::ImGui() {
 
 			// 情報表示
 			ImGui::Separator();
-			ImGui::Text("Current Time: %.2f", materialData_.time);
-			ImGui::Text("RGB Shift: %.2f", materialData_.rgbShiftStrength);
-			ImGui::Text("Intensity: %.2f", materialData_.glitchIntensity);
+			ImGui::Text("Current Time: %.2f", parameters_.time);
+			ImGui::Text("RGB Shift: %.2f", parameters_.rgbShiftStrength);
 			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 	}
@@ -239,7 +252,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> GlitchEffect::CompileShader(
 	const std::wstring& filePath,
 	const wchar_t* profile) {
 
-	// DirectXCommonの既存のCompileShader関数を使用
+	// DirectXCommonのCompileShader関数を使用
 	return DirectXCommon::CompileShader(
 		filePath,
 		profile,
@@ -248,8 +261,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> GlitchEffect::CompileShader(
 		dxCommon_->GetIncludeHandler());
 }
 
-void GlitchEffect::UpdateConstantBuffer() {
-	if (mappedMaterialData_) {
-		*mappedMaterialData_ = materialData_;
+void GlitchEffect::UpdateParameterBuffer() {
+	if (mappedParameters_) {
+		*mappedParameters_ = parameters_;
 	}
 }

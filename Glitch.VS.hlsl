@@ -12,7 +12,7 @@ struct VertexShaderInput
 {
     float32_t4 position : POSITION0;
     float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0; // 使わないが、InputLayoutと合わせるため残す
+    // normalはグリッチエフェクトでは不要
 };
 
 VertexShaderOutput main(VertexShaderInput input)
