@@ -75,6 +75,8 @@ public:
 	IDXGISwapChain4* GetSwapChain() const { return swapChain.Get(); }
 	ID3D12RootSignature* GetRootSignature() const { return rootSignature.Get(); }
 	ID3D12PipelineState* GetPipelineState() const { return graphicsPipelineState.Get(); }
+	ID3D12RootSignature* GetSpriteRootSignature() const { return spriteRootSignature.Get(); }
+	ID3D12PipelineState* GetSpritePipelineState() const { return spritePipelineState.Get(); }
 
 	///参照で返すゲッター？
 	const Microsoft::WRL::ComPtr<ID3D12Device>& GetDeviceComPtr() const { return device; }
@@ -147,6 +149,10 @@ private:
 	/// </summary>
 	void MakePSO();
 
+	/// <summary>
+	/// 3D用のPSOを作成する
+	/// </summary>
+	void MakeSpritePSO();
 
 	/// <summary>
 	/// ViewportとScissor
@@ -193,17 +199,16 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
-	//PSO
+	//3D用PSO
 	//RootSignature作成
-	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;//シリアライズしてバイナリする
-	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-	//バイナリをもとにして作成する
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
-
-	//RasterizerStateの設定  
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob;
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;//実際に生成されるPSO
+
+	//スプライト用PSO
+	//RootSignature作成
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> spriteRootSignature;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> spritePipelineState;//実際に生成されるPSO
+
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};

@@ -61,6 +61,10 @@
 //FPS関連
 #include "FrameTimer.h"
 
+
+
+#include "Sprite.h"
+
 /// <summary>
 /// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
 /// </summary>
@@ -224,16 +228,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region "Sprite"
 
-	//SpriteのTransform変数を作る
-	Vector3Transform transformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
-	};
-
 	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();			// スプライトを生成
-	sprite->Initialize(directXCommon, "uvChecker");							// 初期化
-	sprite->SetTransform(transformSprite);									// Transformを設定
+	sprite->Initialize(directXCommon, "uvChecker",
+		{ 50,50 }, { 100,100 });							// 初期化
+
 
 
 #pragma endregion
@@ -321,6 +319,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sphere->ImGui();
 		/// スプライトのImgui
 		sprite->ImGui();
+
 		/// モデルのImgui
 		model->ImGui();
 		//ライト
@@ -359,17 +358,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//								行列更新										//
 		//																			//
 
-		//三角形の更新(現状行列更新のみ)
+		//三角形の更新
 		for (int i = 0; i < kMaxTriangleIndex; i++)
 		{
 			triangle[i]->Update(cameraController->GetViewProjectionMatrix());
 		}
 
-		//球体の更新(現状行列更新のみ)
+		//球体の更新
 		sphere->Update(cameraController->GetViewProjectionMatrix());
-		//スプライトの更新(現状行列更新のみ)
+		//スプライトの更新
 		sprite->Update(cameraController->GetViewProjectionMatrixSprite());
-		//プレーンモデルの更新(現状行列更新のみ)
+
+
+		//プレーンモデルの更新
 		model->Update(cameraController->GetViewProjectionMatrix());
 
 		// ImGuiの受け付け終了
@@ -388,21 +389,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///																			///
 		///						オフスクリーンレンダリング								///
 		///																			///
-		//// オフスクリーンの描画準備
-		offscreenRenderer->PreDraw();
-
-		// Sphereの描画
-		sphere->Draw(directionalLight);
-		for (int i = 0; i < kMaxTriangleIndex; i++) {
-			triangle[i]->Draw(directionalLight);
-		}
-		model->Draw(directionalLight);
-		sprite->DrawSprite(directionalLight);
+		////// オフスクリーンの描画準備
+		//offscreenRenderer->PreDraw();
 
 
 
-		//// オフスクリーンの描画終了
-		offscreenRenderer->PostDraw();
+		////// オフスクリーンの描画終了
+		//offscreenRenderer->PostDraw();
 		///																			///
 		///								通常レンダリング								///
 		///																			///
@@ -412,10 +405,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///通常描画
 
 		// オフスクリーンの画面の実態描画
-		offscreenRenderer->DrawOffscreenTexture();
+		//offscreenRenderer->DrawOffscreenTexture();
 
-
-
+		// Sphereの描画
+		sphere->Draw(directionalLight);
+		for (int i = 0; i < kMaxTriangleIndex; i++) {
+			triangle[i]->Draw(directionalLight);
+		}
+		model->Draw(directionalLight);
+		sprite->Draw();
 
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());

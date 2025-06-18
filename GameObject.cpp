@@ -3,7 +3,7 @@
 // 静的変数の定義
 int Triangle::triangleCount_ = 0;
 int Sphere::sphereCount_ = 0;
-int Sprite::spriteCount_ = 0;
+//int Sprite::spriteCount_ = 0;
 int Model3D::modelCount_ = 0;
 
 void GameObject::Initialize(
@@ -72,6 +72,7 @@ void GameObject::Draw(const Light& directionalLight)
 	// メッシュをバインドして描画
 	model_.GetMesh().Bind(commandList);
 	model_.GetMesh().Draw(commandList);
+
 }
 
 void GameObject::ImGui()

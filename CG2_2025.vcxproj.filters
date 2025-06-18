@@ -76,6 +76,15 @@
     <Filter Include="リソース ファイル\Shader\Glitch">
       <UniqueIdentifier>{14713c3b-3f84-4702-8ff1-261f2346693d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader\Sprite">
+      <UniqueIdentifier>{ae8040b9-f52c-42fc-84d3-5e698849411b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Sprite">
+      <UniqueIdentifier>{e2882a5e-bff0-4a5b-8ef6-a0a39bc0f78f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Sprite">
+      <UniqueIdentifier>{e36e23c7-8f1c-4343-8852-618966b22da6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -177,6 +186,12 @@
     <ClCompile Include="FrameTimer.cpp">
       <Filter>ソース ファイル\MyMath</Filter>
     </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>ソース ファイル\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform2D.cpp">
+      <Filter>ソース ファイル\Sprite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Fullscreen.PS.hlsl">
@@ -196,6 +211,12 @@
     </FxCompile>
     <FxCompile Include="Glitch.VS.hlsl">
       <Filter>リソース ファイル\Shader\Glitch</Filter>
+    </FxCompile>
+    <FxCompile Include="Sprite.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="Sprite.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -301,6 +322,15 @@
     <ClInclude Include="FrameTimer.h">
       <Filter>ヘッダー ファイル\MyMath</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>ヘッダー ファイル\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform2D.h">
+      <Filter>ヘッダー ファイル\Sprite</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Fullscreen.hlsli">
@@ -312,10 +342,18 @@
     <None Include="Glitch.hlsli">
       <Filter>リソース ファイル\Shader\Glitch</Filter>
     </None>
+    <None Include="Sprite.hlsli">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
       <Filter>imgui</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CG2_2025.rc">
+      <Filter>リソース ファイル</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
