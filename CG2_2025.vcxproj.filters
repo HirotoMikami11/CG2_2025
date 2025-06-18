@@ -91,6 +91,9 @@
     <Filter Include="リソース ファイル\Shader\RGBShift">
       <UniqueIdentifier>{1b05d1ae-4ce6-402e-a6fe-f5ef2717410e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader\Grayscale">
+      <UniqueIdentifier>{199393d8-3b85-4dd1-bd73-032f83314bd8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -224,6 +227,12 @@
     <FxCompile Include="RGBShift.VS.hlsl">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </FxCompile>
+    <FxCompile Include="Grayscale.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </FxCompile>
+    <FxCompile Include="Grayscale.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -353,6 +362,9 @@
     </None>
     <None Include="RGBShift.hlsli">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </None>
+    <None Include="Grayscale.hlsli">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
