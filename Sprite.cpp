@@ -112,7 +112,7 @@ void Sprite::ImGui()
 				transform_.SetRotation(imguiRotation_);
 			}
 
-			// 2Dサイズ用（XYのみ）- スケールとして管理
+			// 2Dサイズ用（XYのみ）スケールとして管理
 			if (ImGui::DragFloat2("Size", &imguiScale_.x, 1.0f, 0.1f, 1000.0f)) {
 				transform_.SetScale(imguiScale_);
 			}

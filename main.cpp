@@ -350,7 +350,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sphere->AddRotation({ 0.0f,0.01f,0.0f });
 
 
-		// オフスクリーンレンダラーの更新（エフェクト含む
+		// オフスクリーンレンダラーの更新（エフェクト含む)
 		offscreenRenderer->Update();
 
 
