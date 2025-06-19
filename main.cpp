@@ -7,7 +7,6 @@
 //ファイルに書いたり読んだりするライブラリ
 #include<fstream>
 #include<sstream>
-#include <iostream>//すぐ消す
 //時間を扱うライブラリ
 #include<chrono>
 
@@ -37,6 +36,7 @@
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Dump.h"
+#include "LeakChecker.h"		//リークチェッカー
 
 #include "AudioManager.h"		//audio
 #include "InputManager.h"		//input
@@ -54,39 +54,8 @@
 #include"Light.h"//ライト
 #include"CameraController.h"//カメラ系統
 #include "OffscreenRenderer.h"//オフスクリーン
-#include "RGBShiftPostEffect.h"//色をずらすエフェクト
 
 
-
-
-
-/// <summary>
-/// deleteの前に置いておく、infoの警告消すことで、リークの種類を判別できる
-/// </summary>
-void DumpLiveObjects() {
-	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-	}
-}
-
-/// <summary>
-/// リソースリークチェック
-/// </summary>
-struct D3DResourceLeakChecker {
-	~D3DResourceLeakChecker() {
-		//リソースリークチェック
-		Microsoft::WRL::ComPtr <IDXGIDebug1> debug;
-		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-			debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-			debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-			debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-
-		}
-
-	}
-
-};
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -100,7 +69,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録（main関数が始まってすぐ）
 	Dump::Initialize();
-
 
 	WinApp* winApp = new WinApp;
 	DirectXCommon* directXCommon = new DirectXCommon;
@@ -132,12 +100,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<OffscreenRenderer> offscreenRenderer = std::make_unique<OffscreenRenderer>();
 	offscreenRenderer->Initialize(directXCommon);
 
-	// グリッチエフェクトの設定
-	//auto RGBShiftEffect = offscreenRenderer->GetRGBShiftEffect();
-	//if (RGBShiftEffect) {
-	//	RGBShifthEffect->SetEnabled(true);
-	//	RGBShifthEffect->ApplyPreset(RGBShiftPostEffect::EffectPreset::MEDIUM);
-	//}
 
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
@@ -393,7 +355,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		model->Draw(directionalLight);
 
-
 		sprite->Draw();
 
 		//// オフスクリーンの描画終了
@@ -403,21 +364,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///																			///
 
 		// 通常描画の描画準備
-
 		directXCommon->PreDraw();
 		///通常描画
-
 		// オフスクリーンの画面の実態描画
 		offscreenRenderer->DrawOffscreenTexture();
-
 		// ImGuiの画面への描画
 		imguiManager->Draw(directXCommon->GetCommandList());
-
 		// 通常描画の終わり
 		directXCommon->PostDraw();
-
-
-
 		// 描画そのもののEndFrame
 		directXCommon->EndFrame();
 

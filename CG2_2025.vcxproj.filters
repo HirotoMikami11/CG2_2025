@@ -361,6 +361,9 @@
     <ClInclude Include="GrayscalePostEffect.h">
       <Filter>Offscreen\PostEffect\Grayscale</Filter>
     </ClInclude>
+    <ClInclude Include="LeakChecker.h">
+      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">
