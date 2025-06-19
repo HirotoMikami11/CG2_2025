@@ -104,7 +104,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp" />
     <ClCompile Include="GrayscalePostEffect.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -185,7 +186,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="FrameTimer.h" />
-    <ClInclude Include="Game.h" />
+    <ClInclude Include="Game\Game.h" />
+    <ClInclude Include="Game\Scenes\GameScene\GameScene.h" />
     <ClInclude Include="GraphicsConfig.h" />
     <ClInclude Include="GrayscalePostEffect.h" />
     <ClInclude Include="ImGuiManager.h" />

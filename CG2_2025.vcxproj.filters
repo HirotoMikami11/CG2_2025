@@ -97,6 +97,15 @@
     <Filter Include="Offscreen\PostEffect\Grayscale">
       <UniqueIdentifier>{bf51a594-c662-43d5-879b-1078219b28d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{feec44c0-5ba6-4e64-9ba3-5db0d0ca8d0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes">
+      <UniqueIdentifier>{91b6173e-1f16-4090-a701-d3fb5a067a8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameScene">
+      <UniqueIdentifier>{92ccc106-94e0-45b1-96a4-bf83ad623174}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -216,8 +225,11 @@
     <ClCompile Include="Engine.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp">
+      <Filter>Game\Scenes\GameScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -373,8 +385,11 @@
     <ClInclude Include="Engine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\GameScene\GameScene.h">
+      <Filter>Game\Scenes\GameScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
