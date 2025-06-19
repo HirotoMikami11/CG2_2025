@@ -21,12 +21,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// エンジンの初期化
 	engine->Initialize(L"LE2A_15_ミカミ_ヒロト_AL3");
 
-	// システム参照
-	DirectXCommon* directXCommon_;
-	OffscreenRenderer* offscreenRenderer_;
-	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
-	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
-
 	//ゲーム
 	Game* game = new Game;
 	game->Initialize();
