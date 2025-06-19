@@ -10,7 +10,7 @@ public:
 	WinApp();
 	~WinApp();
 
-	void Initialize();
+	void Initialize(const std::wstring& title);
 	void Finalize();
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	bool ProsessMessege();

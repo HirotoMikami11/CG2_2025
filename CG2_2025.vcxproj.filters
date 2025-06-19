@@ -213,6 +213,12 @@
     <ClCompile Include="GrayscalePostEffect.cpp">
       <Filter>Offscreen\PostEffect\Grayscale</Filter>
     </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -363,6 +369,12 @@
     </ClInclude>
     <ClInclude Include="LeakChecker.h">
       <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

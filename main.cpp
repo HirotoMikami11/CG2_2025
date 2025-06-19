@@ -2,48 +2,12 @@
 #include<cstdint>
 #include<string>
 #include<format>
-//ファイルやディレクトリに関する操作を行うライブラリ
-#include<filesystem>
-//ファイルに書いたり読んだりするライブラリ
-#include<fstream>
-#include<sstream>
-//時間を扱うライブラリ
-#include<chrono>
-
-///DirectX12
-#include<d3d12.h>
-#pragma comment(lib,"d3d12.lib")
-#include<dxgi1_6.h>
-#pragma comment(lib,"dxgi.lib")
-#include <dxgidebug.h>
-#pragma comment(lib,"dxguid.lib")
-
-///DXC
-#include <dxcapi.h>
-#pragma comment(lib,"dxcompiler.lib")
-
-///DirectXTex
-#include"externals/DirectXTex/DirectXTex.h"
-#include"externals/DirectXTex/d3dx12.h"
 
 //comptr
 #include<wrl.h>
-
-#include<cassert>
 #include "MyFunction.h"
 
-#include "Logger.h"
-#include "WinApp.h"
-#include "DirectXCommon.h"
-#include "Dump.h"
 #include "LeakChecker.h"		//リークチェッカー
-
-#include "AudioManager.h"		//audio
-#include "InputManager.h"		//input
-#include "TextureManager.h"		//画像管理
-#include "ImGuiManager.h"		//imgui管理
-#include "FrameTimer.h"			//FPS管理
-
 
 ///トランスフォームと、モデルを統合させたGameObjectクラス
 #include "GameObject.h"
@@ -53,7 +17,8 @@
 
 #include"Light.h"//ライト
 #include"CameraController.h"//カメラ系統
-#include "OffscreenRenderer.h"//オフスクリーン
+
+#include "Engine.h"	//エンジン
 
 
 
@@ -67,66 +32,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	D3DResourceLeakChecker leakCheak;
 
-	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録（main関数が始まってすぐ）
-	Dump::Initialize();
+	// エンジンの取得
+	Engine* engine = Engine::GetInstance();
 
-	WinApp* winApp = new WinApp;
-	DirectXCommon* directXCommon = new DirectXCommon;
+	// エンジンの初期化
+	engine->Initialize(L"LE2A_15_ミカミ_ヒロト_AL3");
 
-	/// ウィンドウクラスを登録する
-	winApp->Initialize();
-	///	ログをファイルに書き込む
-	Logger::Initalize();
-
-	///DirectX初期化
-	directXCommon->Initialize(winApp);
-
-	//DirectXの末尾にキーボード入力のインスタンス生成
-	InputManager* inputManager = InputManager::GetInstance();
-	inputManager->Initialize(winApp);
-
-	//DirectXの末尾にテクスチャ読み込みのインスタンス生成
-	TextureManager* textureManager = TextureManager::GetInstance();
-	textureManager->Initialize(directXCommon);
-
-	//DirectX初期化の末尾にXAudio2エンジンのインスタンス生成
-	AudioManager* audioManager = AudioManager::GetInstance();
-	audioManager->Initialize();
-
-	// FPS関連
-	FrameTimer& frameTimer = FrameTimer::GetInstance();
-
-	// オフスクリーンレンダラーの初期化
-	std::unique_ptr<OffscreenRenderer> offscreenRenderer = std::make_unique<OffscreenRenderer>();
-	offscreenRenderer->Initialize(directXCommon);
-
-
-	///*-----------------------------------------------------------------------*///
-	///								テクスチャの読み込み							///
-	///*-----------------------------------------------------------------------*///
-
-	textureManager->LoadTexture("resources/uvChecker.png", "uvChecker");
-	textureManager->LoadTexture("resources/monsterBall.png", "monsterBall");
-
-
-	///*-----------------------------------------------------------------------*///
-	///								音声データの読み込み							///
-	///*-----------------------------------------------------------------------*///
-
-	//ゲーム開始前に読み込む音声データ
-	//audioManager->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
-	//audioManager->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
-	//audioManager->LoadAudio("resources/Audio/Se01.mp3", "SE");
-
-	////tagを利用して再生
-	//audioManager->Play("Alarm");
-	//audioManager->SetVolume("Alarm", 0.1f);	
-
-	//audioManager->PlayLoop("BGM");
-	//audioManager->SetVolume("BGM", 0.1f);
-
-	//audioManager->PlayLoop("SE");
-	//audioManager->SetVolume("SE", 0.1f);
+	// システム参照
+	DirectXCommon* directXCommon_ ;
+	OffscreenRenderer* offscreenRenderer_;
+	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
+	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
 
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
@@ -154,7 +70,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	for (int i = 0; i < kMaxTriangleIndex; i++) {
 		triangle[i] = std::make_unique<Triangle>();						// 三角形を生成
-		triangle[i]->Initialize(directXCommon, "uvChecker");			// 初期化
+		triangle[i]->Initialize(directXCommon_, "uvChecker");			// 初期化
 		triangle[i]->SetTransform(transformTriangle);					// Transformを設定
 	}
 
@@ -174,7 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 
 	std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>();				// 球体を生成
-	sphere->Initialize(directXCommon, "monsterBall");						// 初期化
+	sphere->Initialize(directXCommon_, "monsterBall");						// 初期化
 	sphere->SetTransform(transformSphere);									// Transformを設定
 
 
@@ -187,7 +103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region "Sprite"
 
 	std::unique_ptr<Sprite> sprite = std::make_unique<Sprite>();			// スプライトを生成
-	sprite->Initialize(directXCommon, "uvChecker",
+	sprite->Initialize(directXCommon_, "uvChecker",
 		{ 50,50 }, { 100,100 });							// 初期化
 
 
@@ -208,7 +124,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 
 	std::unique_ptr<Model3D> model = std::make_unique<Model3D>();			// スプライトを生成
-	model->Initialize(directXCommon, "resources", "plane.obj");				// 初期化
+	model->Initialize(directXCommon_, "resources", "plane.obj");				// 初期化
 	model->SetTransform(transformModel);									// Transformを設定
 
 
@@ -219,24 +135,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///*-----------------------------------------------------------------------*///
 
 	Light directionalLight;
-	directionalLight.Initialize(directXCommon, Light::Type::DIRECTIONAL);
-
-	///*-----------------------------------------------------------------------*///
-	//																			//
-	///								ImGuiの初期化								   ///
-	//																			//
-	///*-----------------------------------------------------------------------*///
-
-	// ImGuiの初期化
-	ImGuiManager* imguiManager = ImGuiManager::GetInstance();
-	imguiManager->Initialize(winApp, directXCommon);
+	directionalLight.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
 
 
-	//								　変数宣言									//
-
-
-	//ImGuiで使用する変数
-	bool useMonsterBall = true;
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
@@ -245,24 +146,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//ウィンドウのxボタンが押されるまでループ
-	while (winApp->ProsessMessege()) {
-		//							　ゲームの処理										//
-		///FPSの開始
-		frameTimer.BeginFrame();
+	while (!engine->IsClosedWindow()) {
 
-		///キー入力の更新
-		inputManager->Update();
-		//								更新処理										//
+		// エンジンの更新
+		engine->Update();
 
 
-		// ImGuiの受け付け開始
-		imguiManager->Begin();
+
+		///*-----------------------------------------------------------------------*///
+		//																			//
+		///									更新処理								   ///
+		//																			//
+		///*-----------------------------------------------------------------------*///
+		engine->ImGui();
 
 		//開発用UIの処理
 		ImGui::Begin("Debug");
 
-		//FPS関連
-		frameTimer.ImGui();
+		////FPS関連
+		//frameTimer.ImGui();
 
 		///三角形のImgui
 		for (int i = 0; i < kMaxTriangleIndex; i++)
@@ -279,8 +181,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ライト
 		directionalLight.ImGui("DriectonalLight");
 
-		/// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
-		offscreenRenderer->ImGui();
+		///// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
+		//offscreenRenderer->ImGui();
 
 		ImGui::End();
 
@@ -289,10 +191,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 
 		cameraController->Update();
-
-		//																			//
-		//								更新処理										//
-		//																			//
 
 
 		// 三角形を回転させる
@@ -304,8 +202,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sphere->AddRotation({ 0.0f,0.01f,0.0f });
 
 
-		// オフスクリーンレンダラーの更新（エフェクト含む)
-		offscreenRenderer->Update(frameTimer.GetDeltaTime());
 
 
 		//																			//
@@ -327,26 +223,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//プレーンモデルの更新
 		model->Update(cameraController->GetViewProjectionMatrix());
 
-		// ImGuiの受け付け終了
-		imguiManager->End();
 
-		//								描画処理										//
+
 		///*-----------------------------------------------------------------------*///
 		//																			//
-		///				画面をクリアする処理が含まれたコマンドリストを作る				   ///
+		///									描画処理								   ///
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
-		// フレーム開始
-		directXCommon->BeginFrame();
-
-		///																			///
-		///						オフスクリーンレンダリング								///
-		///																			///
+		///描画前処理
+		engine->StartDraw();
 
 
-		//// オフスクリーンの描画準備
-		offscreenRenderer->PreDraw();
 
 		// Sphereの描画
 		sphere->Draw(directionalLight);
@@ -357,55 +245,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		sprite->Draw();
 
-		//// オフスクリーンの描画終了
-		offscreenRenderer->PostDraw();
-		///																			///
-		///								通常レンダリング								///
-		///																			///
 
-		// 通常描画の描画準備
-		directXCommon->PreDraw();
-		///通常描画
-		// オフスクリーンの画面の実態描画
-		offscreenRenderer->DrawOffscreenTexture();
-		// ImGuiの画面への描画
-		imguiManager->Draw(directXCommon->GetCommandList());
-		// 通常描画の終わり
-		directXCommon->PostDraw();
-		// 描画そのもののEndFrame
-		directXCommon->EndFrame();
+		///描画後処理
+		engine->EndDraw();
 
 	}
 
-
-	// ImGuiの終了処理
-	imguiManager->Finalize();
-
 	///*-----------------------------------------------------------------------*///
 	//																			//
-	///							ReportLiveObjects							   ///
+	///									終了処理								   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	offscreenRenderer->Finalize();
-	// Audioの終了処理
-	audioManager->Finalize();
-	//inputの終了処理(中身は何もない)
-	inputManager->Finalize();
-	//textureの終了処理
-	textureManager->Finalize();
+	//gameの終了処理
 
 
-	// winAppの終了処理
-	winApp->Finalize();
-	delete winApp;
-	// directXの終了処理
-	directXCommon->Finalize();
-	delete directXCommon;
-
-
-	//COMの終了処理
-	CoUninitialize();
+	// エンジンの終了処理(最後)
+	engine->Finalize();
 
 	return 0;
 
