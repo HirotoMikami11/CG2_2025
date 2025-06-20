@@ -41,6 +41,9 @@ private:
 	//タイトルフォント
 	std::unique_ptr<Model3D> titleFont_ = nullptr;
 
+	//タイトル用のプレイヤー
+	std::unique_ptr<Model3D> titlePlayer_ = nullptr;
+
 	// ライティング
 	Light directionalLight_;
 

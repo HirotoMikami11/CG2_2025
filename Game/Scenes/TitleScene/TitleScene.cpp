@@ -29,18 +29,14 @@ void TitleScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	///									タイトルフォント									///
 	///*-----------------------------------------------------------------------*///
-	Vector3Transform transformModel{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 3.0f, 0.0f},
-		{-2.2f, -1.2f, 0.0f}
-	};
 
+
+	Vector3 titleFontPos = { -0.2f, 1.12f, 0.0f };
+	//初期化、座標設定
 	titleFont_ = std::make_unique<Model3D>();
 	titleFont_->Initialize(directXCommon_, "resources/TitleFont", "titleFont.obj");
-	titleFont_->SetTransform(transformModel);
+	titleFont_->SetPosition(titleFontPos);
 
-	// フォントの更新
-	titleFont_->Update(viewProjectionMatrix);
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
