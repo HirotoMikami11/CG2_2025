@@ -90,17 +90,19 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="DebugCamera.cpp" />
     <ClCompile Include="DemoScene.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.cpp" />
     <ClCompile Include="Engine\BaseSystem\Logger\Dump.cpp" />
     <ClCompile Include="Engine\BaseSystem\Logger\Logger.cpp" />
     <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp" />
+    <ClCompile Include="Engine\CameraController\Camera.cpp" />
+    <ClCompile Include="Engine\CameraController\CameraController.cpp" />
+    <ClCompile Include="Engine\CameraController\DebugCamera.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
+    <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
+    <ClCompile Include="Engine\MyMath\MyMath.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\PostEffect.cpp" />
@@ -126,8 +128,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
-    <ClCompile Include="MyFunction.cpp" />
-    <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -167,9 +167,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Audio.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BaseScene.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="DebugCamera.h" />
     <ClInclude Include="DemoScene.h" />
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.h" />
@@ -177,8 +174,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\BaseSystem\Logger\Dump.h" />
     <ClInclude Include="Engine\BaseSystem\Logger\Logger.h" />
     <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h" />
+    <ClInclude Include="Engine\CameraController\Camera.h" />
+    <ClInclude Include="Engine\CameraController\CameraController.h" />
+    <ClInclude Include="Engine\CameraController\DebugCamera.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
+    <ClInclude Include="Engine\MyMath\MyFunction.h" />
+    <ClInclude Include="Engine\MyMath\MyMath.h" />
     <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\PostEffect.h" />
@@ -205,8 +207,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="MyFunction.h" />
-    <ClInclude Include="MyMath.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Sprite.h" />

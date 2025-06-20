@@ -1,7 +1,7 @@
 #pragma once
 
-#include "DebugCamera.h"
-#include "Camera.h"
+#include "CameraController/DebugCamera.h"
+#include "CameraController/Camera.h"
 
 class CameraController
 {

@@ -34,12 +34,6 @@
     <Filter Include="ヘッダー ファイル\Texture">
       <UniqueIdentifier>{51368f7b-fe4e-4bd0-9ca7-2f5d4844a2db}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Camera">
-      <UniqueIdentifier>{43feb261-e876-42ce-b9fb-8a1e0764fb68}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Camera">
-      <UniqueIdentifier>{551458e2-8d93-44e4-bfac-08bda869c068}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\DirectXCommon">
       <UniqueIdentifier>{301b57c6-bc9c-4099-a7b4-de54192c3064}</UniqueIdentifier>
     </Filter>
@@ -48,12 +42,6 @@
     </Filter>
     <Filter Include="ソース ファイル\DirectXCommon\Logger">
       <UniqueIdentifier>{510abd56-8856-4809-a4d3-050564b9bfbe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MyMath">
-      <UniqueIdentifier>{c74472ed-5339-4e39-b559-12214c196116}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\MyMath">
-      <UniqueIdentifier>{a73fe585-58a8-4075-bfa2-59097dffb1df}</UniqueIdentifier>
     </Filter>
     <Filter Include="リソース ファイル\Shader">
       <UniqueIdentifier>{d7f24bbd-081a-4210-811f-21c946777cc9}</UniqueIdentifier>
@@ -145,6 +133,12 @@
     <Filter Include="Engine\OffScreenRenderer\PostEffect\Grayscale">
       <UniqueIdentifier>{3125642e-04cb-43ce-b12c-0ea65eb247f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\CameraController">
+      <UniqueIdentifier>{11539be1-ba92-4684-a353-704c408862bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\MyMath">
+      <UniqueIdentifier>{12403412-1bc7-4927-b755-240bd79f6595}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -189,17 +183,8 @@
     <ClCompile Include="TextureManager.cpp">
       <Filter>ソース ファイル\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugCamera.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraController.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>ソース ファイル\GameObject</Filter>
@@ -218,12 +203,6 @@
     </ClCompile>
     <ClCompile Include="DirectXCommon.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>ソース ファイル\MyMath</Filter>
-    </ClCompile>
-    <ClCompile Include="MyFunction.cpp">
-      <Filter>ソース ファイル\MyMath</Filter>
     </ClCompile>
     <ClCompile Include="Sprite.cpp">
       <Filter>ソース ファイル\Sprite</Filter>
@@ -284,6 +263,21 @@
     </ClCompile>
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\Camera.cpp">
+      <Filter>Engine\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\CameraController.cpp">
+      <Filter>Engine\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
+      <Filter>Engine\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\MyMath\MyFunction.cpp">
+      <Filter>Engine\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\MyMath\MyMath.cpp">
+      <Filter>Engine\MyMath</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -355,17 +349,8 @@
     <ClInclude Include="TextureManager.h">
       <Filter>ヘッダー ファイル\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugCamera.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
     <ClInclude Include="ImGuiManager.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraController.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>ヘッダー ファイル\GameObject</Filter>
@@ -385,12 +370,6 @@
     <ClInclude Include="DirectXCommon.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
     </ClInclude>
-    <ClInclude Include="MyMath.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
-    <ClInclude Include="MyFunction.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -399,9 +378,6 @@
     </ClInclude>
     <ClInclude Include="Transform2D.h">
       <Filter>ヘッダー ファイル\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="LeakChecker.h">
-      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
     </ClInclude>
     <ClInclude Include="Game\Game.h">
       <Filter>Game</Filter>
@@ -462,6 +438,24 @@
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
+    </ClInclude>
+    <ClInclude Include="LeakChecker.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\Camera.h">
+      <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\CameraController.h">
+      <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\DebugCamera.h">
+      <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\MyMath\MyFunction.h">
+      <Filter>Engine\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\MyMath\MyMath.h">
+      <Filter>Engine\MyMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

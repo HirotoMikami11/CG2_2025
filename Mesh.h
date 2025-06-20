@@ -5,7 +5,7 @@
 #include <string>
 
 #include "DirectXCommon.h"
-#include "MyFunction.h"
+#include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 
 #include <cassert>

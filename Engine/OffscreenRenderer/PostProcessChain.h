@@ -7,7 +7,7 @@
 #include "../DirectXCommon.h"
 #include "../Sprite.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "../MyFunction.h"
+#include "MyMath/MyFunction.h"
 #include "../ImGuiManager.h"
 
 /// <summary>

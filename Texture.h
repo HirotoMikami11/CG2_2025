@@ -4,7 +4,7 @@
 
 #include "DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "MyFunction.h" // CreateBufferResource用
+#include "MyMath/MyFunction.h" // CreateBufferResource用
 #include <cassert>
 class DirectXCommon; // 前方宣言
 

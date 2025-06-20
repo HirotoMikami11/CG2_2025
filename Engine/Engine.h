@@ -17,7 +17,7 @@
 #include "OffscreenRenderer/OffscreenRenderer.h"
 
 ///Objects
-#include "../CameraController.h"
+#include "CameraController/CameraController.h"
 #include "../GameObject.h"
 #include "../Sprite.h"
 #include "../Light.h"

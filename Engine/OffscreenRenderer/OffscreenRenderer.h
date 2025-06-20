@@ -7,8 +7,7 @@
 
 #include "../DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "../MyMath.h"
-#include "../MyFunction.h"
+#include "MyMath/MyFunction.h"
 #include "../ImGuiManager.h" 
 
 #include "../Sprite.h"							// Spriteクラスを使用

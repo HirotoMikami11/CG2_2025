@@ -2,7 +2,7 @@
 #include "DirectXCommon.h"
 #include "Transform2D.h"  // Transform2Dクラスを使用
 #include "TextureManager.h"
-#include "MyFunction.h"
+#include "MyMath/MyFunction.h"
 
 #include <string>
 #include <memory>

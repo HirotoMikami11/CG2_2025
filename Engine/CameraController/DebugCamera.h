@@ -3,10 +3,10 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include "DirectXCommon.h"
-#include "MyFunction.h"
-#include "inputManager.h"
-#include "ImguiManager.h"
+#include "../DirectXCommon.h"
+#include "MyMath/MyFunction.h"
+#include "../inputManager.h"
+#include "../ImguiManager.h"
 
 /// <summary>
 /// カメラの回転モード
