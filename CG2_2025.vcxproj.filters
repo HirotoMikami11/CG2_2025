@@ -136,6 +136,9 @@
     <Filter Include="リソース ファイル\Shader\RGBShift">
       <UniqueIdentifier>{869937fb-cbe3-4a2d-85c9-d01611d182d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{f70ce07e-5b4e-449c-be5f-6f9f6b2555bb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -252,9 +255,6 @@
     <ClCompile Include="GrayscalePostEffect.cpp">
       <Filter>Offscreen\PostEffect\Grayscale</Filter>
     </ClCompile>
-    <ClCompile Include="Engine.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Game.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -275,6 +275,9 @@
     </ClCompile>
     <ClCompile Include="Game\Scenes\GameScene\objects\Player\Player.cpp">
       <Filter>Game\Scenes\GameScene\Objects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -427,9 +430,6 @@
     <ClInclude Include="LeakChecker.h">
       <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
     </ClInclude>
-    <ClInclude Include="Engine.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Game\Game.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -453,6 +453,9 @@
     </ClInclude>
     <ClInclude Include="Game\Scenes\GameScene\objects\Player\Player.h">
       <Filter>Game\Scenes\GameScene\Objects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
