@@ -34,7 +34,7 @@ void TitleScene::InitializeGameObjects() {
 	Vector3 titleFontPos = { -0.2f, 1.12f, 0.0f };
 	//初期化、座標設定
 	titleFont_ = std::make_unique<Model3D>();
-	titleFont_->Initialize(directXCommon_, "resources/TitleFont", "titleFont.obj");
+	titleFont_->Initialize(directXCommon_, "resources/Model/TitleFont", "titleFont.obj");
 	titleFont_->SetPosition(titleFontPos);
 	///*-----------------------------------------------------------------------*///
 	///									プレイヤー(置物)							///
@@ -97,6 +97,7 @@ void TitleScene::OnExit() {
 
 void TitleScene::ImGui() {
 
+#ifdef _DEBUG
 
 	ImGui::Text("TitleFont");
 	titleFont_->ImGui();
@@ -108,6 +109,7 @@ void TitleScene::ImGui() {
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
+#endif
 }
 
 void TitleScene::Finalize() {

@@ -66,6 +66,7 @@ void Camera::SetDefaultCamera()
 
 void Camera::ImGui()
 {
+#ifdef _DEBUG
 
 	// メインカメラの情報表示（必要に応じて）
 	ImGui::Text("MainCamera");
@@ -78,5 +79,5 @@ void Camera::ImGui()
 
 	ImGui::Separator(); // 区切り線
 
-
+#endif
 }

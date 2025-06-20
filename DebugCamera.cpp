@@ -267,6 +267,7 @@ void DebugCamera::PivotRotate()
 
 void DebugCamera::ImGui()
 {
+#ifdef _DEBUG
 	ImGui::Text("DebugCamera");
 	ImGui::Separator();		//区切り線
 
@@ -330,6 +331,7 @@ void DebugCamera::ImGui()
 		ImGui::Text("  Mouse wheel: Change distance");
 		ImGui::Text("  SPACE+WS: Vertical movement");
 	}
+#endif
 }
 
 void DebugCamera::UpdateMatrix()

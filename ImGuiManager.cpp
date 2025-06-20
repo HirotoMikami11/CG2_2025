@@ -7,6 +7,9 @@ ImGuiManager* ImGuiManager::GetInstance() {
 }
 
 void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* directXCommon) {
+
+#ifdef _DEBUG
+
 	// ImGuiの初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -25,38 +28,55 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* directXCommon) {
 	// スタイルを設定
 	SetupImGuiStyle();
 
+#endif
+
 }
 
 void ImGuiManager::Finalize() {
+#ifdef _DEBUG
+
 	// ImGuiの終了処理
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+#endif
 }
 
 void ImGuiManager::Begin() {
+#ifdef _DEBUG
+
 	// ImGuiにフレームが始まることを伝える
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+#endif
 }
 
 void ImGuiManager::End() {
+#ifdef _DEBUG
+
 	// ImGuiの内部コマンドを生成する
 	ImGui::Render();
+#endif
 }
 
 void ImGuiManager::Draw(ID3D12GraphicsCommandList* commandList) {
+#ifdef _DEBUG
 	//実際の directXCommon-> GetCommandList()のImGuiの描画コマンドを積む
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+#endif
 }
 
 void ImGuiManager::SceneName(const char* SceneName)
 {
+#ifdef _DEBUG
+
 	// 現在のシーン名を表示
 	ImGui::Text("Current Scene: %s", SceneName);
 	ImGui::Separator();
 
+#endif
 }
 
 
@@ -69,6 +89,7 @@ void ImGuiManager::SceneName(const char* SceneName)
 
 void ImGuiManager::SetupImGuiStyle()
 {
+#ifdef _DEBUG
 	// 基本スタイル（Dark）を設定
 	ImGui::StyleColorsDark();
 
@@ -178,4 +199,6 @@ void ImGuiManager::SetupImGuiStyle()
 	//colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	//colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.90f, 0.20f);
 	//colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.90f, 0.35f); // モーダル背景
+
+#endif
 }

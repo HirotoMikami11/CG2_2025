@@ -10,7 +10,7 @@ void TitlePlayer::Initialize()
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();
-	Object_->Initialize(directXCommon_, "resources/Player", "player.obj");
+	Object_->Initialize(directXCommon_, "resources/Model/Player", "player.obj");
 	Object_->SetPosition(titlePlayerPos);
 
 	//回転測度の設定
@@ -31,10 +31,13 @@ void TitlePlayer::Draw(const Light& directionalLight)
 
 void TitlePlayer::ImGui()
 {
+#ifdef _DEBUG
+
 	ImGui::Text("TitlePlayer");
 	Object_->ImGui();
 	ImGui::Spacing();
 
+#endif
 }
 
 

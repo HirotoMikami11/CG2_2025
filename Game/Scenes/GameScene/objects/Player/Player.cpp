@@ -10,7 +10,7 @@ void Player::Initialize()
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();
-	Object_->Initialize(directXCommon_, "resources/Player", "player.obj");
+	Object_->Initialize(directXCommon_, "resources/Model/Player", "player.obj");
 	Object_->SetPosition(PlayerPos);
 
 
@@ -29,10 +29,13 @@ void Player::Draw(const Light& directionalLight)
 
 void Player::ImGui()
 {
+#ifdef _DEBUG
+
 	ImGui::Text("Player");
 	Object_->ImGui();
 	ImGui::Spacing();
 
+#endif
 }
 
 

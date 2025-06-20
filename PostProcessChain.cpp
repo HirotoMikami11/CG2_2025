@@ -201,6 +201,7 @@ void PostProcessChain::CreateFullscreenSprite() {
 }
 
 void PostProcessChain::ImGui() {
+#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Post Process Chain (Final Fix)")) {
 		ImGui::Text("Effects Count: %zu", effects_.size());
 		ImGui::Text("Chain Size: %dx%d", width_, height_);
@@ -259,6 +260,7 @@ void PostProcessChain::ImGui() {
 			ImGui::Text("Size: (%.1f, %.1f)", size.x, size.y);
 		}
 	}
+#endif
 }
 
 void PostProcessChain::MoveEffect(size_t from, size_t to) {

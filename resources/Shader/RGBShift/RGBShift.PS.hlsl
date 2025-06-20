@@ -1,4 +1,4 @@
-#include "RGBShift.hlsli"
+#include "resources/Shader/RGBShift/RGBShift.hlsli"
 
 ConstantBuffer<RGBShiftParameters> RGBShiftParameter : register(b0);
 

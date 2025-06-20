@@ -140,6 +140,8 @@ void SceneManager::ProcessSceneChange() {
 }
 
 void SceneManager::ImGui() {
+#ifdef _DEBUG
+
 	ImGui::Begin("Scene Manager");
 
 	// シーン管理UI
@@ -151,9 +153,12 @@ void SceneManager::ImGui() {
 	DrawCurrentSceneUI();
 
 	ImGui::End();
+#endif
 }
 
 void SceneManager::DrawScenesUI() {
+#ifdef _DEBUG
+
 	ImGui::Text("Scene Management");
 
 	// 現在のシーン情報表示
@@ -222,9 +227,13 @@ void SceneManager::DrawScenesUI() {
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Next Scene: %s", nextSceneName_.c_str());
 		ImGui::Text("(Will change next frame)");
 	}
+
+#endif
 }
 
 void SceneManager::DrawCurrentSceneUI() {
+#ifdef _DEBUG
+
 	ImGui::Text("Current Scene Debug");
 
 	if (currentScene_) {
@@ -236,4 +245,5 @@ void SceneManager::DrawCurrentSceneUI() {
 	} else {
 		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "No active scene");
 	}
+#endif
 }

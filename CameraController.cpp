@@ -70,6 +70,7 @@ void CameraController::SetTransform(const Vector3& newTransform)
 
 void CameraController::ImGui()
 {
+#ifdef _DEBUG
 
 	ImGui::Begin("CameraController");
 
@@ -97,7 +98,7 @@ void CameraController::ImGui()
 
 	ImGui::End();
 
-
+#endif
 }
 
 void CameraController::SwitchCamera()

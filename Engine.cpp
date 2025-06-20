@@ -191,6 +191,8 @@ void Engine::Finalize() {
 
 void Engine::ImGui()
 {
+#ifdef _DEBUG
+
 	//開発用UIの処理
 	ImGui::Begin("Engine_data");
 
@@ -201,4 +203,5 @@ void Engine::ImGui()
 	offscreenRenderer_->ImGui();
 
 	ImGui::End();
+#endif
 }

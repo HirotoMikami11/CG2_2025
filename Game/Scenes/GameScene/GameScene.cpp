@@ -84,7 +84,7 @@ void GameScene::OnExit() {
 }
 
 void GameScene::ImGui() {
-
+#ifdef _DEBUG
 
 	ImGui::Spacing();
 
@@ -92,6 +92,7 @@ void GameScene::ImGui() {
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
+#endif
 }
 
 void GameScene::Finalize() {

@@ -26,16 +26,18 @@ void Light::SetDefaultSettings()
 
 void Light::ImGui(const std::string& label)
 {
+#ifdef _DEBUG
+
 	if (ImGui::TreeNode(label.c_str())) {
 		// ライトの色
 		if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&lightData_->color.x))) {
-		
+
 		}
 
 		// ライトの方向（平行光源の場合）
 		if (type_ == Type::DIRECTIONAL) {
 			if (ImGui::DragFloat3("Direction", &lightData_->direction.x, 0.01f, -1.0f, 1.0f)) {
-			
+
 			}
 		}
 
@@ -51,5 +53,5 @@ void Light::ImGui(const std::string& label)
 		ImGui::TreePop();
 	}
 
-
+#endif
 }

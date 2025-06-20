@@ -63,7 +63,7 @@ void DemoScene::InitializeGameObjects() {
 	};
 
 	model_ = std::make_unique<Model3D>();
-	model_->Initialize(directXCommon_, "resources", "plane.obj");
+	model_->Initialize(directXCommon_, "resources/Model/Plane", "plane.obj");
 	model_->SetTransform(transformModel);
 
 	///*-----------------------------------------------------------------------*///
@@ -142,6 +142,7 @@ void DemoScene::OnExit() {
 }
 
 void DemoScene::ImGui() {
+#ifdef _DEBUG
 	// 三角形のImGui
 	ImGui::Text("Triangle");
 	for (int i = 0; i < kMaxTriangleIndex; i++) {
@@ -173,6 +174,8 @@ void DemoScene::ImGui() {
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
+
+#endif
 }
 
 void DemoScene::Finalize() {

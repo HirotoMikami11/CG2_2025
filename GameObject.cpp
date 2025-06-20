@@ -77,6 +77,8 @@ void GameObject::Draw(const Light& directionalLight)
 
 void GameObject::ImGui()
 {
+#ifdef _DEBUG
+
 	// 現在の名前を表示
 	if (ImGui::TreeNode(name_.c_str())) {
 		// 表示・アクティブ状態
@@ -193,4 +195,5 @@ void GameObject::ImGui()
 
 		ImGui::TreePop();
 	}
+#endif
 }

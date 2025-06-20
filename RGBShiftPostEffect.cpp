@@ -150,10 +150,10 @@ void RGBShiftPostEffect::CreatePSO() {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// グリッチ用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"RGBShift.VS.hlsl", L"vs_6_0");
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/RGBShift/RGBShift.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
-	pixelShaderBlob_ = CompileShader(L"RGBShift.PS.hlsl", L"ps_6_0");
+	pixelShaderBlob_ = CompileShader(L"resources/Shader/RGBShift/RGBShift.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob_ != nullptr);
 
 	// DepthStencilState設定（深度テストなし）
@@ -254,6 +254,8 @@ void RGBShiftPostEffect::SetRGBShiftStrength(float strength) {
 }
 
 void RGBShiftPostEffect::ImGui() {
+#ifdef _DEBUG
+
 	if (ImGui::TreeNode(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
@@ -293,4 +295,6 @@ void RGBShiftPostEffect::ImGui() {
 
 		ImGui::TreePop();
 	}
+
+#endif
 }

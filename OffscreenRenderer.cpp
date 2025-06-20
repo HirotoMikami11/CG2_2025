@@ -351,6 +351,8 @@ void OffscreenRenderer::CreateSRV() {
 }
 
 void OffscreenRenderer::ImGui() {
+
+#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain)")) {
 		// オフスクリーンのサイズ
 		ImGui::Text("Render Target Size: %dx%d", width_, height_);
@@ -380,4 +382,6 @@ void OffscreenRenderer::ImGui() {
 			postProcessChain_->ImGui();
 		}
 	}
+#endif
+
 }

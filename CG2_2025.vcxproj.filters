@@ -88,9 +88,6 @@
     <Filter Include="Offscreen\OffscreenRenderer">
       <UniqueIdentifier>{cb9cb87f-e25a-458c-82d5-4abea6b28e5b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル\Shader\RGBShift">
-      <UniqueIdentifier>{1b05d1ae-4ce6-402e-a6fe-f5ef2717410e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Grayscale">
       <UniqueIdentifier>{199393d8-3b85-4dd1-bd73-032f83314bd8}</UniqueIdentifier>
     </Filter>
@@ -135,6 +132,9 @@
     </Filter>
     <Filter Include="Game\Scenes\GameScene\Objects\Skydome">
       <UniqueIdentifier>{f4539ff9-b533-43a6-992b-bd998b0a53c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\RGBShift">
+      <UniqueIdentifier>{869937fb-cbe3-4a2d-85c9-d01611d182d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -290,17 +290,17 @@
     <FxCompile Include="Sprite.VS.hlsl">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
     </FxCompile>
-    <FxCompile Include="RGBShift.PS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
-    <FxCompile Include="RGBShift.VS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
     <FxCompile Include="Grayscale.PS.hlsl">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
     </FxCompile>
     <FxCompile Include="Grayscale.VS.hlsl">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -462,11 +462,11 @@
     <None Include="Sprite.hlsli">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
     </None>
-    <None Include="RGBShift.hlsli">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </None>
     <None Include="Grayscale.hlsli">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </None>
+    <None Include="resources\Shader\RGBShift\RGBShift.hlsli">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
