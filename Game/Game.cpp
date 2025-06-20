@@ -1,32 +1,57 @@
 #include "Game.h"
 
+
 Game::Game() = default;
 Game::~Game() = default;
 
 void Game::Initialize() {
-	// ゲームシーンの初期化
-	gameScene_ = std::make_unique<GameScene>();
-	gameScene_->Initialize();
+	// シーンマネージャーの初期化
+	sceneManager_ = std::make_unique<SceneManager>();
+	sceneManager_->Initialize();
+
+	// シーンの初期化
+	InitializeScenes();
+}
+
+void Game::InitializeScenes() {
+	// GameSceneの登録
+	auto gameScene = std::make_unique<GameScene>();
+	sceneManager_->RegisterScene("GameScene", std::move(gameScene));
+
+	auto demoScene = std::make_unique<DemoScene>();
+	sceneManager_->RegisterScene("TitleScene", std::move(demoScene));
+
+	// 将来的に追加するシーン
+	// auto debugScene = std::make_unique<DebugScene>();
+	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));
+
+	// デフォルトシーンを設定（最初に表示するシーン）
+	sceneManager_->ChangeScene("GameScene");
 }
 
 void Game::Update() {
-	// ゲームシーンの更新
-	if (gameScene_) {
-		gameScene_->Update();
+	// シーンマネージャーの更新
+	if (sceneManager_) {
+		sceneManager_->Update();
+	}
+
+	// シーンマネージャーのImGui更新
+	if (sceneManager_) {
+		sceneManager_->ImGui();
 	}
 }
 
 void Game::Draw() {
-	// ゲームシーンの描画
-	if (gameScene_) {
-		gameScene_->Draw();
+	// シーンマネージャーの描画
+	if (sceneManager_) {
+		sceneManager_->Draw();
 	}
 }
 
 void Game::Finalize() {
-	// ゲームシーンの終了処理
-	if (gameScene_) {
-		gameScene_->Finalize();
-		gameScene_.reset();
+	// シーンマネージャーの終了処理
+	if (sceneManager_) {
+		sceneManager_->Finalize();
+		sceneManager_.reset();
 	}
 }

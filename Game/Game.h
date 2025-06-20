@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
-#include"Scenes/GameScene/GameScene.h"
+#include "Scenes/GameScene/GameScene.h"
+#include "../DemoScene.h"
+#include "../SceneManager.h"
 
 //ゲームシーン
 
@@ -16,13 +18,8 @@ public:
 	void Finalize();
 
 private:
+	void InitializeScenes();
 
-	//シーンマネージャー
-	
-	//ゲームシーン	gameScene_;		(実際のゲームシーン)
-	std::unique_ptr<GameScene> gameScene_;
-	//デモシーン		demoScene_;		(とりあえず動かすシーン)
-	//デバッグシーン	debugScene_;	(デバッグ用のシーン)
-
+	// シーンマネージャー
+	std::unique_ptr<SceneManager> sceneManager_;
 };
-

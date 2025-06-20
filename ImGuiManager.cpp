@@ -51,6 +51,14 @@ void ImGuiManager::Draw(ID3D12GraphicsCommandList* commandList) {
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 }
 
+void ImGuiManager::SceneName(const char* SceneName)
+{
+	// 現在のシーン名を表示
+	ImGui::Text("Current Scene: %s", SceneName);
+	ImGui::Separator();
+
+}
+
 
 
 

@@ -1,15 +1,15 @@
-#include "GameScene.h"
+#include "DemoScene.h"
 
-GameScene::GameScene()
-	: BaseScene("GameScene") // シーン名を設定
+DemoScene::DemoScene()
+	: BaseScene("DemoScene") // シーン名を設定
 	, cameraController_(nullptr)
 	, directXCommon_(nullptr)
 	, offscreenRenderer_(nullptr) {
 }
 
-GameScene::~GameScene() = default;
+DemoScene::~DemoScene() = default;
 
-void GameScene::Initialize() {
+void DemoScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
@@ -24,7 +24,7 @@ void GameScene::Initialize() {
 	InitializeGameObjects();
 }
 
-void GameScene::InitializeGameObjects() {
+void DemoScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	///									三角形									///
 	///*-----------------------------------------------------------------------*///
@@ -78,7 +78,7 @@ void GameScene::InitializeGameObjects() {
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
 }
 
-void GameScene::Update() {
+void DemoScene::Update() {
 	// カメラ更新
 	cameraController_->Update();
 
@@ -86,12 +86,12 @@ void GameScene::Update() {
 	UpdateGameObjects();
 }
 
-void GameScene::UpdateGameObjects() {
+void DemoScene::UpdateGameObjects() {
 	// 三角形を回転させる
-	triangles_[0]->AddRotation({ 0.0f, 0.03f, 0.0f });
+	triangles_[0]->AddRotation({ 0.0f, 0.02f, 0.0f });
 
 	// 球体を回転させる
-	sphere_->AddRotation({ 0.0f, 0.01f, 0.0f });
+	sphere_->AddRotation({ 0.0f, 0.015f, 0.0f });
 
 	// 行列更新
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
@@ -112,12 +112,12 @@ void GameScene::UpdateGameObjects() {
 	model_->Update(viewProjectionMatrix);
 }
 
-void GameScene::Draw() {
+void DemoScene::Draw() {
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }
 
-void GameScene::DrawGameObjects() {
+void DemoScene::DrawGameObjects() {
 	// 球体の描画
 	sphere_->Draw(directionalLight_);
 
@@ -133,17 +133,15 @@ void GameScene::DrawGameObjects() {
 	sprite_->Draw();
 }
 
-void GameScene::OnEnter() {
-	// ゲームシーンに入る時の処理
-	// 例：BGMの再生、特定の初期化処理など
+void DemoScene::OnEnter() {
+	// デモシーンに入る時の処理
 }
 
-void GameScene::OnExit() {
-	// ゲームシーンから出る時の処理
-	// 例：BGMの停止、一時停止処理など
+void DemoScene::OnExit() {
+	// デモシーンから出る時の処理
 }
 
-void GameScene::ImGui() {
+void DemoScene::ImGui() {
 	// 三角形のImGui
 	ImGui::Text("Triangle");
 	for (int i = 0; i < kMaxTriangleIndex; i++) {
@@ -177,6 +175,6 @@ void GameScene::ImGui() {
 	directionalLight_.ImGui("DirectionalLight");
 }
 
-void GameScene::Finalize() {
+void DemoScene::Finalize() {
 	// unique_ptrで自動的に解放される
 }

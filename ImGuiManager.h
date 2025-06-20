@@ -56,6 +56,12 @@ public:
 	/// <param name="commandList">コマンドリスト</param>
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
+
+	/// <summary>
+	/// シーンの名前を表示する
+	/// </summary>
+	void SceneName(const char* SceneName);
+
 private:
 	/// <summary>
 	/// ImGuiのスタイル設定

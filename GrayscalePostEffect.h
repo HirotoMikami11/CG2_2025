@@ -14,11 +14,12 @@ public:
 	/// グレースケール専用のパラメータ
 	/// </summary>
 	struct GrayscaleParameters {
-		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };    // カラー（現在未使用）
-		float time = 0.0f;                              // 時間（アニメーション用）
-		float grayIntensity = 0.0f;                     // グレースケールの度合い (0.0f～1.0f)
-		float unused1 = 0.0f;                           // パディング
-		float unused2 = 0.0f;                           // パディング（16バイト境界）
+		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };		// カラー
+
+		float time = 0.0f;								// 時間（アニメーション用）
+		float grayIntensity = 0.0f;						// グレースケールの度合い (0.0f～1.0f)
+		float unused1 = 0.0f;							// パディング
+		float unused2 = 0.0f;							// パディング（16バイト境界）
 	};
 
 	/// <summary>

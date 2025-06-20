@@ -1,9 +1,8 @@
 #include <Windows.h>
 
-#include "LeakChecker.h"		//リークチェッカー
-
-#include "Engine.h"		//エンジン
-#include "Game/Game.h"	//ゲーム
+#include "LeakChecker.h"	//リークチェッカー
+#include "Engine.h"			//エンジン
+#include "Game/Game.h"		//ゲーム
 
 ///*-----------------------------------------------------------------------*///
 //																			//
@@ -44,7 +43,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///									更新処理								   ///
 		//																			//
 		///*-----------------------------------------------------------------------*///
-		
+
 		//エンジンのImGui
 		engine->ImGui();
 

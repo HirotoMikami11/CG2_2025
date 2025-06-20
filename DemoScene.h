@@ -2,20 +2,20 @@
 #include <memory>
 #include <array>
 
-#include "../../../Sprite.h"
-#include "../../../Light.h"
-#include "../../../GameObject.h"
+#include "Sprite.h"
+#include "Light.h"
+#include "GameObject.h"
 
-#include "../../../Engine.h"
-#include "../../../DirectXCommon.h"
-#include "../../../CameraController.h"
-#include "../../../ImGuiManager.h"
-#include "../../../BaseScene.h"
+#include "Engine.h"
+#include "DirectXCommon.h"
+#include "CameraController.h"
+#include "ImGuiManager.h"
+#include "BaseScene.h"
 
-class GameScene : public BaseScene {
+class DemoScene : public BaseScene {
 public:
-	GameScene();
-	~GameScene() override;
+	DemoScene();
+	~DemoScene() override;
 
 	// BaseSceneの実装
 	void Initialize() override;
