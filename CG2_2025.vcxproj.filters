@@ -79,12 +79,6 @@
     <Filter Include="Offscreen\PostEffect\RGBShift">
       <UniqueIdentifier>{9c6be5dc-041d-4c3c-9931-219339b7c751}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Offscreen\PostProcessChain">
-      <UniqueIdentifier>{37a00932-352c-443b-9aec-e010c8571bf5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\OffscreenRenderer">
-      <UniqueIdentifier>{cb9cb87f-e25a-458c-82d5-4abea6b28e5b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Grayscale">
       <UniqueIdentifier>{199393d8-3b85-4dd1-bd73-032f83314bd8}</UniqueIdentifier>
     </Filter>
@@ -144,6 +138,18 @@
     </Filter>
     <Filter Include="Engine\BaseSystem\WinApp">
       <UniqueIdentifier>{55694ab5-6cb1-493d-a885-e5f5fe1c6730}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem\DirectXCommon">
+      <UniqueIdentifier>{f8409849-6e81-4254-a523-bbead3e9cc50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer">
+      <UniqueIdentifier>{8bc77280-60cd-44b8-a2d8-74b652d035e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect">
+      <UniqueIdentifier>{77687888-8282-4d7e-a865-a15d5e44dcb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\FrameTimer">
+      <UniqueIdentifier>{14c40776-6e78-4284-ad43-f871e8df3d70}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -225,29 +231,14 @@
     <ClCompile Include="MyFunction.cpp">
       <Filter>ソース ファイル\MyMath</Filter>
     </ClCompile>
-    <ClCompile Include="DescriptorHeapManager.cpp">
-      <Filter>ソース ファイル\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="FrameTimer.cpp">
-      <Filter>ソース ファイル\MyMath</Filter>
-    </ClCompile>
     <ClCompile Include="Sprite.cpp">
       <Filter>ソース ファイル\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="Transform2D.cpp">
       <Filter>ソース ファイル\Sprite</Filter>
     </ClCompile>
-    <ClCompile Include="PostEffect.cpp">
-      <Filter>Offscreen\PostEffect</Filter>
-    </ClCompile>
     <ClCompile Include="RGBShiftPostEffect.cpp">
       <Filter>Offscreen\PostEffect\RGBShift</Filter>
-    </ClCompile>
-    <ClCompile Include="PostProcessChain.cpp">
-      <Filter>Offscreen\PostProcessChain</Filter>
-    </ClCompile>
-    <ClCompile Include="OffscreenRenderer.cpp">
-      <Filter>Offscreen\OffscreenRenderer</Filter>
     </ClCompile>
     <ClCompile Include="GrayscalePostEffect.cpp">
       <Filter>Offscreen\PostEffect\Grayscale</Filter>
@@ -284,6 +275,21 @@
     </ClCompile>
     <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp">
       <Filter>Engine\BaseSystem\WinApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.cpp">
+      <Filter>Engine\BaseSystem\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\PostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp">
+      <Filter>Engine\FrameTimer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -391,15 +397,6 @@
     <ClInclude Include="MyFunction.h">
       <Filter>ヘッダー ファイル\MyMath</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsConfig.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
-    <ClInclude Include="DescriptorHeapManager.h">
-      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameTimer.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -409,17 +406,8 @@
     <ClInclude Include="Transform2D.h">
       <Filter>ヘッダー ファイル\Sprite</Filter>
     </ClInclude>
-    <ClInclude Include="PostEffect.h">
-      <Filter>Offscreen\PostEffect</Filter>
-    </ClInclude>
     <ClInclude Include="RGBShiftPostEffect.h">
       <Filter>Offscreen\PostEffect\RGBShift</Filter>
-    </ClInclude>
-    <ClInclude Include="PostProcessChain.h">
-      <Filter>Offscreen\PostProcessChain</Filter>
-    </ClInclude>
-    <ClInclude Include="OffscreenRenderer.h">
-      <Filter>Offscreen\OffscreenRenderer</Filter>
     </ClInclude>
     <ClInclude Include="GrayscalePostEffect.h">
       <Filter>Offscreen\PostEffect\Grayscale</Filter>
@@ -462,6 +450,24 @@
     </ClInclude>
     <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h">
       <Filter>Engine\BaseSystem\WinApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\GraphicsConfig.h">
+      <Filter>Engine\BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.h">
+      <Filter>Engine\BaseSystem\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\PostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FrameTimer\FrameTimer.h">
+      <Filter>Engine\FrameTimer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

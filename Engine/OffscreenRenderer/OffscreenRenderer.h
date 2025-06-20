@@ -5,17 +5,17 @@
 #include <wrl.h>
 #include <string>
 
-#include "DirectXCommon.h"
+#include "../DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "MyMath.h"
-#include "MyFunction.h"
-#include "ImGuiManager.h" 
+#include "../MyMath.h"
+#include "../MyFunction.h"
+#include "../ImGuiManager.h" 
 
-#include "Sprite.h"				// Spriteクラスを使用
-#include "PostProcessChain.h"	// ポストプロセスチェーン
+#include "../Sprite.h"							// Spriteクラスを使用
+#include "OffscreenRenderer/PostProcessChain.h"	// ポストプロセスチェーン
 
-#include "RGBShiftPostEffect.h"	// RGBシフトエフェクト
-#include "GrayscalePostEffect.h"// グレースケールエフェクト
+#include "../RGBShiftPostEffect.h"	// RGBシフトエフェクト
+#include "../GrayscalePostEffect.h"// グレースケールエフェクト
 
 
 

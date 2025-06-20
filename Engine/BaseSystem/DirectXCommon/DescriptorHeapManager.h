@@ -5,7 +5,7 @@
 #include <cassert>
 #include <optional>		//値がない可能性のある型を使用数かもしれない場合に使用std::optional
 
-#include "GraphicsConfig.h"
+#include "BaseSystem/GraphicsConfig.h"
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>

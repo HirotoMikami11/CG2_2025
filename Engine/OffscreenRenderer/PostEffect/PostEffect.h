@@ -2,7 +2,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <string>
-#include "DirectXCommon.h"
+#include "../DirectXCommon.h"
 
 /// <summary>
 /// ポストエフェクトの基底クラス

@@ -21,8 +21,8 @@
 
 #include"BaseSystem/WinApp/WinApp.h"
 #include"BaseSystem/Logger/Logger.h"
-#include"GraphicsConfig.h"				//ウィンドウサイズなど
-#include "DescriptorHeapManager.h"		//ディスクリプタヒープ管理
+#include"BaseSystem/GraphicsConfig.h"	//ウィンドウサイズなど
+#include"BaseSystem/DirectXCommon/DescriptorHeapManager.h"		//ディスクリプタヒープ管理
 
 /// <summary>
 /// DirectX

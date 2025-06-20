@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include "../GraphicsConfig.h"
+#include "BaseSystem/GraphicsConfig.h"
 #include "../MyFunction.h"
 
 class WinApp

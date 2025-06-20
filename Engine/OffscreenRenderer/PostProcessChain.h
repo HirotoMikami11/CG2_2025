@@ -3,12 +3,12 @@
 #include <memory>
 #include <d3d12.h>
 #include <wrl.h>
-#include "PostEffect.h"
-#include "DirectXCommon.h"
-#include "Sprite.h"
+#include "OffscreenRenderer/PostEffect/PostEffect.h"
+#include "../DirectXCommon.h"
+#include "../Sprite.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "MyFunction.h"
-#include "ImGuiManager.h"
+#include "../MyFunction.h"
+#include "../ImGuiManager.h"
 
 /// <summary>
 /// ポストプロセスチェーンを管理するクラス

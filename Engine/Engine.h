@@ -13,8 +13,8 @@
 #include "../InputManager.h"
 #include "../TextureManager.h"
 #include "../ImGuiManager.h"
-#include "../FrameTimer.h"
-#include "../OffscreenRenderer.h"
+#include "FrameTimer/FrameTimer.h"
+#include "OffscreenRenderer/OffscreenRenderer.h"
 
 ///Objects
 #include "../CameraController.h"

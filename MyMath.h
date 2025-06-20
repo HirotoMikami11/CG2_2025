@@ -10,7 +10,7 @@
 #include<numbers>
 
 ///ウィンドウサイズ
-#include"GraphicsConfig.h"
+#include"BaseSystem/GraphicsConfig.h"
 
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
