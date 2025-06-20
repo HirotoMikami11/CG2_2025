@@ -1,4 +1,4 @@
-#include "Sprite.hlsli"
+#include "resources/Shader/Sprite/Sprite.hlsli"
 struct Material
 {
     float32_t4 color; //色

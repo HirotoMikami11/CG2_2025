@@ -70,20 +70,8 @@
     <Filter Include="ヘッダー ファイル\Sprite">
       <UniqueIdentifier>{e36e23c7-8f1c-4343-8852-618966b22da6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Offscreen">
-      <UniqueIdentifier>{03d769a8-00a6-4692-94bd-32d7c20fd016}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostEffect">
-      <UniqueIdentifier>{a9c21117-45d5-4bd9-8564-7b331f6714c1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostEffect\RGBShift">
-      <UniqueIdentifier>{9c6be5dc-041d-4c3c-9931-219339b7c751}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Grayscale">
       <UniqueIdentifier>{199393d8-3b85-4dd1-bd73-032f83314bd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostEffect\Grayscale">
-      <UniqueIdentifier>{bf51a594-c662-43d5-879b-1078219b28d4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{feec44c0-5ba6-4e64-9ba3-5db0d0ca8d0f}</UniqueIdentifier>
@@ -150,6 +138,12 @@
     </Filter>
     <Filter Include="Engine\FrameTimer">
       <UniqueIdentifier>{14c40776-6e78-4284-ad43-f871e8df3d70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\RGBShift">
+      <UniqueIdentifier>{885eaab5-9d5a-401f-8888-009a7dfcd2f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\Grayscale">
+      <UniqueIdentifier>{3125642e-04cb-43ce-b12c-0ea65eb247f5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -237,12 +231,6 @@
     <ClCompile Include="Transform2D.cpp">
       <Filter>ソース ファイル\Sprite</Filter>
     </ClCompile>
-    <ClCompile Include="RGBShiftPostEffect.cpp">
-      <Filter>Offscreen\PostEffect\RGBShift</Filter>
-    </ClCompile>
-    <ClCompile Include="GrayscalePostEffect.cpp">
-      <Filter>Offscreen\PostEffect\Grayscale</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Game.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -291,31 +279,37 @@
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp">
       <Filter>Engine\FrameTimer</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Object3d.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Object3d</Filter>
-    </FxCompile>
-    <FxCompile Include="Object3d.VS.hlsl">
-      <Filter>リソース ファイル\Shader\Object3d</Filter>
-    </FxCompile>
-    <FxCompile Include="Sprite.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Sprite</Filter>
-    </FxCompile>
-    <FxCompile Include="Sprite.VS.hlsl">
-      <Filter>リソース ファイル\Shader\Sprite</Filter>
-    </FxCompile>
-    <FxCompile Include="Grayscale.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Grayscale</Filter>
-    </FxCompile>
-    <FxCompile Include="Grayscale.VS.hlsl">
-      <Filter>リソース ファイル\Shader\Grayscale</Filter>
-    </FxCompile>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </FxCompile>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Grayscale\Grayscale.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Object3d\Object3d.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Object3d\Object3d.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Sprite\Sprite.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Sprite\Sprite.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,12 +400,6 @@
     <ClInclude Include="Transform2D.h">
       <Filter>ヘッダー ファイル\Sprite</Filter>
     </ClInclude>
-    <ClInclude Include="RGBShiftPostEffect.h">
-      <Filter>Offscreen\PostEffect\RGBShift</Filter>
-    </ClInclude>
-    <ClInclude Include="GrayscalePostEffect.h">
-      <Filter>Offscreen\PostEffect\Grayscale</Filter>
-    </ClInclude>
     <ClInclude Include="LeakChecker.h">
       <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
     </ClInclude>
@@ -469,19 +457,25 @@
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h">
       <Filter>Engine\FrameTimer</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Object3d.hlsli">
-      <Filter>リソース ファイル\Shader\Object3d</Filter>
-    </None>
-    <None Include="Sprite.hlsli">
-      <Filter>リソース ファイル\Shader\Sprite</Filter>
-    </None>
-    <None Include="Grayscale.hlsli">
-      <Filter>リソース ファイル\Shader\Grayscale</Filter>
-    </None>
     <None Include="resources\Shader\RGBShift\RGBShift.hlsli">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </None>
+    <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </None>
+    <None Include="resources\Shader\Object3d\Object3d.hlsli">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </None>
+    <None Include="resources\Shader\Sprite\Sprite.hlsli">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-#include "Object3d.hlsli"
+#include "resources/Shader/Object3d/Object3d.hlsli"
 struct Material
 {
     float32_t4 color; //色

@@ -1,4 +1,4 @@
-#include "Grayscale.hlsli"
+#include "resources/Shader/Grayscale/Grayscale.hlsli"
 
 struct TransformationMatrix
 {

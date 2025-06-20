@@ -1,4 +1,4 @@
-#include "Object3d.hlsli"
+#include "resources/Shader/Object3d/Object3d.hlsli"
 
 struct TransformationMatrix
 {

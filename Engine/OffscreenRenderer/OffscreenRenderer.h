@@ -14,8 +14,8 @@
 #include "../Sprite.h"							// Spriteクラスを使用
 #include "OffscreenRenderer/PostProcessChain.h"	// ポストプロセスチェーン
 
-#include "../RGBShiftPostEffect.h"	// RGBシフトエフェクト
-#include "../GrayscalePostEffect.h"// グレースケールエフェクト
+#include "OffscreenRenderer/PostEffect/RGBShift/RGBShiftPostEffect.h"	// RGBシフトエフェクト
+#include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
 
 
 

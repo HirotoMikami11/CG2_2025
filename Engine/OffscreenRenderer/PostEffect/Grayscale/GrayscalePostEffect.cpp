@@ -148,10 +148,10 @@ void GrayscalePostEffect::CreatePSO() {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// グレースケール用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"Grayscale.VS.hlsl", L"vs_6_0");
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/Grayscale/Grayscale.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
-	pixelShaderBlob_ = CompileShader(L"Grayscale.PS.hlsl", L"ps_6_0");
+	pixelShaderBlob_ = CompileShader(L"resources/Shader/Grayscale/Grayscale.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob_ != nullptr);
 
 	// DepthStencilState設定（深度テストなし）
