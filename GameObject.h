@@ -167,59 +167,6 @@ private:
 		return baseName + "_" + std::to_string(++sphereCount_);
 	}
 };
-//
-///// <summary>
-///// スプライトオブジェクト
-///// </summary>
-//class Sprite : public GameObject
-//{
-//public:
-//	void Initialize(DirectXCommon* dxCommon, const std::string& textureName = "uvChecker") {
-//		GameObject::Initialize(dxCommon, MeshType::SPRITE, textureName);
-//		name_ = SettingName("Sprite");
-//	}
-//
-//	/// <summary>
-//	/// スプライト専用の描画（異なるビュープロジェクション使用）
-//	/// </summary>
-//	void DrawSprite(const Light& directionalLight) {
-//		if (!isVisible_ || !isActive_) {
-//			return;
-//		}
-//
-//		// 描画処理
-//		ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
-//		//// スプライト用
-//		//commandList->SetGraphicsRootSignature(directXCommon_->GetSpriteRootSignature());
-//		//commandList->SetPipelineState(directXCommon_->GetSpritePipelineState());
-//
-//		commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());
-//		commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
-//		if (!textureName_.empty()) {
-//			commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));
-//		}
-//		commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
-//		model_.GetMesh().Bind(commandList);
-//		model_.GetMesh().Draw(commandList);
-//
-//
-//		//// 通常の描画設定に戻す(オフスクリーンに描画しないものをこの先描画するため)
-//		//commandList->SetGraphicsRootSignature(directXCommon_->GetRootSignature());
-//		//commandList->SetPipelineState(directXCommon_->GetPipelineState());
-//		//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//	}
-//
-//private:
-//	static int spriteCount_;
-//	/// 名前の後ろに番号をつけて識別しやすくする関数
-//	static std::string SettingName(const std::string& baseName) {
-//		return baseName + "_" + std::to_string(++spriteCount_);
-//	}
-//
-//
-//
-//
-//};
 
 /// <summary>
 /// 3Dモデルオブジェクト

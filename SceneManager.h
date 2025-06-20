@@ -13,9 +13,13 @@ public:
 	void RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene);
 	void UnregisterScene(const std::string& sceneName);
 
-	// シーンの切り替え
+	// シーンの切り替え（データ自動保持）
 	bool ChangeScene(const std::string& sceneName);
-	void SetNextScene(const std::string& sceneName); // 次フレームで切り替え
+	void SetNextScene(const std::string& sceneName);
+
+	// リセット機能（明示的にリセットしたい場合のみ）
+	void ResetScene(const std::string& sceneName);
+	void ResetCurrentScene();
 
 	// シーンの存在確認
 	bool HasScene(const std::string& sceneName) const;

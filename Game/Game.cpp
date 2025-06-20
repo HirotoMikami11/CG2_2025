@@ -15,18 +15,19 @@ void Game::Initialize() {
 
 void Game::InitializeScenes() {
 	// GameSceneの登録
+	auto demoScene = std::make_unique<DemoScene>();
+	sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
+
 	auto gameScene = std::make_unique<GameScene>();
 	sceneManager_->RegisterScene("GameScene", std::move(gameScene));
 
-	auto demoScene = std::make_unique<DemoScene>();
-	sceneManager_->RegisterScene("TitleScene", std::move(demoScene));
 
 	// 将来的に追加するシーン
 	// auto debugScene = std::make_unique<DebugScene>();
 	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));
 
 	// デフォルトシーンを設定（最初に表示するシーン）
-	sceneManager_->ChangeScene("GameScene");
+	sceneManager_->ChangeScene("DemoScene");
 }
 
 void Game::Update() {

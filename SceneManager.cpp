@@ -37,18 +37,22 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 		return false;
 	}
 
-	// 現在のシーンがある場合の終了処理
+	// 現在のシーンの処理
 	if (currentScene_) {
 		currentScene_->OnExit();
-		currentScene_->Finalize();
+		
 	}
 
 	// 新しいシーンの設定
 	currentScene_ = scenes_[sceneName].get();
 	currentSceneName_ = sceneName;
 
-	// 新しいシーンの初期化
-	currentScene_->Initialize();
+	// 新しいシーンの初期化（初回のみ）
+	if (!currentScene_->IsInitialized()) {
+		currentScene_->Initialize();
+		currentScene_->SetInitialized(true);
+	}
+
 	currentScene_->OnEnter();
 
 	return true;
@@ -61,6 +65,30 @@ void SceneManager::SetNextScene(const std::string& sceneName) {
 	}
 }
 
+void SceneManager::ResetScene(const std::string& sceneName) {
+	auto it = scenes_.find(sceneName);
+	if (it != scenes_.end()) {
+		// 現在のシーンをリセットする場合
+		if (currentSceneName_ == sceneName && currentScene_) {
+			currentScene_->OnExit();
+			currentScene_->Finalize();
+			currentScene_->Initialize();
+			currentScene_->SetInitialized(true);
+			currentScene_->OnEnter();
+		} else {
+			// 非アクティブなシーンをリセット
+			it->second->Finalize();
+			it->second->SetInitialized(false);
+		}
+	}
+}
+
+void SceneManager::ResetCurrentScene() {
+	if (currentScene_ && !currentSceneName_.empty()) {
+		ResetScene(currentSceneName_);
+	}
+}
+
 bool SceneManager::HasScene(const std::string& sceneName) const {
 	return scenes_.find(sceneName) != scenes_.end();
 }
@@ -70,7 +98,7 @@ const std::string& SceneManager::GetCurrentSceneName() const {
 }
 
 void SceneManager::Initialize() {
-	// 初期化時は何もしない（シーンは個別に初期化される）
+	// シーンは個別に初期化されるので初期化時は何もしない（）
 }
 
 void SceneManager::Update() {
@@ -132,6 +160,7 @@ void SceneManager::DrawScenesUI() {
 	if (currentScene_) {
 		ImGui::Text("Current Scene: %s", currentSceneName_.c_str());
 		ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: Active");
+		ImGui::Text("Initialized: %s", currentScene_->IsInitialized() ? "Yes" : "No");
 	} else {
 		ImGui::Text("Current Scene: None");
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: No Scene");
@@ -163,13 +192,33 @@ void SceneManager::DrawScenesUI() {
 			ImGui::PopStyleColor(2);
 			ImGui::SameLine();
 			ImGui::Text("(Current)");
+		} else {
+			ImGui::SameLine();
+			ImGui::Text("(Init: %s)", scene->IsInitialized() ? "Yes" : "No");
+		}
+
+		// リセットボタン
+		ImGui::SameLine();
+		if (ImGui::SmallButton(("Reset##" + sceneName).c_str())) {
+			ResetScene(sceneName);
 		}
 
 		ImGui::PopID();
 	}
 
+	// 現在のシーンのリセットボタン
+	if (currentScene_) {
+		ImGui::Spacing();
+		if (ImGui::Button("Reset Current Scene", ImVec2(200, 0))) {
+			ResetCurrentScene();
+		}
+		ImGui::SameLine();
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "reset all objects");
+	}
+
 	// シーン切り替え要求があるかの表示
 	if (sceneChangeRequested_) {
+		ImGui::Spacing();
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Next Scene: %s", nextSceneName_.c_str());
 		ImGui::Text("(Will change next frame)");
 	}
@@ -182,9 +231,8 @@ void SceneManager::DrawCurrentSceneUI() {
 		ImGui::Text("Scene: %s", currentSceneName_.c_str());
 		ImGui::Separator();
 
-		// 現在のシーンのImGui
+		// 現在のシーンのImGuiを呼び出し
 		currentScene_->ImGui();
-
 	} else {
 		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "No active scene");
 	}
