@@ -25,8 +25,6 @@ void CameraController::Initialize()
 #endif // DEBUG
 
 
-
-
 	///デバッグカメラで開始する場合、スプライトが表示されないので初期化したタイミングで一度だけ更新する
 	camera_.Update();
 	viewProjectionMatrix_ = camera_.GetViewProjectionMatrix();
@@ -39,6 +37,9 @@ void CameraController::Update()
 	///
 	///	カメラの更新
 	/// 
+	
+	//デバッグとゲームカメラの切り替え
+	SwitchCamera();
 
 	if (!useDebugCamera_) {
 		camera_.Update();
@@ -55,6 +56,15 @@ void CameraController::Update()
 	viewProjectionMatrixSprite_ = camera_.GetSpriteViewProjectionMatrix();
 
 	ImGui();
+
+}
+
+void CameraController::SetTransform(const Vector3& newTransform)
+{
+
+	cameraTranslation_ = newTransform;
+
+	camera_.SetTranslate(cameraTranslation_);
 
 }
 
@@ -88,5 +98,15 @@ void CameraController::ImGui()
 	ImGui::End();
 
 
+}
+
+void CameraController::SwitchCamera()
+{
+	//Shift + TABでメインとデバッグカメラを切り替える
+	if (InputManager::GetInstance()->IsKeyTrigger(DIK_TAB) &&
+		InputManager::GetInstance()->IsKeyDown(DIK_LSHIFT)) {
+		useDebugCamera_ = !useDebugCamera_;
+
+	}
 }
 

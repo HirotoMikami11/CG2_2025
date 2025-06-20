@@ -21,8 +21,7 @@ public:
 
 
 	//Setter
-
-	void SetTransform(const Vector3& newTransform) { cameraTranslation_ = newTransform; }
+	void SetTransform(const Vector3& newTransform);
 
 	//Getter
 
@@ -42,6 +41,10 @@ private:
 	/// </summary>
 	void ImGui();
 
+	/// <summary>
+	/// デバッグカメラとメインカメラを切り替える
+	/// </summary>
+	void SwitchCamera();
 
 	Camera camera_;
 	DebugCamera debugCamera_;

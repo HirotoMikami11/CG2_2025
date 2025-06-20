@@ -20,30 +20,48 @@ void GameScene::Initialize() {
 	cameraController_ = CameraController::GetInstance();
 	cameraController_->Initialize();
 
+
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
 }
 
 void GameScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
-	///									三角形									///
+	///									プレイヤー								///
 	///*-----------------------------------------------------------------------*///
+
+
+	//初期化
+	player_ = std::make_unique<Player>();
+	player_->Initialize();
+
+
+	///*-----------------------------------------------------------------------*///
+	///									ライト									///
+	///*-----------------------------------------------------------------------*///
+	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
+
 }
 
 void GameScene::Update() {
 	// カメラ更新
 	cameraController_->Update();
+	cameraController_->SetTransform({ 0.0f, 0.0f, -50.0f });
 
 	// ゲームオブジェクト更新
 	UpdateGameObjects();
 }
 
 void GameScene::UpdateGameObjects() {
-	
+
 
 	// 行列更新
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
+
+
+	player_->Update(viewProjectionMatrix);
+
 
 }
 
@@ -53,12 +71,12 @@ void GameScene::Draw() {
 }
 
 void GameScene::DrawGameObjects() {
-
+	player_->Draw(directionalLight_);
 }
 
 void GameScene::OnEnter() {
 	// ゲームシーンに入る時の処理
-
+	cameraController_->SetTransform({ 0.0f, 0.0f, -50.0f });
 }
 
 void GameScene::OnExit() {
@@ -66,9 +84,11 @@ void GameScene::OnExit() {
 }
 
 void GameScene::ImGui() {
-	
+
 
 	ImGui::Spacing();
+
+	player_->ImGui();
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

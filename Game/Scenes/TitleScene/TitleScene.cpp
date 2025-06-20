@@ -88,7 +88,7 @@ void TitleScene::DrawGameObjects() {
 
 void TitleScene::OnEnter() {
 	// ゲームシーンに入る時の処理
-
+	cameraController_->SetTransform({ 0.0f, 0.0f, -10.0f });
 }
 
 void TitleScene::OnExit() {

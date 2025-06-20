@@ -39,7 +39,9 @@ void DebugCamera::Update()
 	}
 
 	// TABキーでカメラ移動の切り替え
-	if (input_->IsKeyTrigger(DIK_TAB)) {
+	if (input_->IsKeyTrigger(DIK_TAB)&&
+		!input_->IsKeyDown(DIK_LSHIFT)) {
+
 		moveDebugCamera_ = !moveDebugCamera_;  //フラグ反転させる
 	}
 	//Rキーで回転モードを切り替え

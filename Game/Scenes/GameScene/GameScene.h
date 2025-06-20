@@ -2,15 +2,10 @@
 #include <memory>
 #include <array>
 
-#include "../../../Sprite.h"
-#include "../../../Light.h"
-#include "../../../GameObject.h"
-
 #include "../../../Engine.h"
-#include "../../../DirectXCommon.h"
-#include "../../../CameraController.h"
-#include "../../../ImGuiManager.h"
-#include "../../../BaseScene.h"
+#include "../../../BaseScene.h"		//シーン基底クラス
+
+#include"Objects/Player/Player.h"	//プレイヤー
 
 class GameScene : public BaseScene {
 public:
@@ -36,6 +31,8 @@ private:
 	void DrawGameObjects();
 
 	// ゲームオブジェクト
+	//プレイヤー
+	std::unique_ptr<Player> player_ = nullptr;
 
 
 	// ライティング
