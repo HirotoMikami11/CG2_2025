@@ -3,7 +3,7 @@
 #include <wrl.h>
 #include "DirectXCommon.h"
 #include "MyFunction.h"
-#include "Logger.h"
+#include "BaseSystem/Logger/Logger.h"
 #include <cassert>
 
 class DirectXCommon;

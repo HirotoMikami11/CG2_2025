@@ -46,9 +46,6 @@
     <Filter Include="ヘッダー ファイル\DirectXCommon">
       <UniqueIdentifier>{b07e9775-06a7-40a9-9b02-b90fcd54ea71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\DirectXCommon\Logger">
-      <UniqueIdentifier>{1c9c37a2-60e3-4494-b794-cdccf350ef4c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\DirectXCommon\Logger">
       <UniqueIdentifier>{510abd56-8856-4809-a4d3-050564b9bfbe}</UniqueIdentifier>
     </Filter>
@@ -139,6 +136,15 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{f70ce07e-5b4e-449c-be5f-6f9f6b2555bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\BaseSystem">
+      <UniqueIdentifier>{e2e33861-0b3d-4c4e-b915-da6dcd8205a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem\Logger">
+      <UniqueIdentifier>{577e0e85-e621-4f3b-8b03-ebce0f82d82e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem\WinApp">
+      <UniqueIdentifier>{55694ab5-6cb1-493d-a885-e5f5fe1c6730}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -164,9 +170,6 @@
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="WinApp.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Audio.cpp">
       <Filter>ソース ファイル\Audio</Filter>
@@ -215,12 +218,6 @@
     </ClCompile>
     <ClCompile Include="DirectXCommon.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="Dump.cpp">
-      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
     </ClCompile>
     <ClCompile Include="MyMath.cpp">
       <Filter>ソース ファイル\MyMath</Filter>
@@ -279,6 +276,15 @@
     <ClCompile Include="Engine\Engine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\Logger\Dump.cpp">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\Logger\Logger.cpp">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp">
+      <Filter>Engine\BaseSystem\WinApp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -331,9 +337,6 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="WinApp.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Audio.h">
       <Filter>ヘッダー ファイル\Audio</Filter>
     </ClInclude>
@@ -381,12 +384,6 @@
     </ClInclude>
     <ClInclude Include="DirectXCommon.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="Dump.h">
-      <Filter>ヘッダー ファイル\DirectXCommon\Logger</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>ヘッダー ファイル\DirectXCommon\Logger</Filter>
     </ClInclude>
     <ClInclude Include="MyMath.h">
       <Filter>ヘッダー ファイル\MyMath</Filter>
@@ -456,6 +453,15 @@
     </ClInclude>
     <ClInclude Include="Engine\Engine.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\Logger\Dump.h">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\Logger\Logger.h">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h">
+      <Filter>Engine\BaseSystem\WinApp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

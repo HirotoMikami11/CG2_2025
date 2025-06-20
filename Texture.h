@@ -3,7 +3,7 @@
 #include <string>
 
 #include "DirectXCommon.h"
-#include "Logger.h"
+#include "BaseSystem/Logger/Logger.h"
 #include "MyFunction.h" // CreateBufferResource用
 #include <cassert>
 class DirectXCommon; // 前方宣言

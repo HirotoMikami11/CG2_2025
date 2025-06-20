@@ -3,10 +3,10 @@
 #include<string>
 
 ///BaseSystem
-#include "../Logger.h"
-#include "../WinApp.h"
+#include "BaseSystem/Logger/Logger.h"
+#include "BaseSystem/WinApp/WinApp.h"
 #include "../DirectXCommon.h"
-#include "../Dump.h"
+#include "BaseSystem/Logger/Dump.h"
 
 ///Managers
 #include "../AudioManager.h"

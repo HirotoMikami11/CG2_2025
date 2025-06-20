@@ -19,8 +19,8 @@
 #include<cassert>						//アサ―トを扱う
 
 
-#include"WinApp.h"
-#include"Logger.h"
+#include"BaseSystem/WinApp/WinApp.h"
+#include"BaseSystem/Logger/Logger.h"
 #include"GraphicsConfig.h"				//ウィンドウサイズなど
 #include "DescriptorHeapManager.h"		//ディスクリプタヒープ管理
 

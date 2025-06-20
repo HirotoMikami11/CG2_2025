@@ -6,8 +6,8 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-#include "WinApp.h"
-#include "Logger.h"
+#include "BaseSystem/WinApp/WinApp.h"
+#include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
 /// 入力管理クラス（キーボード、マウス）
