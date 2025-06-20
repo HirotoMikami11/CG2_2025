@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "Scenes/GameScene/GameScene.h"
+#include "Scenes/TitleScene/TitleScene.h"
 #include "../DemoScene.h"
 #include "../SceneManager.h"
 

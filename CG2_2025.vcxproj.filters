@@ -112,6 +112,9 @@
     <Filter Include="SceneManager\DefaultScene">
       <UniqueIdentifier>{df795625-dc06-44e5-bfdc-cdcd673a1728}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Scenes\TitleScene">
+      <UniqueIdentifier>{657acde6-db28-4149-9d7d-0c9c3feca823}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -242,6 +245,9 @@
     </ClCompile>
     <ClCompile Include="SceneManager.cpp">
       <Filter>SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
+      <Filter>Game\Scenes\TitleScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -411,6 +417,9 @@
     </ClInclude>
     <ClInclude Include="SceneManager.h">
       <Filter>SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
+      <Filter>Game\Scenes\TitleScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
