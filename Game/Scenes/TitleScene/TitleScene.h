@@ -2,15 +2,15 @@
 #include <memory>
 #include <array>
 
-#include "../../../Sprite.h"
-#include "../../../Light.h"
-#include "../../../GameObject.h"
+#include "../../../Engine.h"		//エンジン
+#include "../../../BaseScene.h"		//シーン基底クラス
 
-#include "../../../Engine.h"
-#include "../../../DirectXCommon.h"
-#include "../../../CameraController.h"
+
 #include "../../../ImGuiManager.h"
-#include "../../../BaseScene.h"
+
+
+//タイトルプレイヤー
+#include"Objects/TitlePlayer/TitlePlayer.h"
 
 class TitleScene : public BaseScene
 {
@@ -42,7 +42,8 @@ private:
 	std::unique_ptr<Model3D> titleFont_ = nullptr;
 
 	//タイトル用のプレイヤー
-	std::unique_ptr<Model3D> titlePlayer_ = nullptr;
+	std::unique_ptr<TitlePlayer> titlePlayer_ = nullptr;
+
 
 	// ライティング
 	Light directionalLight_;

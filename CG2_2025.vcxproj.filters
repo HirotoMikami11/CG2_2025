@@ -115,6 +115,27 @@
     <Filter Include="Game\Scenes\TitleScene">
       <UniqueIdentifier>{657acde6-db28-4149-9d7d-0c9c3feca823}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Scenes\TitleScene\Objects">
+      <UniqueIdentifier>{57f7a9d8-9b42-4057-9a70-8b235666cb79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\TitleScene\Objects\TitlePlayer">
+      <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameScene\Objects">
+      <UniqueIdentifier>{0126492a-2253-4b67-9cff-eedc8047fabb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameScene\Objects\Player">
+      <UniqueIdentifier>{3a16bcdb-d50c-496d-8b75-a6d86459a64a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameScene\Objects\Enemy">
+      <UniqueIdentifier>{72884eaa-fda0-45e6-999b-982d08e1e8a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameScene\Objects\MapChipField">
+      <UniqueIdentifier>{32651caf-a83b-448e-a20f-28f9e170f45b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameScene\Objects\Skydome">
+      <UniqueIdentifier>{f4539ff9-b533-43a6-992b-bd998b0a53c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -248,6 +269,12 @@
     </ClCompile>
     <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
       <Filter>Game\Scenes\TitleScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scenes\TitleScene\objects\TitlePlayer\TitlePlayer.cpp">
+      <Filter>Game\Scenes\TitleScene\Objects\TitlePlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scenes\GameScene\objects\Player\Player.cpp">
+      <Filter>Game\Scenes\GameScene\Objects\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -420,6 +447,12 @@
     </ClInclude>
     <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
       <Filter>Game\Scenes\TitleScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\TitleScene\objects\TitlePlayer\TitlePlayer.h">
+      <Filter>Game\Scenes\TitleScene\Objects\TitlePlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\GameScene\objects\Player\Player.h">
+      <Filter>Game\Scenes\GameScene\Objects\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

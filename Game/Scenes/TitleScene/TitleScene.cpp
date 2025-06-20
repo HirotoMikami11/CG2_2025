@@ -27,7 +27,7 @@ void TitleScene::Initialize() {
 
 void TitleScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
-	///									タイトルフォント									///
+	///									タイトルフォント							///
 	///*-----------------------------------------------------------------------*///
 
 
@@ -36,7 +36,13 @@ void TitleScene::InitializeGameObjects() {
 	titleFont_ = std::make_unique<Model3D>();
 	titleFont_->Initialize(directXCommon_, "resources/TitleFont", "titleFont.obj");
 	titleFont_->SetPosition(titleFontPos);
+	///*-----------------------------------------------------------------------*///
+	///									プレイヤー(置物)							///
+	///*-----------------------------------------------------------------------*///
 
+	//初期化
+	titlePlayer_ = std::make_unique<TitlePlayer>();
+	titlePlayer_->Initialize();
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
@@ -55,13 +61,16 @@ void TitleScene::Update() {
 
 void TitleScene::UpdateGameObjects() {
 
-
 	// 行列更新
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
 
+
 	// モデルの更新
 	titleFont_->Update(viewProjectionMatrix);
+
+	//プレイヤー(置物)の更新
+	titlePlayer_->Update(viewProjectionMatrix);
 
 }
 
@@ -71,7 +80,10 @@ void TitleScene::Draw() {
 }
 
 void TitleScene::DrawGameObjects() {
+	//タイトル文字
 	titleFont_->Draw(directionalLight_);
+	//タイトルプレイヤー(置物)
+	titlePlayer_->Draw(directionalLight_);
 }
 
 void TitleScene::OnEnter() {
@@ -85,9 +97,14 @@ void TitleScene::OnExit() {
 
 void TitleScene::ImGui() {
 
+
 	ImGui::Text("TitleFont");
 	titleFont_->ImGui();
 	ImGui::Spacing();
+
+	//プレイヤー(置物)
+	titlePlayer_->ImGui();
+
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

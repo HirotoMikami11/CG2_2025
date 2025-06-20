@@ -2,17 +2,27 @@
 #include<memory>
 #include<string>
 
+///BaseSystem
 #include "Logger.h"
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Dump.h"
 
+///Managers
 #include "AudioManager.h"
 #include "InputManager.h"
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "FrameTimer.h"
 #include "OffscreenRenderer.h"
+
+///Objects
+#include "CameraController.h"
+#include "GameObject.h"
+#include "Sprite.h"
+#include "Light.h"
+
+
 
 class Engine {
 public:
