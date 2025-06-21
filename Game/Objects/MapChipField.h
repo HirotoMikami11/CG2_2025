@@ -109,7 +109,7 @@ private:
 
 	// ブロックの個数
 	static inline const uint32_t kNumBlockVirtical = 20;
-	static inline const uint32_t kNumBlockHorizontal = 100;
+	static inline const uint32_t kNumBlockHorizontal = 50;
 
 	//マップチップ全体の大きさ
 	Vector2 mapChipSize_;

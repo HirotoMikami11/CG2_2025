@@ -63,7 +63,7 @@ void GameScene::InitializeGameObjects() {
 	// マップチップフィールドの生成・初期化
 	mapChipField_ = new MapChipField();
 	mapChipField_->Initialize();
-	mapChipField_->LoadMapChipCSV("resources/Mapchips/blocks.csv");
+	mapChipField_->LoadMapChipCSV("resources/Mapchips/blocks_short.csv");
 
 	// マップチップに合わせたブロックの生成
 	GenerateBlocks();
@@ -107,6 +107,16 @@ void GameScene::InitializeGameObjects() {
 }
 
 void GameScene::Update() {
+	///カメラの更新
+	cameraController_->Update();
+	// 行列更新
+	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
+	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
+
+	///追従設定など？
+	/// ゲームカメラの更新（プレイヤー追従）
+	gameCamera_->Update();
+
 
 	///天球の更新
 	skydome_->Update(viewProjectionMatrix);
@@ -120,17 +130,7 @@ void GameScene::Update() {
 	}
 
 
-	///カメラの更新
 
-	cameraController_->Update();
-	// 行列更新
-	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
-	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
-
-
-	///追従設定など？
-	/// ゲームカメラの更新（プレイヤー追従）
-	gameCamera_->Update();
 
 	///ブロックの更新
 	for (auto& blockLine : blocks_) {
@@ -274,13 +274,14 @@ void GameScene::OnEnter() {
 	if (gameCamera_) {
 		gameCamera_->Reset();
 	}
-	// 敵をリセット（前回の敵をクリアして再初期化）
-	enemies_.clear();
-	InitializeEnemies();
+	//// 敵をリセット（前回の敵をクリアして再初期化）
+	//enemies_.clear();
+	//InitializeEnemies();
 }
 
 void GameScene::OnExit() {
 	// ゲームシーンから出る時の処理
+
 }
 
 void GameScene::ImGui() {
@@ -315,4 +316,10 @@ void GameScene::ImGui() {
 
 void GameScene::Finalize() {
 	// unique_ptrで自動的に解放される
+	enemies_.clear();
+	// MapChipFieldの解放
+	if (mapChipField_) {
+		delete mapChipField_;
+		mapChipField_ = nullptr;
+	}
 }
