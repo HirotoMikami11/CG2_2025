@@ -140,6 +140,9 @@ private:
 	DescriptorHeapManager::DescriptorHandle dsvHandle_;
 	DescriptorHeapManager::DescriptorHandle srvHandle_;
 
+	//PSO
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> offscreenRootSignature_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> offscreenPipelineState_;
 
 
 	// オフスクリーン描画専用Sprite（UI用Spriteとは役割が異なる）

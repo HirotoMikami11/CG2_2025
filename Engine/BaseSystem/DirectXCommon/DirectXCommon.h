@@ -77,9 +77,6 @@ public:
 	ID3D12RootSignature* GetSpriteRootSignature() const { return spriteRootSignature.Get(); }
 	ID3D12PipelineState* GetSpritePipelineState() const { return spritePipelineState.Get(); }
 
-	ID3D12RootSignature* GetOffscreenRootSignature() const { return offscreenRootSignature.Get(); }
-	ID3D12PipelineState* GetOffscreenPipelineState() const { return offscreenPipelineState.Get(); }
-
 	///参照で返すゲッター？
 	const Microsoft::WRL::ComPtr<ID3D12Device>& GetDeviceComPtr() const { return device; }
 	const Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& GetCommandListComPtr() const { return commandList; }
@@ -157,11 +154,6 @@ private:
 	void MakeSpritePSO();
 
 	/// <summary>
-	/// オフスクリーン用PSOを作成する
-	/// </summary>
-	void MakeOffscreenPSO();
-
-	/// <summary>
 	/// ViewportとScissor
 	/// </summary>
 	void MakeViewport();
@@ -216,10 +208,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> spriteRootSignature;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> spritePipelineState;//実際に生成されるPSO
 
-	//オフスクリーン用
-//RootSignature作成
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> offscreenRootSignature;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> offscreenPipelineState;//実際に生成されるPSO
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
