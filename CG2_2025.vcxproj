@@ -88,7 +88,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DemoScene.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.cpp" />
     <ClCompile Include="Engine\BaseSystem\Logger\Dump.cpp" />
@@ -101,6 +100,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
     <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
     <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp" />
+    <ClCompile Include="Engine\Managers\InputManager.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
     <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
     <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp" />
     <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
@@ -131,9 +133,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Scenes\TitleScene\objects\TitlePlayer\TitlePlayer.cpp" />
     <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -164,8 +164,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseScene.h" />
-    <ClInclude Include="DemoScene.h" />
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.h" />
     <ClInclude Include="Engine\BaseSystem\GraphicsConfig.h" />
@@ -179,6 +177,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
     <ClInclude Include="Engine\Managers\Audio\Audio.h" />
     <ClInclude Include="Engine\Managers\Audio\AudioManager.h" />
+    <ClInclude Include="Engine\Managers\InputManager.h" />
+    <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
+    <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
+    <ClInclude Include="Engine\Managers\Scene\SceneManager.h" />
     <ClInclude Include="Engine\Managers\Texture\Texture.h" />
     <ClInclude Include="Engine\Managers\Texture\TextureManager.h" />
     <ClInclude Include="Engine\MyMath\MyFunction.h" />
@@ -210,10 +212,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Scenes\TitleScene\objects\TitlePlayer\TitlePlayer.h" />
     <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h" />
     <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="InputManager.h" />
     <ClInclude Include="LeakChecker.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

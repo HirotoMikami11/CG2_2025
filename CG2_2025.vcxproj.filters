@@ -43,12 +43,6 @@
     <Filter Include="Game\Scenes\GameScene">
       <UniqueIdentifier>{92ccc106-94e0-45b1-96a4-bf83ad623174}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SceneManager">
-      <UniqueIdentifier>{b845b850-1796-4cd3-a171-8aa6a2c0eb45}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SceneManager\DefaultScene">
-      <UniqueIdentifier>{df795625-dc06-44e5-bfdc-cdcd673a1728}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\Scenes\TitleScene">
       <UniqueIdentifier>{657acde6-db28-4149-9d7d-0c9c3feca823}</UniqueIdentifier>
     </Filter>
@@ -133,6 +127,12 @@
     <Filter Include="Engine\Managers\Audio">
       <UniqueIdentifier>{53428ebc-a771-4461-b61a-3dddde1c10d5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Managers\Scene">
+      <UniqueIdentifier>{8d0d45b1-3c22-4d10-8e12-bae714348094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Input">
+      <UniqueIdentifier>{401ed695-a780-4ebb-b1e6-d559c1109305}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -159,9 +159,6 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -173,12 +170,6 @@
     </ClCompile>
     <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp">
       <Filter>Game\Scenes\GameScene</Filter>
-    </ClCompile>
-    <ClCompile Include="DemoScene.cpp">
-      <Filter>SceneManager\DefaultScene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>SceneManager</Filter>
     </ClCompile>
     <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
       <Filter>Game\Scenes\TitleScene</Filter>
@@ -273,6 +264,15 @@
     <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp">
       <Filter>Engine\Managers\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\InputManager.cpp">
+      <Filter>Engine\Managers\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
@@ -325,9 +325,6 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="ImGuiManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -342,15 +339,6 @@
     </ClInclude>
     <ClInclude Include="Game\Scenes\GameScene\GameScene.h">
       <Filter>Game\Scenes\GameScene</Filter>
-    </ClInclude>
-    <ClInclude Include="DemoScene.h">
-      <Filter>SceneManager\DefaultScene</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseScene.h">
-      <Filter>SceneManager</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>SceneManager</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
       <Filter>Game\Scenes\TitleScene</Filter>
@@ -450,6 +438,18 @@
     </ClInclude>
     <ClInclude Include="Engine\Managers\Audio\AudioManager.h">
       <Filter>Engine\Managers\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\BaseScene.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\DemoScene.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\SceneManager.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\InputManager.h">
+      <Filter>Engine\Managers\Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

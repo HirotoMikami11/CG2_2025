@@ -1,9 +1,13 @@
 #pragma once
 #include <memory>
+//最初から用意されているシーン
+#include "Managers/Scene/DemoScene.h"
+#include "Managers/Scene/SceneManager.h"
+
+//ゲームで使うシーン
 #include "Scenes/GameScene/GameScene.h"
 #include "Scenes/TitleScene/TitleScene.h"
-#include "../DemoScene.h"
-#include "../SceneManager.h"
+
 
 //ゲームシーン
 

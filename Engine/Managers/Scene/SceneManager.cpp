@@ -1,6 +1,7 @@
 #include "SceneManager.h"
-#include "ImGuiManager.h"
 #include <cassert>
+#include "../ImGuiManager.h"
+
 
 SceneManager::SceneManager()
 	: currentScene_(nullptr)

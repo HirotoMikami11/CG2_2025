@@ -5,7 +5,7 @@
 
 #include "../DirectXCommon.h"
 #include "MyMath/MyFunction.h"
-#include "../inputManager.h"
+#include "Managers/inputManager.h"
 #include "../ImguiManager.h"
 
 /// <summary>

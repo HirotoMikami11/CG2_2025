@@ -10,8 +10,8 @@
 
 ///Managers
 #include "Managers/Audio/AudioManager.h"
-#include "../InputManager.h"
 #include "Managers/Texture/TextureManager.h"
+#include "Managers/InputManager.h"
 #include "../ImGuiManager.h"
 #include "FrameTimer/FrameTimer.h"
 #include "OffscreenRenderer/OffscreenRenderer.h"

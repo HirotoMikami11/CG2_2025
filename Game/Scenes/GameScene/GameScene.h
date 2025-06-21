@@ -3,7 +3,8 @@
 #include <array>
 
 #include "Engine.h"
-#include "../../../BaseScene.h"		//シーン基底クラス
+#include "Managers/Scene/BaseScene.h"		//シーン基底クラス
+#include "../../../ImGuiManager.h"
 
 #include"Objects/Player/Player.h"	//プレイヤー
 

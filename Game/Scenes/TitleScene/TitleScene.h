@@ -2,12 +2,9 @@
 #include <memory>
 #include <array>
 
-#include "../../../Engine/Engine.h"		//エンジン
-#include "../../../BaseScene.h"		//シーン基底クラス
-
-
+#include "../../../Engine/Engine.h"
+#include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 #include "../../../ImGuiManager.h"
-
 
 //タイトルプレイヤー
 #include"Objects/TitlePlayer/TitlePlayer.h"

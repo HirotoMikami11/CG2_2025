@@ -2,7 +2,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string>
-#include "BaseScene.h"
+#include "Managers/Scene/BaseScene.h"
 
 class SceneManager {
 public:

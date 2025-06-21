@@ -5,13 +5,18 @@
 #include "Objects/Sprite/Sprite.h"
 #include "Objects/Light/Light.h"
 #include "Objects/GameObject/GameObject.h"
-
-#include "Engine/Engine.h"
-#include "DirectXCommon.h"
 #include "CameraController/CameraController.h"
-#include "ImGuiManager.h"
-#include "BaseScene.h"
 
+#include "Engine.h"
+#include "../DirectXCommon.h"
+#include "../ImGuiManager.h"
+#include "Managers/Scene/BaseScene.h"
+
+
+/// <summary>
+/// 絶対動くシーン(作り変えたりしない)
+/// デバッグ用に使用するシーンは別途用意しておく(DebugSceneかSampleScene)
+/// </summary>
 class DemoScene : public BaseScene {
 public:
 	DemoScene();
