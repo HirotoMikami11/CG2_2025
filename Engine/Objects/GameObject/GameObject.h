@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "Objects/GameObject/Model.h"
 #include "Objects/GameObject/Transform.h"
 #include "Objects/Light/Light.h"

@@ -2,11 +2,11 @@
 #include <memory>
 #include <array>
 
-#include "../../../Engine/Engine.h"
+#include "Engine.h"
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 
 //タイトルプレイヤー
-#include"Objects/TitlePlayer/TitlePlayer.h"
+#include "Objects/TitlePlayer.h"
 
 class TitleScene : public BaseScene
 {

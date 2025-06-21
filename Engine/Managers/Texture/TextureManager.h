@@ -7,7 +7,7 @@
 #include <cassert>
 #include <algorithm>
 
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
 #include "Managers/Texture/Texture.h"
 

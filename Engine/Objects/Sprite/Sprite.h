@@ -5,7 +5,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 #include "Objects/Sprite/Transform2D.h"  // Transform2Dを使用
 

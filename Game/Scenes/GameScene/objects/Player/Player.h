@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../../../Engine/Engine.h"
+#include "Engine.h"
 #include "Objects/GameObject/GameObject.h"
 
 class Player {

@@ -4,7 +4,7 @@
 #include <wrl.h>
 
 #include "BaseSystem/WinApp/WinApp.h"
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 
 #ifdef _DEBUG
 

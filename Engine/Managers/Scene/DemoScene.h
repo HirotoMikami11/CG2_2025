@@ -8,7 +8,7 @@
 #include "CameraController/CameraController.h"
 
 #include "Engine.h"
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "Managers/Scene/BaseScene.h"
 
 

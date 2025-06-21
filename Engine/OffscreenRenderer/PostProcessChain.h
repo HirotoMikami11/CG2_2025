@@ -4,7 +4,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 #include "OffscreenRenderer/PostEffect/PostEffect.h"

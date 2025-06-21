@@ -1,4 +1,5 @@
 #include "DirectXCommon.h"
+#include<cassert>						//アサ―トを扱う
 
 void DirectXCommon::Initialize(WinApp* winApp) {
 	///*-----------------------------------------------------------------------*///

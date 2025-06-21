@@ -8,16 +8,15 @@
 #pragma comment(lib,"dxgi.lib")
 #include <dxgidebug.h>
 #pragma comment(lib,"dxguid.lib")
+
 ///DirectXTex
-#include"externals/DirectXTex/DirectXTex.h"
-#include"externals/DirectXTex/d3dx12.h"
+#include"../externals/DirectXTex/DirectXTex.h"
+#include"../externals/DirectXTex/d3dx12.h"
 ///DXC
 #include <dxcapi.h>
 #pragma comment(lib,"dxcompiler.lib")
 
 #include <wrl.h>						// Microsoft::WRL::ComPtrを使用するためのインクルード
-#include<cassert>						//アサ―トを扱う
-
 
 #include"BaseSystem/WinApp/WinApp.h"
 #include"BaseSystem/Logger/Logger.h"

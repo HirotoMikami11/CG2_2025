@@ -1,11 +1,12 @@
 #pragma once
 #include <wrl.h>
 #include <string>
+#include <cassert>
 
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
 #include "MyMath/MyFunction.h" // CreateBufferResource用
-#include <cassert>
+
 class DirectXCommon; // 前方宣言
 
 /// <summary>

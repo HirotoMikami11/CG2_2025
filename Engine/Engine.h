@@ -5,7 +5,7 @@
 ///BaseSystem
 #include "BaseSystem/Logger/Logger.h"
 #include "BaseSystem/WinApp/WinApp.h"
-#include "../DirectXCommon.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "BaseSystem/Logger/Dump.h"
 
 ///Managers
