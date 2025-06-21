@@ -276,6 +276,9 @@
     <ClCompile Include="Game\Objects\MapChipField.cpp">
       <Filter>Game\Objects\MapChipField</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\Enemy.cpp">
+      <Filter>Game\Objects\Enemy</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Objects\GameCamera.cpp">
       <Filter>Game\Objects\GameCamera</Filter>
     </ClCompile>
@@ -462,6 +465,9 @@
     </ClInclude>
     <ClInclude Include="Game\Objects\MapChipField.h">
       <Filter>Game\Objects\MapChipField</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Enemy.h">
+      <Filter>Game\Objects\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Game\Objects\GameCamera.h">
       <Filter>Game\Objects\GameCamera</Filter>

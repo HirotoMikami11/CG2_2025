@@ -9,6 +9,9 @@ GameScene::GameScene()
 }
 
 GameScene::~GameScene() {
+	// 敵の解放
+	enemies_.clear(); // unique_ptrなので自動的に解放される
+
 	// MapChipFieldの解放
 	if (mapChipField_) {
 		delete mapChipField_;
@@ -78,6 +81,11 @@ void GameScene::InitializeGameObjects() {
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
 	player_->SetPosition(playerPosition);
 
+	///*-----------------------------------------------------------------------*///
+	///									敵										///
+	///*-----------------------------------------------------------------------*///
+	// 敵の生成・初期化(関数)
+	InitializeEnemies();
 
 	///*-----------------------------------------------------------------------*///
 	///										天球									///
@@ -106,6 +114,11 @@ void GameScene::Update() {
 	player_->Update(viewProjectionMatrix);
 
 	///敵の更新
+	// 敵の更新を追加
+	for (auto& enemy : enemies_) {
+		enemy->Update(viewProjectionMatrix);
+	}
+
 
 	///カメラの更新
 
@@ -128,6 +141,7 @@ void GameScene::Update() {
 	}
 
 	///全ての当たり判定
+	CheckAllCollision();
 
 	///フェードの終了
 
@@ -151,6 +165,9 @@ void GameScene::DrawGameObjects() {
 	player_->Draw(directionalLight_);
 	skydome_->Draw(directionalLight_);
 
+	for (auto& enemy : enemies_) {
+		enemy->Draw(directionalLight_);
+	}
 
 	// ブロックの描画
 	for (auto& blockLine : blocks_) {
@@ -160,6 +177,26 @@ void GameScene::DrawGameObjects() {
 		}
 	}
 
+}
+
+void GameScene::InitializeEnemies()
+{
+	// 敵の生成・初期化
+	for (int32_t i = 0; i < kEnemyCount; i++) {
+		auto newEnemy = std::make_unique<Enemy>();
+
+		// マップチップがある場合の位置設定
+		Vector3 enemyPosition;
+		if (mapChipField_) {
+			enemyPosition = mapChipField_->GetMapChipPositionByIndex(17 + i, 18);
+		} else {
+			// マップチップがない場合のデフォルト位置
+			enemyPosition = { 10.0f + i * 3.0f, 0.0f, 0.0f };
+		}
+
+		newEnemy->Initialize(enemyPosition);
+		enemies_.push_back(std::move(newEnemy));
+	}
 }
 
 void GameScene::GenerateBlocks()
@@ -196,6 +233,35 @@ void GameScene::GenerateBlocks()
 
 }
 
+void GameScene::CheckAllCollision()
+{
+
+	// プレイヤーが存在しない場合は処理しない
+	if (!player_) return;
+
+	// 判定対象1,2の座標
+	AABB aabb1, aabb2;
+
+	// 自キャラの座標
+	aabb1 = player_->GetAABB();
+
+	// 自キャラとすべての敵の当たり判定
+	for (auto& enemy : enemies_) {
+		// 敵の座標
+		aabb2 = enemy->GetAABB();
+
+		// AABB同士の交差判定
+		if (IsCollision(aabb1, aabb2)) {
+			// 敵の衝突時コールバックを呼び出す
+			enemy->OnCollision(player_.get());
+			// 自キャラの衝突時コールバックを呼び出す
+			player_->OnCollision(enemy.get());
+		}
+	}
+
+
+}
+
 
 
 
@@ -208,6 +274,9 @@ void GameScene::OnEnter() {
 	if (gameCamera_) {
 		gameCamera_->Reset();
 	}
+	// 敵をリセット（前回の敵をクリアして再初期化）
+	enemies_.clear();
+	InitializeEnemies();
 }
 
 void GameScene::OnExit() {
@@ -220,6 +289,19 @@ void GameScene::ImGui() {
 	ImGui::Spacing();
 
 	player_->ImGui();
+	// 敵のデバッグ表示を追加
+	if (ImGui::TreeNode("Enemies")) {
+		ImGui::Text("Enemy Count: %zu", enemies_.size());
+		int enemyIndex = 0;
+		for (auto& enemy : enemies_) {
+			if (ImGui::TreeNode(("Enemy " + std::to_string(enemyIndex)).c_str())) {
+				enemy->ImGui();
+				ImGui::TreePop();
+			}
+			enemyIndex++;
+		}
+		ImGui::TreePop();
+	}
 	skydome_->ImGui();
 	// ゲームカメラのImGui
 	if (gameCamera_) {

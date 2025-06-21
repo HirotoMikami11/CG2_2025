@@ -1,5 +1,6 @@
 #define NOMINMAX // C+標準のstd::maxを使えるようにするため(windows.hが上書きしてしまっている)
 #include "Player.h"
+#include "Objects/Enemy.h"
 #include "Managers/ImGuiManager.h"
 
 void Player::Initialize()
@@ -402,6 +403,25 @@ void Player::SwitchGrounding(const CollisionMapInfo& info) {
 		}
 	}
 }
+
+void Player::OnCollision(const Enemy* enemy) {
+	// 敵との衝突時の処理
+	// 今回は使用しないので適当に配置しておく
+	(void)enemy;
+
+
+}
+AABB Player::GetAABB() const
+{
+	Vector3 worldPos = GetPosition();
+	AABB aabb;
+
+	aabb.min = { worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f };
+	aabb.max = { worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f };
+	return aabb;
+}
+
+
 
 void Player::TurningControl() {
 	if (turnTimer_ > 0.0f) {

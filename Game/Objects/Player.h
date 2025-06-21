@@ -8,6 +8,7 @@
 #include <array>
 
 class MapChipField;
+class Enemy;
 
 class Player {
 private:
@@ -102,6 +103,18 @@ public:
 	/// </summary>
 	void SwitchGrounding(const CollisionMapInfo& info);
 
+	/// <summary>
+	/// 敵との衝突処理
+	/// </summary>
+	/// <param name="enemy">敵</param>
+	void OnCollision(const Enemy* enemy);
+
+	/// <summary>
+	/// AABB取得
+	/// </summary>
+	/// <returns>AABB</returns>
+	AABB GetAABB() const;
+
 	// Getter
 	Vector3 GetPosition() const { return Object_->GetPosition(); }
 	const Vector3& GetVelocity() const { return velocity_; }
@@ -145,14 +158,14 @@ private:
 	// 着地していないとき摩擦で横方向速度を減衰させる値
 	static inline const float kAttenuation = 0.1f;
 	// 着地時速度減衰率
-	static inline const float kAttenuationLanding = 0.1f;
+	static inline const float kAttenuationLanding = 0.2f;
 	// 下方向の接地判定を取る際に、マージンを埋めるための定数
 	static inline const float kGroundCheckOffset = 0.2f;
 	// 当たり判定サイズ
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 	// 余白
-	static inline const float kBlank = 0.2f;
+	static inline const float kBlank = 0.1f;
 	// 壁衝突時の減衰率
 	static inline const float kAttenuationWall = 0.2f;
 

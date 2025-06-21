@@ -63,7 +63,312 @@ void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProje
 
 }
 
+/*-----------------------------------------------------------------------*/
+//
+//								当たり判定
+//
+/*-----------------------------------------------------------------------*/
 
+//　球と球の衝突判定
+bool IsCollision(const SphereMath& SphereMath1, const SphereMath& SphereMath2) {
+	bool isCollision = false;
+
+	//2つの球の中心転換の距離を求める
+	float distance = Length(Subtract(SphereMath1.center, SphereMath2.center));
+
+	//半径の合計より短ければ衝突
+	if (distance <= SphereMath1.radius + SphereMath2.radius) {
+		isCollision = true;
+	}
+
+	return isCollision;
+}
+
+//球と平面の衝突判定
+bool IsCollision(const SphereMath& SphereMath, const Plane& plane) {
+
+	//1.点と平面との距離
+	//そのままだと符号付き距離になってしまうので、絶対値(abs)を取る
+	float distance = std::abs(Dot(plane.normal, SphereMath.center) - plane.distance);
+
+	//2.1の距離<=球の半径なら衝突
+	if (distance <= SphereMath.radius) {
+		return true;
+	}
+
+	return false;
+
+}
+
+
+//線分と平面の衝突判定
+bool IsCollision(const Segment& segment, const Plane& plane) {
+	//衝突しているかどうか
+	bool isCollision = false;
+
+	//垂直判定を行うため、法線と線の内積を求める
+	float dot = Dot(plane.normal, segment.diff);
+	//垂直=平行であるので、衝突していない
+	if (dot == 0.0f) {
+		return false;
+	}
+
+	//tを求める
+	float t = (plane.distance - Dot(segment.origin, plane.normal)) / dot;
+
+	//tの値と線の種類によって衝突しているかを判定する
+	//線分なので0~1
+	if (t >= 0 && t <= 1) {
+		isCollision = true;
+	}
+
+	return isCollision;
+}
+
+// 線分と平面の衝突点の座標を求める
+Vector3 MakeCollisionPoint(const Segment& segment, const Plane& plane) {
+	///衝突点
+	Vector3 CollsionPoint;
+
+	//平面と線の衝突判定と同様
+	float dot = Dot(segment.diff, plane.normal);
+	assert(dot != 0.0f);
+	float t = (plane.distance - (Dot(segment.origin, plane.normal))) / dot;
+
+	//衝突点を求める
+	//p=origin+tb
+	CollsionPoint = Add(segment.origin, Multiply(segment.diff,t));
+	return CollsionPoint;
+}
+
+
+// 三角形と線分の衝突判定
+bool IsCollision(const MultiplyMath& MultiplyMath, const Segment& segment) {
+	//衝突しているかどうか
+	bool isCollision = false;
+
+	///1.線と三角形の存在する平面との衝突判定を行う
+	//三角形の中心座標求める
+	Vector3 MultiplyMathCenter = {
+		(MultiplyMath.vertices[0].x + MultiplyMath.vertices[1].x + MultiplyMath.vertices[2].x) / 3,
+		(MultiplyMath.vertices[0].y + MultiplyMath.vertices[1].y + MultiplyMath.vertices[2].y) / 3,
+		(MultiplyMath.vertices[0].z + MultiplyMath.vertices[1].z + MultiplyMath.vertices[2].z) / 3
+	};
+
+	//平面を作成する
+	Plane plane;
+	//距離
+	plane.distance = Distance(MultiplyMathCenter, { 0,0,0 });
+	//法線
+	plane.normal = Cross(Subtract(MultiplyMath.vertices[1], MultiplyMath.vertices[0]), Subtract(MultiplyMath.vertices[2], MultiplyMath.vertices[1]));
+
+
+	if (IsCollision(segment, plane)) {
+
+
+		///2.衝突していたら、衝突点が三角形の内側にあるのかを調べる
+		//衝突点pを作成
+		Vector3 p = MakeCollisionPoint(segment, plane);
+		//衝突点と、三角形それぞれの辺で新たな三角形を作成する。(衝突点が[2]になるように)
+		//a.各辺を結んだベクトル
+		Vector3 v01 = Subtract(MultiplyMath.vertices[1], MultiplyMath.vertices[0]);
+		Vector3 v12 = Subtract(MultiplyMath.vertices[2], MultiplyMath.vertices[1]);
+		Vector3 v20 = Subtract(MultiplyMath.vertices[0], MultiplyMath.vertices[2]);
+		//b.頂点と衝突点pを結んだベクトル
+		Vector3 v1p = Subtract(p, MultiplyMath.vertices[1]);
+		Vector3 v2p = Subtract(p, MultiplyMath.vertices[2]);
+		Vector3 v0p = Subtract(p, MultiplyMath.vertices[0]);
+
+		///法線ベクトルと同じ方向を向いているか見るため、aとbで外積を行う
+		Vector3 cross01 = Cross(v01, v1p);
+		Vector3 cross12 = Cross(v12, v2p);
+		Vector3 cross20 = Cross(v20, v0p);
+
+		///全ての小さな三角形の外積と法線が同じ方向を向いていたら、衝突している
+			//全ての小さい三角形のクロス積と法線が同じ方法を向いていたら衝突
+		if (
+			Dot(cross01, plane.normal) >= 0.0f &&
+			Dot(cross12, plane.normal) >= 0.0f &&
+			Dot(cross20, plane.normal) >= 0.0f
+			) {
+			isCollision = true;
+
+		}
+	}
+
+	return isCollision;
+
+}
+
+
+/// <summary>
+/// AABBとAABBの衝突判定
+/// </summary>
+/// <param name="aabb1"></param>
+/// <param name="aabb2"></param>
+/// <returns></returns>
+bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
+
+	///衝突判定
+	if (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x &&	//x軸の衝突
+		aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y &&	//y軸の衝突
+		aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z	//z軸の衝突
+		) {
+		return true;
+	}
+	return false;
+}
+
+
+bool IsCollision(const AABB& aabb, SphereMath& SphereMath) {
+	bool isCollision = false;
+
+	//球の中心座標がAABBの[min,max]内にclampすれば、それが最近接点になる
+	Vector3 closestPoint{
+		std::clamp(SphereMath.center.x,aabb.min.x,aabb.max.x),
+		std::clamp(SphereMath.center.y,aabb.min.y,aabb.max.y),
+		std::clamp(SphereMath.center.z,aabb.min.z,aabb.max.z),
+	};
+
+	//最近接点と球の中心との距離を求める
+	float distance = Length(Subtract(closestPoint, SphereMath.center));
+	//距離が半径より小さければ衝突
+	if (distance <= SphereMath.radius) {
+		isCollision = true;
+	}
+	return isCollision;
+
+}
+
+/// <summary>
+/// 最大最小を正しくする関数
+/// </summary>
+/// <param name="aabb"></param>
+void FixAABBMinMax(AABB& aabb) {
+
+	aabb.min.x = (std::min)(aabb.min.x, aabb.max.x);
+	aabb.max.x = (std::max)(aabb.min.x, aabb.max.x);
+
+	aabb.min.y = (std::min)(aabb.min.y, aabb.max.y);
+	aabb.max.y = (std::max)(aabb.min.y, aabb.max.y);
+
+	aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
+	aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
+}
+
+
+/// <summary>
+/// AABBと線分の衝突判定
+/// </summary>
+/// <param name="aabb"></param>
+/// <param name="segment"></param>
+/// <returns></returns>
+bool IsCollision(const AABB& aabb, const Segment& segment) {
+
+
+	// 0除算にならないように、diffが0の時はそれが中にあるかどうか確認する
+	if (segment.diff.x == 0.0f && segment.diff.y == 0.0f && segment.diff.z == 0.0f) {
+		// 点の場合：始点がAABB内にあれば衝突、なければ衝突してない
+		return (segment.origin.x >= aabb.min.x && segment.origin.x <= aabb.max.x &&
+			segment.origin.y >= aabb.min.y && segment.origin.y <= aabb.max.y &&
+			segment.origin.z >= aabb.min.z && segment.origin.z <= aabb.max.z);
+	}
+
+
+	//線分なので、0~1の範囲でtを求める
+	float tmin = 0.0f;  // 線分の開始
+	float tmax = 1.0f;  // 線分の終了
+
+
+
+	//それぞれの軸の判定を行う
+
+	/// X軸の処理
+
+	// diffが0でない場合、AABBとの交差を計算
+	if (segment.diff.x != 0.0f) {
+		float txmin = (aabb.min.x - segment.origin.x) / segment.diff.x;
+		float txmax = (aabb.max.x - segment.origin.x) / segment.diff.x;
+
+		// Near/Farを正しい順序にする
+		float tNearX = min(txmin, txmax);
+		float tFarX = max(txmin, txmax);
+
+		// 全体の範囲を更新
+		tmin = max(tmin, tNearX);
+		tmax = min(tmax, tFarX);
+
+		if (tmin > tmax) {
+			return false;// tminがtmaxより大きい場合、衝突していない
+		}
+	} else {
+		//diffが0の場合、線分がX軸に平行
+		// 始点のX座標がAABBの範囲内なら衝突
+		if (segment.origin.x < aabb.min.x || segment.origin.x > aabb.max.x) {
+			return false;
+		}
+	}
+
+
+	/// Y軸の処理
+
+	// diffが0でない場合、AABBとの交差を計算
+	if (segment.diff.y != 0.0f) {
+		float tymin = (aabb.min.y - segment.origin.y) / segment.diff.y;
+		float tymax = (aabb.max.y - segment.origin.y) / segment.diff.y;
+
+		// Near/Farを正しい順序にする
+		float tNearY = min(tymin, tymax);
+		float tFarY = max(tymin, tymax);
+		// 全体の範囲を更新
+		tmin = max(tmin, tNearY);
+		tmax = min(tmax, tFarY);
+
+		if (tmin > tmax) {
+			return false;// tminがtmaxより大きい場合、衝突していない
+		}
+	} else {
+		//diffが0の場合、線分がY軸に平行
+		// 始点のY座標がAABBの範囲内なら衝突
+		if (segment.origin.y < aabb.min.y || segment.origin.y > aabb.max.y) {
+			return false;
+		}
+	}
+
+
+	/// Z軸の処理
+
+	// diffが0でない場合、AABBとの交差を計算
+	if (segment.diff.z != 0.0f) {
+		float tzmin = (aabb.min.z - segment.origin.z) / segment.diff.z;
+		float tzmax = (aabb.max.z - segment.origin.z) / segment.diff.z;
+
+		// Near/Farを正しい順序にする
+		float tNearZ = min(tzmin, tzmax);
+		float tFarZ = max(tzmin, tzmax);
+
+		// 全体の範囲を更新
+		tmin = max(tmin, tNearZ);
+		tmax = min(tmax, tFarZ);
+
+		if (tmin > tmax) {
+			return false;	// tminがtmaxより大きい場合、衝突していない
+		}
+	} else {
+		//diffが0の場合、線分がZ軸に平行
+		// 始点のZ座標がAABBの範囲内なら衝突
+		if (segment.origin.z < aabb.min.z || segment.origin.z > aabb.max.z) {
+			return false;
+		}
+	}
+
+	// tmin <= tmax かつ 0 <= tmax かつ tmin <= 1 なら衝突
+	if (tmin <= tmax && tmax >= 0.0f && tmin <= 1.0f) {
+		return true;
+	}
+
+	return false;
+}
 
 
 
