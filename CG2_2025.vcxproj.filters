@@ -127,6 +127,9 @@
     <Filter Include="Game\Objects\TitlePlayer">
       <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Objects\GameCamera">
+      <UniqueIdentifier>{1f0a3efa-dca2-447c-b994-cd9562ff2d7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -272,6 +275,9 @@
     </ClCompile>
     <ClCompile Include="Game\Objects\MapChipField.cpp">
       <Filter>Game\Objects\MapChipField</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\GameCamera.cpp">
+      <Filter>Game\Objects\GameCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -456,6 +462,9 @@
     </ClInclude>
     <ClInclude Include="Game\Objects\MapChipField.h">
       <Filter>Game\Objects\MapChipField</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\GameCamera.h">
+      <Filter>Game\Objects\GameCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

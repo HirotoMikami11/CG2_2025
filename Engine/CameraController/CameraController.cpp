@@ -21,7 +21,7 @@ void CameraController::Initialize(const Vector3& Position)
 	useDebugCamera_ = false; // デフォルトではメインカメラを使用する
 
 #ifdef _DEBUG
-	useDebugCamera_ = true;
+	useDebugCamera_ = false;
 #endif // DEBUG
 
 
@@ -70,6 +70,16 @@ void CameraController::SetPositon(const Vector3& Position)
 
 }
 
+Vector3 CameraController::GetPosition() const {
+	// 現在アクティブなカメラの位置を返す
+	if (!useDebugCamera_) {
+		// メインカメラの位置を取得
+		return camera_.GetPosition();
+	} else {
+		// デバッグカメラの位置を取得
+		return debugCamera_.GetPosition();
+	}
+}
 void CameraController::ImGui()
 {
 #ifdef _DEBUG

@@ -53,7 +53,7 @@ public:
 
 	// 3Dカメラ用
 	const Vector3Transform& GetTransform() const { return cameraTransform_; }
-	Vector3 GetTranslate() const { return cameraTransform_.translate; }
+	Vector3 GetPosition() const { return cameraTransform_.translate; }
 	Vector3 GetRotate() const { return cameraTransform_.rotate; }
 	//3D用
 	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix_; }

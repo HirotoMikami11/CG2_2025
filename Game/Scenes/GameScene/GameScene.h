@@ -8,6 +8,7 @@
 #include"Objects/Player.h"			//プレイヤー
 #include"Objects/Skydome.h"			//天球
 #include"Objects/MapChipField.h"	//ブロック
+#include"Objects/GameCamera.h"		//カメラをプレイヤー追従させる
 
 class GameScene : public BaseScene {
 public:
@@ -55,10 +56,12 @@ private:
 
 	// カメラ
 	CameraController* cameraController_;
+	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
 	Matrix4x4 viewProjectionMatrix;
 	Matrix4x4 viewProjectionMatrixSprite;
 
 	// システム参照
 	DirectXCommon* directXCommon_;
 	OffscreenRenderer* offscreenRenderer_;
+
 };

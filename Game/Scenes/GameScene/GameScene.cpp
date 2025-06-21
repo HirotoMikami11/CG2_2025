@@ -22,34 +22,37 @@ void GameScene::Initialize() {
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
 
+	// ゲームオブジェクト初期化
+	InitializeGameObjects();
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
 	cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
 
-	// ゲームオブジェクト初期化
-	InitializeGameObjects();
+	///*-----------------------------------------------------------------------*///
+	///								ゲームカメラ									///
+	///*-----------------------------------------------------------------------*///
+
+	// ゲームカメラの初期化
+	gameCamera_ = std::make_unique<GameCamera>();
+	gameCamera_->Initialize(cameraController_);
+
+
+	GameCamera::Rect movableArea = {
+		15.0f,									// left（左端制限）
+		mapChipField_->GetMapSize().x - 16.0f,	// right（右端制限）
+		7.5f,									// bottom（下端制限）
+		mapChipField_->GetMapSize().y - 7.5f	// top（上端制限）
+	};
+	gameCamera_->SetMovableArea(movableArea);
+	// プレイヤーを追従対象に設定
+	gameCamera_->SetTarget(player_.get());
+	// カメラを初期位置にリセット
+	gameCamera_->Reset();
 }
 
 void GameScene::InitializeGameObjects() {
-	///*-----------------------------------------------------------------------*///
-	///									プレイヤー								///
-	///*-----------------------------------------------------------------------*///
-
-
-	//初期化
-	player_ = std::make_unique<Player>();
-	player_->Initialize();
-
-	///*-----------------------------------------------------------------------*///
-	///										天球									///
-	///*-----------------------------------------------------------------------*///
-
-
-	//初期化
-	skydome_ = std::make_unique<Skydome>();
-	skydome_->Initialize();
 
 	///*-----------------------------------------------------------------------*///
 	///									ブロック									///
@@ -61,6 +64,31 @@ void GameScene::InitializeGameObjects() {
 
 	// マップチップに合わせたブロックの生成
 	GenerateBlocks();
+
+
+	///*-----------------------------------------------------------------------*///
+	///									プレイヤー								///
+	///*-----------------------------------------------------------------------*///
+
+
+	//初期化
+	player_ = std::make_unique<Player>();
+	player_->Initialize();
+	player_->SetMapChipField(mapChipField_);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
+	player_->SetPosition(playerPosition);
+
+
+	///*-----------------------------------------------------------------------*///
+	///										天球									///
+	///*-----------------------------------------------------------------------*///
+
+
+	//初期化
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize();
+
+
 
 
 	///*-----------------------------------------------------------------------*///
@@ -76,9 +104,11 @@ void GameScene::Update() {
 	skydome_->Update(viewProjectionMatrix);
 	///自キャラの更新
 	player_->Update(viewProjectionMatrix);
+
 	///敵の更新
 
 	///カメラの更新
+
 	cameraController_->Update();
 	// 行列更新
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
@@ -86,6 +116,8 @@ void GameScene::Update() {
 
 
 	///追従設定など？
+	/// ゲームカメラの更新（プレイヤー追従）
+	gameCamera_->Update();
 
 	///ブロックの更新
 	for (auto& blockLine : blocks_) {
@@ -94,6 +126,7 @@ void GameScene::Update() {
 			block->Update(viewProjectionMatrix);
 		}
 	}
+
 	///全ての当たり判定
 
 	///フェードの終了
@@ -126,8 +159,6 @@ void GameScene::DrawGameObjects() {
 			block->Draw(directionalLight_);
 		}
 	}
-
-
 
 }
 
@@ -173,6 +204,10 @@ void GameScene::GenerateBlocks()
 void GameScene::OnEnter() {
 	// ゲームシーンに入る時の処理
 	cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
+	// ゲームカメラもリセット
+	if (gameCamera_) {
+		gameCamera_->Reset();
+	}
 }
 
 void GameScene::OnExit() {
@@ -186,6 +221,10 @@ void GameScene::ImGui() {
 
 	player_->ImGui();
 	skydome_->ImGui();
+	// ゲームカメラのImGui
+	if (gameCamera_) {
+		gameCamera_->ImGui();
+	}
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

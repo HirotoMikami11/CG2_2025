@@ -8,11 +8,19 @@ namespace { // 衝突回避のnamespace
 		{"1", MapChipType::kBlock},
 	};
 }
-MapChipField::MapChipField(){}
+MapChipField::MapChipField() {}
 
-MapChipField::~MapChipField(){}
+MapChipField::~MapChipField() {}
 
-void MapChipField::Initialize() {}
+void MapChipField::Initialize() {
+
+	//マップチップの大きさ(追従時の限界値で使う)
+	mapChipSize_ = {
+		.x{kNumBlockHorizontal * kBlockWidth},
+		.y{kNumBlockVirtical * kBlockHeight},
+	};
+
+}
 
 void MapChipField::ResetMapChipData() {
 	mapChipData_.data.clear();
@@ -96,3 +104,4 @@ Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex
 	/// マップチップのyIndexが一番下（最大値のとき）ワールド座標Yが０になるように反転
 	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0);
 }
+

@@ -21,10 +21,21 @@ public:
 
 
 	//Setter
+
+	/// <summary>
+	/// デバッグカメラが使用中かどうか確認
+	/// </summary>
+	/// <returns>デバッグカメラ使用中ならtrue</returns>
+	bool IsUsingDebugCamera() const { return useDebugCamera_; }
+
+	/// <summary>
+	/// 現在のカメラ位置を取得
+	/// </summary>
+	/// <returns>カメラ位置</returns>
 	void SetPositon(const Vector3& Position);
 
 	//Getter
-
+	Vector3 GetPosition() const;
 	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
 	Matrix4x4 GetViewProjectionMatrixSprite() const { return viewProjectionMatrixSprite_; }
 

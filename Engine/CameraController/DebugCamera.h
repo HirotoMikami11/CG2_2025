@@ -64,6 +64,10 @@ public:
 
 
 	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
+	const Vector3Transform& GetTransform() const { return cameraTransform_; }
+	Vector3 GetPosition() const { return cameraTransform_.translate; }
+	Vector3 GetRotate() const { return cameraTransform_.rotate; }
+
 	void SetPositon(const Vector3& position) { cameraTransform_.translate = position; }
 	void SetRotation(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
 	void SetTarget(const Vector3& target) { target_ = target; }

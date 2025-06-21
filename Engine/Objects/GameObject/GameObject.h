@@ -175,7 +175,7 @@ private:
 class Model3D : public GameObject
 {
 public:
-	void Initialize(DirectXCommon* dxCommon, const std::string& directoryPath = "resources/Model/Plane", const std::string& filename="plane") {
+	void Initialize(DirectXCommon* dxCommon, const std::string& directoryPath = "resources/Model/Plane", const std::string& filename="plane.obj") {
 		GameObject::Initialize(dxCommon, MeshType::MODEL_OBJ, "", directoryPath, filename);
 		name_ = SettingName("Model (" + filename + ")");
 		SetLightingEnable(true);

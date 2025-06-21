@@ -35,11 +35,6 @@ public:
 		float top;		//上端
 	};
 
-	/// アクセッサ
-	// 縦列の個数
-	uint32_t GetNumBlockkVirtical() { return kNumBlockVirtical; }
-	// 横列
-	uint32_t GetNumBlockkHorizontal() { return kNumBlockHorizontal; }
 
 	/// <summary>
 	/// コンストクラタ
@@ -66,6 +61,17 @@ public:
 	/// </summary>
 	/// <param name="filePath">ファイルパス</param>
 	void LoadMapChipCSV(const std::string& filePath);
+
+
+
+
+	// 縦列の個数
+	uint32_t GetNumBlockkVirtical() { return kNumBlockVirtical; }
+	// 横列
+	uint32_t GetNumBlockkHorizontal() { return kNumBlockHorizontal; }
+	//マップの大きさ
+	Vector2 GetMapSize() { return mapChipSize_; }
+
 
 	/// <summary>
 	/// 横縦のインデックスを指定してその位置のマップチップ種別を取得する関数
@@ -94,6 +100,7 @@ public:
 	Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
 
 
+
 private:
 
 	// 1ブロックのサイズ
@@ -103,6 +110,9 @@ private:
 	// ブロックの個数
 	static inline const uint32_t kNumBlockVirtical = 20;
 	static inline const uint32_t kNumBlockHorizontal = 100;
+
+	//マップチップ全体の大きさ
+	Vector2 mapChipSize_;
 
 	MapChipData mapChipData_;
 
