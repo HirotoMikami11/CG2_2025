@@ -11,6 +11,7 @@
 #include"Objects/Skydome.h"			//天球
 #include"Objects/MapChipField.h"	//ブロック
 #include"Objects/GameCamera.h"		//カメラをプレイヤー追従させる
+#include "Objects/DeathParticles.h"	//死亡演出のパーティクル
 
 class GameScene : public BaseScene {
 public:
@@ -65,6 +66,8 @@ private:
 	// ブロック（2次元配列でブロックを管理）
 	std::vector<std::vector<std::unique_ptr<Model3D>>> blocks_;
 
+	//死亡パーティクル
+std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
 
 	// ライティング
 	Light directionalLight_;

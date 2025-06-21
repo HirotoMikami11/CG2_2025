@@ -81,6 +81,10 @@ void GameScene::InitializeGameObjects() {
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
 	player_->SetPosition(playerPosition);
 
+
+	deathParticles_ = std::make_unique<DeathParticles>();
+	deathParticles_->Initialize(playerPosition);
+
 	///*-----------------------------------------------------------------------*///
 	///									敵										///
 	///*-----------------------------------------------------------------------*///
@@ -140,6 +144,11 @@ void GameScene::Update() {
 		}
 	}
 
+	// 死亡演出パーティクルの更新（追加）
+	if (deathParticles_) {
+		deathParticles_->Update(viewProjectionMatrix);
+	}
+
 	///全ての当たり判定
 	CheckAllCollision();
 
@@ -175,6 +184,13 @@ void GameScene::DrawGameObjects() {
 			if (!block) continue; // nullptrの場合はスキップ
 			block->Draw(directionalLight_);
 		}
+	}
+
+	if (deathParticles_ != nullptr) {
+		deathParticles_->Draw(directionalLight_);
+	
+	
+	
 	}
 
 }

@@ -76,6 +76,43 @@ void GameObject::Draw(const Light& directionalLight)
 
 }
 
+void GameObject::DrawWithCustomPSO(ID3D12RootSignature* rootSignature, ID3D12PipelineState* pipelineState, const Light& directionalLight)
+{
+
+
+	// 非表示、アクティブでない場合は描画しない
+	if (!isVisible_ || !isActive_) {
+		return;
+	}
+
+	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
+
+	// 外部で指定されたPSOを設定
+	commandList->SetGraphicsRootSignature(rootSignature);
+	commandList->SetPipelineState(pipelineState);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// 描画処理
+	commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());			// マテリアルを設定
+	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());					// トランスフォームを設定
+	// テクスチャ名が設定されている場合のみ
+	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));		// テクスチャを設定
+	commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());				// ライトを設定
+
+	// メッシュをバインドして描画
+	model_.GetMesh().Bind(commandList);
+	model_.GetMesh().Draw(commandList);
+
+
+	// 3Dの描画設定に戻す
+	commandList->SetGraphicsRootSignature(directXCommon_->GetRootSignature());
+	commandList->SetPipelineState(directXCommon_->GetPipelineState());
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+}
+
+
+
 void GameObject::ImGui()
 {
 #ifdef _DEBUG

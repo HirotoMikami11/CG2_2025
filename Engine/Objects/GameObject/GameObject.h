@@ -55,6 +55,12 @@ public:
 	/// <param name="directionalLight">平行光源</param>
 	virtual void Draw(const Light& directionalLight);
 
+	virtual void DrawWithCustomPSO(
+		ID3D12RootSignature* rootSignature,
+		ID3D12PipelineState* pipelineState,
+		const Light& directionalLight);
+
+
 	/// <summary>
 	/// ImGui用のデバッグ表示
 	/// </summary>
