@@ -22,13 +22,12 @@ void TextureManager::Finalize() {
 	UnloadAll();
 	dxCommon_ = nullptr;
 }
-
 bool TextureManager::LoadTexture(const std::string& filename, const std::string& tagName) {
-	
-	
-	// 既に同じタグ名で登録されていた場合は古いものを解放
+
+	// 既に同じタグ名で登録されている場合はスキップ（成功として扱う）
 	if (HasTexture(tagName)) {
-		UnloadTexture(tagName);		//古いテクスチャを解放
+		Logger::Log(Logger::GetStream(), std::format("Texture with tag '{}' already exists. Skipping load.\n", tagName));
+		return true; // 既存のテクスチャを使用
 	}
 
 	// DescriptorHeapManagerからSRVを割り当て
@@ -60,8 +59,7 @@ bool TextureManager::LoadTexture(const std::string& filename, const std::string&
 	// マップに登録
 	textures_[tagName] = std::move(texture);
 
-	Logger::Log(Logger::GetStream(), std::format("Texture '{}' loaded successfully with tag '{}' (SRV Index: {})\n",
-		filename, tagName, descriptorHandle.index));
+	Logger::Log(Logger::GetStream(), std::format("Texture '{}' loaded successfully with tag '{}' (SRV Index: {})\n",filename, tagName, descriptorHandle.index));
 	return true;
 }
 

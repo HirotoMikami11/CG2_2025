@@ -270,6 +270,9 @@
     <ClCompile Include="Game\Objects\Player.cpp">
       <Filter>Game\Objects\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\MapChipField.cpp">
+      <Filter>Game\Objects\MapChipField</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
@@ -450,6 +453,9 @@
     </ClInclude>
     <ClInclude Include="Game\Objects\Player.h">
       <Filter>Game\Objects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\MapChipField.h">
+      <Filter>Game\Objects\MapChipField</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

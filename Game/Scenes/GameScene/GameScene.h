@@ -7,6 +7,7 @@
 
 #include"Objects/Player.h"	//プレイヤー
 #include"Objects/Skydome.h"	//天球
+#include"Objects/MapChipField.h"	//ブロック
 
 class GameScene : public BaseScene {
 public:
@@ -28,14 +29,25 @@ public:
 
 private:
 	void InitializeGameObjects();
-	void UpdateGameObjects();
 	void DrawGameObjects();
+
+	/// <summary>
+	/// マップチップデータに合わせたブロックの生成
+	/// </summary>
+	void GenerateBlocks();
 
 	// ゲームオブジェクト
 	//プレイヤー
 	std::unique_ptr<Player> player_ = nullptr;
 	//天球
 	std::unique_ptr<Skydome> skydome_ = nullptr;
+
+
+	// マップチップ
+	MapChipField* mapChipField_;
+
+	// ブロック（2次元配列でブロックを管理）
+	std::vector<std::vector<std::unique_ptr<Model3D>>> blocks_;
 
 
 	// ライティング

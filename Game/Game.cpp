@@ -30,7 +30,7 @@ void Game::InitializeScenes() {
 	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));
 
 	// デフォルトシーンを設定（最初に表示するシーン）
-	sceneManager_->ChangeScene("TitleScene");
+	sceneManager_->ChangeScene("GameScene");
 }
 
 void Game::Update() {

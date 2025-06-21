@@ -6,7 +6,7 @@ void Player::Initialize()
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 
 	//初期座標
-	Vector3 PlayerPos = { 0.0, -1.0, -1.0 };
+	Vector3 PlayerPos = { 0.0, 0.0, 0.0 };
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();

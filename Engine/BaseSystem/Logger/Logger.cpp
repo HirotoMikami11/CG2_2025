@@ -1,16 +1,24 @@
 #include "BaseSystem/Logger/Logger.h"
 #include <Windows.h>
 #include <strsafe.h>
+
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///									ログ関連の関数							   ///
 //																			//
 ///*-----------------------------------------------------------------------*///
+
 //変数の定義
 std::ofstream Logger::logFileStream_;
+bool Logger::isEnabled_ = false;  // デフォルトで有効
 
 void Logger::Initalize()
 {
+	// ログが無効の場合は何もしない
+	if (!isEnabled_) {
+		return;
+	}
+
 	//ログにディレクトリを用意する
 	std::filesystem::create_directory("logs");
 	//現在時刻を取得（UTC時刻）
@@ -49,6 +57,11 @@ void Logger::Finalize()
 
 /// 出力ウィンドウとログファイルに文字を出す関数
 void Logger::Log(const std::string& message) {
+	// ログが無効の場合は何もしない
+	if (!isEnabled_) {
+		return;
+	}
+
 	// 出力ウィンドウに出力
 	OutputDebugStringA(message.c_str());
 
@@ -61,6 +74,11 @@ void Logger::Log(const std::string& message) {
 
 /// カスタムストリームと出力ウィンドウに文字を出す関数（Logger::GetStream()を使う場合との互換性用）
 void Logger::Log(std::ostream& os, const std::string& message) {
+	// ログが無効の場合は何もしない
+	if (!isEnabled_) {
+		return;
+	}
+
 	// カスタムストリームに出力
 	os << message;
 	if (&os == &logFileStream_) {
