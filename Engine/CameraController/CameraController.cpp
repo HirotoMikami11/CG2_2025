@@ -1,5 +1,5 @@
 #include "CameraController/CameraController.h"
-
+#include "Managers/ImGuiManager.h" 
 
 CameraController* CameraController::GetInstance() {
 	static CameraController instance;

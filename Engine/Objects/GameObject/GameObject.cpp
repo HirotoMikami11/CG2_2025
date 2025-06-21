@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "Managers/ImGuiManager.h" 
 
 // 静的変数の定義
 int Triangle::triangleCount_ = 0;

@@ -12,7 +12,7 @@
 #include "Managers/Audio/AudioManager.h"
 #include "Managers/Texture/TextureManager.h"
 #include "Managers/InputManager.h"
-#include "../ImGuiManager.h"
+#include "Managers/ImGuiManager.h" 
 #include "FrameTimer/FrameTimer.h"
 #include "OffscreenRenderer/OffscreenRenderer.h"
 

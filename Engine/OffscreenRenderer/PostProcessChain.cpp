@@ -1,4 +1,5 @@
 #include "PostProcessChain.h"
+#include "Managers/ImGuiManager.h" 
 
 void PostProcessChain::Initialize(DirectXCommon* dxCommon, uint32_t width, uint32_t height) {
 	dxCommon_ = dxCommon;

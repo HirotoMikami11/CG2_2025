@@ -3,7 +3,7 @@
 #include "Objects/Sprite/Sprite.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "../ImGuiManager.h"
+
 
 /// <summary>
 /// グレースケールポストエフェクト（Sprite使用版）

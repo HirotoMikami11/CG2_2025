@@ -133,6 +133,9 @@
     <Filter Include="Engine\Managers\Input">
       <UniqueIdentifier>{401ed695-a780-4ebb-b1e6-d559c1109305}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Managers\ImGui">
+      <UniqueIdentifier>{24adf0e5-c0e5-49bc-b239-16c89b7788b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -158,9 +161,6 @@
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiManager.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="DirectXCommon.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
@@ -273,6 +273,9 @@
     <ClCompile Include="Engine\Managers\InputManager.cpp">
       <Filter>Engine\Managers\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Managers\ImGuiManager.cpp">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
@@ -324,9 +327,6 @@
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGuiManager.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="DirectXCommon.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
@@ -450,6 +450,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Managers\InputManager.h">
       <Filter>Engine\Managers\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\ImGuiManager.h">
+      <Filter>Engine\Managers\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

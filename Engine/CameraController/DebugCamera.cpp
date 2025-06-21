@@ -1,4 +1,5 @@
 #include "CameraController/DebugCamera.h"
+#include "Managers/ImGuiManager.h" 
 
 void DebugCamera::Initialize()
 {

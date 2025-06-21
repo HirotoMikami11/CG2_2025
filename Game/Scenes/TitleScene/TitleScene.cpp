@@ -1,4 +1,5 @@
 #include "TitleScene.h"
+#include "Managers/ImGuiManager.h" 
 
 TitleScene::TitleScene()
 	: BaseScene("TitleScene") // シーン名を設定

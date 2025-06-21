@@ -8,7 +8,7 @@
 
 
 #include "Managers/Texture/TextureManager.h"
-#include "../ImGuiManager.h" 
+
 
 /// <summary>
 /// ゲームオブジェクト

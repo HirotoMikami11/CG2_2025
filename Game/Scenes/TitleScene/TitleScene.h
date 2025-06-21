@@ -4,7 +4,6 @@
 
 #include "../../../Engine/Engine.h"
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
-#include "../../../ImGuiManager.h"
 
 //タイトルプレイヤー
 #include"Objects/TitlePlayer/TitlePlayer.h"

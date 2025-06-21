@@ -1,4 +1,5 @@
 #include "GrayscalePostEffect.h"
+#include "Managers/ImGuiManager.h" 
 
 void GrayscalePostEffect::Initialize(DirectXCommon* dxCommon) {
 	dxCommon_ = dxCommon;

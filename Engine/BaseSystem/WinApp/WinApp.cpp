@@ -1,10 +1,11 @@
 #include "BaseSystem/WinApp/WinApp.h"
-
+#ifdef _DEBUG
 ///ImGui
 #include "../externals/imgui/imgui.h"
 #include "../externals/imgui/imgui_impl_dx12.h"
 #include "../externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 WinApp::WinApp() {
 
@@ -71,10 +72,13 @@ void WinApp::Finalize() {
 
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
+#ifdef _DEBUG
 	//ImGuiにメッセージを渡し、マウスやキーボードで操作できるようにする
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
+#endif
+
 
 
 	//メッセージに応じてゲーム固有の処理を行う

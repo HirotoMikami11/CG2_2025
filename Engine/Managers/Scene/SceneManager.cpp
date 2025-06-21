@@ -1,6 +1,6 @@
 #include "SceneManager.h"
 #include <cassert>
-#include "../ImGuiManager.h"
+#include "Managers/ImGuiManager.h" 
 
 
 SceneManager::SceneManager()

@@ -1,4 +1,5 @@
 #include "GameScene.h"
+#include "Managers/ImGuiManager.h" 
 
 GameScene::GameScene()
 	: BaseScene("GameScene") // シーン名を設定

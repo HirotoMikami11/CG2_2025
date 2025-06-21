@@ -11,9 +11,6 @@
 
 #include "Objects/Sprite/Sprite.h"
 
-
-#include "../ImGuiManager.h"
-
 /// <summary>
 /// ポストプロセスチェーンを管理するクラス
 /// 複数のポストエフェクトを順次適用する

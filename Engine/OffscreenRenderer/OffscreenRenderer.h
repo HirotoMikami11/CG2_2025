@@ -8,7 +8,6 @@
 #include "../DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
 #include "MyMath/MyFunction.h"
-#include "../ImGuiManager.h" 
 
 #include "Objects/Sprite/Sprite.h"				// Spriteクラスを使用
 #include "OffscreenRenderer/PostProcessChain.h"	// ポストプロセスチェーン

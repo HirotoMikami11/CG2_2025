@@ -1,4 +1,5 @@
 #include "DemoScene.h"
+#include "Managers/ImGuiManager.h" 
 
 DemoScene::DemoScene()
 	: BaseScene("DemoScene") // シーン名を設定

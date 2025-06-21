@@ -79,6 +79,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -100,6 +101,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
     <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
     <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp" />
+    <ClCompile Include="Engine\Managers\ImGuiManager.cpp" />
     <ClCompile Include="Engine\Managers\InputManager.cpp" />
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
@@ -132,21 +134,24 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Scenes\GameScene\objects\Player\Player.cpp" />
     <ClCompile Include="Game\Scenes\TitleScene\objects\TitlePlayer\TitlePlayer.cpp" />
     <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\Object3d\Object3d.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\Object3d\Object3d.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -158,9 +163,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
     <FxCompile Include="resources\Shader\Sprite\Sprite.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\Sprite\Sprite.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
     <ClInclude Include="Engine\Managers\Audio\Audio.h" />
     <ClInclude Include="Engine\Managers\Audio\AudioManager.h" />
+    <ClInclude Include="Engine\Managers\ImGuiManager.h" />
     <ClInclude Include="Engine\Managers\InputManager.h" />
     <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
@@ -211,7 +219,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Scenes\GameScene\objects\Player\Player.h" />
     <ClInclude Include="Game\Scenes\TitleScene\objects\TitlePlayer\TitlePlayer.h" />
     <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h" />
-    <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="LeakChecker.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
