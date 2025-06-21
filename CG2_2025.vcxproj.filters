@@ -133,9 +133,6 @@
     <Filter Include="リソース ファイル\Shader\Offscreen">
       <UniqueIdentifier>{e28376ba-145a-4bb9-a378-ded6a9af5dcc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル\Shader\Particle">
-      <UniqueIdentifier>{e8c4a7b4-ed27-46f8-9fd1-0ad3a6287e55}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\Objects\DeathParticles">
       <UniqueIdentifier>{4cae9bdc-8f4c-44bd-a3f7-d610a56e63e5}</UniqueIdentifier>
     </Filter>
@@ -322,9 +319,6 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\Offscreen.PS.hlsl">
       <Filter>リソース ファイル\Shader\Offscreen</Filter>
-    </FxCompile>
-    <FxCompile Include="resources\Shader\Particle.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Particle</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
