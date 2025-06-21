@@ -64,6 +64,7 @@ void Engine::LoadDefaultResources()
 
 	textureManager_->LoadTexture("resources/uvChecker.png", "uvChecker");
 	textureManager_->LoadTexture("resources/monsterBall.png", "monsterBall");
+	textureManager_->LoadTexture("resources/white2x2.png", "white");
 
 
 	///*-----------------------------------------------------------------------*///

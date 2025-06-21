@@ -136,7 +136,7 @@ private:
 class Triangle : public GameObject
 {
 public:
-	void Initialize(DirectXCommon* dxCommon, const std::string& textureName = "uvChecker") {
+	void Initialize(DirectXCommon* dxCommon, const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, MeshType::TRIANGLE, textureName);
 		name_ = SettingName("Triangle");
 	}
@@ -156,7 +156,7 @@ private:
 class Sphere : public GameObject
 {
 public:
-	void Initialize(DirectXCommon* dxCommon, const std::string& textureName = "monsterBall") {
+	void Initialize(DirectXCommon* dxCommon, const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, MeshType::SPHERE, textureName);
 		name_ = SettingName("Sphere");
 		SetLightingEnable(true);
@@ -175,7 +175,7 @@ private:
 class Model3D : public GameObject
 {
 public:
-	void Initialize(DirectXCommon* dxCommon, const std::string& directoryPath, const std::string& filename) {
+	void Initialize(DirectXCommon* dxCommon, const std::string& directoryPath = "resources/Model/Plane", const std::string& filename="plane") {
 		GameObject::Initialize(dxCommon, MeshType::MODEL_OBJ, "", directoryPath, filename);
 		name_ = SettingName("Model (" + filename + ")");
 		SetLightingEnable(true);
