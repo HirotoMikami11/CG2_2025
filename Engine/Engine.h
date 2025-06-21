@@ -19,8 +19,8 @@
 ///Objects
 #include "CameraController/CameraController.h"
 #include "../GameObject.h"
-#include "../Sprite.h"
-#include "../Light.h"
+#include "Objects/Sprite/Sprite.h"
+#include "Objects/Light/Light.h"
 
 
 

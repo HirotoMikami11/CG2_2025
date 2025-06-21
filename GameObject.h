@@ -2,12 +2,12 @@
 #include "DirectXCommon.h"
 #include "Model.h"
 #include "Transform.h"
-#include "Light.h"
+
 #include "TextureManager.h"
 
 #include <string>
 #include <memory>
-
+#include "Objects/Light/Light.h"
 #include "ImGuiManager.h" 
 /// <summary>
 /// ゲームオブジェクト

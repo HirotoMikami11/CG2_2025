@@ -1,6 +1,6 @@
 #pragma once
 #include "OffscreenRenderer/PostEffect/PostEffect.h"
-#include "../Sprite.h"
+#include "Objects/Sprite/Sprite.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 #include "../ImGuiManager.h"

@@ -1,7 +1,7 @@
-#include "Sprite.h"
+#include "Objects/Sprite/Sprite.h"
 #include <cassert>
 #include <cstring>
-#include"ImGuiManager.h"
+#include"../ImGuiManager.h"
 
 // 静的変数の定義
 int Sprite::spriteCount_ = 0;

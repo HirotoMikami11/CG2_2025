@@ -10,7 +10,7 @@
 #include "MyMath/MyFunction.h"
 #include "../ImGuiManager.h" 
 
-#include "../Sprite.h"							// Spriteクラスを使用
+#include "Objects/Sprite/Sprite.h"				// Spriteクラスを使用
 #include "OffscreenRenderer/PostProcessChain.h"	// ポストプロセスチェーン
 
 #include "OffscreenRenderer/PostEffect/RGBShift/RGBShiftPostEffect.h"	// RGBシフトエフェクト

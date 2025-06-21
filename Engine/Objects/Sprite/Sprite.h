@@ -1,7 +1,7 @@
 #pragma once
-#include "DirectXCommon.h"
-#include "Transform2D.h"  // Transform2Dクラスを使用
-#include "TextureManager.h"
+#include "../DirectXCommon.h"
+#include "Objects/Sprite/Transform2D.h"  // Transform2Dを使用
+#include "../TextureManager.h"
 #include "MyMath/MyFunction.h"
 
 #include <string>

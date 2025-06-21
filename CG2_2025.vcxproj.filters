@@ -40,9 +40,6 @@
     <Filter Include="ヘッダー ファイル\DirectXCommon">
       <UniqueIdentifier>{b07e9775-06a7-40a9-9b02-b90fcd54ea71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\DirectXCommon\Logger">
-      <UniqueIdentifier>{510abd56-8856-4809-a4d3-050564b9bfbe}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader">
       <UniqueIdentifier>{d7f24bbd-081a-4210-811f-21c946777cc9}</UniqueIdentifier>
     </Filter>
@@ -139,6 +136,18 @@
     <Filter Include="Engine\MyMath">
       <UniqueIdentifier>{12403412-1bc7-4927-b755-240bd79f6595}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Objects">
+      <UniqueIdentifier>{316e2ec9-0aa7-48bb-a20e-e61bc9a224ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\Sprite">
+      <UniqueIdentifier>{9141dc29-9f62-4285-946d-27e7a0216f67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\Light">
+      <UniqueIdentifier>{c2dc26ba-dff9-43de-aea3-1931dd817a02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\GameObject">
+      <UniqueIdentifier>{9f9fc7be-4b1e-4259-bf4f-a9d06975c986}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -198,17 +207,8 @@
     <ClCompile Include="Model.cpp">
       <Filter>ソース ファイル\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="DirectXCommon.cpp">
       <Filter>ソース ファイル\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="Sprite.cpp">
-      <Filter>ソース ファイル\Sprite</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform2D.cpp">
-      <Filter>ソース ファイル\Sprite</Filter>
     </ClCompile>
     <ClCompile Include="Game\Game.cpp">
       <Filter>Game</Filter>
@@ -278,6 +278,15 @@
     </ClCompile>
     <ClCompile Include="Engine\MyMath\MyMath.cpp">
       <Filter>Engine\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Light\Light.cpp">
+      <Filter>Engine\Objects\Light</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -364,20 +373,11 @@
     <ClInclude Include="Model.h">
       <Filter>ヘッダー ファイル\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="DirectXCommon.h">
       <Filter>ヘッダー ファイル\DirectXCommon</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite.h">
-      <Filter>ヘッダー ファイル\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform2D.h">
-      <Filter>ヘッダー ファイル\Sprite</Filter>
     </ClInclude>
     <ClInclude Include="Game\Game.h">
       <Filter>Game</Filter>
@@ -456,6 +456,15 @@
     </ClInclude>
     <ClInclude Include="Engine\MyMath\MyMath.h">
       <Filter>Engine\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Sprite\Sprite.h">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Sprite\Transform2D.h">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Light\Light.h">
+      <Filter>Engine\Objects\Light</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

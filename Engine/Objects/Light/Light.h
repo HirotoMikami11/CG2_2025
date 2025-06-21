@@ -1,10 +1,10 @@
 #pragma once
 #include <d3d12.h>
 #include <wrl.h>
-#include "DirectXCommon.h"
+#include "../DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 
-#include "ImGuiManager.h" 
+
 /// <summary>
 /// ライトクラス
 /// </summary>
