@@ -12,7 +12,8 @@ void TitlePlayer::Initialize()
 	Object_ = std::make_unique<Model3D>();
 	Object_->Initialize(directXCommon_, "resources/Model/Player", "player.obj");
 	Object_->SetPosition(TitlePlayerPos);
-
+	//回転方向を右方向
+	Object_->SetRotation({ 0.0f,std::numbers::pi_v<float>,0.0f });
 	//回転測度の設定
 	rotate_ = { 0,0.005f,0 };
 }

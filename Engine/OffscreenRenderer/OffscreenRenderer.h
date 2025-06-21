@@ -116,6 +116,7 @@ private:
 	void CreateRTV();
 	void CreateDSV();
 	void CreateSRV();
+	void CreatePSO();
 
 	/// <summary>
 	/// オフスクリーン描画用のSpriteを初期化
@@ -138,6 +139,8 @@ private:
 	DescriptorHeapManager::DescriptorHandle rtvHandle_;
 	DescriptorHeapManager::DescriptorHandle dsvHandle_;
 	DescriptorHeapManager::DescriptorHandle srvHandle_;
+
+
 
 	// オフスクリーン描画専用Sprite（UI用Spriteとは役割が異なる）
 	std::unique_ptr<Sprite> offscreenSprite_;

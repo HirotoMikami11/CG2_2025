@@ -122,6 +122,8 @@ void Engine::StartDraw() {
 	/// オフスクリーンの描画準備
 	offscreenRenderer_->PreDraw();
 	// TODO:オフスクリーンの中か外か選べるようにする
+
+
 }
 
 void Engine::EndDraw() {

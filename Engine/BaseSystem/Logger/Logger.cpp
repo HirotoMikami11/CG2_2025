@@ -10,7 +10,7 @@
 
 //変数の定義
 std::ofstream Logger::logFileStream_;
-bool Logger::isEnabled_ = false;  // デフォルトで有効
+bool Logger::isEnabled_ = true;  // デフォルトで有効
 
 void Logger::Initalize()
 {

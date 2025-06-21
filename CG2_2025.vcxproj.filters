@@ -130,6 +130,9 @@
     <Filter Include="Game\Objects\GameCamera">
       <UniqueIdentifier>{1f0a3efa-dca2-447c-b994-cd9562ff2d7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader\Offscreen">
+      <UniqueIdentifier>{e28376ba-145a-4bb9-a378-ded6a9af5dcc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -307,6 +310,9 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\Sprite\Sprite.VS.hlsl">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Offscreen.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Offscreen</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

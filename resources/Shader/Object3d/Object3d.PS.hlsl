@@ -32,7 +32,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     //UV座標を変換する
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
-    float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy); //同時座標系に変換してサンプリング
+    float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     
     if (gMaterial.enableLighting != 0)//Lightingする場合
     {
@@ -49,14 +49,21 @@ PixelShaderOutput main(VertexShaderOutput input)
             float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
             cos = pow(NdotL * 0.5 + 0.5f, 2.0f);
         }
-        output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
     }
     else
     { ////Lightingしない場合
       //サンプリングしたtextureの色とマテリアルん色を乗算して合成する
-        output.color = gMaterial.color * textureColor;
+        output.color.rgb = gMaterial.color.rgb * textureColor.rgb;
     }
+
+
+    output.color.a = gMaterial.color.a; // アルファはマテリアルの値をそのまま使用
     
-    
+        //output.colorのa値が0のときPixelを破棄(空白で塗りつぶされないように)
+    if (output.color.a == 0.0)
+    {
+        discard;
+    }
     return output;
 }

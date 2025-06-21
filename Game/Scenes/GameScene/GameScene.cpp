@@ -162,9 +162,9 @@ void GameScene::Draw() {
 }
 
 void GameScene::DrawGameObjects() {
-	player_->Draw(directionalLight_);
-	skydome_->Draw(directionalLight_);
 
+	skydome_->Draw(directionalLight_);
+	player_->Draw(directionalLight_);
 	for (auto& enemy : enemies_) {
 		enemy->Draw(directionalLight_);
 	}
