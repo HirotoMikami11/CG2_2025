@@ -39,6 +39,41 @@ void Sprite::Initialize(DirectXCommon* dxCommon, const std::string& textureName,
 	imguiUvRotateZ_ = uvRotateZ_;
 }
 
+void Sprite::Initialize(DirectXCommon* dxCommon, const Vector2& center, const Vector2& size)
+{
+
+	directXCommon_ = dxCommon;
+	textureName_ = "white";
+	name_ = SettingName("Sprite");
+
+	// 標準メッシュを作成（原点中心、サイズ1.0x1.0）
+	CreateStandardSpriteMesh();
+
+	// Transform2Dクラスを初期化
+	transform_.Initialize(dxCommon);
+
+	// centerとsizeをTransform2Dに設定
+	Vector2Transform initialTransform{
+		size,			// scale = size
+		0.0f,			// rotateZ
+		center			// translate = center
+	};
+	transform_.SetTransform(initialTransform);
+
+	// スプライト専用のマテリアルリソースを作成
+	CreateBuffers();
+
+	// ImGui用の初期値を設定（Transform2Dから取得）
+	imguiPosition_ = transform_.GetPosition();
+	imguiRotation_ = transform_.GetRotation();
+	imguiScale_ = transform_.GetScale();
+	imguiColor_ = materialData_->color;
+	imguiUvPosition_ = uvTranslate_;
+	imguiUvScale_ = uvScale_;
+	imguiUvRotateZ_ = uvRotateZ_;
+
+}
+
 void Sprite::Update(const Matrix4x4& viewProjectionMatrix)
 {
 	// アクティブでない場合は更新を止める

@@ -14,8 +14,8 @@
 /// スプライト専用のマテリアル構造体
 /// </summary>
 struct SpriteMaterial {
-	Vector4 color;          // 色
-	Matrix4x4 uvTransform;  // UV変換行列
+	Vector4 color;			// 色
+	Matrix4x4 uvTransform;	// UV変換行列
 };
 
 /// <summary>
@@ -36,8 +36,20 @@ public:
 	/// <param name="size">サイズ（Transform2Dの初期スケールとして設定）</param>
 	void Initialize(
 		DirectXCommon* dxCommon,
-		const std::string& textureName = "",
-		const Vector2& center = { 0.0f, 0.0f },
+		const std::string& textureName,
+		const Vector2& center,
+		const Vector2& size
+	);
+
+	/// <summary>
+	/// テクスチャなしで初期化（サイズのみ指定、位置は原点）
+	/// </summary>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	/// <param name="center">中心座標</param>
+	/// <param name="size">サイズ/param>
+	void Initialize(
+		DirectXCommon* dxCommon,
+		const Vector2& center = { 50.0f, 50.0f },
 		const Vector2& size = { 100.0f, 100.0f }
 	);
 

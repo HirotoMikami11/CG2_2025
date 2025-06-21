@@ -5,8 +5,8 @@
 #include "Engine.h"
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 
-#include"Objects/Player.h"	//プレイヤー
-#include"Objects/Skydome.h"	//天球
+#include"Objects/Player.h"			//プレイヤー
+#include"Objects/Skydome.h"			//天球
 #include"Objects/MapChipField.h"	//ブロック
 
 class GameScene : public BaseScene {
