@@ -19,8 +19,7 @@ void GameScene::Initialize() {
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
-	cameraController_->Initialize();
-
+	cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -36,18 +35,27 @@ void GameScene::InitializeGameObjects() {
 	player_ = std::make_unique<Player>();
 	player_->Initialize();
 
+	///*-----------------------------------------------------------------------*///
+	///										天球									///
+	///*-----------------------------------------------------------------------*///
+
+
+	//初期化
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize();
+
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
-
+	directionalLight_.SetDirection({ 0.0f,-0.7f,0.5f });
 }
 
 void GameScene::Update() {
 	// カメラ更新
 	cameraController_->Update();
-	cameraController_->SetTransform({ 0.0f, 0.0f, -50.0f });
+
 
 	// ゲームオブジェクト更新
 	UpdateGameObjects();
@@ -62,6 +70,7 @@ void GameScene::UpdateGameObjects() {
 
 
 	player_->Update(viewProjectionMatrix);
+	skydome_->Update(viewProjectionMatrix);
 
 
 }
@@ -73,11 +82,12 @@ void GameScene::Draw() {
 
 void GameScene::DrawGameObjects() {
 	player_->Draw(directionalLight_);
+	skydome_->Draw(directionalLight_);
 }
 
 void GameScene::OnEnter() {
 	// ゲームシーンに入る時の処理
-	cameraController_->SetTransform({ 0.0f, 0.0f, -50.0f });
+	cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
 }
 
 void GameScene::OnExit() {
@@ -90,6 +100,7 @@ void GameScene::ImGui() {
 	ImGui::Spacing();
 
 	player_->ImGui();
+	skydome_->ImGui();
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

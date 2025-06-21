@@ -6,17 +6,17 @@ CameraController* CameraController::GetInstance() {
 	return &instance;
 }
 
-void CameraController::Initialize()
+void CameraController::Initialize(const Vector3& Position)
 {
 	//カメラの初期化
 	camera_.Initialize();
 	// カメラの初期位置を設定
-	camera_.SetTranslate({ 0.0f, 0.0f, -10.0f });
+	camera_.SetPositon(Position);
 
 	//デバッグカメラの初期化
 	debugCamera_.Initialize();
 	// カメラの初期位置を設定
-	debugCamera_.SetTranslate({ 0.0f, 0.0f, -10.0f });
+	debugCamera_.SetPositon(Position);
 
 	useDebugCamera_ = false; // デフォルトではメインカメラを使用する
 
@@ -59,12 +59,14 @@ void CameraController::Update()
 
 }
 
-void CameraController::SetTransform(const Vector3& newTransform)
+void CameraController::SetPositon(const Vector3& Position)
 {
 
-	cameraTranslation_ = newTransform;
+	cameraTranslation_ = Position;
 
-	camera_.SetTranslate(cameraTranslation_);
+	camera_.SetPositon(cameraTranslation_);
+	debugCamera_.SetPositon(cameraTranslation_);
+
 
 }
 

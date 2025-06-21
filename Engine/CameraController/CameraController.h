@@ -12,7 +12,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize();
+	void Initialize(const Vector3& Position);
 
 	/// <summary>
 	/// 更新
@@ -21,7 +21,7 @@ public:
 
 
 	//Setter
-	void SetTransform(const Vector3& newTransform);
+	void SetPositon(const Vector3& Position);
 
 	//Getter
 

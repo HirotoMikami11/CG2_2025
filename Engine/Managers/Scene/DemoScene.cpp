@@ -19,7 +19,7 @@ void DemoScene::Initialize() {
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
-	cameraController_->Initialize();
+	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -136,6 +136,7 @@ void DemoScene::DrawGameObjects() {
 
 void DemoScene::OnEnter() {
 	// デモシーンに入る時の処理
+	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
 }
 
 void DemoScene::OnExit() {

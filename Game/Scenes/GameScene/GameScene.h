@@ -5,7 +5,8 @@
 #include "Engine.h"
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 
-#include"Objects/Player/Player.h"	//プレイヤー
+#include"Objects/Player.h"	//プレイヤー
+#include"Objects/Skydome.h"	//天球
 
 class GameScene : public BaseScene {
 public:
@@ -33,6 +34,8 @@ private:
 	// ゲームオブジェクト
 	//プレイヤー
 	std::unique_ptr<Player> player_ = nullptr;
+	//天球
+	std::unique_ptr<Skydome> skydome_ = nullptr;
 
 
 	// ライティング

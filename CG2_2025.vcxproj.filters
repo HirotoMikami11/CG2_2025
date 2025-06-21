@@ -162,9 +162,6 @@
     <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
       <Filter>Game\Scenes\TitleScene</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Scenes\GameScene\objects\Player\Player.cpp">
-      <Filter>Game\Objects\Player</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Engine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -264,8 +261,14 @@
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\Skydome.cpp">
+      <Filter>Game\Objects\Skydome</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Objects\TitlePlayer.cpp">
       <Filter>Game\Objects\TitlePlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Player.cpp">
+      <Filter>Game\Objects\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -330,9 +333,6 @@
     </ClInclude>
     <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
       <Filter>Game\Scenes\TitleScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scenes\GameScene\objects\Player\Player.h">
-      <Filter>Game\Objects\Player</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Engine.h">
       <Filter>Engine</Filter>
@@ -442,8 +442,14 @@
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Obejcts\TitlePlayer.h">
+    <ClInclude Include="Game\Objects\Skydome.h">
+      <Filter>Game\Objects\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\TitlePlayer.h">
       <Filter>Game\Objects\TitlePlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Player.h">
+      <Filter>Game\Objects\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

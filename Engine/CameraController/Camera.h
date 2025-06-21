@@ -64,7 +64,7 @@ public:
 
 	// 3Dカメラ用
 	void SetTransform(const Vector3Transform& newTransform) { cameraTransform_ = newTransform; }
-	void SetTranslate(const Vector3& position) { cameraTransform_.translate = position; }
+	void SetPositon(const Vector3& position) { cameraTransform_.translate = position; }
 	void SetRotate(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
 	
 private:

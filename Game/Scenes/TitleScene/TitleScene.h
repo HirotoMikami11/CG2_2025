@@ -38,7 +38,7 @@ private:
 	std::unique_ptr<Model3D> titleFont_ = nullptr;
 
 	//タイトル用のプレイヤー
-	std::unique_ptr<TitlePlayer> titlePlayer_ = nullptr;
+	std::unique_ptr<TitlePlayer> TitlePlayer_ = nullptr;
 
 
 	// ライティング

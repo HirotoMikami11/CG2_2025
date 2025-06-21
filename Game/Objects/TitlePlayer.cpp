@@ -6,12 +6,12 @@ void TitlePlayer::Initialize()
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 
 	//初期座標
-	Vector3 titlePlayerPos = { 0.0, -1.0, -1.0 };
+	Vector3 TitlePlayerPos = { 0.0, -1.0, -1.0 };
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();
 	Object_->Initialize(directXCommon_, "resources/Model/Player", "player.obj");
-	Object_->SetPosition(titlePlayerPos);
+	Object_->SetPosition(TitlePlayerPos);
 
 	//回転測度の設定
 	rotate_ = { 0,0.005f,0 };

@@ -19,8 +19,7 @@ void TitleScene::Initialize() {
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
-	cameraController_->Initialize();
-	cameraController_->SetTransform({ 0.0f, 0.0f, -10.0f });
+	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -42,8 +41,8 @@ void TitleScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 
 	//初期化
-	titlePlayer_ = std::make_unique<TitlePlayer>();
-	titlePlayer_->Initialize();
+	TitlePlayer_ = std::make_unique<TitlePlayer>();
+	TitlePlayer_->Initialize();
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
@@ -71,7 +70,7 @@ void TitleScene::UpdateGameObjects() {
 	titleFont_->Update(viewProjectionMatrix);
 
 	//プレイヤー(置物)の更新
-	titlePlayer_->Update(viewProjectionMatrix);
+	TitlePlayer_->Update(viewProjectionMatrix);
 
 }
 
@@ -84,12 +83,12 @@ void TitleScene::DrawGameObjects() {
 	//タイトル文字
 	titleFont_->Draw(directionalLight_);
 	//タイトルプレイヤー(置物)
-	titlePlayer_->Draw(directionalLight_);
+	TitlePlayer_->Draw(directionalLight_);
 }
 
 void TitleScene::OnEnter() {
 	// ゲームシーンに入る時の処理
-	cameraController_->SetTransform({ 0.0f, 0.0f, -10.0f });
+	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
 }
 
 void TitleScene::OnExit() {
@@ -105,7 +104,7 @@ void TitleScene::ImGui() {
 	ImGui::Spacing();
 
 	//プレイヤー(置物)
-	titlePlayer_->ImGui();
+	TitlePlayer_->ImGui();
 
 	// ライトのImGui
 	ImGui::Text("Lighting");
