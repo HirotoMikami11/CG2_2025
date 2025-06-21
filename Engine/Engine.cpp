@@ -70,7 +70,7 @@ void Engine::LoadDefaultResources()
 	///								音声データの読み込み							///
 	///*-----------------------------------------------------------------------*///
 
-	//ゲーム開始前に読み込む音声データ
+	////ゲーム開始前に読み込む音声データ
 	//audioManager_->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
 	//audioManager_->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
 	//audioManager_->LoadAudio("resources/Audio/Se01.mp3", "SE");

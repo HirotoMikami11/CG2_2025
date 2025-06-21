@@ -1,15 +1,14 @@
 #pragma once
-#include "DirectXCommon.h"
-#include "MyMath/MyFunction.h"
-#include "BaseSystem/Logger/Logger.h"
 #include <cassert>
 
-
-#include "Mesh.h"
-#include "Material.h"
+#include "../DirectXCommon.h"
+#include "MyMath/MyFunction.h"
+#include "BaseSystem/Logger/Logger.h"
+#include "Objects/GameObject/Mesh.h"
+#include "Objects/GameObject/Material.h"
 
 //マテリアルの情報をtextureManagerの送るため
-#include "TextureManager.h"
+#include "Managers/Texture/TextureManager.h"
 
 
 

@@ -1,14 +1,15 @@
 #pragma once
-#include "DirectXCommon.h"
-#include "Model.h"
-#include "Transform.h"
-
-#include "TextureManager.h"
-
 #include <string>
 #include <memory>
+#include "../DirectXCommon.h"
+#include "Objects/GameObject/Model.h"
+#include "Objects/GameObject/Transform.h"
 #include "Objects/Light/Light.h"
-#include "ImGuiManager.h" 
+
+
+#include "Managers/Texture/TextureManager.h"
+#include "../ImGuiManager.h" 
+
 /// <summary>
 /// ゲームオブジェクト
 /// </summary>

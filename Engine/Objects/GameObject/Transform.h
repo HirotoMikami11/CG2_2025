@@ -1,10 +1,12 @@
 #pragma once
 #include <d3d12.h>
 #include <wrl.h>
-#include "DirectXCommon.h"
+#include <cassert>
+
+#include "../DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
-#include <cassert>
+
 
 class DirectXCommon;
 

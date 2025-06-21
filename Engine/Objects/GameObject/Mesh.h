@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "DirectXCommon.h"
+#include "../DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 

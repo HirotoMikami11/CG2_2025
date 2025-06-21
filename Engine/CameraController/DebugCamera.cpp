@@ -1,4 +1,4 @@
-#include "DebugCamera.h"
+#include "CameraController/DebugCamera.h"
 
 void DebugCamera::Initialize()
 {

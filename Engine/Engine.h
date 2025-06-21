@@ -9,16 +9,16 @@
 #include "BaseSystem/Logger/Dump.h"
 
 ///Managers
-#include "../AudioManager.h"
+#include "Managers/Audio/AudioManager.h"
 #include "../InputManager.h"
-#include "../TextureManager.h"
+#include "Managers/Texture/TextureManager.h"
 #include "../ImGuiManager.h"
 #include "FrameTimer/FrameTimer.h"
 #include "OffscreenRenderer/OffscreenRenderer.h"
 
 ///Objects
 #include "CameraController/CameraController.h"
-#include "../GameObject.h"
+#include "Objects/GameObject/GameObject.h"
 #include "Objects/Sprite/Sprite.h"
 #include "Objects/Light/Light.h"
 

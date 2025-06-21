@@ -7,7 +7,7 @@
 #include "../DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
-#include "../ImGuiManager.h" 
+
 /// <summary>
 /// cameraのクラス
 /// </summary>

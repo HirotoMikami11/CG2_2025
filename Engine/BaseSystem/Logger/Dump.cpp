@@ -1,4 +1,4 @@
-#include "Dump.h"
+#include "BaseSystem/Logger/Dump.h"
 
 void Dump::Initialize() {
     SetUnhandledExceptionFilter(Dump::ExportDump);

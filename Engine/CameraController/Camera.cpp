@@ -1,4 +1,5 @@
-#include "Camera.h"
+#include "CameraController/Camera.h"
+#include "../ImGuiManager.h" 
 
 void Camera::Initialize()
 {

@@ -1,4 +1,4 @@
-#include "DescriptorHeapManager.h"
+#include "BaseSystem/DirectXCommon/DescriptorHeapManager.h"
 
 void DescriptorHeapManager::Initialize(Microsoft::WRL::ComPtr<ID3D12Device> device) {
 	device_ = device;

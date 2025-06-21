@@ -88,8 +88,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="DemoScene.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.cpp" />
@@ -101,8 +99,17 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\CameraController\DebugCamera.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
+    <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
+    <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp" />
+    <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
+    <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp" />
     <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
     <ClCompile Include="Engine\MyMath\MyMath.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\GameObject.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Material.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Mesh.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Model.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Transform.cpp" />
     <ClCompile Include="Engine\Objects\Light\Light.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp" />
@@ -125,15 +132,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
     <ClCompile Include="SceneManager.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -164,8 +164,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio.h" />
-    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="DemoScene.h" />
     <ClInclude Include="DirectXCommon.h" />
@@ -179,8 +177,17 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\CameraController\DebugCamera.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
+    <ClInclude Include="Engine\Managers\Audio\Audio.h" />
+    <ClInclude Include="Engine\Managers\Audio\AudioManager.h" />
+    <ClInclude Include="Engine\Managers\Texture\Texture.h" />
+    <ClInclude Include="Engine\Managers\Texture\TextureManager.h" />
     <ClInclude Include="Engine\MyMath\MyFunction.h" />
     <ClInclude Include="Engine\MyMath\MyMath.h" />
+    <ClInclude Include="Engine\Objects\GameObject\GameObject.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Material.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Mesh.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Model.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Transform.h" />
     <ClInclude Include="Engine\Objects\Light\Light.h" />
     <ClInclude Include="Engine\Objects\Sprite\Sprite.h" />
     <ClInclude Include="Engine\Objects\Sprite\Transform2D.h" />
@@ -204,16 +211,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="GameObject.h" />
     <ClInclude Include="LeakChecker.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="TextureManager.h" />
-    <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

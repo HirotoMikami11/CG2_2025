@@ -1,14 +1,15 @@
 #pragma once
-#include "../DirectXCommon.h"
-#include "Objects/Sprite/Transform2D.h"  // Transform2Dを使用
-#include "../TextureManager.h"
-#include "MyMath/MyFunction.h"
 
 #include <string>
 #include <memory>
 #include <d3d12.h>
 #include <wrl.h>
 
+#include "../DirectXCommon.h"
+#include "MyMath/MyFunction.h"
+#include "Objects/Sprite/Transform2D.h"  // Transform2Dを使用
+
+#include "Managers/Texture/TextureManager.h"
 /// <summary>
 /// スプライト専用のマテリアル構造体
 /// </summary>

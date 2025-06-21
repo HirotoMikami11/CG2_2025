@@ -4,7 +4,7 @@
 
 #include "Objects/Sprite/Sprite.h"
 #include "Objects/Light/Light.h"
-#include "GameObject.h"
+#include "Objects/GameObject/GameObject.h"
 
 #include "Engine/Engine.h"
 #include "DirectXCommon.h"

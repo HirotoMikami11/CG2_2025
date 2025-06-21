@@ -2,7 +2,7 @@
 #include <wrl.h>
 #include <string>
 
-#include "DirectXCommon.h"
+#include "../DirectXCommon.h"
 #include "BaseSystem/Logger/Logger.h"
 #include "MyMath/MyFunction.h" // CreateBufferResource用
 #include <cassert>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../../../../Engine/Engine.h"
-#include "../../../../../GameObject.h"
+#include "Objects/GameObject/GameObject.h"
 
 class Player {
 
