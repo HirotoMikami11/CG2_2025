@@ -6,8 +6,8 @@
 
 class SceneManager {
 public:
-	SceneManager();
-	~SceneManager();
+	// シングルトンインスタンス取得
+	static SceneManager* GetInstance();
 
 	// シーンの管理
 	void RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene);
@@ -38,13 +38,20 @@ public:
 	void ImGui();
 
 private:
+
+	// シングルトンパターン
+	SceneManager() = default;
+	~SceneManager() = default;
+	SceneManager(const SceneManager&) = delete;
+	SceneManager& operator=(const SceneManager&) = delete;
+
 	void ProcessSceneChange();	// シーン切り替えの実処理
 	void DrawScenesUI();		// シーン一覧・操作UI
 	void DrawCurrentSceneUI();	// 現在のシーンのUI
 
 	std::unordered_map<std::string, std::unique_ptr<BaseScene>> scenes_;
-	BaseScene* currentScene_;
+	BaseScene* currentScene_ = nullptr;
 	std::string currentSceneName_;
 	std::string nextSceneName_;
-	bool sceneChangeRequested_;
+	bool sceneChangeRequested_ = false;
 };

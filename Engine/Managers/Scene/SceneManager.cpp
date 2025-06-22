@@ -3,14 +3,10 @@
 #include "Managers/ImGuiManager.h" 
 
 
-SceneManager::SceneManager()
-	: currentScene_(nullptr)
-	, currentSceneName_("")
-	, nextSceneName_("")
-	, sceneChangeRequested_(false) {
+SceneManager* SceneManager::GetInstance() {
+	static SceneManager instance;
+	return &instance;
 }
-
-SceneManager::~SceneManager() = default;
 
 void SceneManager::RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene) {
 	assert(scene != nullptr);
@@ -41,7 +37,9 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 	// 現在のシーンの処理
 	if (currentScene_) {
 		currentScene_->OnExit();
-		
+		//TODO: シーンのリセット(モデルを読み込むので重い)
+		currentScene_->Finalize();
+		currentScene_->SetInitialized(false);
 	}
 
 	// 新しいシーンの設定

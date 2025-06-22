@@ -6,7 +6,7 @@ Game::~Game() = default;
 
 void Game::Initialize() {
 	// シーンマネージャーの初期化
-	sceneManager_ = std::make_unique<SceneManager>();
+	sceneManager_ = SceneManager::GetInstance();
 	sceneManager_->Initialize();
 
 	// シーンの初期化
@@ -56,6 +56,5 @@ void Game::Finalize() {
 	// シーンマネージャーの終了処理
 	if (sceneManager_) {
 		sceneManager_->Finalize();
-		sceneManager_.reset();
 	}
 }

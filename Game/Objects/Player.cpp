@@ -26,6 +26,14 @@ void Player::Initialize()
 
 void Player::Update(const Matrix4x4& viewProjectionMatrix)
 {
+	// 死亡時は更新を停止
+	if (isDead_) {
+		Object_->Update(viewProjectionMatrix);
+		return;
+	}
+
+
+
 	/// 1. 移動入力
 	if (onGround_) {
 		// 移動入力
@@ -406,8 +414,15 @@ void Player::SwitchGrounding(const CollisionMapInfo& info) {
 
 void Player::OnCollision(const Enemy* enemy) {
 	// 敵との衝突時の処理
-	// 今回は使用しないので適当に配置しておく
 	(void)enemy;
+
+	// 既に死亡している場合は何もしない
+	if (isDead_) {
+		return;
+	}
+
+	// 死亡フラグを立てる
+	isDead_ = true;
 
 
 }
@@ -452,7 +467,10 @@ void Player::TurningControl() {
 
 void Player::Draw(const Light& directionalLight)
 {
-	Object_->Draw(directionalLight);
+	// 死亡時は描画しない
+	if (!isDead_) {
+		Object_->Draw(directionalLight);
+	}
 }
 
 void Player::ImGui()

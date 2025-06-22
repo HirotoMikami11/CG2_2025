@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include "Managers/ImGuiManager.h" 
+#include "Managers/Scene/SceneManager.h"
 
 GameScene::GameScene()
 	: BaseScene("GameScene") // シーン名を設定
@@ -21,6 +22,10 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
+	// ゲームプレイフェーズから開始
+	phase_ = Phase::kPlay;
+
+
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
@@ -81,10 +86,6 @@ void GameScene::InitializeGameObjects() {
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
 	player_->SetPosition(playerPosition);
 
-
-	deathParticles_ = std::make_unique<DeathParticles>();
-	deathParticles_->Initialize(playerPosition);
-
 	///*-----------------------------------------------------------------------*///
 	///									敵										///
 	///*-----------------------------------------------------------------------*///
@@ -101,8 +102,6 @@ void GameScene::InitializeGameObjects() {
 	skydome_->Initialize();
 
 
-
-
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
@@ -117,44 +116,72 @@ void GameScene::Update() {
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
 
-	///追従設定など？
 	/// ゲームカメラの更新（プレイヤー追従）
 	gameCamera_->Update();
+		// フェーズの切り替えチェック
+		ChangePhase();
+	// フェーズ別の更新処理
+	switch (phase_) {
+	case Phase::kPlay:
+		///天球の更新
+		skydome_->Update(viewProjectionMatrix);
 
+		///自キャラの更新
+		player_->Update(viewProjectionMatrix);
 
-	///天球の更新
-	skydome_->Update(viewProjectionMatrix);
-	///自キャラの更新
-	player_->Update(viewProjectionMatrix);
-
-	///敵の更新
-	// 敵の更新を追加
-	for (auto& enemy : enemies_) {
-		enemy->Update(viewProjectionMatrix);
-	}
-
-
-
-
-	///ブロックの更新
-	for (auto& blockLine : blocks_) {
-		for (auto& block : blockLine) {
-			if (!block) continue; // nullptrの場合はスキップ
-			block->Update(viewProjectionMatrix);
+		///敵の更新
+		// 敵の更新を追加
+		for (auto& enemy : enemies_) {
+			enemy->Update(viewProjectionMatrix);
 		}
+
+		///ブロックの更新
+		for (auto& blockLine : blocks_) {
+			for (auto& block : blockLine) {
+				if (!block) continue; // nullptrの場合はスキップ
+				block->Update(viewProjectionMatrix);
+			}
+		}
+
+		///全ての当たり判定
+		CheckAllCollision();
+
+
+		break;
+
+	case Phase::kDeath:
+		///天球の更新
+		skydome_->Update(viewProjectionMatrix);
+
+		///敵の更新（複数）
+		for (auto& enemy : enemies_) {
+			enemy->Update(viewProjectionMatrix);
+		}
+
+		///ブロックの更新
+		for (auto& blockLine : blocks_) {
+			for (auto& block : blockLine) {
+				if (!block) continue; // nullptrの場合はスキップ
+				block->Update(viewProjectionMatrix);
+			}
+		}
+
+		// デスパーティクルの更新
+		if (deathParticles_ != nullptr) {
+			deathParticles_->Update(viewProjectionMatrix);
+		}
+
+		// パーティクルの演出が終了したらタイトルシーンに戻る
+		if (deathParticles_ && deathParticles_->IsFinished()) {
+			// SceneManagerを取得してタイトルシーンに切り替え
+			SceneManager::GetInstance()->SetNextScene("TitleScene");
+
+		}
+		break;
+
+	default:
+		break;
 	}
-
-	// 死亡演出パーティクルの更新（追加）
-	if (deathParticles_) {
-		deathParticles_->Update(viewProjectionMatrix);
-	}
-
-	///全ての当たり判定
-	CheckAllCollision();
-
-	///フェードの終了
-
-
 }
 
 
@@ -186,13 +213,10 @@ void GameScene::DrawGameObjects() {
 		}
 	}
 
-	if (deathParticles_ != nullptr) {
+	// デスパーティクルの描画（kDeathフェーズでのみ）
+	if (phase_ == Phase::kDeath && deathParticles_ != nullptr) {
 		deathParticles_->Draw(directionalLight_);
-	
-	
-	
 	}
-
 }
 
 void GameScene::InitializeEnemies()
@@ -205,9 +229,6 @@ void GameScene::InitializeEnemies()
 		Vector3 enemyPosition;
 		if (mapChipField_) {
 			enemyPosition = mapChipField_->GetMapChipPositionByIndex(17 + i, 18);
-		} else {
-			// マップチップがない場合のデフォルト位置
-			enemyPosition = { 10.0f + i * 3.0f, 0.0f, 0.0f };
 		}
 
 		newEnemy->Initialize(enemyPosition);
@@ -280,6 +301,35 @@ void GameScene::CheckAllCollision()
 
 
 
+void GameScene::ChangePhase() {
+	switch (phase_) {
+	// ゲームフェーズ内の処理
+	case Phase::kPlay:
+		if (player_->IsDead()) {
+			// 死亡演出フェーズに切り替え
+			phase_ = Phase::kDeath;
+			// 自キャラの座標を取得
+			Vector3 deathParticlesPosition = player_->GetPosition();
+			// 自キャラの座標にデスパーティクルを生成、初期化
+			deathParticles_ = std::make_unique<DeathParticles>();
+			deathParticles_->Initialize(deathParticlesPosition);
+		}
+		break;
+
+	// 死亡フェーズ内の処理
+	case Phase::kDeath:
+		// パーティクルの演出が終了したらタイトルシーンに戻る
+		if (deathParticles_ && deathParticles_->IsFinished()) {
+			// SceneManagerを取得してタイトルシーンに切り替え
+			 SceneManager::GetInstance()->SetNextScene("TitleScene");
+
+		}
+		break;
+
+	default:
+		break;
+	}
+}
 
 
 
@@ -290,9 +340,6 @@ void GameScene::OnEnter() {
 	if (gameCamera_) {
 		gameCamera_->Reset();
 	}
-	//// 敵をリセット（前回の敵をクリアして再初期化）
-	//enemies_.clear();
-	//InitializeEnemies();
 }
 
 void GameScene::OnExit() {

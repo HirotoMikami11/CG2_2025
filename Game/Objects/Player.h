@@ -118,6 +118,7 @@ public:
 	// Getter
 	Vector3 GetPosition() const { return Object_->GetPosition(); }
 	const Vector3& GetVelocity() const { return velocity_; }
+	bool IsDead() const { return isDead_; }
 
 	// Setter
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
@@ -168,6 +169,9 @@ private:
 	static inline const float kBlank = 0.1f;
 	// 壁衝突時の減衰率
 	static inline const float kAttenuationWall = 0.2f;
+	
+	// デスフラグ
+	bool isDead_ = false;
 
 	// システム参照
 	DirectXCommon* directXCommon_;

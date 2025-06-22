@@ -26,5 +26,5 @@ private:
 	void InitializeScenes();
 
 	// シーンマネージャー
-	std::unique_ptr<SceneManager> sceneManager_;
+	SceneManager* sceneManager_;  // 追加（シングルトンなのでポインタ）
 };

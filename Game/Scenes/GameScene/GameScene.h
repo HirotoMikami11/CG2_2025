@@ -32,6 +32,16 @@ public:
 	void ImGui() override;
 
 private:
+
+	/// <summary>
+	/// ゲームのフェーズ型
+	/// </summary>
+	enum class Phase {
+		kPlay,  // ゲームプレイ
+		kDeath, // デス演出
+	};
+
+
 	void InitializeGameObjects();
 	void DrawGameObjects();
 
@@ -47,6 +57,14 @@ private:
 	/// 全ての当たり判定を行う
 	/// </summary>
 	void CheckAllCollision();
+
+	/// <summary>
+	/// フェーズの切り替え
+	/// </summary>
+	void ChangePhase();
+
+	// ゲームの現在フェーズ
+	Phase phase_ = Phase::kPlay;
 
 	// ゲームオブジェクト
 	//プレイヤー
@@ -67,7 +85,7 @@ private:
 	std::vector<std::vector<std::unique_ptr<Model3D>>> blocks_;
 
 	//死亡パーティクル
-std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
+	std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
 
 	// ライティング
 	Light directionalLight_;

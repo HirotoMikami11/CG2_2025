@@ -1,5 +1,6 @@
 #include "TitleScene.h"
 #include "Managers/ImGuiManager.h" 
+#include "Managers/Scene/SceneManager.h" 
 
 TitleScene::TitleScene()
 	: BaseScene("TitleScene") // シーン名を設定
@@ -60,6 +61,13 @@ void TitleScene::Update() {
 }
 
 void TitleScene::UpdateGameObjects() {
+
+	// パーティクルの演出が終了したらタイトルシーンに戻る
+	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)) {
+		// SceneManagerを取得してタイトルシーンに切り替え
+		SceneManager::GetInstance()->SetNextScene("GameScene");
+
+	}
 
 	// 行列更新
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
