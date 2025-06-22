@@ -118,8 +118,10 @@ void GameScene::Update() {
 
 	/// ゲームカメラの更新（プレイヤー追従）
 	gameCamera_->Update();
+
 	// フェーズの切り替えチェック
 	ChangePhase();
+
 	// フェーズ別の更新処理
 	switch (phase_) {
 	case Phase::kPlay:
@@ -145,7 +147,6 @@ void GameScene::Update() {
 
 		///全ての当たり判定
 		CheckAllCollision();
-
 
 		break;
 
