@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include "Managers/Scene/BaseScene.h"
+#include "Managers/Scene/FadeManager.h"
 
 class SceneManager {
 public:
@@ -13,9 +14,13 @@ public:
 	void RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene);
 	void UnregisterScene(const std::string& sceneName);
 
-	// シーンの切り替え（データ自動保持）
+	// シーンの切り替え
 	bool ChangeScene(const std::string& sceneName);
 	void SetNextScene(const std::string& sceneName);
+	// フェードシーン遷移
+	void FadeToScene(const std::string& sceneName, FadeManager::Status fadeOutStatus = FadeManager::Status::FadeOut, float fadeOutDuration = 1.0f, FadeManager::Status fadeInStatus = FadeManager::Status::FadeIn, float fadeInDuration = 1.0f);
+	void FadeOutToScene(const std::string& sceneName, float duration = 1.0f);
+	void FadeInToScene(const std::string& sceneName, float duration = 1.0f);
 
 	// リセット機能（明示的にリセットしたい場合のみ）
 	void ResetScene(const std::string& sceneName);
@@ -49,9 +54,31 @@ private:
 	void DrawScenesUI();		// シーン一覧・操作UI
 	void DrawCurrentSceneUI();	// 現在のシーンのUI
 
+	// フェード遷移用の内部処理
+	void ProcessFadeTransition();
+
 	std::unordered_map<std::string, std::unique_ptr<BaseScene>> scenes_;
 	BaseScene* currentScene_ = nullptr;
 	std::string currentSceneName_;
 	std::string nextSceneName_;
 	bool sceneChangeRequested_ = false;
+
+
+	// フェード管理
+	std::unique_ptr<FadeManager> fadeManager_;
+
+	// フェード遷移用の状態管理
+	enum class FadeTransitionState {
+		None,
+		FadeOut,
+		ChangeScene,
+		FadeIn
+	};
+
+	FadeTransitionState fadeTransitionState_ = FadeTransitionState::None;
+
+	// フェード遷移用(一時的に持つデータ)
+	std::string pendingSceneName_;
+	FadeManager::Status pendingFadeInStatus_;
+	float pendingFadeInDuration_;
 };

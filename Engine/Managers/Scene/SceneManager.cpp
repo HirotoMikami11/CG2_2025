@@ -57,6 +57,28 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 	return true;
 }
 
+void SceneManager::FadeToScene(const std::string& sceneName, FadeManager::Status fadeOutStatus, float fadeOutDuration, FadeManager::Status fadeInStatus, float fadeInDuration) {
+	if (!HasScene(sceneName) || fadeTransitionState_ != FadeTransitionState::None) {
+		return;
+	}
+
+	// フェード遷移の開始
+	pendingSceneName_ = sceneName;
+	pendingFadeInStatus_ = fadeInStatus;
+	pendingFadeInDuration_ = fadeInDuration;
+
+	fadeTransitionState_ = FadeTransitionState::FadeOut;
+	fadeManager_->Start(fadeOutStatus, fadeOutDuration);
+}
+
+void SceneManager::FadeOutToScene(const std::string& sceneName, float duration) {
+	FadeToScene(sceneName, FadeManager::Status::FadeOut, duration, FadeManager::Status::FadeIn, duration);
+}
+
+void SceneManager::FadeInToScene(const std::string& sceneName, float duration) {
+	FadeToScene(sceneName, FadeManager::Status::FadeOut, duration, FadeManager::Status::FadeIn, duration);
+}
+
 void SceneManager::SetNextScene(const std::string& sceneName) {
 	if (HasScene(sceneName)) {
 		nextSceneName_ = sceneName;
@@ -97,13 +119,21 @@ const std::string& SceneManager::GetCurrentSceneName() const {
 }
 
 void SceneManager::Initialize() {
-	// シーンは個別に初期化されるので初期化時は何もしない（）
+	fadeManager_ = std::make_unique<FadeManager>();
+	fadeManager_->Initialize();
 }
 
 void SceneManager::Update() {
+
+	// FadeManagerの更新
+	if (fadeManager_) {
+		fadeManager_->Update();
+	}
+	// フェード遷移の処理
+	ProcessFadeTransition();
+
 	// シーン切り替えの処理
 	ProcessSceneChange();
-
 	// 現在のシーンの更新
 	if (currentScene_) {
 		currentScene_->Update();
@@ -115,6 +145,10 @@ void SceneManager::Draw() {
 	if (currentScene_) {
 		currentScene_->Draw();
 	}
+	// フェードの描画（最前面）
+	if (fadeManager_) {
+		fadeManager_->Draw();
+	}
 }
 
 void SceneManager::Finalize() {
@@ -123,6 +157,12 @@ void SceneManager::Finalize() {
 		currentScene_->OnExit();
 		currentScene_->Finalize();
 		currentScene_ = nullptr;
+	}
+
+	// FadeManagerの終了処理
+	if (fadeManager_) {
+		fadeManager_->Finalize();
+		fadeManager_.reset();
 	}
 
 	// 全シーンのクリア
@@ -135,6 +175,38 @@ void SceneManager::ProcessSceneChange() {
 		ChangeScene(nextSceneName_);
 		sceneChangeRequested_ = false;
 		nextSceneName_.clear();
+	}
+}
+
+void SceneManager::ProcessFadeTransition() {
+	switch (fadeTransitionState_) {
+	case FadeTransitionState::None:
+		// 何もしない
+		break;
+
+	case FadeTransitionState::FadeOut:
+		// フェードアウト完了でシーン切り替え
+		if (fadeManager_->IsFinished()) {
+			fadeTransitionState_ = FadeTransitionState::ChangeScene;
+		}
+		break;
+
+	case FadeTransitionState::ChangeScene:
+		// シーン切り替え実行
+		ChangeScene(pendingSceneName_);
+
+		// フェードイン開始
+		fadeTransitionState_ = FadeTransitionState::FadeIn;
+		fadeManager_->Start(pendingFadeInStatus_, pendingFadeInDuration_);
+		break;
+
+	case FadeTransitionState::FadeIn:
+		// フェードイン完了で遷移終了
+		if (fadeManager_->IsFinished()) {
+			fadeTransitionState_ = FadeTransitionState::None;
+			pendingSceneName_.clear();
+		}
+		break;
 	}
 }
 

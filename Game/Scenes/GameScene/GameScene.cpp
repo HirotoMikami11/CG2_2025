@@ -118,8 +118,8 @@ void GameScene::Update() {
 
 	/// ゲームカメラの更新（プレイヤー追従）
 	gameCamera_->Update();
-		// フェーズの切り替えチェック
-		ChangePhase();
+	// フェーズの切り替えチェック
+	ChangePhase();
 	// フェーズ別の更新処理
 	switch (phase_) {
 	case Phase::kPlay:
@@ -171,12 +171,9 @@ void GameScene::Update() {
 			deathParticles_->Update(viewProjectionMatrix);
 		}
 
-		// パーティクルの演出が終了したらタイトルシーンに戻る
-		if (deathParticles_ && deathParticles_->IsFinished()) {
-			// SceneManagerを取得してタイトルシーンに切り替え
-			SceneManager::GetInstance()->SetNextScene("TitleScene");
 
-		}
+		// フェーズの切り替えチェック
+		ChangePhase();
 		break;
 
 	default:
@@ -303,7 +300,7 @@ void GameScene::CheckAllCollision()
 
 void GameScene::ChangePhase() {
 	switch (phase_) {
-	// ゲームフェーズ内の処理
+		// ゲームフェーズ内の処理
 	case Phase::kPlay:
 		if (player_->IsDead()) {
 			// 死亡演出フェーズに切り替え
@@ -316,12 +313,12 @@ void GameScene::ChangePhase() {
 		}
 		break;
 
-	// 死亡フェーズ内の処理
+		// 死亡フェーズ内の処理
 	case Phase::kDeath:
 		// パーティクルの演出が終了したらタイトルシーンに戻る
 		if (deathParticles_ && deathParticles_->IsFinished()) {
 			// SceneManagerを取得してタイトルシーンに切り替え
-			 SceneManager::GetInstance()->SetNextScene("TitleScene");
+			SceneManager::GetInstance()->FadeOutToScene("TitleScene", 1.0f);
 
 		}
 		break;
@@ -340,6 +337,7 @@ void GameScene::OnEnter() {
 	if (gameCamera_) {
 		gameCamera_->Reset();
 	}
+
 }
 
 void GameScene::OnExit() {

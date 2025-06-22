@@ -65,7 +65,9 @@ void TitleScene::UpdateGameObjects() {
 	// パーティクルの演出が終了したらタイトルシーンに戻る
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)) {
 		// SceneManagerを取得してタイトルシーンに切り替え
-		SceneManager::GetInstance()->SetNextScene("GameScene");
+		//SceneManager::GetInstance()->SetNextScene("GameScene");
+		SceneManager::GetInstance()->FadeOutToScene("GameScene", 1.0f);
+
 
 	}
 

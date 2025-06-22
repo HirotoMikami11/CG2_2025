@@ -104,6 +104,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Managers\ImGuiManager.cpp" />
     <ClCompile Include="Engine\Managers\InputManager.cpp" />
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp" />
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
     <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
     <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp" />
@@ -197,6 +198,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Managers\InputManager.h" />
     <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
+    <ClInclude Include="Engine\Managers\Scene\FadeManager.h" />
     <ClInclude Include="Engine\Managers\Scene\SceneManager.h" />
     <ClInclude Include="Engine\Managers\Texture\Texture.h" />
     <ClInclude Include="Engine\Managers\Texture\TextureManager.h" />

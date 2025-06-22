@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Objects/Enemy.h"
 #include "Managers/ImGuiManager.h"
+#include <algorithm>
 
 void Player::Initialize()
 {
