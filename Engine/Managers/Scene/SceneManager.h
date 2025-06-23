@@ -5,10 +5,37 @@
 #include "Managers/Scene/BaseScene.h"
 #include "Managers/Scene/FadeManager.h"
 
+/// <summary>
+/// シーンを管理するクラス
+/// </summary>
 class SceneManager {
 public:
-	// シングルトンインスタンス取得
+	// シングルトン
 	static SceneManager* GetInstance();
+
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画
+	/// </summary>
+	void Draw();
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize();
+
+	// ImGui描画
+	void ImGui();
 
 	// シーンの管理
 	void RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene);
@@ -32,15 +59,6 @@ public:
 	// 現在のシーン情報
 	BaseScene* GetCurrentScene() const { return currentScene_; }
 	const std::string& GetCurrentSceneName() const;
-
-	// メインループ
-	void Initialize();
-	void Update();
-	void Draw();
-	void Finalize();
-
-	// ImGui描画
-	void ImGui();
 
 private:
 

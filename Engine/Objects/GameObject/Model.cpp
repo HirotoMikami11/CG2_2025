@@ -1,14 +1,14 @@
 #include "Model.h"
+#include <fstream>
+#include <sstream>
 
 void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const std::string& directoryPath, const std::string& filename)
 {
-
 	directXCommon_ = dxCommon;
 
 	//																			//
 	//								メッシュの作成									//
 	//																			//
-
 
 	///モデルの場合は、ファイルパスなどを入れる
 	if (meshType == MeshType::MODEL_OBJ) {
@@ -17,29 +17,81 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 		mesh_.InitializeFromData(directXCommon_, modelData_);
 		// OBJファイル用の固有タグ名を生成
 		textureTagName_ = filename + "_obj_texture";
+		filePath_ = directoryPath + "/" + filename;
 		TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, textureTagName_);
 	} else {
-
 		///モデル以外の場合は、パス入れないで生成
 		mesh_.Initialize(directXCommon_, meshType);
-	
+		filePath_ = "primitive_" + Mesh::MeshTypeToString(meshType);
 	}
 
 	//																			//
 	//							Material用のResourceを作る						//
 	//																			//
 
-
 	// マテリアル用のリソースを作る
 	material_.Initialize(directXCommon_);
 	//ライト付きオブジェクト用設定
 	//material_.SetLitObjectSettings();
-
 }
 
+bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& filename, DirectXCommon* dxCommon) {
+	// 既に読み込み済みの場合はスキップ
+	if (IsValid() && filePath_ == directoryPath + "/" + filename) {
+		return true;
+	}
 
+	directXCommon_ = dxCommon;
+	filePath_ = directoryPath + "/" + filename;
 
+	// OBJファイルを読み込み
+	modelData_ = LoadObjFile(directoryPath, filename);
 
+	// メッシュを作成
+	mesh_.InitializeFromData(dxCommon, modelData_);
+
+	// マテリアルを初期化
+	material_.Initialize(dxCommon);
+
+	// テクスチャを読み込み（OBJファイル用の固有タグ名を生成）
+	textureTagName_ = filename + "_obj_texture";
+
+	if (!modelData_.material.textureFilePath.empty()) {
+		TextureManager* textureManager = TextureManager::GetInstance();
+		if (!textureManager->LoadTexture(modelData_.material.textureFilePath, textureTagName_)) {
+			Logger::Log(Logger::GetStream(), std::format("Failed to load texture for model: {}\n", filename));
+			textureTagName_.clear();
+		}
+	}
+
+	Logger::Log(Logger::GetStream(), std::format("Model loaded from OBJ: {}\n", filename));
+	return true;
+}
+
+bool Model::LoadFromPrimitive(MeshType meshType, DirectXCommon* dxCommon) {
+	directXCommon_ = dxCommon;
+
+	// プリミティブメッシュを作成
+	mesh_.Initialize(dxCommon, meshType);
+
+	// マテリアルを初期化
+	material_.Initialize(dxCommon);
+
+	// プリミティブにはテクスチャは無い
+	textureTagName_ = "";
+	filePath_ = "primitive_" + Mesh::MeshTypeToString(meshType);
+
+	Logger::Log(Logger::GetStream(), std::format("Model loaded from primitive: {}\n", Mesh::MeshTypeToString(meshType)));
+	return true;
+}
+
+void Model::Unload() {
+	mesh_ = Mesh(); // メッシュをリセット
+	material_ = Material(); // マテリアルをリセット
+	textureTagName_.clear();
+	filePath_.clear();
+	modelData_ = ModelData(); // モデルデータをリセット
+}
 
 MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
 {
@@ -68,7 +120,6 @@ MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPa
 	//4.MaterialDataを返す
 	return materialData;
 }
-
 
 ModelData Model::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる変数の宣言
@@ -144,5 +195,4 @@ ModelData Model::LoadObjFile(const std::string& directoryPath, const std::string
 	}
 	//4.ModelDataを返す
 	return modelData;
-
 }

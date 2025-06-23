@@ -40,11 +40,6 @@ public:
 	void Draw(const Light& directionalLight);
 
 	/// <summary>
-	/// ImGui描画
-	/// </summary>
-	void ImGui();
-
-	/// <summary>
 	/// パーティクルが終了したかどうか
 	/// </summary>
 	/// <returns>終了フラグ</returns>

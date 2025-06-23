@@ -93,10 +93,7 @@ public:
 private:
 	// コンストラクタ
 	TextureManager() = default;
-	// デストラクタ
 	~TextureManager();
-
-	// コピーを禁止
 	TextureManager(const TextureManager&) = delete;
 	TextureManager& operator=(const TextureManager&) = delete;
 

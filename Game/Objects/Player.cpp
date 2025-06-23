@@ -12,7 +12,7 @@ void Player::Initialize()
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();
-	Object_->Initialize(directXCommon_, "resources/Model/Player", "player.obj");
+	Object_->Initialize(directXCommon_,"player");
 
 	// 物理パラメータの初期化
 	velocity_ = { 0.0f, 0.0f, 0.0f };

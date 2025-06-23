@@ -10,7 +10,7 @@ void Skydome::Initialize()
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();
-	Object_->Initialize(directXCommon_, "resources/Model/Skydome", "skydome.obj");
+	Object_->Initialize(directXCommon_,"skydome");
 	Object_->SetPosition(SkydomePos);
 
 }

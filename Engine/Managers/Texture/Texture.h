@@ -10,7 +10,7 @@
 class DirectXCommon; // 前方宣言
 
 /// <summary>
-/// テクスチャクラス - テクスチャの読み込みと管理を行う
+/// テクスチャクラス
 /// </summary>
 class Texture {
 public:

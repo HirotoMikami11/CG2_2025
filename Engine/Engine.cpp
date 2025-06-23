@@ -46,6 +46,10 @@ void Engine::InitializeManagers() {
 	// FPSタイマー取得
 	frameTimer_ = &FrameTimer::GetInstance();
 
+	// モデルマネージャー初期化
+	modelManager_ = ModelManager::GetInstance();
+	modelManager_->Initialize(directXCommon_.get());
+
 	// ImGui初期化
 	imguiManager_ = ImGuiManager::GetInstance();
 	imguiManager_->Initialize(winApp_.get(), directXCommon_.get());
@@ -86,6 +90,20 @@ void Engine::LoadDefaultResources()
 	//audioManager_->PlayLoop("SE");
 	//audioManager_->SetVolume("SE", 0.1f);
 
+	///*-----------------------------------------------------------------------*///
+	///								モデルデータの読み込み							///
+	///*-----------------------------------------------------------------------*///
+	// プリミティブ事前読み込み
+	modelManager_->LoadPrimitive(MeshType::SPHERE, "sphere");
+	modelManager_->LoadPrimitive(MeshType::TRIANGLE, "triangle");
+
+	//TODO:スザンヌなど読み込んでおくもの
+
+	//スザンヌ
+
+	//バニー
+
+	//ティーカップ
 
 }
 
@@ -170,6 +188,11 @@ void Engine::Finalize() {
 	// 入力終了処理
 	if (inputManager_) {
 		inputManager_->Finalize();
+	}
+
+	// モデル終了処理
+	if (modelManager_) {
+		modelManager_->Finalize();
 	}
 
 	// テクスチャ終了処理

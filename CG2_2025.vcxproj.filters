@@ -136,6 +136,9 @@
     <Filter Include="Game\Objects\DeathParticles">
       <UniqueIdentifier>{4cae9bdc-8f4c-44bd-a3f7-d610a56e63e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Managers\Model">
+      <UniqueIdentifier>{511b34ed-608c-4f53-8cb6-30253fa7f735}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -293,6 +296,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp">
       <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
+      <Filter>Engine\Managers\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -492,6 +498,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Managers\Scene\FadeManager.h">
       <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Model\ModelManager.h">
+      <Filter>Engine\Managers\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

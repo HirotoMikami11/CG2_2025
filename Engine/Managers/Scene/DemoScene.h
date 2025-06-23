@@ -58,4 +58,9 @@ private:
 	// システム参照
 	DirectXCommon* directXCommon_;
 	OffscreenRenderer* offscreenRenderer_;
+
+	// リソース管理
+	ModelManager* modelManager_;
+	TextureManager* textureManager_;
+
 };

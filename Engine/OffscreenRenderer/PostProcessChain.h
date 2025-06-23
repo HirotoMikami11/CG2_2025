@@ -38,6 +38,8 @@ public:
 	/// <summary>
 	/// エフェクトを追加
 	/// </summary>
+	
+	//TODO:ここの実装をaiに頼った為もう一度復習する
 	template<typename T>
 	T* AddEffect() {
 		auto effect = std::make_unique<T>();

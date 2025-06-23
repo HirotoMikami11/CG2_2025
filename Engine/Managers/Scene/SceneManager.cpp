@@ -8,6 +8,59 @@ SceneManager* SceneManager::GetInstance() {
 	return &instance;
 }
 
+void SceneManager::Initialize() {
+	fadeManager_ = std::make_unique<FadeManager>();
+	fadeManager_->Initialize();
+}
+
+void SceneManager::Update() {
+
+	// FadeManagerの更新
+	if (fadeManager_) {
+		fadeManager_->Update();
+	}
+	// フェード遷移の処理
+	ProcessFadeTransition();
+
+	// シーン切り替えの処理
+	ProcessSceneChange();
+	// 現在のシーンの更新
+	if (currentScene_) {
+		currentScene_->Update();
+	}
+}
+
+void SceneManager::Draw() {
+	// 現在のシーンの描画
+	if (currentScene_) {
+		currentScene_->Draw();
+	}
+	// フェードの描画（最前面）
+	if (fadeManager_) {
+		fadeManager_->Draw();
+	}
+}
+
+void SceneManager::Finalize() {
+	// 現在のシーンの終了処理
+	if (currentScene_) {
+		currentScene_->OnExit();
+		currentScene_->Finalize();
+		currentScene_ = nullptr;
+	}
+
+	// FadeManagerの終了処理
+	if (fadeManager_) {
+		fadeManager_->Finalize();
+		fadeManager_.reset();
+	}
+
+	// 全シーンのクリア
+	scenes_.clear();
+	currentSceneName_.clear();
+}
+
+
 void SceneManager::RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene) {
 	assert(scene != nullptr);
 	scenes_[sceneName] = std::move(scene);
@@ -116,58 +169,6 @@ bool SceneManager::HasScene(const std::string& sceneName) const {
 
 const std::string& SceneManager::GetCurrentSceneName() const {
 	return currentSceneName_;
-}
-
-void SceneManager::Initialize() {
-	fadeManager_ = std::make_unique<FadeManager>();
-	fadeManager_->Initialize();
-}
-
-void SceneManager::Update() {
-
-	// FadeManagerの更新
-	if (fadeManager_) {
-		fadeManager_->Update();
-	}
-	// フェード遷移の処理
-	ProcessFadeTransition();
-
-	// シーン切り替えの処理
-	ProcessSceneChange();
-	// 現在のシーンの更新
-	if (currentScene_) {
-		currentScene_->Update();
-	}
-}
-
-void SceneManager::Draw() {
-	// 現在のシーンの描画
-	if (currentScene_) {
-		currentScene_->Draw();
-	}
-	// フェードの描画（最前面）
-	if (fadeManager_) {
-		fadeManager_->Draw();
-	}
-}
-
-void SceneManager::Finalize() {
-	// 現在のシーンの終了処理
-	if (currentScene_) {
-		currentScene_->OnExit();
-		currentScene_->Finalize();
-		currentScene_ = nullptr;
-	}
-
-	// FadeManagerの終了処理
-	if (fadeManager_) {
-		fadeManager_->Finalize();
-		fadeManager_.reset();
-	}
-
-	// 全シーンのクリア
-	scenes_.clear();
-	currentSceneName_.clear();
 }
 
 void SceneManager::ProcessSceneChange() {

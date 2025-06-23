@@ -18,10 +18,10 @@
 /// メッシュの種類
 /// </summary>
 enum class MeshType {
-	TRIANGLE,       // 三角形
-	SPHERE,         // 球体
-	SPRITE,         // スプライト（矩形）
-	MODEL_OBJ,      // OBJファイル読み込み
+	TRIANGLE,		// 三角形
+	SPHERE,			// 球体
+	SPRITE,			// スプライト（矩形）
+	MODEL_OBJ,		// OBJファイル読み込み
 };
 
 /// <summary>

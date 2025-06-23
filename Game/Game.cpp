@@ -9,6 +9,10 @@ void Game::Initialize() {
 	sceneManager_ = SceneManager::GetInstance();
 	sceneManager_->Initialize();
 
+	// リソースマネージャーの初期化
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
+
 	// シーンの初期化
 	InitializeScenes();
 }

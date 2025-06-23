@@ -27,4 +27,8 @@ private:
 
 	// シーンマネージャー
 	SceneManager* sceneManager_;  // 追加（シングルトンなのでポインタ）
+	// リソース管理
+	ModelManager* modelManager_;
+	TextureManager* textureManager_;
+
 };

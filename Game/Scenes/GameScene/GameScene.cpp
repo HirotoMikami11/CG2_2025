@@ -6,12 +6,17 @@ GameScene::GameScene()
 	: BaseScene("GameScene") // シーン名を設定
 	, cameraController_(nullptr)
 	, directXCommon_(nullptr)
-	, offscreenRenderer_(nullptr) {
+	, offscreenRenderer_(nullptr)
+	, modelManager_(nullptr)
+	, textureManager_(nullptr) {
+
 }
 
 GameScene::~GameScene() {
 	// 敵の解放
 	enemies_.clear(); // unique_ptrなので自動的に解放される
+
+
 
 	// MapChipFieldの解放
 	if (mapChipField_) {
@@ -29,6 +34,17 @@ void GameScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
+
+	// リソースマネージャーの初期化
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
+
+	// モデルを事前読み込み
+	modelManager_->LoadModel("resources/Model/Block", "block.obj", "block");
+	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+	modelManager_->LoadModel("resources/Model/Enemy", "enemy.obj", "enemy");
+	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
+	modelManager_->LoadModel("resources/Model/DeathParticles", "deathParticles.obj", "deathParticle");
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -254,7 +270,7 @@ void GameScene::GenerateBlocks()
 			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
 				// ブロックを生成する
 				blocks_[i][j] = std::make_unique<Model3D>();
-				blocks_[i][j]->Initialize(directXCommon_, "resources/Model/Block", "block.obj");
+				blocks_[i][j]->Initialize(directXCommon_, "block");
 
 				// マップチップの位置に基づいて座標を設定
 				Vector3 blockPosition = mapChipField_->GetMapChipPositionByIndex(j, i);

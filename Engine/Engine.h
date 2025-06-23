@@ -11,6 +11,7 @@
 ///Managers
 #include "Managers/Audio/AudioManager.h"
 #include "Managers/Texture/TextureManager.h"
+#include "Managers/Model/ModelManager.h"
 #include "Managers/InputManager.h"
 #include "Managers/ImGuiManager.h" 
 #include "FrameTimer/FrameTimer.h"
@@ -108,6 +109,7 @@ private:
 	TextureManager* textureManager_;
 	AudioManager* audioManager_;
 	ImGuiManager* imguiManager_;
+	ModelManager* modelManager_;
 	FrameTimer* frameTimer_;
 
 	//ウィンドウを閉じるか否か

@@ -159,4 +159,5 @@ private:
 	// 個別エフェクトへの参照（設定用）
 	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
 	GrayscalePostEffect* grayscaleEffect_ = nullptr;
+
 };

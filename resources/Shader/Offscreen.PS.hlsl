@@ -26,6 +26,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     output.color = gMaterial.color * textureColor;
 
+    //オフスクリーンは常に不透明
     output.color.a = 1.0f;
     
     return output;

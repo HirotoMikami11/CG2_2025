@@ -14,7 +14,7 @@ void Enemy::Initialize(const Vector3& position) {
 
 	// 敵オブジェクトの初期化
 	Object_ = std::make_unique<Model3D>();
-	Object_->Initialize(directXCommon_, "resources/Model/Enemy", "enemy.obj");
+	Object_->Initialize(directXCommon_, "enemy");
 
 	// 初期位置設定
 	Object_->SetPosition(position);

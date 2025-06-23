@@ -12,7 +12,7 @@ void DeathParticles::Initialize(const Vector3& position) {
 	// パーティクルの初期化
 	for (auto& particle : particles_) {
 		particle = std::make_unique<Model3D>();
-		particle->Initialize(directXCommon_, "resources/Model/DeathParticles", "deathParticles.obj");
+		particle->Initialize(directXCommon_, "deathParticle");
 		particle->SetPosition(position);
 	}
 
@@ -83,24 +83,6 @@ void DeathParticles::Draw(const Light& directionalLight) {
 	for (auto& particle : particles_) {
 		particle->Draw(directionalLight);
 	}
-}
-
-void DeathParticles::ImGui() {
-#ifdef _DEBUG
-	if (ImGui::TreeNode("DeathParticles")) {
-		ImGui::Text("Is Finished: %s", isFinished_ ? "true" : "false");
-		ImGui::Text("Counter: %.2f / %.2f", counter_, kDuration);
-		ImGui::Text("Alpha: %.2f", color_.w);
-
-		if (ImGui::Button("Reset")) {
-			counter_ = 0.0f;
-			isFinished_ = false;
-			color_.w = 1.0f;
-		}
-
-		ImGui::TreePop();
-	}
-#endif
 }
 
 void DeathParticles::Start(const Vector3& position) {

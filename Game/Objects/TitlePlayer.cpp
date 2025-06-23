@@ -10,7 +10,7 @@ void TitlePlayer::Initialize()
 
 	//初期化、座標設定
 	Object_ = std::make_unique<Model3D>();
-	Object_->Initialize(directXCommon_, "resources/Model/Player", "player.obj");
+	Object_->Initialize(directXCommon_,"player");
 	Object_->SetPosition(TitlePlayerPos);
 	//回転方向を右方向
 	Object_->SetRotation({ 0.0f,std::numbers::pi_v<float>,0.0f });

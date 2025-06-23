@@ -5,7 +5,9 @@ DemoScene::DemoScene()
 	: BaseScene("DemoScene") // シーン名を設定
 	, cameraController_(nullptr)
 	, directXCommon_(nullptr)
-	, offscreenRenderer_(nullptr) {
+	, offscreenRenderer_(nullptr)
+	, modelManager_(nullptr)
+	, textureManager_(nullptr) {
 }
 
 DemoScene::~DemoScene() = default;
@@ -14,12 +16,17 @@ void DemoScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
-
+	// リソースマネージャーの初期化
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
 	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+
+	// ブロックモデルを事前読み込み
+	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -37,7 +44,7 @@ void DemoScene::InitializeGameObjects() {
 
 	for (int i = 0; i < kMaxTriangleIndex; i++) {
 		triangles_[i] = std::make_unique<Triangle>();
-		triangles_[i]->Initialize(directXCommon_, "uvChecker");
+		triangles_[i]->Initialize(directXCommon_, "triangle", "uvChecker");
 		triangles_[i]->SetTransform(transformTriangle);
 	}
 
@@ -51,7 +58,7 @@ void DemoScene::InitializeGameObjects() {
 	};
 
 	sphere_ = std::make_unique<Sphere>();
-	sphere_->Initialize(directXCommon_, "monsterBall");
+	sphere_->Initialize(directXCommon_, "sphere", "monsterBall");
 	sphere_->SetTransform(transformSphere);
 
 	///*-----------------------------------------------------------------------*///
@@ -64,7 +71,7 @@ void DemoScene::InitializeGameObjects() {
 	};
 
 	model_ = std::make_unique<Model3D>();
-	model_->Initialize(directXCommon_, "resources/Model/Plane", "plane.obj");
+	model_->Initialize(directXCommon_, "plane");
 	model_->SetTransform(transformModel);
 
 	///*-----------------------------------------------------------------------*///

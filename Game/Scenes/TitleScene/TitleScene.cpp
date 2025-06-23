@@ -6,7 +6,9 @@ TitleScene::TitleScene()
 	: BaseScene("TitleScene") // シーン名を設定
 	, cameraController_(nullptr)
 	, directXCommon_(nullptr)
-	, offscreenRenderer_(nullptr) {
+	, offscreenRenderer_(nullptr)
+	, modelManager_(nullptr)
+	, textureManager_(nullptr) {
 }
 
 TitleScene::~TitleScene() = default;
@@ -15,6 +17,13 @@ void TitleScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
+	// リソースマネージャーの初期化
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
+	// モデルを事前読み込み
+	modelManager_->LoadModel("resources/Model/TitleFont", "titleFont.obj", "titleFont");
+	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+
 
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
@@ -35,7 +44,7 @@ void TitleScene::InitializeGameObjects() {
 	Vector3 titleFontPos = { -0.2f, 1.12f, 0.0f };
 	//初期化、座標設定
 	titleFont_ = std::make_unique<Model3D>();
-	titleFont_->Initialize(directXCommon_, "resources/Model/TitleFont", "titleFont.obj");
+	titleFont_->Initialize(directXCommon_, "titleFont");
 	titleFont_->SetPosition(titleFontPos);
 	///*-----------------------------------------------------------------------*///
 	///									プレイヤー(置物)							///

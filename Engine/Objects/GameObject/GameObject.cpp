@@ -1,28 +1,28 @@
 #include "GameObject.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGuiManager.h"
 
 // 静的変数の定義
 int Triangle::triangleCount_ = 0;
 int Sphere::sphereCount_ = 0;
-//int Sprite::spriteCount_ = 0;
 int Model3D::modelCount_ = 0;
 
-void GameObject::Initialize(
-	DirectXCommon* dxCommon,
-	MeshType meshType,
-	const std::string& textureName,			//貼る画像の名前
-	const std::string& directoryPath,		//使うモデルのパス
-	const std::string& filename)			//使うモデルの名前
-{
-
-
+void GameObject::Initialize(DirectXCommon* dxCommon, const std::string& modelTag, const std::string& textureName) {
 	directXCommon_ = dxCommon;
-	textureName_ = textureName;
+	modelTag_ = modelTag;
+	textureName_ = textureName;  // プリミティブ用のテクスチャ名を設定
 
-	// モデルの初期化
-	model_.Initialize(dxCommon, meshType, directoryPath, filename);
+	// 共有モデルを取得
+	sharedModel_ = modelManager_->GetModel(modelTag);
+	if (sharedModel_ == nullptr) {
+		Logger::Log(Logger::GetStream(), std::format("Model '{}' not found! Call ModelManager::LoadModel first.\n", modelTag));
+		assert(false && "Model not preloaded! Call ModelManager::LoadModel first.");
+		return;
+	}
 
-	// トランスフォームの初期化
+	// 個別のマテリアルを初期化（既存のMaterialクラスを使用）
+	material_.Initialize(dxCommon);
+
+	// 個別のトランスフォームを初期化（既存のTransformクラスを使用）
 	transform_.Initialize(dxCommon);
 
 	// デフォルトのトランスフォーム設定
@@ -31,16 +31,15 @@ void GameObject::Initialize(
 		{0.0f, 0.0f, 0.0f},  // rotate
 		{0.0f, 0.0f, 0.0f}   // translate
 	};
-	// トランスフォームをデフォルトに設定
 	transform_.SetTransform(defaultTransform);
 
 	// ImGui用の初期値を設定
 	imguiPosition_ = transform_.GetPosition();
 	imguiRotation_ = transform_.GetRotate();
 	imguiScale_ = transform_.GetScale();
-	imguiColor_ = model_.GetMaterial().GetColor();
-	imguiLighting_ = model_.GetMaterial().IsLightingEnabled();
-	imguiLambertian_ = model_.GetMaterial().IsLambertianReflectanceEnabled();
+	imguiColor_ = material_.GetColor();
+	imguiLighting_ = material_.IsLightingEnabled();
+	imguiLambertian_ = material_.IsLambertianReflectanceEnabled();
 }
 
 void GameObject::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -49,85 +48,66 @@ void GameObject::Update(const Matrix4x4& viewProjectionMatrix) {
 		return;
 	}
 
-	// トランスフォーム行列の更新
+	// トランスフォーム行列の更新（既存のTransformクラスを使用）
 	transform_.UpdateMatrix(viewProjectionMatrix);
 
+	// UVトランスフォームの更新（既存のMaterialクラスを使用）
+	material_.UpdateUVTransform();
 }
 
-
-void GameObject::Draw(const Light& directionalLight)
-{
-	// 非表示、アクティブでない場合は描画しない
-	if (!isVisible_ || !isActive_) {
+void GameObject::Draw(const Light& directionalLight) {
+	// 非表示、アクティブでない場合、または共有モデルがない場合は描画しない
+	if (!isVisible_ || !isActive_ || !sharedModel_ || !sharedModel_->IsValid()) {
 		return;
 	}
 
 	// 描画処理
 	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
-	commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());			// マテリアルを設定
-	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());					// トランスフォームを設定
-	// テクスチャ名が設定されている場合のみ
-	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));		// テクスチャを設定
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());				// ライトを設定
 
-	// メッシュをバインドして描画
-	model_.GetMesh().Bind(commandList);
-	model_.GetMesh().Draw(commandList);
+	// 個別のマテリアルとトランスフォームを設定
+	commandList->SetGraphicsRootConstantBufferView(0, material_.GetResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
 
-}
-
-void GameObject::DrawWithCustomPSO(ID3D12RootSignature* rootSignature, ID3D12PipelineState* pipelineState, const Light& directionalLight)
-{
-
-
-	// 非表示、アクティブでない場合は描画しない
-	if (!isVisible_ || !isActive_) {
-		return;
+	// テクスチャの設定（優先順位：カスタムテクスチャ > モデル付属テクスチャ）
+	if (!textureName_.empty()) {
+		// プリミティブ等でカスタムテクスチャが設定されている場合
+		commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));
+	} else if (sharedModel_->HasTexture()) {
+		// OBJファイル等でモデル付属のテクスチャがある場合
+		commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(sharedModel_->GetTextureTagName()));
 	}
 
-	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
+	// ライトを設定
+	commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
 
-	// 外部で指定されたPSOを設定
-	commandList->SetGraphicsRootSignature(rootSignature);
-	commandList->SetPipelineState(pipelineState);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// 描画処理
-	commandList->SetGraphicsRootConstantBufferView(0, model_.GetMaterial().GetResource()->GetGPUVirtualAddress());			// マテリアルを設定
-	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());					// トランスフォームを設定
-	// テクスチャ名が設定されている場合のみ
-	commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));		// テクスチャを設定
-	commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());				// ライトを設定
-
-	// メッシュをバインドして描画
-	model_.GetMesh().Bind(commandList);
-	model_.GetMesh().Draw(commandList);
-
-
-	// 3Dの描画設定に戻す
-	commandList->SetGraphicsRootSignature(directXCommon_->GetRootSignature());
-	commandList->SetPipelineState(directXCommon_->GetPipelineState());
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+	// 共有メッシュをバインドして描画
+	Mesh& mesh = sharedModel_->GetMesh();
+	mesh.Bind(commandList);
+	mesh.Draw(commandList);
 }
 
-
-
-void GameObject::ImGui()
-{
+void GameObject::ImGui() {
 #ifdef _DEBUG
-
 	// 現在の名前を表示
 	if (ImGui::TreeNode(name_.c_str())) {
 		// 表示・アクティブ状態
-		ImGui::Checkbox("Visible", &isVisible_);		//表示するか否か
-		ImGui::Checkbox("Active", &isActive_);			//アクティブかどうか
+		ImGui::Checkbox("Visible", &isVisible_);
+		ImGui::Checkbox("Active", &isActive_);
 
+		// モデル情報
+		ImGui::Text("Model Tag: %s", modelTag_.c_str());
+		if (sharedModel_) {
+			ImGui::Text("Shared Model Loaded: Yes");
+			ImGui::Text("Model Path: %s", sharedModel_->GetFilePath().c_str());
+			ImGui::Text("Has Texture: %s", sharedModel_->HasTexture() ? "Yes" : "No");
+			if (sharedModel_->HasTexture()) {
+				ImGui::Text("Texture Tag: %s", sharedModel_->GetTextureTagName().c_str());
+			}
+		} else {
+			ImGui::Text("Shared Model Loaded: No");
+		}
 
-		///*-----------------------------------------------------------------------*///
-		///								Transform									///
-		///*-----------------------------------------------------------------------*///
-
+		// Transform（既存のTransformクラスのデータを表示・操作）
 		if (ImGui::CollapsingHeader("Transform")) {
 			// ImGui用の値を現在の値で更新
 			imguiPosition_ = transform_.GetPosition();
@@ -145,58 +125,72 @@ void GameObject::ImGui()
 			}
 		}
 
-		///*-----------------------------------------------------------------------*///
-		///								Material									///
-		///*-----------------------------------------------------------------------*///
-
+		// Material（既存のMaterialクラスのデータを表示・操作）
 		if (ImGui::CollapsingHeader("Material")) {
 			// ImGui用の値を現在の値で更新
-			imguiColor_ = model_.GetMaterial().GetColor();
-			imguiLighting_ = model_.GetMaterial().IsLightingEnabled();
-			imguiLambertian_ = model_.GetMaterial().IsLambertianReflectanceEnabled();
+			imguiColor_ = material_.GetColor();
+			imguiLighting_ = material_.IsLightingEnabled();
+			imguiLambertian_ = material_.IsLambertianReflectanceEnabled();
 
 			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imguiColor_.x))) {
-				model_.GetMaterial().SetColor(imguiColor_);
+				material_.SetColor(imguiColor_);
 			}
 			if (ImGui::Checkbox("Enable Lighting", &imguiLighting_)) {
-				model_.GetMaterial().SetLightingEnable(imguiLighting_);
+				material_.SetLightingEnable(imguiLighting_);
 			}
 			if (ImGui::Checkbox("Lambertian Reflectance", &imguiLambertian_)) {
-				model_.GetMaterial().SetLambertianReflectance(imguiLambertian_);
+				material_.SetLambertianReflectance(imguiLambertian_);
 			}
 
-			// ImGui用の値を現在の値で更新
-			imguiUvPosition_ = model_.GetMaterial().GetUVTransformTranslate();
-			imguiUvScale_ = model_.GetMaterial().GetUVTransformScale();
-			imguiUvRotateZ_ = model_.GetMaterial().GetUVTransformRotateZ();
+			// UVトランスフォーム
+			imguiUvPosition_ = material_.GetUVTransformTranslate();
+			imguiUvScale_ = material_.GetUVTransformScale();
+			imguiUvRotateZ_ = material_.GetUVTransformRotateZ();
 
 			ImGui::Text("UVTransform");
 			if (ImGui::DragFloat2("UVtranslate", &imguiUvPosition_.x, 0.01f, -10.0f, 10.0f)) {
-				model_.GetMaterial().SetUVTransformTranslate(imguiUvPosition_);
+				material_.SetUVTransformTranslate(imguiUvPosition_);
 			}
 			if (ImGui::DragFloat2("UVscale", &imguiUvScale_.x, 0.01f, -10.0f, 10.0f)) {
-				model_.GetMaterial().SetUVTransformScale(imguiUvScale_);
+				material_.SetUVTransformScale(imguiUvScale_);
 			}
 			if (ImGui::SliderAngle("UVrotate", &imguiUvRotateZ_)) {
-				model_.GetMaterial().SetUVTransformRotateZ(imguiUvRotateZ_);
+				material_.SetUVTransformRotateZ(imguiUvRotateZ_);
 			}
 		}
 
+		// メッシュ情報（共有メッシュの情報を表示）
+		if (ImGui::CollapsingHeader("Mesh Info") && sharedModel_) {
+			Mesh& mesh = sharedModel_->GetMesh();
+			ImGui::Text("Mesh Type: %s", Mesh::MeshTypeToString(mesh.GetMeshType()).c_str());
+			ImGui::Text("Vertex Count: %d", mesh.GetVertexCount());
+			ImGui::Text("Index Count: %d", mesh.GetIndexCount());
+			ImGui::Text("Shared: Yes (Memory Optimized)");
+		}
 
-		///*-----------------------------------------------------------------------*///
-		///									Texture									///
-		///*-----------------------------------------------------------------------*///
-		/// 
+		// テクスチャ設定（プリミティブ用）
 		if (ImGui::CollapsingHeader("Texture")) {
-			ImGui::Text("Current Texture: %s", textureName_.c_str());
-			///テクスチャの動的切り替え
+			if (sharedModel_ && sharedModel_->HasTexture()) {
+				ImGui::Text("Model Texture: %s", sharedModel_->GetTextureTagName().c_str());
+			} else {
+				ImGui::Text("Model Texture: None");
+			}
+
+			if (!textureName_.empty()) {
+				ImGui::Text("Current Custom Texture: %s", textureName_.c_str());
+			} else {
+				ImGui::Text("Current Custom Texture: None");
+			}
+
+			// テクスチャの動的切り替え（プリミティブ用）
+			ImGui::Separator();
+			ImGui::Text("Set Custom Texture:");
 
 			// uvCheckerボタン
 			if (textureName_ == "uvChecker") {
-				//押されている場合は色を押された色に変更する
 				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
 				if (ImGui::Button("uvChecker")) {
-					SetTexture("uvChecker");//押されたらテクスチャのタグを変更
+					SetTexture("uvChecker");
 				}
 				ImGui::PopStyleColor();
 			} else {
@@ -209,10 +203,9 @@ void GameObject::ImGui()
 
 			// monsterBallボタン
 			if (textureName_ == "monsterBall") {
-				//押されている場合は色を押された色に変更する
 				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
 				if (ImGui::Button("monsterBall")) {
-					SetTexture("monsterBall");//押されたらテクスチャのタグを変更
+					SetTexture("monsterBall");
 				}
 				ImGui::PopStyleColor();
 			} else {
@@ -220,15 +213,26 @@ void GameObject::ImGui()
 					SetTexture("monsterBall");
 				}
 			}
-		}
 
-		///*-----------------------------------------------------------------------*///
-		///									メッシュ									///
-		///*-----------------------------------------------------------------------*///
-		if (ImGui::CollapsingHeader("Mesh Info")) {
-			ImGui::Text("Mesh Type: %s", Mesh::MeshTypeToString(model_.GetMesh().GetMeshType()).c_str());
-			ImGui::Text("Vertex Count: %d", model_.GetMesh().GetVertexCount());
-			ImGui::Text("Index Count: %d", model_.GetMesh().GetIndexCount());
+			ImGui::SameLine();
+
+			// whiteボタン
+			if (textureName_ == "white") {
+				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+				if (ImGui::Button("white")) {
+					SetTexture("white");
+				}
+				ImGui::PopStyleColor();
+			} else {
+				if (ImGui::Button("white")) {
+					SetTexture("white");
+				}
+			}
+
+			// テクスチャクリアボタン
+			if (ImGui::Button("Clear Custom Texture")) {
+				SetTexture("");
+			}
 		}
 
 		ImGui::TreePop();
