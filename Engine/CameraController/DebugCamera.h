@@ -12,9 +12,9 @@
 /// 球面座標系を表す構造体
 /// </summary>
 struct SphericalCoordinates {
-	float radius;		// 半径（距離）
-	float theta;		// 方位角（水平方向の角度、ラジアン）
-	float phi;			// 仰角（垂直方向の角度、ラジアン）
+	float radius;		// p=動径	→半径（距離）
+	float theta;		// θ=方位角	→方位角（水平方向の角度、ラジアン）
+	float phi;			// φ=極角	→仰角（垂直方向の角度、ラジアン）
 };
 
 /// <summary>
@@ -92,6 +92,14 @@ private:
 	/// 球面座標からカメラ位置を更新
 	/// </summary>
 	void UpdatePositionFromSpherical();
+
+	/// <summary>
+	/// 正面向きになるように球面座標を設定
+	/// </summary>
+	/// <param name="cameraPos">カメラ位置</param>
+	/// <param name="target">ターゲット位置</param>
+	//void SetSphericalCoordinatesForFrontFacing(const Vector3& cameraPos, const Vector3& target);
+
 
 	/// <summary>
 	/// ピボット回転（中クリックドラッグ）

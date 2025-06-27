@@ -63,6 +63,9 @@ void DebugCamera::SetDefaultCamera(const Vector3& Position)
 	target_ = Position + Vector3(0.0f, 0.0f, 10.0f);
 
 	// 球面座標を現在の位置から計算
+	//SetSphericalCoordinatesForFrontFacing(Position, target_);
+
+	// 球面座標を現在の位置から計算
 	UpdateSphericalFromPosition();
 
 	// 行列の初期化
@@ -87,13 +90,14 @@ SphericalCoordinates DebugCamera::CartesianToSpherical(const Vector3& cartesian,
 	// デカルト座標から球面座標に変換
 	// centerを原点とした相対座標を計算
 
-	//
+	//相対座標を計算
 	Vector3 relative = Subtract(cartesian, center);
 
 	SphericalCoordinates result;
 	result.radius = Length(relative);						//距離
 
 	if (result.radius > 0.0f) {
+		// 距離が0でない場合は角度を計算
 		result.theta = atan2f(relative.z, relative.x);		//水平角
 		result.phi = acosf(relative.y / result.radius);		//垂直角
 	} else {
@@ -114,6 +118,27 @@ void DebugCamera::UpdatePositionFromSpherical()
 {
 	cameraTransform_.translate = SphericalToCartesian(spherical_, target_);
 }
+//
+//void DebugCamera::SetSphericalCoordinatesForFrontFacing(const Vector3& cameraPos, const Vector3& target)
+//{
+//
+//	// ターゲットまでの距離を計算
+//	Vector3 offset = target - cameraPos;
+//	spherical_.radius = Length(offset);
+//
+//	if (spherical_.radius > 0.0f) {
+//		Vector3 direction = Normalize(offset);
+//
+//		// Z方向が正面の場合の球面座標
+//		// direction が (0, 0, 1) の場合：
+//		// theta = atan2(1, 0) = π/2
+//		// phi = acos(0) = π/2
+//		spherical_.theta = atan2f(direction.z, direction.x);
+//		spherical_.phi = acosf(direction.y);
+//	}
+//
+//
+//}
 
 void DebugCamera::HandlephivotRotation()
 {
