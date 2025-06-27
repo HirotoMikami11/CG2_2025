@@ -14,6 +14,7 @@
 
 #include "OffscreenRenderer/PostEffect/RGBShift/RGBShiftPostEffect.h"	// RGBシフトエフェクト
 #include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
+#include "OffscreenRenderer/PostEffect/LineGlitch/LineGlitchPostEffect.h"	// `らいんずらし
 
 
 
@@ -159,5 +160,6 @@ private:
 	// 個別エフェクトへの参照（設定用）
 	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
 	GrayscalePostEffect* grayscaleEffect_ = nullptr;
+	LineGlitchPostEffect* lineGlitchEffect_ = nullptr;
 
 };

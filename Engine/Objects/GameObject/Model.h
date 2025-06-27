@@ -20,7 +20,7 @@ public:
 	~Model() = default;
 
 	/// <summary>
-	/// 初期化（従来通り）
+	/// 初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	/// <param name="meshType">メッシュタイプ</param>
@@ -30,7 +30,7 @@ public:
 		const std::string& directoryPath = "", const std::string& filename = "");
 
 	/// <summary>
-	/// OBJファイルからモデルを読み込み（共有用）
+	/// OBJファイルからモデルを読み込み
 	/// </summary>
 	/// <param name="directoryPath">ディレクトリパス</param>
 	/// <param name="filename">ファイル名</param>
@@ -39,7 +39,7 @@ public:
 	bool LoadFromOBJ(const std::string& directoryPath, const std::string& filename, DirectXCommon* dxCommon);
 
 	/// <summary>
-	/// プリミティブメッシュから読み込み（共有用）
+	/// プリミティブメッシュから読み込み
 	/// </summary>
 	/// <param name="meshType">メッシュタイプ</param>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>

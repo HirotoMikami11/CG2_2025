@@ -121,6 +121,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\PostEffect.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp" />
@@ -152,6 +153,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="resources\Shader\Object3d\Object3d.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -165,12 +174,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\Sprite\Sprite.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -216,6 +225,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Sprite\Transform2D.h" />
     <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\PostEffect.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h" />
@@ -250,6 +260,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli" />
+    <None Include="resources\Shader\LineGlitch\LineGlitch.hlsli" />
     <None Include="resources\Shader\Object3d\Object3d.hlsli" />
     <None Include="resources\Shader\RGBShift\RGBShift.hlsli" />
     <None Include="resources\Shader\Sprite\Sprite.hlsli" />

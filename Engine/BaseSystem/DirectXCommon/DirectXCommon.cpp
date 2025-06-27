@@ -103,8 +103,6 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 	//																			//
 	///*-----------------------------------------------------------------------*///
 	MakeViewport();
-
-
 }
 
 void DirectXCommon::Finalize() {

@@ -43,6 +43,7 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
 	// グレースケールエフェクトを追加
 	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
+	lineGlitchEffect_ = postProcessChain_->AddEffect<LineGlitchPostEffect>();
 
 
 
@@ -63,6 +64,7 @@ void OffscreenRenderer::Finalize() {
 	
 	RGBShiftEffect_ = nullptr;
 	grayscaleEffect_ = nullptr;
+	lineGlitchEffect_ = nullptr;
 
 
 

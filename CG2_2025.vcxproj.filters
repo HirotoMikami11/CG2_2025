@@ -139,6 +139,12 @@
     <Filter Include="Engine\Managers\Model">
       <UniqueIdentifier>{511b34ed-608c-4f53-8cb6-30253fa7f735}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\LineGlitch">
+      <UniqueIdentifier>{3eaee6b7-caf3-42c8-9cbf-1d0e22e1ee2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\LineGltich">
+      <UniqueIdentifier>{85922a04-6b52-45b6-b95e-4004cd236d0a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -300,14 +306,11 @@
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
       <Filter>Engine\Managers\Model</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
-    <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
     </FxCompile>
@@ -328,6 +331,18 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\Offscreen.PS.hlsl">
       <Filter>リソース ファイル\Shader\Offscreen</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.PS.hlsl">
+      <Filter>リソース ファイル\Shader\LineGltich</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
+      <Filter>リソース ファイル\Shader\LineGltich</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -502,11 +517,11 @@
     <ClInclude Include="Engine\Managers\Model\ModelManager.h">
       <Filter>Engine\Managers\Model</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\Shader\RGBShift\RGBShift.hlsli">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </None>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
     </None>
@@ -515,6 +530,12 @@
     </None>
     <None Include="resources\Shader\Sprite\Sprite.hlsli">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </None>
+    <None Include="resources\Shader\LineGlitch\LineGlitch.hlsli">
+      <Filter>リソース ファイル\Shader\LineGltich</Filter>
+    </None>
+    <None Include="resources\Shader\RGBShift\RGBShift.hlsli">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
