@@ -17,6 +17,12 @@ void Camera::Update()
 
 }
 
+void Camera::Initialize(const Vector3& Position)
+{
+	//指定座標での設定で初期化
+	SetDefaultCamera(Position);
+}
+
 void Camera::UpdateMatrix()
 {
 	// 3D用のビュープロジェクション行列を計算
@@ -39,17 +45,22 @@ void Camera::UpdateSpriteMatrix()
 
 void Camera::SetDefaultCamera()
 {
-	// デフォルト値に設定
+	SetDefaultCamera({ 0.0f, 0.0f, -10.0f });
+
+}
+
+void Camera::SetDefaultCamera(const Vector3& Position)
+{
+	// デフォルト値に設定（座標は引数で指定）
 	cameraTransform_.scale = { 1.0f, 1.0f, 1.0f };
 	cameraTransform_.rotate = { 0.0f, 0.0f, 0.0f };
-	cameraTransform_.translate = { 0.0f, 0.0f, -10.0f };
+	cameraTransform_.translate = Position;
 
 	// カメラパラメータのデフォルト値
 	fov_ = 0.45f;
 	nearClip_ = 0.1f;
 	farClip_ = 100.0f;
 	aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
-
 
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform_.scale, cameraTransform_.rotate, cameraTransform_.translate);
 	viewMatrix_ = Matrix4x4Inverse(cameraMatrix);
@@ -62,7 +73,6 @@ void Camera::SetDefaultCamera()
 
 	// スプライトを画面に表示できるように初期化
 	useSpriteViewProjectionMatrix_ = true;
-
 }
 
 void Camera::ImGui()

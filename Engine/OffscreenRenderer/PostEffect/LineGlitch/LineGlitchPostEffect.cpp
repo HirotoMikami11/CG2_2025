@@ -286,7 +286,7 @@ void LineGlitchPostEffect::ImGui() {
 			// 個別パラメータ調整
 			if (ImGui::TreeNode("Manual Settings")) {
 				float noiseIntensity = parameters_.noiseIntensity;
-				if (ImGui::SliderFloat("Noise Intensity", &noiseIntensity, 0.0f, 10.0f)) {
+				if (ImGui::SliderFloat("Noise Intensity", &noiseIntensity, 0.0f, 3.0f)) {
 					SetNoiseIntensity(noiseIntensity);
 				}
 

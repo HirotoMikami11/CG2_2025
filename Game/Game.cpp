@@ -22,6 +22,13 @@ void Game::InitializeScenes() {
 	auto demoScene = std::make_unique<DemoScene>();
 	sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
 
+	auto gameScene = std::make_unique<GameScene>();
+	sceneManager_->RegisterScene("GameScene", std::move(gameScene));
+
+	auto titleScene = std::make_unique<TitleScene>();
+	sceneManager_->RegisterScene("TitleScene", std::move(titleScene));
+
+
 	// 将来的に追加するシーン
 	// auto debugScene = std::make_unique<DebugScene>();
 	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));

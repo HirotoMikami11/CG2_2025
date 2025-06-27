@@ -348,12 +348,12 @@ void GameScene::ChangePhase() {
 
 
 void GameScene::OnEnter() {
-	// ゲームシーンに入る時の処理
-	cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
-	// ゲームカメラもリセット
-	if (gameCamera_) {
-		gameCamera_->Reset();
-	}
+	//// ゲームシーンに入る時の処理
+	//cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
+	//// ゲームカメラもリセット
+	//if (gameCamera_) {
+	//	gameCamera_->Reset();
+	//}
 
 }
 

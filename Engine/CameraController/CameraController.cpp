@@ -9,14 +9,11 @@ CameraController* CameraController::GetInstance() {
 void CameraController::Initialize(const Vector3& Position)
 {
 	//カメラの初期化
-	camera_.Initialize();
-	// カメラの初期位置を設定
-	camera_.SetPositon(Position);
+	camera_.Initialize(Position);
 
 	//デバッグカメラの初期化
-	debugCamera_.Initialize();
-	// カメラの初期位置を設定
-	debugCamera_.SetPositon(Position);
+	debugCamera_.Initialize(Position);
+
 
 	useDebugCamera_ = false; // デフォルトではメインカメラを使用する
 
@@ -115,11 +112,13 @@ void CameraController::ImGui()
 
 void CameraController::SwitchCamera()
 {
+#ifdef _DEBUG
 	//Shift + TABでメインとデバッグカメラを切り替える
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_TAB) &&
 		InputManager::GetInstance()->IsKeyDown(DIK_LSHIFT)) {
 		useDebugCamera_ = !useDebugCamera_;
 
 	}
+	#endif
 }
 

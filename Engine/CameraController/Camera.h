@@ -23,6 +23,11 @@ public:
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	void Initialize();
 
+	/// <summary>
+	/// カメラの初期化（初期座標指定）
+	/// </summary>
+	/// <param name="Position">初期座標</param>
+	void Initialize(const Vector3& Position);
 
 	/// <summary>
 	/// cameraの更新処理
@@ -43,6 +48,12 @@ public:
 	/// デフォルトの値を設定する
 	/// </summary>
 	void SetDefaultCamera();
+
+	/// <summary>
+	/// 初期座標を指定してデフォルト値を設定
+	/// </summary>
+	/// <param name="Position">初期座標</param>
+	void SetDefaultCamera(const Vector3& Position);
 
 	/// <summary>
 	/// imguiの表示
@@ -66,7 +77,7 @@ public:
 	void SetTransform(const Vector3Transform& newTransform) { cameraTransform_ = newTransform; }
 	void SetPositon(const Vector3& position) { cameraTransform_.translate = position; }
 	void SetRotate(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
-	
+
 private:
 
 	// 3Dカメラ用のトランスフォーム

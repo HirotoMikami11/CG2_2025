@@ -143,7 +143,7 @@ void DemoScene::DrawGameObjects() {
 
 void DemoScene::OnEnter() {
 	// デモシーンに入る時の処理
-	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	//TODO: 現状シーン移動時、シーンを解放するので、初期化と同等の処理になっている。
 }
 
 void DemoScene::OnExit() {

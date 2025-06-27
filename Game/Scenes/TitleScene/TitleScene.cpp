@@ -107,7 +107,7 @@ void TitleScene::DrawGameObjects() {
 
 void TitleScene::OnEnter() {
 	// ゲームシーンに入る時の処理
-	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	//cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
 }
 
 void TitleScene::OnExit() {
