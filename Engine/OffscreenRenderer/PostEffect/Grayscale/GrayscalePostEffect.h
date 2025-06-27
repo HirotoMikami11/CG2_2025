@@ -17,7 +17,7 @@ public:
 		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };		// カラー
 
 		float time = 0.0f;								// 時間（アニメーション用）
-		float grayIntensity = 0.0f;						// グレースケールの度合い (0.0f～1.0f)
+		float grayIntensity = 1.0f;						// グレースケールの度合い (0.0f～1.0f)
 		float unused1 = 0.0f;							// パディング
 		float unused2 = 0.0f;							// パディング（16バイト境界）
 	};
