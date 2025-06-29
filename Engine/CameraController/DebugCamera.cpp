@@ -1,69 +1,74 @@
-#include "CameraController/DebugCamera.h"
-#include "Managers/ImGuiManager.h" 
+#include "DebugCamera.h"
+#include "Managers/ImGuiManager.h"
 #include <cmath>
 
-void DebugCamera::Initialize()
-{
-	input_ = InputManager::GetInstance();
-	SetDefaultCamera();
+DebugCamera::DebugCamera()
+	: cameraTransform_{
+		.scale{1.0f, 1.0f, 1.0f},
+		.rotate{0.0f, 0.0f, 0.0f},
+		.translate{0.0f, 0.0f, -10.0f}
+	}
+	, viewProjectionMatrix_{}
+	, viewMatrix_{}
+	, projectionMatrix_{}
+	, spherical_{}
+	, input_(nullptr) {
 }
 
-void DebugCamera::Initialize(const Vector3& Position)
-{
+DebugCamera::~DebugCamera() = default;
+
+void DebugCamera::Initialize(const Vector3& position) {
 	input_ = InputManager::GetInstance();
-	SetDefaultCamera(Position);
+	SetDefaultCamera(position);
 }
 
-void DebugCamera::Update()
-{
+void DebugCamera::Update() {
 	// TABキーでカメラ操作の切り替え
 	if (input_->IsKeyTrigger(DIK_TAB) && !input_->IsKeyDown(DIK_LSHIFT)) {
 		enableCameraControl_ = !enableCameraControl_;
 	}
 
 	if (enableCameraControl_) {
-		HandlephivotRotation();		// 中クリックでピボット回転
-		HandleCameraMovement();		// Shift+中クリックで移動
-		HandleZoom();				// マウスホイールでズーム
-		///自分用キーボードで軽くカメラ操作
-		HandleKeyboardMovement();	// キーボードでの移動
+		HandlePivotRotation();      // 中クリックでピボット回転
+		HandleCameraMovement();     // Shift+中クリックで移動
+		HandleZoom();               // マウスホイールでズーム
+		HandleKeyboardMovement();   // キーボードでの移動
 	}
 
 	// 行列の更新
 	UpdateMatrix();
 }
 
-void DebugCamera::SetDefaultCamera()
-{
-	// Cameraクラスと完全に同じデフォルト値に設定
-	cameraTransform_.scale = { 1.0f, 1.0f, 1.0f };
-	cameraTransform_.rotate = { 0.0f, 0.0f, 0.0f };
-	cameraTransform_.translate = { 0.0f, 0.0f, -10.0f };
-
-	// Cameraクラスの初期状態と同じ方向を向くようにターゲットを設定
-	// 回転(0,0,0)の時、カメラは+Z方向を向いているので、原点をターゲットに設定
-	target_ = { 0.0f, 0.0f, 0.0f };
-
-	// 球面座標を現在の位置から計算
-	UpdateSphericalFromPosition();
-
-	// 行列の初期化
-	UpdateMatrix();
+Matrix4x4 DebugCamera::GetSpriteViewProjectionMatrix() const {
+	// スプライト用行列を作成して返す
+	Matrix4x4 spriteViewMatrix = MakeIdentity4x4();
+	Matrix4x4 spriteProjectionMatrix = MakeOrthograpicMatrix(
+		0.0f, 0.0f,
+		float(GraphicsConfig::kClientWidth),
+		float(GraphicsConfig::kClientHeight),
+		0.0f, 100.0f
+	);
+	return Matrix4x4Multiply(spriteViewMatrix, spriteProjectionMatrix);
 }
 
-void DebugCamera::SetDefaultCamera(const Vector3& Position)
-{
+void DebugCamera::SetPosition(const Vector3& position) {
+	cameraTransform_.translate = position;
+	UpdateSphericalFromPosition();
+}
+
+void DebugCamera::SetDefaultCamera() {
+	SetDefaultCamera({ 0.0f, 0.0f, -10.0f });
+}
+
+void DebugCamera::SetDefaultCamera(const Vector3& position) {
 	// Cameraクラスと完全に同じデフォルト値に設定（座標は引数で指定）
 	cameraTransform_.scale = { 1.0f, 1.0f, 1.0f };
 	cameraTransform_.rotate = { 0.0f, 0.0f, 0.0f };
-	cameraTransform_.translate = Position;
+	cameraTransform_.translate = position;
 
 	// Cameraクラスの初期状態と同じ方向を向くようにターゲットを設定
 	// カメラ位置から+10のところをターゲットにする
-	target_ = Position + Vector3(0.0f, 0.0f, 10.0f);
-
-	// 球面座標を現在の位置から計算
-	//SetSphericalCoordinatesForFrontFacing(Position, target_);
+	target_ = position + Vector3(0.0f, 0.0f, 10.0f);
 
 	// 球面座標を現在の位置から計算
 	UpdateSphericalFromPosition();
@@ -72,11 +77,8 @@ void DebugCamera::SetDefaultCamera(const Vector3& Position)
 	UpdateMatrix();
 }
 
-Vector3 DebugCamera::SphericalToCartesian(const SphericalCoordinates& spherical, const Vector3& center) const
-{
+Vector3 DebugCamera::SphericalToCartesian(const SphericalCoordinates& spherical, const Vector3& center) const {
 	// 球面座標からデカルト座標に変換
-	// radius: 半径, theta: 水平角度, phi: 垂直角度
-
 	Vector3 result;
 	result.x = spherical.radius * sinf(spherical.phi) * cosf(spherical.theta);
 	result.y = spherical.radius * cosf(spherical.phi);
@@ -85,23 +87,20 @@ Vector3 DebugCamera::SphericalToCartesian(const SphericalCoordinates& spherical,
 	return Add(result, center);
 }
 
-SphericalCoordinates DebugCamera::CartesianToSpherical(const Vector3& cartesian, const Vector3& center) const
-{
+SphericalCoordinates DebugCamera::CartesianToSpherical(const Vector3& cartesian, const Vector3& center) const {
 	// デカルト座標から球面座標に変換
 	// centerを原点とした相対座標を計算
-
-	//相対座標を計算
 	Vector3 relative = Subtract(cartesian, center);
 
 	SphericalCoordinates result;
-	result.radius = Length(relative);						//距離
+	result.radius = Length(relative);
 
 	if (result.radius > 0.0f) {
 		// 距離が0でない場合は角度を計算
-		result.theta = atan2f(relative.z, relative.x);		//水平角
-		result.phi = acosf(relative.y / result.radius);		//垂直角
+		result.theta = atan2f(relative.z, relative.x);     // 水平角
+		result.phi = acosf(relative.y / result.radius);    // 垂直角
 	} else {
-		//距離が0の場合は,角度に意味がないので0.0fに設定しておく
+		// 距離が0の場合は、角度に意味がないので0.0fに設定しておく
 		result.theta = 0.0f;
 		result.phi = 0.0f;
 	}
@@ -109,45 +108,21 @@ SphericalCoordinates DebugCamera::CartesianToSpherical(const Vector3& cartesian,
 	return result;
 }
 
-void DebugCamera::UpdateSphericalFromPosition()
-{
+void DebugCamera::UpdateSphericalFromPosition() {
 	spherical_ = CartesianToSpherical(cameraTransform_.translate, target_);
 }
 
-void DebugCamera::UpdatePositionFromSpherical()
-{
+void DebugCamera::UpdatePositionFromSpherical() {
 	cameraTransform_.translate = SphericalToCartesian(spherical_, target_);
 }
-//
-//void DebugCamera::SetSphericalCoordinatesForFrontFacing(const Vector3& cameraPos, const Vector3& target)
-//{
-//
-//	// ターゲットまでの距離を計算
-//	Vector3 offset = target - cameraPos;
-//	spherical_.radius = Length(offset);
-//
-//	if (spherical_.radius > 0.0f) {
-//		Vector3 direction = Normalize(offset);
-//
-//		// Z方向が正面の場合の球面座標
-//		// direction が (0, 0, 1) の場合：
-//		// theta = atan2(1, 0) = π/2
-//		// phi = acos(0) = π/2
-//		spherical_.theta = atan2f(direction.z, direction.x);
-//		spherical_.phi = acosf(direction.y);
-//	}
-//
-//
-//}
 
-void DebugCamera::HandlephivotRotation()
-{
+void DebugCamera::HandlePivotRotation() {
 	// 中クリック（マウスボタン2）でピボット回転
 	if (input_->IsMouseButtonDown(2) && !input_->IsKeyDown(DIK_LSHIFT)) {
 		Vector2 mousePos = input_->GetMousePosition();
 		Vector2 preMousePos = input_->GetPreMousePosition();
 
-		//マウスの移動量を計算
+		// マウスの移動量を計算
 		Vector2 mouseDelta = {
 			(mousePos.x - preMousePos.x),
 			(mousePos.y - preMousePos.y)
@@ -155,22 +130,21 @@ void DebugCamera::HandlephivotRotation()
 
 		// マウスの移動量を角度の変化に変換
 		float deltaTheta = mouseDelta.x * rotationSensitivity_;
-		float deltaphi = mouseDelta.y * rotationSensitivity_;
+		float deltaPhi = mouseDelta.y * rotationSensitivity_;
 
 		// 球面座標を更新するだけなので、Thetaとphiを加える
-		spherical_.theta -= deltaTheta;		// 水平回転
-		spherical_.phi -= deltaphi;			// 垂直回転
+		spherical_.theta -= deltaTheta;     // 水平回転
+		spherical_.phi -= deltaPhi;         // 垂直回転
 
 		// 制限
-		spherical_.phi = std::clamp(spherical_.phi, minphi_, maxphi_);
+		spherical_.phi = std::clamp(spherical_.phi, minPhi_, maxPhi_);
 
 		// 球面座標から3D位置にカメラ位置を更新
 		UpdatePositionFromSpherical();
 	}
 }
 
-void DebugCamera::HandleCameraMovement()
-{
+void DebugCamera::HandleCameraMovement() {
 	// Shift+中クリックでカメラ移動（ターゲットも一緒に移動）
 	if (input_->IsMouseButtonDown(2) && input_->IsKeyDown(DIK_LSHIFT)) {
 		Vector2 mousePos = input_->GetMousePosition();
@@ -197,8 +171,7 @@ void DebugCamera::HandleCameraMovement()
 	}
 }
 
-void DebugCamera::HandleZoom()
-{
+void DebugCamera::HandleZoom() {
 	// マウスホイールでズーム
 	float wheelDelta = static_cast<float>(input_->GetMouseWheel());
 	if (wheelDelta != 0.0f) {
@@ -213,8 +186,7 @@ void DebugCamera::HandleZoom()
 	}
 }
 
-void DebugCamera::HandleKeyboardMovement()
-{
+void DebugCamera::HandleKeyboardMovement() {
 	Vector3 moveVector = { 0.0f, 0.0f, 0.0f };
 	float keyboardSpeed = 0.1f;
 
@@ -256,21 +228,20 @@ void DebugCamera::HandleKeyboardMovement()
 	}
 }
 
-void DebugCamera::UpdateMatrix()
-{
+void DebugCamera::UpdateMatrix() {
 	// ターゲット方向のベクトルを計算
 	Vector3 forward = Normalize(Subtract(target_, cameraTransform_.translate));
 
 	// Y軸回転（Yaw）を計算 - atan2の引数順序を既存の座標系に合わせる
 	float yaw = atan2f(forward.x, forward.z);
 
-	// X軸回転（phitch）を計算
-	float phitch = asinf(-forward.y);
+	// X軸回転（Pitch）を計算
+	float pitch = asinf(-forward.y);
 
 	// 回転角度をcameraTransformに設定
-	cameraTransform_.rotate = { phitch, yaw, 0.0f };
+	cameraTransform_.rotate = { pitch, yaw, 0.0f };
 
-	//ビュー行列
+	// ビュー行列
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(
 		cameraTransform_.scale,
 		cameraTransform_.rotate,
@@ -290,8 +261,7 @@ void DebugCamera::UpdateMatrix()
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);
 }
 
-Vector3 DebugCamera::GetCameraForward() const
-{
+Vector3 DebugCamera::GetCameraForward() const {
 	// 現在のカメラ行列を取得
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(
 		cameraTransform_.scale,
@@ -304,8 +274,7 @@ Vector3 DebugCamera::GetCameraForward() const
 	return TransformDirection(localForward, cameraMatrix);
 }
 
-Vector3 DebugCamera::GetCameraRight() const
-{
+Vector3 DebugCamera::GetCameraRight() const {
 	// 現在のカメラ行列を取得
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(
 		cameraTransform_.scale,
@@ -318,8 +287,7 @@ Vector3 DebugCamera::GetCameraRight() const
 	return TransformDirection(localRight, cameraMatrix);
 }
 
-Vector3 DebugCamera::GetCameraUp() const
-{
+Vector3 DebugCamera::GetCameraUp() const {
 	// 現在のカメラ行列を取得
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(
 		cameraTransform_.scale,
@@ -332,14 +300,7 @@ Vector3 DebugCamera::GetCameraUp() const
 	return TransformDirection(localUp, cameraMatrix);
 }
 
-void DebugCamera::SetPositon(const Vector3& position)
-{
-	cameraTransform_.translate = position;
-	UpdateSphericalFromPosition();
-}
-
-void DebugCamera::ImGui()
-{
+void DebugCamera::ImGui() {
 #ifdef _DEBUG
 	ImGui::Text("DebugCamera");
 	ImGui::Separator();
@@ -362,7 +323,7 @@ void DebugCamera::ImGui()
 	ImGui::Text("Spherical Coordinates:");
 	ImGui::Text("  Radius: %.2f", spherical_.radius);
 	ImGui::Text("  Theta: %.2f rad (%.1f deg)", spherical_.theta, spherical_.theta * 180.0f / 3.14159f);
-	ImGui::Text("  phi: %.2f rad (%.1f deg)", spherical_.phi, spherical_.phi * 180.0f / 3.14159f);
+	ImGui::Text("  Phi: %.2f rad (%.1f deg)", spherical_.phi, spherical_.phi * 180.0f / 3.14159f);
 
 	ImGui::Separator();
 
@@ -371,7 +332,7 @@ void DebugCamera::ImGui()
 	ImGui::SliderFloat("Distance", &spherical_.radius, minDistance_, maxDistance_);
 
 	if (ImGui::SliderFloat("Theta", &spherical_.theta, -3.14159f, 3.14159f) ||
-		ImGui::SliderFloat("phi", &spherical_.phi, minphi_, maxphi_)) {
+		ImGui::SliderFloat("Phi", &spherical_.phi, minPhi_, maxPhi_)) {
 		UpdatePositionFromSpherical();
 	}
 
@@ -398,6 +359,5 @@ void DebugCamera::ImGui()
 	ImGui::Text("Mouse Wheel: Zoom in/out");
 	ImGui::Text("WASD: Move camera and target");
 	ImGui::Text("QE: Move up/down");
-
 #endif
 }

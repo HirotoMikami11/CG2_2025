@@ -92,7 +92,7 @@ private:
 
 	// カメラ
 	CameraController* cameraController_;
-	std::unique_ptr<GameCamera> gameCamera_ = nullptr;
+	GameCamera* gameCamera_ = nullptr;
 	Matrix4x4 viewProjectionMatrix;
 	Matrix4x4 viewProjectionMatrixSprite;
 

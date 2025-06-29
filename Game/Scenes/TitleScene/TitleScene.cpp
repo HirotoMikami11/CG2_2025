@@ -30,6 +30,7 @@ void TitleScene::Initialize() {
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
 	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	cameraController_->SetActiveCamera("normal");
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -71,7 +72,7 @@ void TitleScene::Update() {
 
 void TitleScene::UpdateGameObjects() {
 
-	// パーティクルの演出が終了したらタイトルシーンに戻る
+	// タイトルシーンに戻る
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)) {
 		// SceneManagerを取得してタイトルシーンに切り替え
 		//SceneManager::GetInstance()->SetNextScene("GameScene");

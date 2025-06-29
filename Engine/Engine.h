@@ -112,6 +112,9 @@ private:
 	ModelManager* modelManager_;
 	FrameTimer* frameTimer_;
 
+	// カメラコントローラー
+	CameraController* cameraController_;
+
 	//ウィンドウを閉じるか否か
 	bool ClosedWindow_ = false;
 };

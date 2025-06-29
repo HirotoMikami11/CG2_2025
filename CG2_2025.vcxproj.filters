@@ -145,6 +145,12 @@
     <Filter Include="リソース ファイル\Shader\LineGltich">
       <UniqueIdentifier>{85922a04-6b52-45b6-b95e-4004cd236d0a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\CameraController\NormalCamera">
+      <UniqueIdentifier>{6ce3d0c7-4696-4b7d-b5bc-13737a7c9ec2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\CameraController\DebugCamera">
+      <UniqueIdentifier>{6964cef4-8ab4-4ebe-b789-d9243f89409c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -213,13 +219,7 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\CameraController\Camera.cpp">
-      <Filter>Engine\CameraController</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\CameraController\CameraController.cpp">
-      <Filter>Engine\CameraController</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
       <Filter>Engine\CameraController</Filter>
     </ClCompile>
     <ClCompile Include="Engine\MyMath\MyFunction.cpp">
@@ -308,6 +308,12 @@
     </ClCompile>
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\Camera.cpp">
+      <Filter>Engine\CameraController\NormalCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
+      <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -421,13 +427,7 @@
     <ClInclude Include="LeakChecker.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\CameraController\Camera.h">
-      <Filter>Engine\CameraController</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\CameraController\CameraController.h">
-      <Filter>Engine\CameraController</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\CameraController\DebugCamera.h">
       <Filter>Engine\CameraController</Filter>
     </ClInclude>
     <ClInclude Include="Engine\MyMath\MyFunction.h">
@@ -519,6 +519,15 @@
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\BaseCamera.h">
+      <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\Camera.h">
+      <Filter>Engine\CameraController\NormalCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\DebugCamera.h">
+      <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

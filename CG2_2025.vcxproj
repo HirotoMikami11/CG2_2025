@@ -197,6 +197,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\BaseSystem\Logger\Dump.h" />
     <ClInclude Include="Engine\BaseSystem\Logger\Logger.h" />
     <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h" />
+    <ClInclude Include="Engine\CameraController\BaseCamera.h" />
     <ClInclude Include="Engine\CameraController\Camera.h" />
     <ClInclude Include="Engine\CameraController\CameraController.h" />
     <ClInclude Include="Engine\CameraController\DebugCamera.h" />

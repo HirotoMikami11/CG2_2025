@@ -50,6 +50,9 @@ void Engine::InitializeManagers() {
 	modelManager_ = ModelManager::GetInstance();
 	modelManager_->Initialize(directXCommon_.get());
 
+	// カメラコントローラー取得
+	cameraController_ = CameraController::GetInstance();
+
 	// ImGui初期化
 	imguiManager_ = ImGuiManager::GetInstance();
 	imguiManager_->Initialize(winApp_.get(), directXCommon_.get());
@@ -173,7 +176,6 @@ void Engine::Finalize() {
 		imguiManager_->Finalize();
 	}
 
-
 	// オフスクリーンレンダラー終了処理
 	if (offscreenRenderer_) {
 		offscreenRenderer_->Finalize();
@@ -230,5 +232,11 @@ void Engine::ImGui()
 	offscreenRenderer_->ImGui();
 
 	ImGui::End();
+
+	// カメラコントローラーのデバッグUI
+	if (cameraController_) {
+		//カメラコントローラーのアップデートがないとエラー
+		cameraController_->ImGui();
+	}
 #endif
 }

@@ -24,6 +24,7 @@ void DemoScene::Initialize() {
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
 	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	cameraController_->SetActiveCamera("normal");
 
 	// ブロックモデルを事前読み込み
 	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");

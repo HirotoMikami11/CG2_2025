@@ -1,110 +1,95 @@
 #pragma once
-
-#include <d3d12.h>
-#include <wrl.h>
-#include <cassert>
-
+#include "BaseCamera.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
-#include "MyMath/MyFunction.h"
-#include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// cameraのクラス
+/// 通常カメラ(定点から指定方向を見るカメラ)
 /// </summary>
-class Camera
-{
+class NormalCamera : public BaseCamera {
 public:
-	Camera() = default;
-	~Camera() = default;
+
+	NormalCamera();
+	~NormalCamera() override;
 
 	/// <summary>
 	/// カメラの初期化
 	/// </summary>
-	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	void Initialize();
+	/// <param name="position">初期位置</param>
+	void Initialize(const Vector3& position) override;
 
 	/// <summary>
-	/// カメラの初期化（初期座標指定）
+	/// カメラの更新
 	/// </summary>
-	/// <param name="Position">初期座標</param>
-	void Initialize(const Vector3& Position);
+	void Update() override;
 
 	/// <summary>
-	/// cameraの更新処理
+	/// ImGui表示
 	/// </summary>
-	void Update();
+	void ImGui() override;
+
+
+	Matrix4x4 GetViewProjectionMatrix() const override { return viewProjectionMatrix_; }
+	Matrix4x4 GetSpriteViewProjectionMatrix() const override { return spriteViewProjectionMatrix_; }
+	Vector3 GetPosition() const override { return cameraTransform_.translate; }
+	void SetPosition(const Vector3& position) override { cameraTransform_.translate = position; }
+	std::string GetCameraType() const override { return "Normal"; }
+
+	// NormalCamera固有機能
+	// カメラの回転を設定
+	void SetRotation(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
+	// トランスフォーム全体を設定
+	void SetTransform(const Vector3Transform& transform) { cameraTransform_ = transform; }
+	// 回転角度を取得
+	Vector3 GetRotation() const { return cameraTransform_.rotate; }
 
 	/// <summary>
-	/// ビュープロジェクション行列の更新
+	/// カメラを指定した座標を向くように設定
 	/// </summary>
-	void UpdateMatrix();
+	/// <param name="target">注視点</param>
+	/// <param name="up">上方向ベクトル</param>
+	void LookAt(const Vector3& target, const Vector3& up = { 0.0f, 1.0f, 0.0f });
 
-	/// <summary>
-	/// スプライト用ビュープロジェクション行列の更新
-	/// </summary>
-	void UpdateSpriteMatrix();
 
-	/// <summary>
-	/// デフォルトの値を設定する
-	/// </summary>
-	void SetDefaultCamera();
-
-	/// <summary>
-	/// 初期座標を指定してデフォルト値を設定
-	/// </summary>
-	/// <param name="Position">初期座標</param>
-	void SetDefaultCamera(const Vector3& Position);
-
-	/// <summary>
-	/// imguiの表示
-	/// </summary>
-	void ImGui();
-
-	//Getter
-
-	// 3Dカメラ用
-	const Vector3Transform& GetTransform() const { return cameraTransform_; }
-	Vector3 GetPosition() const { return cameraTransform_.translate; }
-	Vector3 GetRotate() const { return cameraTransform_.rotate; }
-	//3D用
-	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
-	// スプライト用
-	Matrix4x4 GetSpriteViewProjectionMatrix() const { return spriteViewProjectionMatrix_; }
-
-	//Setter
-
-	// 3Dカメラ用
-	void SetTransform(const Vector3Transform& newTransform) { cameraTransform_ = newTransform; }
-	void SetPositon(const Vector3& position) { cameraTransform_.translate = position; }
-	void SetRotate(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
 
 private:
 
 	// 3Dカメラ用のトランスフォーム
-	Vector3Transform cameraTransform_{
-		.scale{1.0f, 1.0f, 1.0f},
-		.rotate{0.0f, 0.0f, 0.0f},
-		.translate{0.0f, 0.0f, -10.0f}
-	};
+	Vector3Transform cameraTransform_;
 
-	// カメラパラメータ
 	float fov_ = 0.45f;
 	float nearClip_ = 0.1f;
 	float farClip_ = 100.0f;
-	float aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
-
+	float aspectRatio_ = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
+	
 	// 行列 
 	Matrix4x4 viewMatrix_;
-
 	//プロジェクション行列
 	Matrix4x4 projectionMatrix_;			//3D用のプロジェクション行列
 	Matrix4x4 spriteProjectionMatrix_;		//スプライト用のプロジェクション行列
 	//ビュープロジェクション行列
 	Matrix4x4 viewProjectionMatrix_;		// 3D用ビュープロジェクション行列
 	Matrix4x4 spriteViewProjectionMatrix_;	// スプライト用ビュープロジェクション行列
+	// スプライト用ビュープロジェクション行列を使用するかどうか
+	bool useSpriteViewProjectionMatrix_;
 
+	/// <summary>
+	/// デフォルトの値を設定
+	/// </summary>
+	void SetDefaultCamera();
 
-	bool useSpriteViewProjectionMatrix_;	// スプライト用ビュープロジェクション行列を使用するか
+	/// <summary>
+	/// 指定座標でデフォルト値を設定
+	/// </summary>
+	/// <param name="position">初期座標</param>
+	void SetDefaultCamera(const Vector3& position);
 
+	/// <summary>
+	/// 3D用行列の更新
+	/// </summary>
+	void UpdateMatrix();
+
+	/// <summary>
+	/// スプライト用行列の更新
+	/// </summary>
+	void UpdateSpriteMatrix();
 };
-

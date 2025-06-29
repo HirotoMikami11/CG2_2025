@@ -83,9 +83,12 @@ private:
 	uint32_t height_ = 0;
 
 	// エフェクトリスト
+	//ここにエフェクトを追加し、このvectorの中身を順次使用していく
 	std::vector<std::unique_ptr<PostEffect>> effects_;
 
 	// ping-pong用レンダーターゲット
+	//2つのテクスチャを交互に使用してエフェクトを適用
+	//交互に使用するので2枚以上はいらない
 	Microsoft::WRL::ComPtr<ID3D12Resource> pingPongTextures_[2];
 	DescriptorHeapManager::DescriptorHandle pingPongRTVs_[2];
 	DescriptorHeapManager::DescriptorHandle pingPongSRVs_[2];

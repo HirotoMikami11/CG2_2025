@@ -1,16 +1,14 @@
 #pragma once
-
-#include "MyMath/MyFunction.h"
-#include "CameraController/CameraController.h"
+#include "CameraController/BaseCamera.h"
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 
 // 前方宣言
 class Player;
 
 /// <summary>
-/// プレイヤー追従カメラのゲームロジック
-/// システム層のCameraControllerを使用してゲーム固有のカメラ制御を行う
+/// プレイヤー追従カメラ
 /// </summary>
-class GameCamera {
+class GameCamera : public BaseCamera {
 public:
 	/// <summary>
 	/// カメラの移動範囲を矩形で設定する
@@ -22,32 +20,6 @@ public:
 		float top = 1.0f;
 	};
 
-private:
-	// システム層のカメラコントローラー参照
-	CameraController* cameraController_ = nullptr;
-
-	// 追従対象（プレイヤー）
-	Player* target_ = nullptr;
-
-	// カメラの移動範囲
-	Rect movableArea_ = { 0.0f, 100.0f, 0.0f, 100.0f };
-
-	// 追従対象の各方向へのカメラ移動範囲（画面内に収まるぎりぎり）
-	static inline const Rect followMargin_ = { -13.0f, 13.0f, -1.0f, 1.0f };
-
-	// カメラの目標座標
-	Vector3 targetPosition_ = { 0.0f, 0.0f, 0.0f };
-
-	// 座標補間割合（1フレームで目標に近づく割合）
-	static inline const float kInterpolationRate_ = (5.0f / 60.0f);
-
-	// 追従対象（プレイヤー）とカメラの座標の差（オフセット）
-	Vector3 targetOffset_ = { 0.0f, 0.0f, -38.0f };
-
-	// 速度掛け算（プレイヤーの速度に合わせる）
-	static inline const float kVelocityBias_ = 20.0f;
-
-public:
 	/// <summary>
 	/// コンストラクタ
 	/// </summary>
@@ -56,30 +28,37 @@ public:
 	/// <summary>
 	/// デストラクタ
 	/// </summary>
-	~GameCamera();
+	~GameCamera() override;
 
 	/// <summary>
-	/// 初期化
+	/// カメラの初期化
 	/// </summary>
-	/// <param name="cameraController">システム層のカメラコントローラー</param>
-	void Initialize(CameraController* cameraController);
+	/// <param name="position">初期位置</param>
+	void Initialize(const Vector3& position) override;
 
 	/// <summary>
-	/// 更新（デバッグカメラ時は追従処理をスキップ）
+	/// カメラの更新
 	/// </summary>
-	void Update();
+	void Update() override;
 
 	/// <summary>
-	/// 最初にしっかり追従させるためのリセット関数
+	/// ImGui表示
 	/// </summary>
-	void Reset();
+	void ImGui() override;
+
+	Matrix4x4 GetViewProjectionMatrix() const override { return viewProjectionMatrix_; }
+	Matrix4x4 GetSpriteViewProjectionMatrix() const override { return spriteViewProjectionMatrix_; }
+	Vector3 GetPosition() const override { return cameraTransform_.translate; }
+	void SetPosition(const Vector3& position) override { cameraTransform_.translate = position; }
+	std::string GetCameraType() const override { return "PlayerFollow"; }
 
 	/// <summary>
-	/// ImGui表示（カメラモード表示とパラメータ調整）
+	/// 追従対象がいない場合は無効
 	/// </summary>
-	void ImGui();
+	/// <returns>追従対象が設定されていればtrue</returns>
+	bool IsActive() const override { return target_ != nullptr; }
 
-	// Setter
+
 	/// <summary>
 	/// 追従対象の設定
 	/// </summary>
@@ -98,22 +77,43 @@ public:
 	/// <param name="offset">プレイヤーからのオフセット</param>
 	void SetOffset(const Vector3& offset) { targetOffset_ = offset; }
 
-	// Getter
 	/// <summary>
-	/// 現在のカメラ位置取得
+	/// 最初にしっかり追従させるためのリセット関数
 	/// </summary>
-	/// <returns>カメラ位置</returns>
-	Vector3 GetCameraPosition() const;
+	void Reset();
+
+private:
+	Player* target_;												// 追従対象（プレイヤー）
+	Vector3Transform cameraTransform_;								// カメラのトランスフォーム
+	Matrix4x4 viewProjectionMatrix_, spriteViewProjectionMatrix_;	// ビュープロジェクション行列
+
+	Rect movableArea_;												// カメラの移動範囲
+	Vector3 targetPosition_;										// カメラの目標座標
+	Vector3 targetOffset_;											// 追従対象（プレイヤー）とカメラの座標の差（オフセット）
+
+	/// 追従対象の各方向へのカメラ移動範囲（画面内に収まるぎりぎり）
+	static inline const Rect followMargin_ = { -13.0f, 13.0f, -1.0f, 1.0f };
+
+	/// 座標補間割合（1フレームで目標に近づく割合）
+	static inline const float kInterpolationRate_ = (5.0f / 60.0f);
+
+	/// 速度掛け算（プレイヤーの速度に合わせる）
+	static inline const float kVelocityBias_ = 20.0f;//速度バイアス
+
+
 
 	/// <summary>
-	/// 目標位置取得
+	/// プレイヤー追従の更新処理
 	/// </summary>
-	/// <returns>目標位置</returns>
-	Vector3 GetTargetPosition() const { return targetPosition_; }
+	void UpdateFollow();
 
 	/// <summary>
-	/// 追従が有効かどうか取得
+	/// 3D用行列の更新
 	/// </summary>
-	/// <returns>追従有効ならtrue</returns>
-	bool IsFollowingActive() const;
+	void UpdateMatrix();
+
+	/// <summary>
+	/// スプライト用行列の更新
+	/// </summary>
+	void UpdateSpriteMatrix();
 };

@@ -1,124 +1,244 @@
-#include "CameraController/CameraController.h"
-#include "Managers/ImGuiManager.h" 
+#include "CameraController.h"
+#include "Managers/ImGuiManager.h"
+#include "Managers/inputManager.h"
+#include <algorithm>
+#include <vector>
 
 CameraController* CameraController::GetInstance() {
 	static CameraController instance;
 	return &instance;
 }
 
-void CameraController::Initialize(const Vector3& Position)
-{
-	//カメラの初期化
-	camera_.Initialize(Position);
+void CameraController::Initialize(const Vector3& position) {
+	RegisterBuiltInCameras(position);
+	SetActiveCamera("normal");
+}
 
-	//デバッグカメラの初期化
-	debugCamera_.Initialize(Position);
+void CameraController::RegisterBuiltInCameras(const Vector3& initialPosition) {
+	// カメラを登録
+	auto normalCamera = std::make_unique<NormalCamera>();
+	normalCamera->Initialize(initialPosition);
+	registeredCameras_["normal"] = { std::move(normalCamera), true };
 
+	// Debugカメラを登録
+	auto debugCamera = std::make_unique<DebugCamera>();
+	debugCamera->Initialize(initialPosition);
+	registeredCameras_["debug"] = { std::move(debugCamera), true };
+}
 
-	useDebugCamera_ = false; // デフォルトではメインカメラを使用する
+void CameraController::RegisterCamera(const std::string& cameraId, std::unique_ptr<BaseCamera> camera) {
+	if (!camera) {
+		return;
+	}
 
+	registeredCameras_[cameraId] = { std::move(camera), false };
+}
+
+void CameraController::UnregisterCamera(const std::string& cameraId) {
+	auto it = registeredCameras_.find(cameraId);
+	if (it == registeredCameras_.end()) {
+		return;
+	}
+
+	// エンジン標準カメラは削除不可
+	if (it->second.isEngineCamera) {
+		return;
+	}
+
+	// 現在アクティブなカメラを削除する場合は、normalカメラに切り替え
+	if (activeCameraId_ == cameraId) {
+		activeCameraId_ = "normal";
+	}
+
+	registeredCameras_.erase(it);
+}
+
+void CameraController::SetActiveCamera(const std::string& cameraId) {
+	auto it = registeredCameras_.find(cameraId);
+	if (it == registeredCameras_.end()) {
+		return;
+	}
+
+	if (!it->second.camera->IsActive()) {
+		return;
+	}
+
+	activeCameraId_ = cameraId;
+}
+
+void CameraController::Update() {
+	// アクティブなカメラのみ更新
+	BaseCamera* activeCamera = GetActiveCamera();
+	if (activeCamera) {
+		activeCamera->Update();
+	}
+
+	// アクティブカメラが無効になった場合はnormalカメラに戻す
+	if (!activeCamera || !activeCamera->IsActive()) {
+		SetActiveCamera("normal");
+		// 新しいアクティブカメラを更新
+		activeCamera = GetActiveCamera();
+		if (activeCamera) {
+			activeCamera->Update();
+		}
+	}
+
+	HandleDebugInput();
+}
+
+void CameraController::HandleDebugInput() {
 #ifdef _DEBUG
-	useDebugCamera_ = false;
-#endif // DEBUG
-
-
-	///デバッグカメラで開始する場合、スプライトが表示されないので初期化したタイミングで一度だけ更新する
-	camera_.Update();
-	viewProjectionMatrix_ = camera_.GetViewProjectionMatrix();
-	viewProjectionMatrixSprite_ = camera_.GetSpriteViewProjectionMatrix();
-}
-
-void CameraController::Update()
-{
-
-	///
-	///	カメラの更新
-	/// 
-	
-	//デバッグとゲームカメラの切り替え
-	SwitchCamera();
-
-	if (!useDebugCamera_) {
-		camera_.Update();
-		viewProjectionMatrix_ = camera_.GetViewProjectionMatrix();
-
-	} else {
-		debugCamera_.Update();
-		viewProjectionMatrix_ = debugCamera_.GetViewProjectionMatrix();
-
+	if (InputManager::GetInstance()->IsKeyTrigger(DIK_TAB) &&
+		InputManager::GetInstance()->IsKeyDown(DIK_LSHIFT)) {
+		ToggleDebugCamera();
 	}
-
-
-	///スプライトの行列も更新
-	viewProjectionMatrixSprite_ = camera_.GetSpriteViewProjectionMatrix();
-
-	ImGui();
-
-}
-
-void CameraController::SetPositon(const Vector3& Position)
-{
-
-	cameraTranslation_ = Position;
-
-	camera_.SetPositon(cameraTranslation_);
-	debugCamera_.SetPositon(cameraTranslation_);
-
-
-}
-
-Vector3 CameraController::GetPosition() const {
-	// 現在アクティブなカメラの位置を返す
-	if (!useDebugCamera_) {
-		// メインカメラの位置を取得
-		return camera_.GetPosition();
-	} else {
-		// デバッグカメラの位置を取得
-		return debugCamera_.GetPosition();
-	}
-}
-void CameraController::ImGui()
-{
-#ifdef _DEBUG
-
-	ImGui::Begin("CameraController");
-
-	// カメラモード切り替え
-	ImGui::Text("CameraMode: %s", useDebugCamera_ ? "DebugCamera" : "MainCamera");
-
-	if (ImGui::Button(useDebugCamera_ ? "Use MainCamera" : "Use DebugCamera")) {
-		useDebugCamera_ = !useDebugCamera_;
-	}
-
-	ImGui::Separator(); // 区切り線
-
-	// デバッグカメラが有効な場合のみ、デバッグカメラのImGuiを表示
-	if (useDebugCamera_) {
-
-		// デバッグカメラ
-		debugCamera_.ImGui();
-
-	} else {
-
-		// メインカメラ
-		camera_.ImGui();
-
-	}
-
-	ImGui::End();
-
 #endif
 }
 
-void CameraController::SwitchCamera()
-{
-#ifdef _DEBUG
-	//Shift + TABでメインとデバッグカメラを切り替える
-	if (InputManager::GetInstance()->IsKeyTrigger(DIK_TAB) &&
-		InputManager::GetInstance()->IsKeyDown(DIK_LSHIFT)) {
-		useDebugCamera_ = !useDebugCamera_;
-
+void CameraController::ToggleDebugCamera() {
+	if (activeCameraId_ == "debug") {
+		SetActiveCamera(lastActiveCameraId_);
+	} else {
+		lastActiveCameraId_ = activeCameraId_;
+		SetActiveCamera("debug");
 	}
-	#endif
 }
 
+
+
+
+BaseCamera* CameraController::GetActiveCamera() const {
+	auto it = registeredCameras_.find(activeCameraId_);
+	return (it != registeredCameras_.end()) ? it->second.camera.get() : nullptr;
+}
+
+Matrix4x4 CameraController::GetViewProjectionMatrix() const {
+	BaseCamera* activeCamera = GetActiveCamera();
+	return activeCamera ? activeCamera->GetViewProjectionMatrix() : MakeIdentity4x4();
+}
+
+Matrix4x4 CameraController::GetViewProjectionMatrixSprite() const {
+	BaseCamera* activeCamera = GetActiveCamera();
+	return activeCamera ? activeCamera->GetSpriteViewProjectionMatrix() : MakeIdentity4x4();
+}
+
+Vector3 CameraController::GetPosition() const {
+	BaseCamera* activeCamera = GetActiveCamera();
+	return activeCamera ? activeCamera->GetPosition() : Vector3{ 0.0f, 0.0f, 0.0f };
+}
+
+void CameraController::SetPosition(const Vector3& position) {
+	BaseCamera* activeCamera = GetActiveCamera();
+	if (activeCamera) {
+		activeCamera->SetPosition(position);
+	}
+}
+
+bool CameraController::IsRegistered(const std::string& cameraId) const {
+	return registeredCameras_.find(cameraId) != registeredCameras_.end();
+}
+
+BaseCamera* CameraController::GetCamera(const std::string& cameraId) const {
+	auto it = registeredCameras_.find(cameraId);
+	return (it != registeredCameras_.end()) ? it->second.camera.get() : nullptr;
+}
+
+std::vector<std::string> CameraController::GetRegisteredCameraIds() const {
+	std::vector<std::string> ids;
+	ids.reserve(registeredCameras_.size());
+
+	for (const auto& [id, info] : registeredCameras_) {
+		ids.push_back(id);
+	}
+
+	return ids;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void CameraController::ImGui() {
+#ifdef _DEBUG
+	ImGui::Begin("CameraController");
+
+	// 現在の状態表示
+	ImGui::Text("Active Camera: %s", activeCameraId_.c_str());
+	BaseCamera* activeCamera = GetActiveCamera();
+	if (activeCamera) {
+		ImGui::Text("Camera Type: %s", activeCamera->GetCameraType().c_str());
+		Vector3 pos = activeCamera->GetPosition();
+		ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+	}
+
+	ImGui::Separator();
+
+	// カメラ切り替えUI
+	ImGui::Text("Cameras:");
+	for (const auto& [id, info] : registeredCameras_) {
+		ImGui::PushID(id.c_str());
+
+		bool isActive = (id == activeCameraId_);
+		bool isAvailable = info.camera && info.camera->IsActive();
+
+		// アクティブなカメラの場合は緑色のボタンにする
+		if (isActive) {
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 0.6f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.8f, 0.2f, 0.8f));
+		}
+
+		// ボタンサイズ
+		if (ImGui::Button(id.c_str(), ImVec2(120, 0))) {
+			if (isAvailable && !isActive) {
+				SetActiveCamera(id);
+			}
+		}
+
+		// アクティブなカメラの場合は色をリセット
+		if (isActive) {
+			ImGui::PopStyleColor(2);
+			ImGui::SameLine();
+			ImGui::Text("(Active)");
+		} else {
+			ImGui::SameLine();
+			ImGui::Text("(%s%s)",
+				isAvailable ? "Available" : "Unavailable",
+				info.isEngineCamera ? " Engine" : "");
+		}
+
+		ImGui::PopID();
+	}
+
+	ImGui::Separator();
+
+	// デバッグカメラ専用UI
+	if (ImGui::Button(IsUsingDebugCamera() ? "Use Camera" : "Use Debug Camera")) {
+		ToggleDebugCamera();
+	}
+
+	ImGui::Separator();
+
+	// アクティブカメラのImGui
+	if (activeCamera) {
+		ImGui::Text("Camera Settings:");
+		activeCamera->ImGui();
+	}
+
+	ImGui::Separator();
+
+	// 操作説明
+	ImGui::Text("Controls:");
+	ImGui::Text("Shift + TAB: Toggle Debug Camera");
+
+	ImGui::End();
+#endif
+}

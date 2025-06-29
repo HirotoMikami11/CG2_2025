@@ -57,21 +57,28 @@ void GameScene::Initialize() {
 	///*-----------------------------------------------------------------------*///
 	///								ゲームカメラ									///
 	///*-----------------------------------------------------------------------*///
+  // ゲームカメラの作成・設定
+	auto gameCamera = std::make_unique<GameCamera>();
+	gameCamera->Initialize({ 0.0f, 0.0f, -50.0f });
 
-	// ゲームカメラの初期化
-	gameCamera_ = std::make_unique<GameCamera>();
-	gameCamera_->Initialize(cameraController_);
-
-
+	// 移動範囲設定
 	GameCamera::Rect movableArea = {
 		15.0f,									// left（左端制限）
 		mapChipField_->GetMapSize().x - 16.0f,	// right（右端制限）
 		7.5f,									// bottom（下端制限）
 		mapChipField_->GetMapSize().y - 7.5f	// top（上端制限）
 	};
-	gameCamera_->SetMovableArea(movableArea);
-	// プレイヤーを追従対象に設定
-	gameCamera_->SetTarget(player_.get());
+	gameCamera->SetMovableArea(movableArea);
+	gameCamera->SetTarget(player_.get());
+
+	// raw pointerで参照を保存（所有権移譲前に）
+	gameCamera_ = gameCamera.get();
+
+	// CameraControllerに登録（所有権を移譲）
+	cameraController_->RegisterCamera("game", std::move(gameCamera));
+	cameraController_->SetActiveCamera("game");
+
+
 	// カメラを初期位置にリセット
 	gameCamera_->Reset();
 }
@@ -131,9 +138,6 @@ void GameScene::Update() {
 	// 行列更新
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
-
-	/// ゲームカメラの更新（プレイヤー追従）
-	gameCamera_->Update();
 
 	// フェーズの切り替えチェック
 	ChangePhase();
@@ -382,10 +386,7 @@ void GameScene::ImGui() {
 		ImGui::TreePop();
 	}
 	skydome_->ImGui();
-	// ゲームカメラのImGui
-	if (gameCamera_) {
-		gameCamera_->ImGui();
-	}
+
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
@@ -393,6 +394,8 @@ void GameScene::ImGui() {
 }
 
 void GameScene::Finalize() {
+	cameraController_->UnregisterCamera("game");
+	gameCamera_ = nullptr; // raw pointerをクリア
 	// unique_ptrで自動的に解放される
 	enemies_.clear();
 	// MapChipFieldの解放
