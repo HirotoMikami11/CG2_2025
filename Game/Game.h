@@ -1,8 +1,13 @@
 #pragma once
 #include <memory>
+//最初から用意されているシーン
+#include "Managers/Scene/DemoScene.h"
+#include "Managers/Scene/SceneManager.h"
+
+//ゲームで使うシーン
 #include "Scenes/GameScene/GameScene.h"
-#include "../DemoScene.h"
-#include "../SceneManager.h"
+#include "Scenes/TitleScene/TitleScene.h"
+
 
 //ゲームシーン
 
@@ -21,5 +26,9 @@ private:
 	void InitializeScenes();
 
 	// シーンマネージャー
-	std::unique_ptr<SceneManager> sceneManager_;
+	SceneManager* sceneManager_;  // 追加（シングルトンなのでポインタ）
+	// リソース管理
+	ModelManager* modelManager_;
+	TextureManager* textureManager_;
+
 };

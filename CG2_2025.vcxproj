@@ -53,6 +53,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine;$(ProjectDir)Game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,6 +79,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)Engine;$(ProjectDir)Game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -87,16 +89,42 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="DebugCamera.cpp" />
-    <ClCompile Include="DemoScene.cpp" />
-    <ClCompile Include="DescriptorHeapManager.cpp" />
-    <ClCompile Include="DirectXCommon.cpp" />
-    <ClCompile Include="Dump.cpp" />
-    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.cpp" />
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp" />
+    <ClCompile Include="Engine\BaseSystem\Logger\Dump.cpp" />
+    <ClCompile Include="Engine\BaseSystem\Logger\Logger.cpp" />
+    <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp" />
+    <ClCompile Include="Engine\CameraController\Camera.cpp" />
+    <ClCompile Include="Engine\CameraController\CameraController.cpp" />
+    <ClCompile Include="Engine\CameraController\DebugCamera.cpp" />
+    <ClCompile Include="Engine\Engine.cpp" />
+    <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
+    <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
+    <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp" />
+    <ClCompile Include="Engine\Managers\ImGuiManager.cpp" />
+    <ClCompile Include="Engine\Managers\InputManager.cpp" />
+    <ClCompile Include="Engine\Managers\Model\ModelManager.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
+    <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
+    <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp" />
+    <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
+    <ClCompile Include="Engine\MyMath\MyMath.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\GameObject.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Material.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Mesh.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Model.cpp" />
+    <ClCompile Include="Engine\Objects\GameObject\Transform.cpp" />
+    <ClCompile Include="Engine\Objects\Light\Light.cpp" />
+    <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp" />
+    <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\PostEffect.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -104,83 +132,104 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Game\Objects\DeathParticles.cpp" />
+    <ClCompile Include="Game\Objects\Enemy.cpp" />
+    <ClCompile Include="Game\Objects\GameCamera.cpp" />
+    <ClCompile Include="Game\Objects\MapChipField.cpp" />
+    <ClCompile Include="Game\Objects\Player.cpp" />
+    <ClCompile Include="Game\Objects\Skydome.cpp" />
+    <ClCompile Include="Game\Objects\TitlePlayer.cpp" />
     <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp" />
-    <ClCompile Include="GrayscalePostEffect.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="MyFunction.cpp" />
-    <ClCompile Include="MyMath.cpp" />
-    <ClCompile Include="OffscreenRenderer.cpp" />
-    <ClCompile Include="PostEffect.cpp" />
-    <ClCompile Include="PostProcessChain.cpp" />
-    <ClCompile Include="RGBShiftPostEffect.cpp" />
-    <ClCompile Include="SceneManager.cpp" />
-    <ClCompile Include="Sprite.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="Transform2D.cpp" />
-    <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Grayscale.PS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Grayscale.VS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    <FxCompile Include="resources\Shader\Grayscale\Grayscale.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Object3d.PS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Object3d.VS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="RGBShift.PS.hlsl">
+    <FxCompile Include="resources\Shader\Object3d\Object3d.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="RGBShift.VS.hlsl">
+    <FxCompile Include="resources\Shader\Object3d\Object3d.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Sprite.PS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    <FxCompile Include="resources\Shader\Offscreen.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Sprite.VS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Sprite\Sprite.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Sprite\Sprite.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio.h" />
-    <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="BaseScene.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="DebugCamera.h" />
-    <ClInclude Include="DemoScene.h" />
-    <ClInclude Include="DescriptorHeapManager.h" />
-    <ClInclude Include="DirectXCommon.h" />
-    <ClInclude Include="Dump.h" />
-    <ClInclude Include="Engine.h" />
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.h" />
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h" />
+    <ClInclude Include="Engine\BaseSystem\GraphicsConfig.h" />
+    <ClInclude Include="Engine\BaseSystem\Logger\Dump.h" />
+    <ClInclude Include="Engine\BaseSystem\Logger\Logger.h" />
+    <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h" />
+    <ClInclude Include="Engine\CameraController\BaseCamera.h" />
+    <ClInclude Include="Engine\CameraController\Camera.h" />
+    <ClInclude Include="Engine\CameraController\CameraController.h" />
+    <ClInclude Include="Engine\CameraController\DebugCamera.h" />
+    <ClInclude Include="Engine\Engine.h" />
+    <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
+    <ClInclude Include="Engine\Managers\Audio\Audio.h" />
+    <ClInclude Include="Engine\Managers\Audio\AudioManager.h" />
+    <ClInclude Include="Engine\Managers\ImGuiManager.h" />
+    <ClInclude Include="Engine\Managers\InputManager.h" />
+    <ClInclude Include="Engine\Managers\Model\ModelManager.h" />
+    <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
+    <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
+    <ClInclude Include="Engine\Managers\Scene\FadeManager.h" />
+    <ClInclude Include="Engine\Managers\Scene\SceneManager.h" />
+    <ClInclude Include="Engine\Managers\Texture\Texture.h" />
+    <ClInclude Include="Engine\Managers\Texture\TextureManager.h" />
+    <ClInclude Include="Engine\MyMath\MyFunction.h" />
+    <ClInclude Include="Engine\MyMath\MyMath.h" />
+    <ClInclude Include="Engine\Objects\GameObject\GameObject.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Material.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Mesh.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Model.h" />
+    <ClInclude Include="Engine\Objects\GameObject\Transform.h" />
+    <ClInclude Include="Engine\Objects\Light\Light.h" />
+    <ClInclude Include="Engine\Objects\Sprite\Sprite.h" />
+    <ClInclude Include="Engine\Objects\Sprite\Transform2D.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\PostEffect.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -189,34 +238,18 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="Game\Game.h" />
+    <ClInclude Include="Game\Objects\DeathParticles.h" />
+    <ClInclude Include="Game\Objects\Enemy.h" />
+    <ClInclude Include="Game\Objects\GameCamera.h" />
+    <ClInclude Include="Game\Objects\MapChipField.h" />
+    <ClInclude Include="Game\Objects\Player.h" />
+    <ClInclude Include="Game\Objects\Skydome.h" />
+    <ClInclude Include="Game\Objects\TitlePlayer.h" />
     <ClInclude Include="Game\Scenes\GameScene\GameScene.h" />
-    <ClInclude Include="GraphicsConfig.h" />
-    <ClInclude Include="GrayscalePostEffect.h" />
-    <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h" />
     <ClInclude Include="LeakChecker.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="MyFunction.h" />
-    <ClInclude Include="MyMath.h" />
-    <ClInclude Include="OffscreenRenderer.h" />
-    <ClInclude Include="PostEffect.h" />
-    <ClInclude Include="PostProcessChain.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="RGBShiftPostEffect.h" />
-    <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="Sprite.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="TextureManager.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="Transform2D.h" />
-    <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -227,10 +260,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Grayscale.hlsli" />
-    <None Include="Object3d.hlsli" />
-    <None Include="RGBShift.hlsli" />
-    <None Include="Sprite.hlsli" />
+    <None Include="resources\Shader\Grayscale\Grayscale.hlsli" />
+    <None Include="resources\Shader\LineGlitch\LineGlitch.hlsli" />
+    <None Include="resources\Shader\Object3d\Object3d.hlsli" />
+    <None Include="resources\Shader\RGBShift\RGBShift.hlsli" />
+    <None Include="resources\Shader\Sprite\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CG2_2025.rc" />

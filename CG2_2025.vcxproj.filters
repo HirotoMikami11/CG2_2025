@@ -16,48 +16,6 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{09ed2eb8-a2f2-4001-8a92-88fb361709f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Audio">
-      <UniqueIdentifier>{49779a9c-4b33-4482-9b87-8114c9a89d5d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Audio">
-      <UniqueIdentifier>{67e04bfc-e7ed-4269-b5fa-6b01d2cb6c14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\GameObject">
-      <UniqueIdentifier>{4e90fb87-35af-43c5-abf0-a88650137e3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\GameObject">
-      <UniqueIdentifier>{55afe411-9868-43b2-89e9-2633bcd6f53d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Texture">
-      <UniqueIdentifier>{92addf69-69d6-4d46-b898-5cbd0cd0621b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Texture">
-      <UniqueIdentifier>{51368f7b-fe4e-4bd0-9ca7-2f5d4844a2db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Camera">
-      <UniqueIdentifier>{43feb261-e876-42ce-b9fb-8a1e0764fb68}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Camera">
-      <UniqueIdentifier>{551458e2-8d93-44e4-bfac-08bda869c068}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\DirectXCommon">
-      <UniqueIdentifier>{301b57c6-bc9c-4099-a7b4-de54192c3064}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\DirectXCommon">
-      <UniqueIdentifier>{b07e9775-06a7-40a9-9b02-b90fcd54ea71}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\DirectXCommon\Logger">
-      <UniqueIdentifier>{1c9c37a2-60e3-4494-b794-cdccf350ef4c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\DirectXCommon\Logger">
-      <UniqueIdentifier>{510abd56-8856-4809-a4d3-050564b9bfbe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MyMath">
-      <UniqueIdentifier>{c74472ed-5339-4e39-b559-12214c196116}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\MyMath">
-      <UniqueIdentifier>{a73fe585-58a8-4075-bfa2-59097dffb1df}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader">
       <UniqueIdentifier>{d7f24bbd-081a-4210-811f-21c946777cc9}</UniqueIdentifier>
     </Filter>
@@ -67,35 +25,8 @@
     <Filter Include="リソース ファイル\Shader\Sprite">
       <UniqueIdentifier>{ae8040b9-f52c-42fc-84d3-5e698849411b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Sprite">
-      <UniqueIdentifier>{e2882a5e-bff0-4a5b-8ef6-a0a39bc0f78f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Sprite">
-      <UniqueIdentifier>{e36e23c7-8f1c-4343-8852-618966b22da6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen">
-      <UniqueIdentifier>{03d769a8-00a6-4692-94bd-32d7c20fd016}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostEffect">
-      <UniqueIdentifier>{a9c21117-45d5-4bd9-8564-7b331f6714c1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostEffect\RGBShift">
-      <UniqueIdentifier>{9c6be5dc-041d-4c3c-9931-219339b7c751}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostProcessChain">
-      <UniqueIdentifier>{37a00932-352c-443b-9aec-e010c8571bf5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\OffscreenRenderer">
-      <UniqueIdentifier>{cb9cb87f-e25a-458c-82d5-4abea6b28e5b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="リソース ファイル\Shader\RGBShift">
-      <UniqueIdentifier>{1b05d1ae-4ce6-402e-a6fe-f5ef2717410e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Grayscale">
       <UniqueIdentifier>{199393d8-3b85-4dd1-bd73-032f83314bd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Offscreen\PostEffect\Grayscale">
-      <UniqueIdentifier>{bf51a594-c662-43d5-879b-1078219b28d4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{feec44c0-5ba6-4e64-9ba3-5db0d0ca8d0f}</UniqueIdentifier>
@@ -106,11 +37,119 @@
     <Filter Include="Game\Scenes\GameScene">
       <UniqueIdentifier>{92ccc106-94e0-45b1-96a4-bf83ad623174}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SceneManager">
-      <UniqueIdentifier>{b845b850-1796-4cd3-a171-8aa6a2c0eb45}</UniqueIdentifier>
+    <Filter Include="Game\Scenes\TitleScene">
+      <UniqueIdentifier>{657acde6-db28-4149-9d7d-0c9c3feca823}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SceneManager\DefaultScene">
-      <UniqueIdentifier>{df795625-dc06-44e5-bfdc-cdcd673a1728}</UniqueIdentifier>
+    <Filter Include="リソース ファイル\Shader\RGBShift">
+      <UniqueIdentifier>{869937fb-cbe3-4a2d-85c9-d01611d182d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{f70ce07e-5b4e-449c-be5f-6f9f6b2555bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem">
+      <UniqueIdentifier>{e2e33861-0b3d-4c4e-b915-da6dcd8205a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem\Logger">
+      <UniqueIdentifier>{577e0e85-e621-4f3b-8b03-ebce0f82d82e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem\WinApp">
+      <UniqueIdentifier>{55694ab5-6cb1-493d-a885-e5f5fe1c6730}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BaseSystem\DirectXCommon">
+      <UniqueIdentifier>{f8409849-6e81-4254-a523-bbead3e9cc50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer">
+      <UniqueIdentifier>{8bc77280-60cd-44b8-a2d8-74b652d035e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect">
+      <UniqueIdentifier>{77687888-8282-4d7e-a865-a15d5e44dcb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\FrameTimer">
+      <UniqueIdentifier>{14c40776-6e78-4284-ad43-f871e8df3d70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\RGBShift">
+      <UniqueIdentifier>{885eaab5-9d5a-401f-8888-009a7dfcd2f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\Grayscale">
+      <UniqueIdentifier>{3125642e-04cb-43ce-b12c-0ea65eb247f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\CameraController">
+      <UniqueIdentifier>{11539be1-ba92-4684-a353-704c408862bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\MyMath">
+      <UniqueIdentifier>{12403412-1bc7-4927-b755-240bd79f6595}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects">
+      <UniqueIdentifier>{316e2ec9-0aa7-48bb-a20e-e61bc9a224ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\Sprite">
+      <UniqueIdentifier>{9141dc29-9f62-4285-946d-27e7a0216f67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\Light">
+      <UniqueIdentifier>{c2dc26ba-dff9-43de-aea3-1931dd817a02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\GameObject">
+      <UniqueIdentifier>{9f9fc7be-4b1e-4259-bf4f-a9d06975c986}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers">
+      <UniqueIdentifier>{b898e7b0-d129-4a3f-97e8-547ae1c915ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Texture">
+      <UniqueIdentifier>{91b372ab-9def-413b-a148-db52ddf9180a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Audio">
+      <UniqueIdentifier>{53428ebc-a771-4461-b61a-3dddde1c10d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Scene">
+      <UniqueIdentifier>{8d0d45b1-3c22-4d10-8e12-bae714348094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Input">
+      <UniqueIdentifier>{401ed695-a780-4ebb-b1e6-d559c1109305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\ImGui">
+      <UniqueIdentifier>{24adf0e5-c0e5-49bc-b239-16c89b7788b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects">
+      <UniqueIdentifier>{0126492a-2253-4b67-9cff-eedc8047fabb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Player">
+      <UniqueIdentifier>{3a16bcdb-d50c-496d-8b75-a6d86459a64a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Enemy">
+      <UniqueIdentifier>{72884eaa-fda0-45e6-999b-982d08e1e8a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\MapChipField">
+      <UniqueIdentifier>{32651caf-a83b-448e-a20f-28f9e170f45b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Skydome">
+      <UniqueIdentifier>{f4539ff9-b533-43a6-992b-bd998b0a53c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\TitlePlayer">
+      <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\GameCamera">
+      <UniqueIdentifier>{1f0a3efa-dca2-447c-b994-cd9562ff2d7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\Offscreen">
+      <UniqueIdentifier>{e28376ba-145a-4bb9-a378-ded6a9af5dcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\DeathParticles">
+      <UniqueIdentifier>{4cae9bdc-8f4c-44bd-a3f7-d610a56e63e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Model">
+      <UniqueIdentifier>{511b34ed-608c-4f53-8cb6-30253fa7f735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\LineGlitch">
+      <UniqueIdentifier>{3eaee6b7-caf3-42c8-9cbf-1d0e22e1ee2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\LineGltich">
+      <UniqueIdentifier>{85922a04-6b52-45b6-b95e-4004cd236d0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\CameraController\NormalCamera">
+      <UniqueIdentifier>{6ce3d0c7-4696-4b7d-b5bc-13737a7c9ec2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\CameraController\DebugCamera">
+      <UniqueIdentifier>{6964cef4-8ab4-4ebe-b789-d9243f89409c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -138,136 +177,178 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="WinApp.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio.cpp">
-      <Filter>ソース ファイル\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="AudioManager.cpp">
-      <Filter>ソース ファイル\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>ソース ファイル\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>ソース ファイル\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugCamera.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraController.cpp">
-      <Filter>ソース ファイル\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>ソース ファイル\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectXCommon.cpp">
-      <Filter>ソース ファイル\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="Dump.cpp">
-      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
-    </ClCompile>
-    <ClCompile Include="Logger.cpp">
-      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
-    </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>ソース ファイル\MyMath</Filter>
-    </ClCompile>
-    <ClCompile Include="MyFunction.cpp">
-      <Filter>ソース ファイル\MyMath</Filter>
-    </ClCompile>
-    <ClCompile Include="DescriptorHeapManager.cpp">
-      <Filter>ソース ファイル\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="FrameTimer.cpp">
-      <Filter>ソース ファイル\MyMath</Filter>
-    </ClCompile>
-    <ClCompile Include="Sprite.cpp">
-      <Filter>ソース ファイル\Sprite</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform2D.cpp">
-      <Filter>ソース ファイル\Sprite</Filter>
-    </ClCompile>
-    <ClCompile Include="PostEffect.cpp">
-      <Filter>Offscreen\PostEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="RGBShiftPostEffect.cpp">
-      <Filter>Offscreen\PostEffect\RGBShift</Filter>
-    </ClCompile>
-    <ClCompile Include="PostProcessChain.cpp">
-      <Filter>Offscreen\PostProcessChain</Filter>
-    </ClCompile>
-    <ClCompile Include="OffscreenRenderer.cpp">
-      <Filter>Offscreen\OffscreenRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="GrayscalePostEffect.cpp">
-      <Filter>Offscreen\PostEffect\Grayscale</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Game.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp">
       <Filter>Game\Scenes\GameScene</Filter>
     </ClCompile>
-    <ClCompile Include="DemoScene.cpp">
-      <Filter>SceneManager\DefaultScene</Filter>
+    <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
+      <Filter>Game\Scenes\TitleScene</Filter>
     </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>SceneManager</Filter>
+    <ClCompile Include="Engine\Engine.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\Logger\Dump.cpp">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\Logger\Logger.cpp">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp">
+      <Filter>Engine\BaseSystem\WinApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.cpp">
+      <Filter>Engine\BaseSystem\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\PostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp">
+      <Filter>Engine\FrameTimer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\CameraController.cpp">
+      <Filter>Engine\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\MyMath\MyFunction.cpp">
+      <Filter>Engine\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\MyMath\MyMath.cpp">
+      <Filter>Engine\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Light\Light.cpp">
+      <Filter>Engine\Objects\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\GameObject.cpp">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Material.cpp">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Mesh.cpp">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Model.cpp">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Transform.cpp">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Texture\Texture.cpp">
+      <Filter>Engine\Managers\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp">
+      <Filter>Engine\Managers\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Audio\Audio.cpp">
+      <Filter>Engine\Managers\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp">
+      <Filter>Engine\Managers\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\InputManager.cpp">
+      <Filter>Engine\Managers\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\ImGuiManager.cpp">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
+      <Filter>Engine\BaseSystem\DirectXCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Skydome.cpp">
+      <Filter>Game\Objects\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\TitlePlayer.cpp">
+      <Filter>Game\Objects\TitlePlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Player.cpp">
+      <Filter>Game\Objects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\MapChipField.cpp">
+      <Filter>Game\Objects\MapChipField</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Enemy.cpp">
+      <Filter>Game\Objects\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\GameCamera.cpp">
+      <Filter>Game\Objects\GameCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\DeathParticles.cpp">
+      <Filter>Game\Objects\DeathParticles</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
+      <Filter>Engine\Managers\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\Camera.cpp">
+      <Filter>Engine\CameraController\NormalCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
+      <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Object3d.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Object3d</Filter>
-    </FxCompile>
-    <FxCompile Include="Object3d.VS.hlsl">
-      <Filter>リソース ファイル\Shader\Object3d</Filter>
-    </FxCompile>
-    <FxCompile Include="Sprite.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Sprite</Filter>
-    </FxCompile>
-    <FxCompile Include="Sprite.VS.hlsl">
-      <Filter>リソース ファイル\Shader\Sprite</Filter>
-    </FxCompile>
-    <FxCompile Include="RGBShift.PS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
-    <FxCompile Include="RGBShift.VS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
-    <FxCompile Include="Grayscale.PS.hlsl">
+    <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
     </FxCompile>
-    <FxCompile Include="Grayscale.VS.hlsl">
+    <FxCompile Include="resources\Shader\Grayscale\Grayscale.VS.hlsl">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Object3d\Object3d.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Object3d\Object3d.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Object3d</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Sprite\Sprite.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Sprite\Sprite.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Sprite</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Offscreen.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Offscreen</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.PS.hlsl">
+      <Filter>リソース ファイル\Shader\LineGltich</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
+      <Filter>リソース ファイル\Shader\LineGltich</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -295,106 +376,7 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="WinApp.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio.h">
-      <Filter>ヘッダー ファイル\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioManager.h">
-      <Filter>ヘッダー ファイル\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>ヘッダー ファイル\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureManager.h">
-      <Filter>ヘッダー ファイル\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugCamera.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGuiManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraController.h">
-      <Filter>ヘッダー ファイル\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>ヘッダー ファイル\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectXCommon.h">
-      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="Dump.h">
-      <Filter>ヘッダー ファイル\DirectXCommon\Logger</Filter>
-    </ClInclude>
-    <ClInclude Include="Logger.h">
-      <Filter>ヘッダー ファイル\DirectXCommon\Logger</Filter>
-    </ClInclude>
-    <ClInclude Include="MyMath.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
-    <ClInclude Include="MyFunction.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsConfig.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
-    <ClInclude Include="DescriptorHeapManager.h">
-      <Filter>ヘッダー ファイル\DirectXCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameTimer.h">
-      <Filter>ヘッダー ファイル\MyMath</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite.h">
-      <Filter>ヘッダー ファイル\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform2D.h">
-      <Filter>ヘッダー ファイル\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="PostEffect.h">
-      <Filter>Offscreen\PostEffect</Filter>
-    </ClInclude>
-    <ClInclude Include="RGBShiftPostEffect.h">
-      <Filter>Offscreen\PostEffect\RGBShift</Filter>
-    </ClInclude>
-    <ClInclude Include="PostProcessChain.h">
-      <Filter>Offscreen\PostProcessChain</Filter>
-    </ClInclude>
-    <ClInclude Include="OffscreenRenderer.h">
-      <Filter>Offscreen\OffscreenRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="GrayscalePostEffect.h">
-      <Filter>Offscreen\PostEffect\Grayscale</Filter>
-    </ClInclude>
-    <ClInclude Include="LeakChecker.h">
-      <Filter>ソース ファイル\DirectXCommon\Logger</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Game\Game.h">
@@ -403,28 +385,166 @@
     <ClInclude Include="Game\Scenes\GameScene\GameScene.h">
       <Filter>Game\Scenes\GameScene</Filter>
     </ClInclude>
-    <ClInclude Include="DemoScene.h">
-      <Filter>SceneManager\DefaultScene</Filter>
+    <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
+      <Filter>Game\Scenes\TitleScene</Filter>
     </ClInclude>
-    <ClInclude Include="BaseScene.h">
-      <Filter>SceneManager</Filter>
+    <ClInclude Include="Engine\Engine.h">
+      <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>SceneManager</Filter>
+    <ClInclude Include="Engine\BaseSystem\Logger\Dump.h">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\Logger\Logger.h">
+      <Filter>Engine\BaseSystem\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h">
+      <Filter>Engine\BaseSystem\WinApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\GraphicsConfig.h">
+      <Filter>Engine\BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\DescriptorHeapManager.h">
+      <Filter>Engine\BaseSystem\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\PostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FrameTimer\FrameTimer.h">
+      <Filter>Engine\FrameTimer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
+    </ClInclude>
+    <ClInclude Include="LeakChecker.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\CameraController.h">
+      <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\MyMath\MyFunction.h">
+      <Filter>Engine\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\MyMath\MyMath.h">
+      <Filter>Engine\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Sprite\Sprite.h">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Sprite\Transform2D.h">
+      <Filter>Engine\Objects\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Light\Light.h">
+      <Filter>Engine\Objects\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\GameObject.h">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Material.h">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Mesh.h">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Model.h">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Transform.h">
+      <Filter>Engine\Objects\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Texture\Texture.h">
+      <Filter>Engine\Managers\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Texture\TextureManager.h">
+      <Filter>Engine\Managers\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Audio\Audio.h">
+      <Filter>Engine\Managers\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Audio\AudioManager.h">
+      <Filter>Engine\Managers\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\BaseScene.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\DemoScene.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\SceneManager.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\InputManager.h">
+      <Filter>Engine\Managers\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\ImGuiManager.h">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
+      <Filter>Engine\BaseSystem\DirectXCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Skydome.h">
+      <Filter>Game\Objects\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\TitlePlayer.h">
+      <Filter>Game\Objects\TitlePlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Player.h">
+      <Filter>Game\Objects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\MapChipField.h">
+      <Filter>Game\Objects\MapChipField</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Enemy.h">
+      <Filter>Game\Objects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\GameCamera.h">
+      <Filter>Game\Objects\GameCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\DeathParticles.h">
+      <Filter>Game\Objects\DeathParticles</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\FadeManager.h">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Model\ModelManager.h">
+      <Filter>Engine\Managers\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\BaseCamera.h">
+      <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\Camera.h">
+      <Filter>Engine\CameraController\NormalCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\DebugCamera.h">
+      <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Object3d.hlsli">
+    <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
+      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    </None>
+    <None Include="resources\Shader\Object3d\Object3d.hlsli">
       <Filter>リソース ファイル\Shader\Object3d</Filter>
     </None>
-    <None Include="Sprite.hlsli">
+    <None Include="resources\Shader\Sprite\Sprite.hlsli">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
     </None>
-    <None Include="RGBShift.hlsli">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
+    <None Include="resources\Shader\LineGlitch\LineGlitch.hlsli">
+      <Filter>リソース ファイル\Shader\LineGltich</Filter>
     </None>
-    <None Include="Grayscale.hlsli">
-      <Filter>リソース ファイル\Shader\Grayscale</Filter>
+    <None Include="resources\Shader\RGBShift\RGBShift.hlsli">
+      <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

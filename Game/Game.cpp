@@ -6,8 +6,12 @@ Game::~Game() = default;
 
 void Game::Initialize() {
 	// シーンマネージャーの初期化
-	sceneManager_ = std::make_unique<SceneManager>();
+	sceneManager_ = SceneManager::GetInstance();
 	sceneManager_->Initialize();
+
+	// リソースマネージャーの初期化
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
 
 	// シーンの初期化
 	InitializeScenes();
@@ -20,6 +24,9 @@ void Game::InitializeScenes() {
 
 	auto gameScene = std::make_unique<GameScene>();
 	sceneManager_->RegisterScene("GameScene", std::move(gameScene));
+
+	auto titleScene = std::make_unique<TitleScene>();
+	sceneManager_->RegisterScene("TitleScene", std::move(titleScene));
 
 
 	// 将来的に追加するシーン
@@ -53,6 +60,5 @@ void Game::Finalize() {
 	// シーンマネージャーの終了処理
 	if (sceneManager_) {
 		sceneManager_->Finalize();
-		sceneManager_.reset();
 	}
 }
