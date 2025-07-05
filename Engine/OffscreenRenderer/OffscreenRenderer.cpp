@@ -100,7 +100,10 @@ void OffscreenRenderer::Update(float deltaTime) {
 		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
 		offscreenSprite_->Update(spriteViewProjection);
 	}
-}void OffscreenRenderer::PreDraw() {
+}
+
+
+void OffscreenRenderer::PreDraw() {
 	auto commandList = dxCommon_->GetCommandList();
 
 	// バリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）

@@ -4,13 +4,13 @@
 #include "Managers/Scene/DemoScene.h"
 #include "Managers/Scene/SceneManager.h"
 
-//ゲームで使うシーン
 #include "Scenes/GameScene/GameScene.h"
 #include "Scenes/TitleScene/TitleScene.h"
 
 
-//ゲームシーン
-
+/// <summary>
+/// ゲーム全体を管理するクラス
+/// </summary>
 class Game
 {
 public:
@@ -23,10 +23,13 @@ public:
 	void Finalize();
 
 private:
+	/// <summary>
+	/// シーンの初期化
+	/// </summary>
 	void InitializeScenes();
 
 	// シーンマネージャー
-	SceneManager* sceneManager_;  // 追加（シングルトンなのでポインタ）
+	SceneManager* sceneManager_;
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;

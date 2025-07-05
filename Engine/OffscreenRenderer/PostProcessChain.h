@@ -40,6 +40,7 @@ public:
 	/// </summary>
 	
 	//TODO:ここの実装をaiに頼った為もう一度復習する
+	//ポストエフェクト型のものvector型、配列に追加していき使用する
 	template<typename T>
 	T* AddEffect() {
 		auto effect = std::make_unique<T>();
