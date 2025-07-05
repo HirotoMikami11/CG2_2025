@@ -6,6 +6,7 @@
 #include "Objects/Light/Light.h"
 #include "Objects/GameObject/GameObject.h"
 #include "CameraController/CameraController.h"
+#include "Objects/Line/GridLine.h"
 
 #include "Engine.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
@@ -46,7 +47,7 @@ private:
 	std::unique_ptr<Model3D> model_;
 
 	std::unique_ptr<Sprite> sprite_;
-
+	std::unique_ptr<GridLine> gridLine_;
 	// ライティング
 	Light directionalLight_;
 

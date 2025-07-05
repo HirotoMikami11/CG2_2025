@@ -44,7 +44,7 @@ public:
 
 	// Getter
 	Vector3 GetPosition() const { return transform_.GetPosition(); }
-	Vector3 GetRotation() const { return transform_.GetRotate(); }
+	Vector3 GetRotation() const { return transform_.GetRotation(); }
 	Vector3 GetScale() const { return transform_.GetScale(); }
 	Vector4 GetColor() const { return material_.GetColor(); }
 	Transform& GetTransform() { return transform_; }
@@ -59,7 +59,7 @@ public:
 	// Setter
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
 	void SetPosition(const Vector3& position) { transform_.SetPosition(position); }
-	void SetRotation(const Vector3& rotation) { transform_.SetRotate(rotation); }
+	void SetRotation(const Vector3& rotation) { transform_.SetRotation(rotation); }
 	void SetScale(const Vector3& scale) { transform_.SetScale(scale); }
 	void SetColor(const Vector4& color) { material_.SetColor(color); }
 	void SetVisible(bool visible) { isVisible_ = visible; }

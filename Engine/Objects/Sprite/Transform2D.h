@@ -86,7 +86,7 @@ public:
 private:
 	// GPU用トランスフォームリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformResource_;
-	// トランスフォームデータへのポインタ（Map済み）
+	// トランスフォームデータへのポインタ
 	TransformationMatrix* transformData_ = nullptr;
 
 	// CPU側のトランスフォーム値（2D用）

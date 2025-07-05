@@ -218,18 +218,19 @@ void CameraController::ImGui() {
 		ImGui::PopID();
 	}
 
-	ImGui::Separator();
 
-	// デバッグカメラ専用UI
-	if (ImGui::Button(IsUsingDebugCamera() ? "Use Camera" : "Use Debug Camera")) {
-		ToggleDebugCamera();
-	}
+	//ImGui::Separator();
+	// デバッグカメラを切り替える(カメラの数が多くなったら必要になるかも)
+	//if (ImGui::Button(IsUsingDebugCamera() ? "Use Camera" : "Use Debug Camera")) {
+	//	ToggleDebugCamera();
+	//}
 
 	ImGui::Separator();
 
 	// アクティブカメラのImGui
 	if (activeCamera) {
-		ImGui::Text("Camera Settings:");
+		myImGui::CenterText("Camera Data");
+		ImGui::Separator();
 		activeCamera->ImGui();
 	}
 
