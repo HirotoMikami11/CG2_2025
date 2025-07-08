@@ -48,6 +48,7 @@ private:
 
 	std::unique_ptr<Sprite> sprite_;
 	std::unique_ptr<GridLine> gridLine_;
+
 	// ライティング
 	Light directionalLight_;
 

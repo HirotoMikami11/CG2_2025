@@ -1,7 +1,4 @@
 #pragma once
-
-#include <string>
-#include <vector>
 #include <memory>
 #include <d3d12.h>
 #include <wrl.h>
@@ -14,13 +11,14 @@
 /// <summary>
 /// グリッド線専用のマテリアル構造体
 /// </summary>
-struct LineMaterial {
+struct GridLineMaterial {
 	Vector4 color;  // 基本色のみ（16バイト）
 };
 
 /// <summary>
 /// グリッド描画専用クラス
 /// 責務：グリッド線の生成・管理・描画
+/// 個別描画と一括描画の両方に対応
 /// </summary>
 class GridLine
 {
@@ -70,9 +68,17 @@ public:
 	void Update(const Matrix4x4& viewProjectionMatrix);
 
 	/// <summary>
-	/// 描画処理
+	/// 描画処理（描画モードに応じて切り替え）
 	/// </summary>
-	void Draw();
+	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
+	void Draw(const Matrix4x4& viewProjectionMatrix);
+
+	/// <summary>
+	/// 個別描画（色が正確に反映される）
+	/// </summary>
+	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
+	void DrawIndividual(const Matrix4x4& viewProjectionMatrix);
+
 
 	/// <summary>
 	/// ImGui用デバッグ表示
@@ -85,6 +91,7 @@ public:
 	const std::string& GetName() const { return name_; }
 	size_t GetLineCount() const { return lines_.size(); }
 
+
 	// Setter
 	void SetVisible(bool visible) { isVisible_ = visible; }
 	void SetActive(bool active) { isActive_ = active; }
@@ -94,22 +101,6 @@ public:
 	Transform& GetTransform() { return transform_; }
 	const Transform& GetTransform() const { return transform_; }
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
-
-private:
-	/// <summary>
-	/// バッファを更新
-	/// </summary>
-	void UpdateBuffers();
-
-	/// <summary>
-	/// 頂点バッファを作成
-	/// </summary>
-	void CreateVertexBuffer();
-
-	/// <summary>
-	/// マテリアルリソースを作成
-	/// </summary>
-	void CreateMaterialBuffer();
 
 private:
 	// 基本情報
@@ -123,13 +114,6 @@ private:
 
 	// 線分データ
 	std::vector<std::unique_ptr<Line>> lines_;
-	std::vector<VertexData> vertices_;
-
-	// DirectX12リソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialBuffer_;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-	LineMaterial* materialData_ = nullptr;
 
 	// グリッド設定（ImGui用）
 	float gridSize_ = 50.0f;
@@ -137,7 +121,4 @@ private:
 	float gridMajorInterval_ = 10.0f;
 	Vector4 gridNormalColor_ = { 0.5f, 0.5f, 0.5f, 1.0f };
 	Vector4 gridMajorColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-	// バッファ更新フラグ
-	bool needsBufferUpdate_ = true;
 };

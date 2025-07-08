@@ -84,9 +84,10 @@ void DemoScene::InitializeGameObjects() {
 	gridLine_ = std::make_unique<GridLine>();
 	gridLine_->Initialize(directXCommon_);
 	gridLine_->SetName("Main Grid");
-	// 50m、1m間隔、10mごとに黒
+
+	// 100m、1m間隔、10mごとに黒
 	gridLine_->CreateGrid(
-		50.0f,  // サイズ
+		100.0f,  // サイズ
 		1.0f,   // 間隔
 		10.0f,  // 主要線間隔
 		{ 0.5f, 0.5f, 0.5f, 1.0f },  // 通常線：灰色
@@ -131,16 +132,22 @@ void DemoScene::UpdateGameObjects() {
 
 	// 球体の更新
 	sphere_->Update(viewProjectionMatrix);
-	gridLine_->Update(viewProjectionMatrix);
 	// スプライトの更新
 	sprite_->Update(viewProjectionMatrixSprite);
 
 	// モデルの更新
 	model_->Update(viewProjectionMatrix);
+
+	// グリッド線更新
+	gridLine_->Update(viewProjectionMatrix);
+
 }
 
 void DemoScene::Draw() {
-	gridLine_->Draw();
+	// グリッド線を描画
+	gridLine_->Draw(viewProjectionMatrix);
+
+
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }

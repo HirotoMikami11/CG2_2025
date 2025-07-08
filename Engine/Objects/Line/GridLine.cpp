@@ -15,9 +15,6 @@ void GridLine::Initialize(DirectXCommon* dxCommon)
 	// Transformを初期化
 	transform_.Initialize(dxCommon);
 
-	// LineMaterialバッファを作成（線分専用シェーダーと一致）
-	CreateMaterialBuffer();
-
 	// デフォルトでグリッドを作成
 	CreateGrid();
 }
@@ -42,7 +39,15 @@ void GridLine::CreateGrid(
 
 	// X方向の線（Z軸に沿って）
 	for (float x = -halfSize; x <= halfSize; x += interval) {
-		Vector4 color = (std::fmod(std::abs(x), majorInterval) < 0.001f) ? majorColor : normalColor;
+		Vector4 color;
+		if (std::abs(x) < 0.001f) {//誤差で0にならない時のために0.001にしておく
+			//原点のZ軸は青色に変更する
+			color = Vector4{ 0.0f, 0.0f, 1.0f, 1.0f };
+		} else if (std::fmod(std::abs(x), majorInterval) < 0.001f) {
+			color = majorColor;
+		} else {
+			color = normalColor;
+		}
 
 		Vector3 start = { x, 0.0f, -halfSize };
 		Vector3 end = { x, 0.0f, halfSize };
@@ -51,7 +56,16 @@ void GridLine::CreateGrid(
 
 	// Z方向の線（X軸に沿って）
 	for (float z = -halfSize; z <= halfSize; z += interval) {
-		Vector4 color = (std::fmod(std::abs(z), majorInterval) < 0.001f) ? majorColor : normalColor;
+		Vector4 color;
+
+		if (std::abs(z) < 0.001f) {//誤差で0にならない時のために0.001にしておく
+			//原点のX軸は赤色に変更する
+			color = Vector4{ 1.0f, 0.0f, 0.0f, 1.0f };
+		} else if (std::fmod(std::abs(z), majorInterval) < 0.001f) {
+			color = majorColor;
+		} else {
+			color = normalColor;
+		}
 
 		Vector3 start = { -halfSize, 0.0f, z };
 		Vector3 end = { halfSize, 0.0f, z };
@@ -62,18 +76,16 @@ void GridLine::CreateGrid(
 void GridLine::AddLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
 	auto line = std::make_unique<Line>();
-	line->Initialize();  // インスタンス初期化
+	line->Initialize();
 	line->SetPoints(start, end);
 	line->SetColor(color);
 	lines_.push_back(std::move(line));
-	needsBufferUpdate_ = true;
+
 }
 
 void GridLine::Clear()
 {
 	lines_.clear();
-	vertices_.clear();
-	needsBufferUpdate_ = true;
 }
 
 void GridLine::Update(const Matrix4x4& viewProjectionMatrix)
@@ -85,102 +97,94 @@ void GridLine::Update(const Matrix4x4& viewProjectionMatrix)
 	// Transform行列を更新
 	transform_.UpdateMatrix(viewProjectionMatrix);
 
-	// バッファが更新必要な場合は更新
-	if (needsBufferUpdate_) {
-		UpdateBuffers();
-		needsBufferUpdate_ = false;
+
+	for (auto& line : lines_) {
+		line->Update(viewProjectionMatrix);
 	}
+
+
 }
 
-void GridLine::Draw()
+void GridLine::Draw(const Matrix4x4& viewProjectionMatrix)
 {
-	if (!isVisible_ || !isActive_ || lines_.empty() || vertices_.empty()) {
+	if (!isVisible_ || !isActive_ || lines_.empty()) {
+		return;
+	}
+	DrawIndividual(viewProjectionMatrix);
+
+}
+
+void GridLine::DrawIndividual(const Matrix4x4& viewProjectionMatrix)
+{
+	if (!isVisible_ || !isActive_ || lines_.empty()) {
 		return;
 	}
 
-	// 直接描画処理を行う
-	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
-
-	// 線分用のPSOを設定
-	commandList->SetGraphicsRootSignature(directXCommon_->GetLineRootSignature());
-	commandList->SetPipelineState(directXCommon_->GetLinePipelineState());
-
-	// LineMaterialを設定（RootParameter[0]: PixelShader用）
-	commandList->SetGraphicsRootConstantBufferView(0, materialBuffer_->GetGPUVirtualAddress());
-
-	// TransformationMatrixを設定（RootParameter[1]: VertexShader用）
-	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
-
-	// プリミティブトポロジを線分に設定
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-
-	// GridLineクラスが持つ頂点バッファを使用
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-
-	// 描画（インデックスバッファは使用しない）
-	commandList->DrawInstanced(static_cast<UINT>(vertices_.size()), 1, 0, 0);
-
-	// 3D用のPSOに戻す
-	commandList->SetGraphicsRootSignature(directXCommon_->GetRootSignature());
-	commandList->SetPipelineState(directXCommon_->GetPipelineState());
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// 各線分を個別に描画（色が正確に反映される）
+	for (auto& line : lines_) {
+		if (line->IsVisible()) {
+			line->Draw(viewProjectionMatrix);
+		}
+	}
 }
 
 void GridLine::ImGui()
 {
 #ifdef _DEBUG
+	if (ImGui::TreeNode(name_.c_str())) {
+		// 基本設定
+		ImGui::Checkbox("Visible", &isVisible_);
+		ImGui::Checkbox("Active", &isActive_);
 
+		ImGui::Text("Line Count: %zu", lines_.size());
+
+		// Transform
+		if (ImGui::CollapsingHeader("Transform")) {
+			Vector3 position = transform_.GetPosition();
+			Vector3 rotation = transform_.GetRotation();
+			Vector3 scale = transform_.GetScale();
+
+			if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
+				transform_.SetPosition(position);
+			}
+			if (ImGui::DragFloat3("Rotation", &rotation.x, 0.01f)) {
+				transform_.SetRotation(rotation);
+			}
+			if (ImGui::DragFloat3("Scale", &scale.x, 0.01f)) {
+				transform_.SetScale(scale);
+			}
+		}
+
+		// グリッド設定
+		if (ImGui::CollapsingHeader("Grid Settings")) {
+			bool gridChanged = false;
+
+			if (ImGui::DragFloat("Grid Size", &gridSize_, 1.0f, 10.0f, 200.0f)) {
+				gridChanged = true;
+			}
+
+			if (ImGui::DragFloat("Grid Interval", &gridInterval_, 0.1f, 0.1f, 5.0f)) {
+				gridChanged = true;
+			}
+
+			if (ImGui::DragFloat("Major Interval", &gridMajorInterval_, 1.0f, 2.0f, 50.0f)) {
+				gridChanged = true;
+			}
+
+			if (ImGui::ColorEdit4("Normal Color", &gridNormalColor_.x)) {
+				gridChanged = true;
+			}
+
+			if (ImGui::ColorEdit4("Major Color", &gridMajorColor_.x)) {
+				gridChanged = true;
+			}
+
+			if (ImGui::Button("Regenerate Grid") || gridChanged) {
+				CreateGrid(gridSize_, gridInterval_, gridMajorInterval_, gridNormalColor_, gridMajorColor_);
+			}
+		}
+
+		ImGui::TreePop();
+	}
 #endif
-}
-
-void GridLine::UpdateBuffers()
-{
-	if (lines_.empty()) {
-		return;
-	}
-
-	// 頂点データを作成（各線分につき2頂点）
-	vertices_.clear();
-	vertices_.reserve(lines_.size() * 2);
-
-	for (const auto& line : lines_) {
-		VertexData startVertex, endVertex;
-		line->GetVertexData(startVertex, endVertex);
-
-		vertices_.push_back(startVertex);
-		vertices_.push_back(endVertex);
-	}
-
-	// 頂点バッファを作成
-	CreateVertexBuffer();
-}
-
-void GridLine::CreateVertexBuffer()
-{
-	if (vertices_.empty()) {
-		return;
-	}
-
-	// 頂点バッファを作成
-	vertexBuffer_ = CreateBufferResource(directXCommon_->GetDevice(), sizeof(VertexData) * vertices_.size());
-
-	// データを書き込み
-	VertexData* vertexData = nullptr;
-	vertexBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, vertices_.data(), sizeof(VertexData) * vertices_.size());
-
-	// 頂点バッファビューを設定
-	vertexBufferView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * vertices_.size());
-	vertexBufferView_.StrideInBytes = sizeof(VertexData);
-}
-
-void GridLine::CreateMaterialBuffer()
-{
-	// LineMaterialバッファを作成（16バイト）
-	materialBuffer_ = CreateBufferResource(directXCommon_->GetDevice(), sizeof(LineMaterial));
-	materialBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-
-	// デフォルト色を設定
-	materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
