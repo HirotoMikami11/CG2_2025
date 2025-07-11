@@ -26,8 +26,6 @@ void DemoScene::LoadResources() {
 
 	//TODO:スザンヌ
 
-	//スザンヌ
-
 	//バニー
 
 	//ティーカップ
