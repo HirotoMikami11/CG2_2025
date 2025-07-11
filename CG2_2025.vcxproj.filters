@@ -585,9 +585,4 @@
       <Filter>imgui</Filter>
     </Text>
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CG2_2025.rc">
-      <Filter>リソース ファイル</Filter>
-    </ResourceCompile>
-  </ItemGroup>
 </Project>

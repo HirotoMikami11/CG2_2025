@@ -61,7 +61,7 @@ public:
 	void SetVisible(bool visible) { isVisible_ = visible; }
 
 	/// <summary>
-	/// 頂点データを取得（一括描画用）
+	/// 頂点データを取得
 	/// </summary>
 	/// <param name="startVertex">開始点頂点データ（出力）</param>
 	/// <param name="endVertex">終了点頂点データ（出力）</param>
@@ -79,7 +79,7 @@ private:
 	void UpdateMaterialBuffer();
 
 private:
-	// DirectXCommon参照（各インスタンス毎）
+	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
 
 	// 線分データ

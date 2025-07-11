@@ -281,9 +281,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="resources\Shader\RGBShift\RGBShift.hlsli" />
     <None Include="resources\Shader\Sprite\Sprite.hlsli" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CG2_2025.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
