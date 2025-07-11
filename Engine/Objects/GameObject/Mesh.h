@@ -20,7 +20,7 @@
 enum class MeshType {
 	TRIANGLE,		// 三角形
 	SPHERE,			// 球体
-	SPRITE,			// スプライト（矩形）
+	SPRITE,			// スプライト（ビルボード）
 	MODEL_OBJ,		// OBJファイル読み込み
 };
 
