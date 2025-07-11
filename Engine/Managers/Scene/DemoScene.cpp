@@ -23,7 +23,10 @@ void DemoScene::Initialize() {
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
-	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	// 座標と回転を指定して初期化
+	Vector3 initialPosition = { 0.0f, 3.0f, -15.0f };
+	Vector3 initialRotation = { 0.25f, 0.0f, 0.0f };
+	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
 
 	// ブロックモデルを事前読み込み

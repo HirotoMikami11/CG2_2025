@@ -13,9 +13,12 @@ NormalCamera::NormalCamera()
 
 NormalCamera::~NormalCamera() = default;
 
-void NormalCamera::Initialize(const Vector3& position) {
-	// 指定座標でデフォルト値を設定
-	SetDefaultCamera(position);
+void NormalCamera::Initialize(const Vector3& position, const Vector3& rotation) {
+	// 初期値を保存
+	initialPosition_ = position;
+	initialRotation_ = rotation;
+	// 指定座標・回転でデフォルト値を設定
+	SetDefaultCamera(position, rotation);
 }
 
 void NormalCamera::Update() {
@@ -25,14 +28,10 @@ void NormalCamera::Update() {
 	UpdateSpriteMatrix();
 }
 
-void NormalCamera::SetDefaultCamera() {
-	SetDefaultCamera({ 0.0f, 0.0f, -10.0f });
-}
-
-void NormalCamera::SetDefaultCamera(const Vector3& position) {
-	// デフォルト値に設定（座標は引数で指定）
+void NormalCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotation) {
+	// デフォルト値に設定（座標・回転は引数で指定）
 	cameraTransform_.scale = { 1.0f, 1.0f, 1.0f };
-	cameraTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+	cameraTransform_.rotate = rotation;
 	cameraTransform_.translate = position;
 
 	// カメラパラメータのデフォルト値
@@ -126,7 +125,7 @@ void NormalCamera::ImGui() {
 
 	// リセットボタン
 	if (ImGui::Button("Reset Camera")) {
-		SetDefaultCamera();
+		SetDefaultCamera(initialPosition_,initialRotation_);
 	}
 #endif
 }

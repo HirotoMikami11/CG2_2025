@@ -15,7 +15,8 @@ public:
 	/// カメラの初期化
 	/// </summary>
 	/// <param name="position">初期位置</param>
-	void Initialize(const Vector3& position) override;
+	/// <param name="rotation">初期回転（デフォルト：{0,0,0}）</param>
+	void Initialize(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f }) override;
 
 	/// <summary>
 	/// カメラの更新
@@ -56,11 +57,15 @@ private:
 	// 3Dカメラ用のトランスフォーム
 	Vector3Transform cameraTransform_;
 
+	// 初期値保存用
+	Vector3 initialPosition_;
+	Vector3 initialRotation_;
+
 	float fov_ = 0.45f;
 	float nearClip_ = 0.1f;
 	float farClip_ = 100.0f;
 	float aspectRatio_ = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
-	
+
 	// 行列 
 	Matrix4x4 viewMatrix_;
 	//プロジェクション行列
@@ -73,15 +78,11 @@ private:
 	bool useSpriteViewProjectionMatrix_;
 
 	/// <summary>
-	/// デフォルトの値を設定
-	/// </summary>
-	void SetDefaultCamera();
-
-	/// <summary>
-	/// 指定座標でデフォルト値を設定
+	/// 指定座標・回転でデフォルト値を設定
 	/// </summary>
 	/// <param name="position">初期座標</param>
-	void SetDefaultCamera(const Vector3& position);
+	/// <param name="rotation">初期回転</param>
+	void SetDefaultCamera(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f });
 
 	/// <summary>
 	/// 3D用行列の更新

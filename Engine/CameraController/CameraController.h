@@ -21,7 +21,9 @@ public:
 	/// カメラシステムの初期化
 	/// 標準カメラ（Normal、Debug）を自動登録
 	/// </summary>
-	void Initialize(const Vector3& position);
+	/// <param name="position">初期位置</param>
+	/// <param name="rotation">初期回転（デフォルト：{0,0,0}）</param>
+	void Initialize(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f });
 
 	/// <summary>
 	/// 全カメラの更新処理
@@ -124,7 +126,7 @@ private:
 	BaseCamera* GetActiveCamera() const;
 
 	// エンジン標準カメラの登録
-	void RegisterBuiltInCameras(const Vector3& initialPosition);
+	void RegisterBuiltInCameras(const Vector3& initialPosition, const Vector3& initialRotation);
 
 	//デバッグ入力処理（Shift+TABでの切り替え）
 	void HandleDebugInput();

@@ -16,7 +16,8 @@ public:
 	/// カメラの初期化
 	/// </summary>
 	/// <param name="position">初期位置</param>
-	virtual void Initialize(const Vector3& position) = 0;
+	/// <param name="rotation">初期回転（デフォルト：{0,0,0}）</param>
+	virtual void Initialize(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f }) = 0;
 
 	/// <summary>
 	/// カメラの更新
