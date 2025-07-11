@@ -8,21 +8,33 @@ TitleScene::TitleScene()
 	, directXCommon_(nullptr)
 	, offscreenRenderer_(nullptr)
 	, modelManager_(nullptr)
-	, textureManager_(nullptr) {
+	, textureManager_(nullptr)
+	, viewProjectionMatrix{ MakeIdentity4x4() }
+	, viewProjectionMatrixSprite{ MakeIdentity4x4() }
+{
 }
 
 TitleScene::~TitleScene() = default;
+
+void TitleScene::LoadResources() {
+	// リソースの読み込み
+	Logger::Log(Logger::GetStream(), "TitleScene: Loading resources...\n");
+
+	// リソースマネージャーの取得
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
+
+	// モデルを事前読み込み
+	modelManager_->LoadModel("resources/Model/TitleFont", "titleFont.obj", "titleFont");
+	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+
+	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
+}
 
 void TitleScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
-	// リソースマネージャーの初期化
-	modelManager_ = ModelManager::GetInstance();
-	textureManager_ = TextureManager::GetInstance();
-	// モデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/TitleFont", "titleFont.obj", "titleFont");
-	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
 
 
 	///*-----------------------------------------------------------------------*///
@@ -43,15 +55,16 @@ void TitleScene::InitializeGameObjects() {
 
 
 	Vector3 titleFontPos = { -0.2f, 1.12f, 0.0f };
-	//初期化、座標設定
+	//初期化、座標設定（リソースは既に読み込み済みなので軽量）
 	titleFont_ = std::make_unique<Model3D>();
-	titleFont_->Initialize(directXCommon_, "titleFont");
+	titleFont_->Initialize(directXCommon_, "titleFont");  // 軽量（リソース参照のみ）
 	titleFont_->SetPosition(titleFontPos);
+
 	///*-----------------------------------------------------------------------*///
 	///									プレイヤー(置物)							///
 	///*-----------------------------------------------------------------------*///
 
-	//初期化
+	//初期化（軽量）
 	TitlePlayer_ = std::make_unique<TitlePlayer>();
 	TitlePlayer_->Initialize();
 
@@ -108,11 +121,12 @@ void TitleScene::DrawGameObjects() {
 
 void TitleScene::OnEnter() {
 	// ゲームシーンに入る時の処理
-	//cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	Logger::Log(Logger::GetStream(), "TitleScene: OnEnter\n");
 }
 
 void TitleScene::OnExit() {
 	// ゲームシーンから出る時の処理
+	Logger::Log(Logger::GetStream(), "TitleScene: OnExit\n");
 }
 
 void TitleScene::ImGui() {
@@ -134,4 +148,5 @@ void TitleScene::ImGui() {
 
 void TitleScene::Finalize() {
 	// unique_ptrで自動的に解放される
+	Logger::Log(Logger::GetStream(), "TitleScene: Finalize\n");
 }

@@ -34,7 +34,9 @@ public:
 	/// カメラの初期化
 	/// </summary>
 	/// <param name="position">初期位置</param>
-	void Initialize(const Vector3& position) override;
+	/// <param name="rotation">初期回転（デフォルト：{0,0,0}）</param>
+	void Initialize(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f }) override;
+
 
 	/// <summary>
 	/// カメラの更新

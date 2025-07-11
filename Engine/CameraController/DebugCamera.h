@@ -36,7 +36,8 @@ public:
 	/// カメラの初期化
 	/// </summary>
 	/// <param name="position">初期位置</param>
-	void Initialize(const Vector3& position) override;
+	/// <param name="rotation">初期回転（デフォルト：{0,0,0}）</param>
+	void Initialize(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f }) override;
 
 	/// <summary>
 	/// カメラの更新
@@ -66,15 +67,11 @@ public:
 private:
 
 	/// <summary>
-	/// デフォルトの値を設定する
-	/// </summary>
-	void SetDefaultCamera();
-
-	/// <summary>
-	/// 初期座標を指定してデフォルト値を設定
+	/// 初期座標・回転を指定してデフォルト値を設定
 	/// </summary>
 	/// <param name="position">初期座標</param>
-	void SetDefaultCamera(const Vector3& position);
+	/// <param name="rotation">初期回転</param>
+	void SetDefaultCamera(const Vector3& position, const Vector3& rotation = { 0.0f, 0.0f, 0.0f });
 
 	/// <summary>
 	/// 座標変換：球面座標系からデカルト座標系へ
@@ -101,6 +98,14 @@ private:
 	/// 球面座標からカメラ位置を更新
 	/// </summary>
 	void UpdatePositionFromSpherical();
+
+	/// <summary>
+	/// 回転から10m先のターゲット座標を計算
+	/// </summary>
+	/// <param name="position">カメラ位置</param>
+	/// <param name="rotation">カメラ回転</param>
+	/// <returns>ターゲット座標</returns>
+	Vector3 CalculateTargetFromRotation(const Vector3& position, const Vector3& rotation) const;
 
 	/// <summary>
 	/// ピボット回転（中クリックドラッグ）
@@ -147,6 +152,10 @@ private:
 	Vector3 target_ = { 0.0f, 0.0f, 0.0f };			// ピボットの中心座標
 	SphericalCoordinates spherical_;				// 球面座標系での位置
 
+	// デカルト座標系用の変数（ImGui表示・編集用）
+	Vector3 cartesianPosition_;						// デカルト座標での位置
+	Vector3 cartesianRotation_;						// デカルト座標での回転
+
 	// 操作設定
 
 	// 操作設定
@@ -161,6 +170,9 @@ private:
 	float minPhi_ = 0.1f;							// 最小仰角（ほぼ真上）
 	float maxPhi_ = 3.04159f;						// 最大仰角（ほぼ真下）
 
+	// 初期値保存用
+	Vector3 initialPosition_;
+	Vector3 initialRotation_;
 
 	InputManager* input_;
 

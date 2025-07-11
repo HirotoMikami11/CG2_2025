@@ -2,7 +2,6 @@
 #include <cassert>
 #include "Managers/ImGuiManager.h" 
 
-
 SceneManager* SceneManager::GetInstance() {
 	static SceneManager instance;
 	return &instance;
@@ -11,10 +10,22 @@ SceneManager* SceneManager::GetInstance() {
 void SceneManager::Initialize() {
 	fadeManager_ = std::make_unique<FadeManager>();
 	fadeManager_->Initialize();
+
+}
+
+void SceneManager::LoadAllSceneResources() {
+	// 登録されている全シーンのリソースを読み込み
+	for (auto& [sceneName, scene] : scenes_) {
+		if (!scene->IsResourcesLoaded()) {
+			Logger::Log(Logger::GetStream(), std::format("Loading resources for scene: {}\n", sceneName));
+			scene->LoadResources();
+			scene->SetResourcesLoaded(true);
+			Logger::Log(Logger::GetStream(), std::format("Resources loaded for scene: {}\n", sceneName));
+		}
+	}
 }
 
 void SceneManager::Update() {
-
 	// FadeManagerの更新
 	if (fadeManager_) {
 		fadeManager_->Update();
@@ -60,10 +71,17 @@ void SceneManager::Finalize() {
 	currentSceneName_.clear();
 }
 
-
 void SceneManager::RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene) {
 	assert(scene != nullptr);
 	scenes_[sceneName] = std::move(scene);
+
+	// 新しく登録されたシーンのリソースを即座に読み込み
+	if (!scenes_[sceneName]->IsResourcesLoaded()) {
+		Logger::Log(Logger::GetStream(), std::format("Loading resources for newly registered scene: {}\n", sceneName));
+		scenes_[sceneName]->LoadResources();
+		scenes_[sceneName]->SetResourcesLoaded(true);
+		Logger::Log(Logger::GetStream(), std::format("Resources loaded for newly registered scene: {}\n", sceneName));
+	}
 }
 
 void SceneManager::UnregisterScene(const std::string& sceneName) {
@@ -87,26 +105,28 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 		return false;
 	}
 
-	// 現在のシーンの処理
+	// 現在のシーンの処理（オブジェクトのみ解放）
 	if (currentScene_) {
 		currentScene_->OnExit();
-		//TODO: シーンのリセット(モデルを読み込むので重い)
 		currentScene_->Finalize();
+		// オブジェクト初期化フラグのみリセット（リソースフラグは保持）
 		currentScene_->SetInitialized(false);
+		// リソース読み込みフラグは保持: resourcesLoaded_ = true のまま
 	}
 
 	// 新しいシーンの設定
 	currentScene_ = scenes_[sceneName].get();
 	currentSceneName_ = sceneName;
 
-	// 新しいシーンの初期化（初回のみ）
+	// リソースは既に読み込み済みなので、オブジェクト初期化のみ実行
 	if (!currentScene_->IsInitialized()) {
-		currentScene_->Initialize();
+		Logger::Log(Logger::GetStream(), std::format("Initializing objects for scene: {}\n", sceneName));
+		currentScene_->Initialize();  // 軽量なオブジェクト作成のみ
 		currentScene_->SetInitialized(true);
+		Logger::Log(Logger::GetStream(), std::format("Objects initialized for scene: {}\n", sceneName));
 	}
 
 	currentScene_->OnEnter();
-
 	return true;
 }
 
@@ -213,8 +233,26 @@ void SceneManager::ProcessFadeTransition() {
 
 void SceneManager::ImGui() {
 #ifdef _DEBUG
-
 	ImGui::Begin("Scene Manager");
+
+	// リソース管理UI
+	if (ImGui::CollapsingHeader("Resource Management")) {
+		if (ImGui::Button("Reload All Scene Resources")) {
+			LoadAllSceneResources();
+		}
+
+		ImGui::Separator();
+		ImGui::Text("Scene Resource Status:");
+		for (const auto& [sceneName, scene] : scenes_) {
+			ImGui::Text("%s: Resources %s, Objects %s",
+				sceneName.c_str(),
+				scene->IsResourcesLoaded() ? "Loaded" : "Not Loaded",
+				scene->IsInitialized() ? "Initialized" : "Not Initialized"
+			);
+		}
+	}
+
+	ImGui::Separator();
 
 	// シーン管理UI
 	DrawScenesUI();
@@ -230,14 +268,14 @@ void SceneManager::ImGui() {
 
 void SceneManager::DrawScenesUI() {
 #ifdef _DEBUG
-
 	ImGui::Text("Scene Management");
 
 	// 現在のシーン情報表示
 	if (currentScene_) {
 		ImGui::Text("Current Scene: %s", currentSceneName_.c_str());
 		ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: Active");
-		ImGui::Text("Initialized: %s", currentScene_->IsInitialized() ? "Yes" : "No");
+		ImGui::Text("Resources Loaded: %s", currentScene_->IsResourcesLoaded() ? "Yes" : "No");
+		ImGui::Text("Objects Initialized: %s", currentScene_->IsInitialized() ? "Yes" : "No");
 	} else {
 		ImGui::Text("Current Scene: None");
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: No Scene");
@@ -271,7 +309,10 @@ void SceneManager::DrawScenesUI() {
 			ImGui::Text("(Current)");
 		} else {
 			ImGui::SameLine();
-			ImGui::Text("(Init: %s)", scene->IsInitialized() ? "Yes" : "No");
+			ImGui::Text("(Res: %s, Obj: %s)",
+				scene->IsResourcesLoaded() ? "Yes" : "No",
+				scene->IsInitialized() ? "Yes" : "No"
+			);
 		}
 
 		// リセットボタン
@@ -290,7 +331,7 @@ void SceneManager::DrawScenesUI() {
 			ResetCurrentScene();
 		}
 		ImGui::SameLine();
-		ImGui::TextColored(ImVec4(1, 1, 0, 1), "reset all objects");
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "reset objects only");
 	}
 
 	// シーン切り替え要求があるかの表示
@@ -299,13 +340,11 @@ void SceneManager::DrawScenesUI() {
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Next Scene: %s", nextSceneName_.c_str());
 		ImGui::Text("(Will change next frame)");
 	}
-
 #endif
 }
 
 void SceneManager::DrawCurrentSceneUI() {
 #ifdef _DEBUG
-
 	ImGui::Text("Current Scene Debug");
 
 	if (currentScene_) {

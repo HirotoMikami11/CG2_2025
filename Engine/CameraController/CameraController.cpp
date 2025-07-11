@@ -9,20 +9,20 @@ CameraController* CameraController::GetInstance() {
 	return &instance;
 }
 
-void CameraController::Initialize(const Vector3& position) {
-	RegisterBuiltInCameras(position);
+void CameraController::Initialize(const Vector3& position, const Vector3& rotation) {
+	RegisterBuiltInCameras(position, rotation);
 	SetActiveCamera("normal");
 }
 
-void CameraController::RegisterBuiltInCameras(const Vector3& initialPosition) {
+void CameraController::RegisterBuiltInCameras(const Vector3& initialPosition, const Vector3& initialRotation) {
 	// カメラを登録
 	auto normalCamera = std::make_unique<NormalCamera>();
-	normalCamera->Initialize(initialPosition);
+	normalCamera->Initialize(initialPosition, initialRotation);
 	registeredCameras_["normal"] = { std::move(normalCamera), true };
 
 	// Debugカメラを登録
 	auto debugCamera = std::make_unique<DebugCamera>();
-	debugCamera->Initialize(initialPosition);
+	debugCamera->Initialize(initialPosition, initialRotation);
 	registeredCameras_["debug"] = { std::move(debugCamera), true };
 }
 
@@ -229,7 +229,8 @@ void CameraController::ImGui() {
 
 	// アクティブカメラのImGui
 	if (activeCamera) {
-		ImGui::Text("Camera Settings:");
+		myImGui::CenterText("Camera Data");
+		ImGui::Separator();
 		activeCamera->ImGui();
 	}
 

@@ -39,7 +39,7 @@ public:
 	const Vector3Transform& GetTransform() const { return transform_; }
 
 	Vector3 GetPosition() const { return transform_.translate; }
-	Vector3 GetRotate() const { return transform_.rotate; }
+	Vector3 GetRotation() const { return transform_.rotate; }
 	Vector3 GetScale() const { return transform_.scale; }
 
 	Matrix4x4 GetWorldMatrix() const { return transformData_->World; };
@@ -52,7 +52,7 @@ public:
 	//Setter
 	void SetTransform(const Vector3Transform& newTransform) { transform_ = newTransform; }
 	void SetScale(const Vector3& scale) { transform_.scale = scale; }
-	void SetRotate(const Vector3& rotate) { transform_.rotate = rotate; }
+	void SetRotation(const Vector3& rotate) { transform_.rotate = rotate; }
 	void SetPosition(const Vector3& translate) { transform_.translate = translate; }
 
 	///指定した値で回転

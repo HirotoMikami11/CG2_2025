@@ -12,14 +12,19 @@ DebugCamera::DebugCamera()
 	, viewMatrix_{}
 	, projectionMatrix_{}
 	, spherical_{}
+	, cartesianPosition_{ 0.0f, 0.0f, -10.0f }
+	, cartesianRotation_{ 0.0f, 0.0f, 0.0f }
 	, input_(nullptr) {
 }
 
 DebugCamera::~DebugCamera() = default;
 
-void DebugCamera::Initialize(const Vector3& position) {
+void DebugCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	input_ = InputManager::GetInstance();
-	SetDefaultCamera(position);
+	// 初期値を保存
+	initialPosition_ = position;
+	initialRotation_ = rotation;
+	SetDefaultCamera(position, rotation);
 }
 
 void DebugCamera::Update() {
@@ -34,6 +39,10 @@ void DebugCamera::Update() {
 		HandleZoom();               // マウスホイールでズーム
 		HandleKeyboardMovement();   // キーボードでの移動
 	}
+
+	// デカルト座標系の変数を現在の状態に同期
+	cartesianPosition_ = cameraTransform_.translate;
+	cartesianRotation_ = cameraTransform_.rotate;
 
 	// 行列の更新
 	UpdateMatrix();
@@ -53,28 +62,42 @@ Matrix4x4 DebugCamera::GetSpriteViewProjectionMatrix() const {
 
 void DebugCamera::SetPosition(const Vector3& position) {
 	cameraTransform_.translate = position;
+	cartesianPosition_ = position;
 	UpdateSphericalFromPosition();
 }
 
-void DebugCamera::SetDefaultCamera() {
-	SetDefaultCamera({ 0.0f, 0.0f, -10.0f });
-}
-
-void DebugCamera::SetDefaultCamera(const Vector3& position) {
-	// Cameraクラスと完全に同じデフォルト値に設定（座標は引数で指定）
+void DebugCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotation) {
+	// デフォルト値に設定（座標・回転は引数で指定）
 	cameraTransform_.scale = { 1.0f, 1.0f, 1.0f };
-	cameraTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+	cameraTransform_.rotate = rotation;
 	cameraTransform_.translate = position;
 
-	// Cameraクラスの初期状態と同じ方向を向くようにターゲットを設定
-	// カメラ位置から+10のところをターゲットにする
-	target_ = position + Vector3(0.0f, 0.0f, 10.0f);
+	// デカルト座標系の変数も同期
+	cartesianPosition_ = position;
+	cartesianRotation_ = rotation;
+
+	// 回転を反映して10m先にターゲットを配置
+	target_ = CalculateTargetFromRotation(position, rotation);
 
 	// 球面座標を現在の位置から計算
 	UpdateSphericalFromPosition();
 
 	// 行列の初期化
 	UpdateMatrix();
+}
+
+Vector3 DebugCamera::CalculateTargetFromRotation(const Vector3& position, const Vector3& rotation) const {
+	// 回転行列を作成
+	Matrix4x4 rotationMatrix = MakeRotateXYZMatrix(rotation);
+
+	// 前方ベクトル（Z軸の正方向）を回転させる
+	Vector3 forward = { 0.0f, 0.0f, 1.0f };
+	Vector3 rotatedForward = TransformDirection(forward, rotationMatrix);
+
+	// 10m先の座標を計算
+	Vector3 target = Add(position, Multiply(rotatedForward, 10.0f));
+
+	return target;
 }
 
 Vector3 DebugCamera::SphericalToCartesian(const SphericalCoordinates& spherical, const Vector3& center) const {
@@ -313,13 +336,46 @@ void DebugCamera::ImGui() {
 
 	ImGui::Separator();
 
-	// 現在の座標情報
-	ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)",
-		cameraTransform_.translate.x, cameraTransform_.translate.y, cameraTransform_.translate.z);
+
+	///*-----------------------------------------------------------------------*///
+	///								デカルト座標									///
+	///*-----------------------------------------------------------------------*///
+	ImGui::Text("Cartesian Coordinates:");
+
+	bool positionChanged = false;
+	bool rotationChanged = false;
+
+	if (ImGui::SliderFloat3("Position", &cartesianPosition_.x, -50.0f, 50.0f)) {
+		cameraTransform_.translate = cartesianPosition_;
+		positionChanged = true;
+	}
+
+	if (ImGui::SliderFloat3("Rotation", &cartesianRotation_.x, -3.14159f, 3.14159f)) {
+		cameraTransform_.rotate = cartesianRotation_;
+		rotationChanged = true;
+	}
+
+	// 位置または回転が変更された場合、ターゲットを再計算
+	if (positionChanged || rotationChanged) {
+		target_ = CalculateTargetFromRotation(cartesianPosition_, cartesianRotation_);
+		UpdateSphericalFromPosition();
+	}
+
+	ImGui::Separator();
+
+	// ターゲット座標
 	ImGui::Text("Target Position: (%.2f, %.2f, %.2f)",
 		target_.x, target_.y, target_.z);
 
-	// 球面座標情報
+	if (ImGui::SliderFloat3("Target", &target_.x, -20.0f, 20.0f)) {
+		UpdateSphericalFromPosition();
+	}
+
+	ImGui::Separator();
+
+	///*-----------------------------------------------------------------------*///
+	///									球面座標									///
+	///*-----------------------------------------------------------------------*///
 	ImGui::Text("Spherical Coordinates:");
 	ImGui::Text("  Radius: %.2f", spherical_.radius);
 	ImGui::Text("  Theta: %.2f rad (%.1f deg)", spherical_.theta, spherical_.theta * 180.0f / 3.14159f);
@@ -347,7 +403,7 @@ void DebugCamera::ImGui() {
 
 	// リセットボタン
 	if (ImGui::Button("Reset Camera")) {
-		SetDefaultCamera();
+		SetDefaultCamera(initialPosition_, initialRotation_);
 	}
 
 	ImGui::Separator();

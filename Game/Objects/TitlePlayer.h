@@ -7,6 +7,10 @@ class TitlePlayer {
 
 public:
 
+	TitlePlayer() = default;
+	~TitlePlayer() = default;
+
+
 	void Initialize();
 
 	void Update(const Matrix4x4& viewProjectionMatrix);

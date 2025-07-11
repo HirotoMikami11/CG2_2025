@@ -104,6 +104,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Managers\ImGuiManager.cpp" />
     <ClCompile Include="Engine\Managers\InputManager.cpp" />
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp" />
+    <ClCompile Include="Engine\Managers\MyImGui.cpp" />
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
     <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp" />
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
@@ -117,6 +118,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\GameObject\Model.cpp" />
     <ClCompile Include="Engine\Objects\GameObject\Transform.cpp" />
     <ClCompile Include="Engine\Objects\Light\Light.cpp" />
+    <ClCompile Include="Engine\Objects\Line\GridLine.cpp" />
+    <ClCompile Include="Engine\Objects\Line\Line.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp" />
@@ -158,6 +161,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Line\Line.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Line\Line.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -208,6 +219,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Managers\ImGuiManager.h" />
     <ClInclude Include="Engine\Managers\InputManager.h" />
     <ClInclude Include="Engine\Managers\Model\ModelManager.h" />
+    <ClInclude Include="Engine\Managers\MyImGui.h" />
     <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
     <ClInclude Include="Engine\Managers\Scene\FadeManager.h" />
@@ -222,6 +234,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\GameObject\Model.h" />
     <ClInclude Include="Engine\Objects\GameObject\Transform.h" />
     <ClInclude Include="Engine\Objects\Light\Light.h" />
+    <ClInclude Include="Engine\Objects\Line\GridLine.h" />
+    <ClInclude Include="Engine\Objects\Line\Line.h" />
     <ClInclude Include="Engine\Objects\Sprite\Sprite.h" />
     <ClInclude Include="Engine\Objects\Sprite\Transform2D.h" />
     <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h" />
@@ -262,12 +276,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli" />
     <None Include="resources\Shader\LineGlitch\LineGlitch.hlsli" />
+    <None Include="resources\Shader\Line\Line.hlsli" />
     <None Include="resources\Shader\Object3d\Object3d.hlsli" />
     <None Include="resources\Shader\RGBShift\RGBShift.hlsli" />
     <None Include="resources\Shader\Sprite\Sprite.hlsli" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CG2_2025.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

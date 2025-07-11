@@ -151,6 +151,12 @@
     <Filter Include="Engine\CameraController\DebugCamera">
       <UniqueIdentifier>{6964cef4-8ab4-4ebe-b789-d9243f89409c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Objects\Line">
+      <UniqueIdentifier>{7ca08f7c-5231-4306-b47d-d6614df04b96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\Line">
+      <UniqueIdentifier>{7726a6b7-190f-46a9-ad84-074b36587371}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -315,6 +321,15 @@
     <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
       <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Objects\Line\GridLine.cpp">
+      <Filter>Engine\Objects\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Line\Line.cpp">
+      <Filter>Engine\Objects\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\MyImGui.cpp">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -349,6 +364,12 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
       <Filter>リソース ファイル\Shader\LineGltich</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Line\Line.VS.hlsl">
+      <Filter>リソース ファイル\Shader\Line</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Line\Line.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Line</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -529,6 +550,15 @@
     <ClInclude Include="Engine\CameraController\DebugCamera.h">
       <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Objects\Line\GridLine.h">
+      <Filter>Engine\Objects\Line</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Line\Line.h">
+      <Filter>Engine\Objects\Line</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\MyImGui.h">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
@@ -546,15 +576,13 @@
     <None Include="resources\Shader\RGBShift\RGBShift.hlsli">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
     </None>
+    <None Include="resources\Shader\Line\Line.hlsli">
+      <Filter>リソース ファイル\Shader\Line</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
       <Filter>imgui</Filter>
     </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CG2_2025.rc">
-      <Filter>リソース ファイル</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>

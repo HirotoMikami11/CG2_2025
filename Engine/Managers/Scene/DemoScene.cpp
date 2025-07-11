@@ -7,27 +7,52 @@ DemoScene::DemoScene()
 	, directXCommon_(nullptr)
 	, offscreenRenderer_(nullptr)
 	, modelManager_(nullptr)
-	, textureManager_(nullptr) {
+	, textureManager_(nullptr)
+	, viewProjectionMatrix{ MakeIdentity4x4() }
+	, viewProjectionMatrixSprite{ MakeIdentity4x4() }
+{
 }
 
 DemoScene::~DemoScene() = default;
+
+
+void DemoScene::LoadResources() {
+	// リソースの読み込み
+	Logger::Log(Logger::GetStream(), "TitleScene: Loading resources...\n");
+
+	// リソースマネージャーの取得
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
+
+	// モデルを事前読み込み
+	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");
+
+	//TODO:スザンヌ
+
+	//バニー
+
+	//ティーカップ
+
+
+	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
+
+
+}
+
 
 void DemoScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
-	// リソースマネージャーの初期化
-	modelManager_ = ModelManager::GetInstance();
-	textureManager_ = TextureManager::GetInstance();
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
-	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	// 座標と回転を指定して初期化
+	Vector3 initialPosition = { 0.0f, 3.0f, -15.0f };
+	Vector3 initialRotation = { 0.25f, 0.0f, 0.0f };
+	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
-
-	// ブロックモデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
@@ -75,6 +100,26 @@ void DemoScene::InitializeGameObjects() {
 	model_->Initialize(directXCommon_, "plane");
 	model_->SetTransform(transformModel);
 
+
+	///*-----------------------------------------------------------------------*///
+	///								グリッド線									///
+	///*-----------------------------------------------------------------------*///
+
+	// グリッド
+	gridLine_ = std::make_unique<GridLine>();
+	// 100m、1m間隔、10mごとに黒
+	gridLine_->Initialize(directXCommon_,
+		GridLineType::XZ,			// グリッドタイプ：XZ平面
+		100.0f,						// サイズ
+		1.0f,						// 間隔
+		10.0f,						// 主要線間隔
+		{ 0.5f, 0.5f, 0.5f, 1.0f },	// 通常線：灰色
+		{ 0.0f, 0.0f, 0.0f, 1.0f }	// 主要線：黒
+	);
+	gridLine_->SetName("Main Grid");
+
+
+
 	///*-----------------------------------------------------------------------*///
 	///								矩形Sprite									///
 	///*-----------------------------------------------------------------------*///
@@ -113,15 +158,22 @@ void DemoScene::UpdateGameObjects() {
 
 	// 球体の更新
 	sphere_->Update(viewProjectionMatrix);
-
 	// スプライトの更新
 	sprite_->Update(viewProjectionMatrixSprite);
 
 	// モデルの更新
 	model_->Update(viewProjectionMatrix);
+
+	// グリッド線更新
+	gridLine_->Update(viewProjectionMatrix);
+
 }
 
 void DemoScene::Draw() {
+	// グリッド線を描画
+	gridLine_->Draw(viewProjectionMatrix);
+
+
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }

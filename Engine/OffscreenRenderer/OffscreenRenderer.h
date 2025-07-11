@@ -135,6 +135,9 @@ private:
 	// レンダーターゲット用リソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTexture_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilTexture_;
+	// クリアカラー
+	//float clearColor_[4] = { 0.05f, 0.05f, 0.05f, 1.0f };  
+	float clearColor_[4] = { 0.1f, 0.25f, 0.5f, 1.0f }; 
 
 	// ディスクリプタハンドル
 	DescriptorHeapManager::DescriptorHandle rtvHandle_;

@@ -35,7 +35,7 @@ void GameObject::Initialize(DirectXCommon* dxCommon, const std::string& modelTag
 
 	// ImGui用の初期値を設定
 	imguiPosition_ = transform_.GetPosition();
-	imguiRotation_ = transform_.GetRotate();
+	imguiRotation_ = transform_.GetRotation();
 	imguiScale_ = transform_.GetScale();
 	imguiColor_ = material_.GetColor();
 	imguiLighting_ = material_.IsLightingEnabled();
@@ -111,14 +111,14 @@ void GameObject::ImGui() {
 		if (ImGui::CollapsingHeader("Transform")) {
 			// ImGui用の値を現在の値で更新
 			imguiPosition_ = transform_.GetPosition();
-			imguiRotation_ = transform_.GetRotate();
+			imguiRotation_ = transform_.GetRotation();
 			imguiScale_ = transform_.GetScale();
 
 			if (ImGui::DragFloat3("Position", &imguiPosition_.x, 0.01f)) {
 				transform_.SetPosition(imguiPosition_);
 			}
 			if (ImGui::DragFloat3("Rotation", &imguiRotation_.x, 0.01f)) {
-				transform_.SetRotate(imguiRotation_);
+				transform_.SetRotation(imguiRotation_);
 			}
 			if (ImGui::DragFloat3("Scale", &imguiScale_.x, 0.01f)) {
 				transform_.SetScale(imguiScale_);

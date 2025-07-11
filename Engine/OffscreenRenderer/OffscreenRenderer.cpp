@@ -43,7 +43,9 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
 	// グレースケールエフェクトを追加
 	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
+	// ライングリッチエフェクトを追加
 	lineGlitchEffect_ = postProcessChain_->AddEffect<LineGlitchPostEffect>();
+
 
 
 
@@ -65,8 +67,6 @@ void OffscreenRenderer::Finalize() {
 	RGBShiftEffect_ = nullptr;
 	grayscaleEffect_ = nullptr;
 	lineGlitchEffect_ = nullptr;
-
-
 
 	// オフスクリーンSprite削除
 	offscreenSprite_.reset();
@@ -100,7 +100,10 @@ void OffscreenRenderer::Update(float deltaTime) {
 		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
 		offscreenSprite_->Update(spriteViewProjection);
 	}
-}void OffscreenRenderer::PreDraw() {
+}
+
+
+void OffscreenRenderer::PreDraw() {
 	auto commandList = dxCommon_->GetCommandList();
 
 	// バリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
@@ -121,8 +124,7 @@ void OffscreenRenderer::Update(float deltaTime) {
 	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
 	// クリア
-	float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
-	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandle, clearColor_, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	// ビューポートとシザー矩形を設定
@@ -233,10 +235,10 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 	// オフスクリーンレンダリング用のクリアカラーを設定
 	D3D12_CLEAR_VALUE clearValue{};
 	clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	clearValue.Color[0] = 0.1f;
-	clearValue.Color[1] = 0.25f;
-	clearValue.Color[2] = 0.5f;
-	clearValue.Color[3] = 1.0f;
+	clearValue.Color[0] = clearColor_[0];  
+	clearValue.Color[1] = clearColor_[1]; 
+	clearValue.Color[2] = clearColor_[2];  
+	clearValue.Color[3] = clearColor_[3];  
 
 	// 初期状態をPIXEL_SHADER_RESOURCEに変更（バリアとの整合性のため）
 	HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
@@ -539,6 +541,20 @@ void OffscreenRenderer::ImGui() {
 		if (srvHandle_.isValid) {
 			ImGui::Text("SRV Index: %d", srvHandle_.index);
 		}
+		// クリアカラーの設定
+		ImGui::Separator();
+		ImGui::Text("Clear Color Settings:");
+
+		//// カラーピッカーでクリアカラーを編集
+		//float imguiColor[4] = {clearColor_[0], clearColor_[1], clearColor_[2], clearColor_[3]}; // 初期値
+		//if (ImGui::ColorEdit4("Clear Color", imguiColor, ImGuiColorEditFlags_DisplayRGB)) {
+		//	
+		//	clearColor_[0] = imguiColor[0];
+		//	clearColor_[1] = imguiColor[1];
+		//	clearColor_[2] = imguiColor[2];
+		//	clearColor_[3] = imguiColor[3];
+
+		//}
 
 		// オフスクリーンSprite情報
 		if (offscreenSprite_) {

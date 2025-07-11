@@ -76,6 +76,8 @@ public:
 	ID3D12PipelineState* GetPipelineState() const { return graphicsPipelineState.Get(); }
 	ID3D12RootSignature* GetSpriteRootSignature() const { return spriteRootSignature.Get(); }
 	ID3D12PipelineState* GetSpritePipelineState() const { return spritePipelineState.Get(); }
+	ID3D12RootSignature* GetLineRootSignature() const { return lineRootSignature.Get(); }
+	ID3D12PipelineState* GetLinePipelineState() const { return linePipelineState.Get(); }
 
 	///参照で返すゲッター？
 	const Microsoft::WRL::ComPtr<ID3D12Device>& GetDeviceComPtr() const { return device; }
@@ -154,6 +156,11 @@ private:
 	void MakeSpritePSO();
 
 	/// <summary>
+	/// 線分描画用のPSOを作成する
+	/// </summary>
+	void MakeLinePSO();
+
+	/// <summary>
 	/// ViewportとScissor
 	/// </summary>
 	void MakeViewport();
@@ -199,14 +206,16 @@ private:
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
 	//3D用PSO
-	//RootSignature作成
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;//実際に生成されるPSO
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;
 
 	//スプライト用PSO
-	//RootSignature作成
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> spriteRootSignature;
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> spritePipelineState;//実際に生成されるPSO
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> spritePipelineState;
+
+	//線分用PSO
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> lineRootSignature;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> linePipelineState;
 
 
 	//ビューポート

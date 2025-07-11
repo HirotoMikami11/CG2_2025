@@ -19,7 +19,7 @@ struct SphereMath {
 /// <summary>
 /// 直線
 /// </summary>
-struct Line {
+struct LineMath {
 	Vector3 origin;		//始点
 	Vector3 diff;		//終点への差分ベクトル
 };

@@ -6,6 +6,7 @@
 #include "Objects/Light/Light.h"
 #include "Objects/GameObject/GameObject.h"
 #include "CameraController/CameraController.h"
+#include "Objects/Line/GridLine.h"
 
 #include "Engine.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
@@ -21,8 +22,16 @@ public:
 	DemoScene();
 	~DemoScene() override;
 
-	// BaseSceneの実装
+	/// <summary>
+	/// リソース読み込み（1回のみ実行）
+	/// </summary>
+	void LoadResources() override;
+
+	/// <summary>
+	/// オブジェクト初期化（シーン切り替え毎に実行）
+	/// </summary>
 	void Initialize() override;
+
 	void Update() override;
 	void Draw() override;
 	void Finalize() override;
@@ -46,6 +55,7 @@ private:
 	std::unique_ptr<Model3D> model_;
 
 	std::unique_ptr<Sprite> sprite_;
+	std::unique_ptr<GridLine> gridLine_;
 
 	// ライティング
 	Light directionalLight_;

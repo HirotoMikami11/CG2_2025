@@ -15,10 +15,10 @@ GameCamera::GameCamera()
 
 GameCamera::~GameCamera() = default;
 
-void GameCamera::Initialize(const Vector3& position) {
+void GameCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	// カメラのデフォルト設定
 	cameraTransform_.scale = { 1.0f, 1.0f, 1.0f };
-	cameraTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+	cameraTransform_.rotate = rotation;
 	cameraTransform_.translate = position;
 
 
