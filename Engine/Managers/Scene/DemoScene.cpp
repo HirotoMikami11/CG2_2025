@@ -12,13 +12,37 @@ DemoScene::DemoScene()
 
 DemoScene::~DemoScene() = default;
 
+
+void DemoScene::LoadResources() {
+	// リソースの読み込み
+	Logger::Log(Logger::GetStream(), "TitleScene: Loading resources...\n");
+
+	// リソースマネージャーの取得
+	modelManager_ = ModelManager::GetInstance();
+	textureManager_ = TextureManager::GetInstance();
+
+	// モデルを事前読み込み
+	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");
+
+	//TODO:スザンヌ
+
+	//スザンヌ
+
+	//バニー
+
+	//ティーカップ
+
+
+	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
+
+
+}
+
+
 void DemoScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
-	// リソースマネージャーの初期化
-	modelManager_ = ModelManager::GetInstance();
-	textureManager_ = TextureManager::GetInstance();
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
@@ -28,9 +52,6 @@ void DemoScene::Initialize() {
 	Vector3 initialRotation = { 0.25f, 0.0f, 0.0f };
 	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
-
-	// ブロックモデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();

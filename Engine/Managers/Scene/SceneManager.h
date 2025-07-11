@@ -13,7 +13,6 @@ public:
 	// シングルトン
 	static SceneManager* GetInstance();
 
-
 	/// <summary>
 	/// 初期化
 	/// </summary>
@@ -44,6 +43,7 @@ public:
 	// シーンの切り替え
 	bool ChangeScene(const std::string& sceneName);
 	void SetNextScene(const std::string& sceneName);
+
 	// フェードシーン遷移
 	void FadeToScene(const std::string& sceneName, FadeManager::Status fadeOutStatus = FadeManager::Status::FadeOut, float fadeOutDuration = 1.0f, FadeManager::Status fadeInStatus = FadeManager::Status::FadeIn, float fadeInDuration = 1.0f);
 	void FadeOutToScene(const std::string& sceneName, float duration = 1.0f);
@@ -60,8 +60,12 @@ public:
 	BaseScene* GetCurrentScene() const { return currentScene_; }
 	const std::string& GetCurrentSceneName() const;
 
-private:
+	/// <summary>
+	/// 登録済みの全シーンのリソースを読み込み
+	/// </summary>
+	void LoadAllSceneResources();
 
+private:
 	// シングルトンパターン
 	SceneManager() = default;
 	~SceneManager() = default;
@@ -80,7 +84,6 @@ private:
 	std::string currentSceneName_;
 	std::string nextSceneName_;
 	bool sceneChangeRequested_ = false;
-
 
 	// フェード管理
 	std::unique_ptr<FadeManager> fadeManager_;

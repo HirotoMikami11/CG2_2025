@@ -65,6 +65,9 @@ void Engine::InitializeManagers() {
 void Engine::LoadDefaultResources()
 {
 
+	///汎用的でエンジン側で先に読み込んでおきたいもののみここで読み込む
+
+
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
 	///*-----------------------------------------------------------------------*///
@@ -100,13 +103,7 @@ void Engine::LoadDefaultResources()
 	modelManager_->LoadPrimitive(MeshType::SPHERE, "sphere");
 	modelManager_->LoadPrimitive(MeshType::TRIANGLE, "triangle");
 
-	//TODO:スザンヌなど読み込んでおくもの
 
-	//スザンヌ
-
-	//バニー
-
-	//ティーカップ
 
 }
 

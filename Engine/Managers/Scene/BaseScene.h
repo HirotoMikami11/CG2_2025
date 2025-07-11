@@ -1,33 +1,69 @@
 #pragma once
 #include <string>
 
-// シーンの基底クラス
+/// <summary>
+/// シーンの基底クラス
+/// </summary>
 class BaseScene {
 public:
-	BaseScene(const std::string& sceneName) : sceneName_(sceneName), isInitialized_(false) {}
+	BaseScene(const std::string& sceneName) : sceneName_(sceneName) {}
 	virtual ~BaseScene() = default;
 
-	// 純粋仮想関数
+	/// <summary>
+	/// リソース読み込み（起動時に1回のみ実行）
+	/// </summary>
+	virtual void LoadResources() {}
+
+	/// <summary>
+	/// オブジェクト初期化
+	/// </summary>
 	virtual void Initialize() = 0;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update() = 0;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
 	virtual void Draw() = 0;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
 	virtual void Finalize() = 0;
+
+	/// <summary>
+	/// シーンに入る時の処理
+	/// </summary>
+	virtual void OnEnter() {}
+
+	/// <summary>
+	/// シーンから出る時の処理
+	/// </summary>
+	virtual void OnExit() {}
+
+	/// <summary>
+	/// ImGui描画
+	/// </summary>
+	virtual void ImGui() {}
+
+	// リソース読み込み状態の管理
+	bool IsResourcesLoaded() const { return resourcesLoaded_; }
+	void SetResourcesLoaded(bool loaded) { resourcesLoaded_ = loaded; }
+
+	// オブジェクト初期化状態の管理
+	bool IsInitialized() const { return initialized_; }
+	void SetInitialized(bool initialized) { initialized_ = initialized; }
 
 	// シーン名の取得
 	const std::string& GetSceneName() const { return sceneName_; }
 
-	// シーンの状態管理
-	virtual void OnEnter() {}	// シーンに入る時の処理
-	virtual void OnExit() {}	// シーンから出る時の処理
-
-	// ImGui描画（各シーンで実装）
-	virtual void ImGui() {}
-
-	// 初期化状態の管理
-	bool IsInitialized() const { return isInitialized_; }
-	void SetInitialized(bool initialized) { isInitialized_ = initialized; }
-
 protected:
-	std::string sceneName_;		//シーンの名前
-	bool isInitialized_;		//初期化されているか否か
+	std::string sceneName_;
+
+private:
+	bool resourcesLoaded_ = false;  // リソース読み込み済みフラグ（保持される）
+	bool initialized_ = false;      // オブジェクト初期化済みフラグ（切り替え時リセット）
 };

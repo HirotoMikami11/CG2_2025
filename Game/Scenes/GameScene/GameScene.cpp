@@ -26,16 +26,12 @@ GameScene::~GameScene() {
 
 }
 
-void GameScene::Initialize() {
-	// ゲームプレイフェーズから開始
-	phase_ = Phase::kPlay;
 
+void GameScene::LoadResources() {
+	// リソースの読み込み
+	Logger::Log(Logger::GetStream(), "TitleScene: Loading resources...\n");
 
-	// システム参照の取得
-	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
-	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
-
-	// リソースマネージャーの初期化
+	// リソースマネージャーの取得
 	modelManager_ = ModelManager::GetInstance();
 	textureManager_ = TextureManager::GetInstance();
 
@@ -45,6 +41,22 @@ void GameScene::Initialize() {
 	modelManager_->LoadModel("resources/Model/Enemy", "enemy.obj", "enemy");
 	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
 	modelManager_->LoadModel("resources/Model/DeathParticles", "deathParticles.obj", "deathParticle");
+
+	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
+
+
+
+}
+
+
+void GameScene::Initialize() {
+	// ゲームプレイフェーズから開始
+	phase_ = Phase::kPlay;
+
+
+	// システム参照の取得
+	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
+	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
