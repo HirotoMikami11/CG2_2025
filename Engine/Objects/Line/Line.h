@@ -11,8 +11,6 @@ struct LineMaterial {
 	Vector4 color;  // 基本色（16バイト）
 };
 
-
-
 /// <summary>
 /// ラインクラス
 /// </summary>
@@ -23,15 +21,10 @@ public:
 	~Line() = default;
 
 	/// <summary>
-	/// 静的初期化（一度だけ呼び出す）
-	/// </summary>
-	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	static void InitializeStatic(DirectXCommon* dxCommon);
-
-	/// <summary>
 	/// 個別線分の初期化
 	/// </summary>
-	void Initialize();
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	void Initialize(DirectXCommon* dxCommon);
 
 	/// <summary>
 	/// 線分の設定
@@ -57,22 +50,6 @@ public:
 	/// </summary>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	void Draw(const Matrix4x4& viewProjectionMatrix);
-
-	/// <summary>
-	/// 線分を描画（静的関数：複数線分の一括描画用）
-	/// </summary>
-	/// <param name="commandList">コマンドリスト</param>
-	/// <param name="vertices">頂点データ</param>
-	/// <param name="vertexCount">頂点数</param>
-	/// <param name="materialBuffer">マテリアルバッファ</param>
-	/// <param name="transformBuffer">トランスフォームバッファ</param>
-	static void DrawLines(
-		ID3D12GraphicsCommandList* commandList,
-		const VertexData* vertices,
-		uint32_t vertexCount,
-		ID3D12Resource* materialBuffer,
-		ID3D12Resource* transformBuffer
-	);
 
 	// Getter
 	const Vector3& GetStart() const { return start_; }
@@ -102,6 +79,9 @@ private:
 	void UpdateMaterialBuffer();
 
 private:
+	// DirectXCommon参照（各インスタンス毎）
+	DirectXCommon* directXCommon_ = nullptr;
+
 	// 線分データ
 	Vector3 start_{ 0.0f, 0.0f, 0.0f };
 	Vector3 end_{ 1.0f, 0.0f, 0.0f };
@@ -122,7 +102,4 @@ private:
 	bool needsVertexUpdate_ = true;
 	bool needsMaterialUpdate_ = true;
 	bool isInitialized_ = false;
-
-	// DirectXCommon参照（静的）
-	static DirectXCommon* directXCommon_;
 };

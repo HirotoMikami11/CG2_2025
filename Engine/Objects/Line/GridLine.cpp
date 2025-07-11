@@ -8,16 +8,13 @@
 void GridLine::Initialize(DirectXCommon* dxCommon)
 {
 	directXCommon_ = dxCommon;
-
-	// Lineクラスを静的初期化（一度だけ）
-	Line::InitializeStatic(dxCommon);
-
 	// Transformを初期化
 	transform_.Initialize(dxCommon);
 
 	// デフォルトでグリッドを作成
 	CreateGrid();
 }
+
 
 void GridLine::CreateGrid(
 	float size,
@@ -76,12 +73,12 @@ void GridLine::CreateGrid(
 void GridLine::AddLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
 	auto line = std::make_unique<Line>();
-	line->Initialize();
+	line->Initialize(directXCommon_); 
 	line->SetPoints(start, end);
 	line->SetColor(color);
 	lines_.push_back(std::move(line));
-
 }
+
 
 void GridLine::Clear()
 {
