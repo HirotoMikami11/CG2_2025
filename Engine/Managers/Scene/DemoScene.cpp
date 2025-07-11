@@ -7,7 +7,10 @@ DemoScene::DemoScene()
 	, directXCommon_(nullptr)
 	, offscreenRenderer_(nullptr)
 	, modelManager_(nullptr)
-	, textureManager_(nullptr) {
+	, textureManager_(nullptr)
+	, viewProjectionMatrix{ MakeIdentity4x4() }
+	, viewProjectionMatrixSprite{ MakeIdentity4x4() }
+{
 }
 
 DemoScene::~DemoScene() = default;
@@ -104,17 +107,18 @@ void DemoScene::InitializeGameObjects() {
 
 	// グリッド
 	gridLine_ = std::make_unique<GridLine>();
-	gridLine_->Initialize(directXCommon_);
+	// 100m、1m間隔、10mごとに黒
+	gridLine_->Initialize(directXCommon_,
+		GridLineType::XZ,			// グリッドタイプ：XZ平面
+		100.0f,						// サイズ
+		1.0f,						// 間隔
+		10.0f,						// 主要線間隔
+		{ 0.5f, 0.5f, 0.5f, 1.0f },	// 通常線：灰色
+		{ 0.0f, 0.0f, 0.0f, 1.0f }	// 主要線：黒
+	);
 	gridLine_->SetName("Main Grid");
 
-	// 100m、1m間隔、10mごとに黒
-	gridLine_->CreateGrid(
-		100.0f,  // サイズ
-		1.0f,   // 間隔
-		10.0f,  // 主要線間隔
-		{ 0.5f, 0.5f, 0.5f, 1.0f },  // 通常線：灰色
-		{ 0.0f, 0.0f, 0.0f, 1.0f }   // 主要線：黒
-	);
+
 
 	///*-----------------------------------------------------------------------*///
 	///								矩形Sprite									///

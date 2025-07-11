@@ -30,6 +30,7 @@ private:
 
 	// シーンマネージャー
 	SceneManager* sceneManager_;
+
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;

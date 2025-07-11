@@ -8,7 +8,10 @@ TitleScene::TitleScene()
 	, directXCommon_(nullptr)
 	, offscreenRenderer_(nullptr)
 	, modelManager_(nullptr)
-	, textureManager_(nullptr) {
+	, textureManager_(nullptr)
+	, viewProjectionMatrix{ MakeIdentity4x4() }
+	, viewProjectionMatrixSprite{ MakeIdentity4x4() }
+{
 }
 
 TitleScene::~TitleScene() = default;

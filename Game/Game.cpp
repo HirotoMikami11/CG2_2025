@@ -1,7 +1,12 @@
 #include "Game.h"
 
 
-Game::Game() = default;
+Game::Game() :
+	textureManager_(nullptr),
+	modelManager_(nullptr),
+	sceneManager_(nullptr) {
+}
+
 Game::~Game() = default;
 
 void Game::Initialize() {

@@ -16,6 +16,15 @@ struct GridLineMaterial {
 };
 
 /// <summary>
+/// グリッド平面の種類
+/// </summary>
+enum class GridLineType {
+	XZ,  // XZ平面上のグリッド
+	XY,  // XY平面上のグリッド
+	YZ   // YZ平面上のグリッド
+};
+
+/// <summary>
 /// グリッド描画専用クラス
 /// 責務：グリッド線の生成・管理・描画
 /// 個別描画と一括描画の両方に対応
@@ -30,7 +39,14 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize(DirectXCommon* dxCommon,
+		const GridLineType& GridLineType,
+		float size = 100.0f,
+		float interval = 1.0f,
+		float majorInterval = 10.0f,
+		const Vector4& normalColor = { 0.5f, 0.5f, 0.5f, 1.0f },
+		const Vector4& majorColor = { 0.0f, 0.0f, 0.0f, 1.0f }
+	);
 
 	/// <summary>
 	/// グリッドを生成
@@ -41,7 +57,8 @@ public:
 	/// <param name="normalColor">通常線の色</param>
 	/// <param name="majorColor">主要線の色</param>
 	void CreateGrid(
-		float size = 50.0f,
+		const GridLineType& GridLineType = GridLineType::XZ,
+		float size = 100.0f,
 		float interval = 1.0f,
 		float majorInterval = 10.0f,
 		const Vector4& normalColor = { 0.5f, 0.5f, 0.5f, 1.0f },
@@ -68,16 +85,10 @@ public:
 	void Update(const Matrix4x4& viewProjectionMatrix);
 
 	/// <summary>
-	/// 描画処理（描画モードに応じて切り替え）
+	/// 描画処理
 	/// </summary>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	void Draw(const Matrix4x4& viewProjectionMatrix);
-
-	/// <summary>
-	/// 個別描画（色が正確に反映される）
-	/// </summary>
-	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
-	void DrawIndividual(const Matrix4x4& viewProjectionMatrix);
 
 
 	/// <summary>
@@ -103,11 +114,20 @@ public:
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
 
 private:
+
+	/// <summary>
+	/// 各軸の線を生成
+	/// </summary>
+
+	void CreateXZGrid(float halfSize);
+	void CreateXYGrid(float halfSize);
+	void CreateYZGrid(float halfSize);
+
 	// 基本情報
 	DirectXCommon* directXCommon_ = nullptr;
 	bool isVisible_ = true;
 	bool isActive_ = true;
-	std::string name_ = "GridRenderer";
+	std::string name_ = "GridLine";
 
 	// Transform（グリッド全体の変換）
 	Transform transform_;

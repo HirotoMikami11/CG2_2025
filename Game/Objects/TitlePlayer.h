@@ -7,6 +7,10 @@ class TitlePlayer {
 
 public:
 
+	TitlePlayer() = default;
+	~TitlePlayer() = default;
+
+
 	void Initialize();
 
 	void Update(const Matrix4x4& viewProjectionMatrix);
@@ -23,8 +27,6 @@ private:
 
 	//回転速度
 	Vector3 rotate_;
-
-
 
 	// システム参照
 	DirectXCommon* directXCommon_;
