@@ -1,5 +1,5 @@
 #include "DebugCamera.h"
-#include "Managers/ImGuiManager.h"
+#include "Managers/ImGui/ImGuiManager.h"
 #include <cmath>
 
 DebugCamera::DebugCamera()

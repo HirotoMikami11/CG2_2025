@@ -1,5 +1,5 @@
 #include "DeathParticles.h"
-#include "Managers/ImGuiManager.h"
+#include "Managers/ImGui/ImGuiManager.h"
 
 DeathParticles::DeathParticles() {}
 

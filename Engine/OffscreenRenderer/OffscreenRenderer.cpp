@@ -1,5 +1,5 @@
 #include "OffscreenRenderer.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 
 void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint32_t height) {
 	dxCommon_ = dxCommon;

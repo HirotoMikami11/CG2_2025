@@ -1,5 +1,5 @@
 #include "TitleScene.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 #include "Managers/Scene/SceneManager.h" 
 
 TitleScene::TitleScene()

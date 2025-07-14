@@ -7,6 +7,7 @@
 #include "Objects/Light/Light.h"
 #include "Managers/Texture/TextureManager.h"
 #include "Managers/Model/ModelManager.h"
+#include "Managers/ObjectID/ObjectIDManager.h"
 
 /// <summary>
 /// ゲームオブジェクト - 共有モデルと個別Material/Transformを使用
@@ -128,14 +129,11 @@ class Triangle : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "triangle", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = SettingName("Triangle");
+		name_ = idManager->GenerateName("Triangle");
 	}
 
 private:
-	static int triangleCount_;
-	static std::string SettingName(const std::string& baseName) {
-		return baseName + "_" + std::to_string(++triangleCount_);
-	}
+	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };
 
 /// <summary>
@@ -146,15 +144,12 @@ class Sphere : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "sphere", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = SettingName("Sphere");
+		name_ = idManager->GenerateName("Sphere");
 		SetLightingEnable(true);
 	}
 
 private:
-	static int sphereCount_;
-	static std::string SettingName(const std::string& baseName) {
-		return baseName + "_" + std::to_string(++sphereCount_);
-	}
+	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };
 
 /// <summary>
@@ -165,13 +160,10 @@ class Model3D : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag, const std::string& textureName = "") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = SettingName("Model (" + modelTag + ")");
+		name_ = idManager->GenerateName(std::format("Model ({})", modelTag), "Model3D");
 		SetLightingEnable(true);
 	}
 
 private:
-	static int modelCount_;
-	static std::string SettingName(const std::string& baseName) {
-		return baseName + "_" + std::to_string(++modelCount_);
-	}
+	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };

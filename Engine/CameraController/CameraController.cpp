@@ -1,5 +1,5 @@
 #include "CameraController.h"
-#include "Managers/ImGuiManager.h"
+#include "Managers/ImGui/ImGuiManager.h"
 #include "Managers/inputManager.h"
 #include <algorithm>
 #include <vector>

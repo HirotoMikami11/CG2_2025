@@ -13,7 +13,7 @@
 #include "Managers/Texture/TextureManager.h"
 #include "Managers/Model/ModelManager.h"
 #include "Managers/InputManager.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 #include "FrameTimer/FrameTimer.h"
 #include "OffscreenRenderer/OffscreenRenderer.h"
 

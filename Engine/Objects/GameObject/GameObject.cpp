@@ -1,10 +1,5 @@
 #include "GameObject.h"
-#include "Managers/ImGuiManager.h"
-
-// 静的変数の定義
-int Triangle::triangleCount_ = 0;
-int Sphere::sphereCount_ = 0;
-int Model3D::modelCount_ = 0;
+#include "Managers/ImGui/ImGuiManager.h"
 
 void GameObject::Initialize(DirectXCommon* dxCommon, const std::string& modelTag, const std::string& textureName) {
 	directXCommon_ = dxCommon;

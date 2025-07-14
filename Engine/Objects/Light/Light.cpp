@@ -1,5 +1,5 @@
 #include "Light.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 
 void Light::Initialize(DirectXCommon* dxCommon, Type type)
 {

@@ -1,16 +1,16 @@
 #include "Objects/Sprite/Sprite.h"
 #include <cassert>
 #include <cstring>
-#include "Managers/ImGuiManager.h" 
-
-// 静的変数の定義
-int Sprite::spriteCount_ = 0;
+#include "Managers/ImGui/ImGuiManager.h" 
 
 void Sprite::Initialize(DirectXCommon* dxCommon, const std::string& textureName, const Vector2& center, const Vector2& size)
 {
 	directXCommon_ = dxCommon;
 	textureName_ = textureName;
-	name_ = SettingName("Sprite");
+
+	//ID生成
+	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
+	name_ = idManager->GenerateName("Sprite");
 
 	// 標準メッシュを作成（原点中心、サイズ1.0x1.0）
 	CreateStandardSpriteMesh();
@@ -44,7 +44,11 @@ void Sprite::Initialize(DirectXCommon* dxCommon, const Vector2& center, const Ve
 
 	directXCommon_ = dxCommon;
 	textureName_ = "white";
-	name_ = SettingName("Sprite");
+
+
+	//ID生成
+	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
+	name_ = idManager->GenerateName("Sprite");
 
 	// 標準メッシュを作成（原点中心、サイズ1.0x1.0）
 	CreateStandardSpriteMesh();

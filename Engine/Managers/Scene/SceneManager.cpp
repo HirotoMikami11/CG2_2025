@@ -1,6 +1,6 @@
 #include "SceneManager.h"
 #include <cassert>
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 
 SceneManager* SceneManager::GetInstance() {
 	static SceneManager instance;
@@ -113,6 +113,11 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 		currentScene_->SetInitialized(false);
 		// リソース読み込みフラグは保持: resourcesLoaded_ = true のまま
 	}
+
+	//シーンを変えるときにIDを全てリセットする
+	//オフスクリーンなどで使用されるIDなどもここでリセットされる
+	//シーン中に存在するものしかIDは付与されない
+	ObjectIDManager::GetInstance()->ResetAllCounters();
 
 	// 新しいシーンの設定
 	currentScene_ = scenes_[sceneName].get();

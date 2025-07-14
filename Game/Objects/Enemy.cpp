@@ -1,6 +1,6 @@
 #include "Enemy.h"
 #include "Player.h"
-#include "Managers/ImGuiManager.h"
+#include "Managers/ImGui/ImGuiManager.h"
 
 Enemy::Enemy() {
 }

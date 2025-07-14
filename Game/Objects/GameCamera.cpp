@@ -1,6 +1,6 @@
 #include "GameCamera.h"
 #include "Objects/Player.h"
-#include "Managers/ImGuiManager.h"
+#include "Managers/ImGui/ImGuiManager.h"
 #include <algorithm>
 
 GameCamera::GameCamera()

@@ -157,6 +157,9 @@
     <Filter Include="リソース ファイル\Shader\Line">
       <UniqueIdentifier>{7726a6b7-190f-46a9-ad84-074b36587371}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Managers\ObjectID">
+      <UniqueIdentifier>{6220611e-c1f5-4d43-b5cd-24614a62f6a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -279,9 +282,6 @@
     <ClCompile Include="Engine\Managers\InputManager.cpp">
       <Filter>Engine\Managers\Input</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Managers\ImGuiManager.cpp">
-      <Filter>Engine\Managers\ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClCompile>
@@ -327,8 +327,14 @@
     <ClCompile Include="Engine\Objects\Line\Line.cpp">
       <Filter>Engine\Objects\Line</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Managers\MyImGui.cpp">
+    <ClCompile Include="Engine\Managers\ImGui\ImGuiManager.cpp">
       <Filter>Engine\Managers\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\ImGui\MyImGui.cpp">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\ObjectID\ObjectIDManager.cpp">
+      <Filter>Engine\Managers\ObjectID</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -505,9 +511,6 @@
     <ClInclude Include="Engine\Managers\InputManager.h">
       <Filter>Engine\Managers\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Managers\ImGuiManager.h">
-      <Filter>Engine\Managers\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClInclude>
@@ -556,8 +559,14 @@
     <ClInclude Include="Engine\Objects\Line\Line.h">
       <Filter>Engine\Objects\Line</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Managers\MyImGui.h">
+    <ClInclude Include="Engine\Managers\ImGui\ImGuiManager.h">
       <Filter>Engine\Managers\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\ImGui\MyImGui.h">
+      <Filter>Engine\Managers\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\ObjectID\ObjectIDManager.h">
+      <Filter>Engine\Managers\ObjectID</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

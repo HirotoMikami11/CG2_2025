@@ -1,5 +1,5 @@
 #include "LineGlitchPostEffect.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 
 void LineGlitchPostEffect::Initialize(DirectXCommon* dxCommon) {
 	dxCommon_ = dxCommon;

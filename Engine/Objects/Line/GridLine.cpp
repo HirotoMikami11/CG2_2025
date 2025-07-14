@@ -1,6 +1,6 @@
 #define NOMINMAX // C+標準のstd::maxを使えるようにするため(windows.hが上書きしてしまっている)
 #include "GridLine.h"
-#include "Managers/ImGuiManager.h"
+#include "Managers/ImGui/ImGuiManager.h"
 #include "Managers/Texture/TextureManager.h"
 #include <algorithm>
 #include <cmath>

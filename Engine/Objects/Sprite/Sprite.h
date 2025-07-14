@@ -10,6 +10,8 @@
 #include "Objects/Sprite/Transform2D.h"  // Transform2Dを使用
 
 #include "Managers/Texture/TextureManager.h"
+#include "Managers/ObjectID/ObjectIDManager.h"
+
 /// <summary>
 /// スプライト専用のマテリアル構造体
 /// </summary>
@@ -158,7 +160,6 @@ public:
 	Vector2 GetUVTransformTranslate() const { return uvTranslate_; }
 
 private:
-	static int spriteCount_;
 
 	/// <summary>
 	/// 標準スプライトメッシュを作成（原点中心、サイズ1.0x1.0）
@@ -174,13 +175,6 @@ private:
 	/// UVトランスフォーム行列を更新
 	/// </summary>
 	void UpdateUVTransform();
-
-	/// <summary>
-	/// 名前の後ろに番号をつけて識別しやすくする関数
-	/// </summary>
-	static std::string SettingName(const std::string& baseName) {
-		return baseName + "_" + std::to_string(++spriteCount_);
-	}
 
 private:
 	// 基本情報

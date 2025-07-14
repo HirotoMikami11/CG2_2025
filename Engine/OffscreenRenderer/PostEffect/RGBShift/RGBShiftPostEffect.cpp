@@ -1,5 +1,5 @@
 #include "RGBShiftPostEffect.h"
-#include "Managers/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h" 
 
 void RGBShiftPostEffect::Initialize(DirectXCommon* dxCommon) {
 	dxCommon_ = dxCommon;

@@ -101,10 +101,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
     <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
     <ClCompile Include="Engine\Managers\Audio\AudioManager.cpp" />
-    <ClCompile Include="Engine\Managers\ImGuiManager.cpp" />
+    <ClCompile Include="Engine\Managers\ImGui\ImGuiManager.cpp" />
+    <ClCompile Include="Engine\Managers\ImGui\MyImGui.cpp" />
     <ClCompile Include="Engine\Managers\InputManager.cpp" />
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp" />
-    <ClCompile Include="Engine\Managers\MyImGui.cpp" />
+    <ClCompile Include="Engine\Managers\ObjectID\ObjectIDManager.cpp" />
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
     <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp" />
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
@@ -216,10 +217,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
     <ClInclude Include="Engine\Managers\Audio\Audio.h" />
     <ClInclude Include="Engine\Managers\Audio\AudioManager.h" />
-    <ClInclude Include="Engine\Managers\ImGuiManager.h" />
+    <ClInclude Include="Engine\Managers\ImGui\ImGuiManager.h" />
+    <ClInclude Include="Engine\Managers\ImGui\MyImGui.h" />
     <ClInclude Include="Engine\Managers\InputManager.h" />
     <ClInclude Include="Engine\Managers\Model\ModelManager.h" />
-    <ClInclude Include="Engine\Managers\MyImGui.h" />
+    <ClInclude Include="Engine\Managers\ObjectID\ObjectIDManager.h" />
     <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
     <ClInclude Include="Engine\Managers\Scene\FadeManager.h" />
