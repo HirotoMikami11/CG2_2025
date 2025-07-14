@@ -8,43 +8,34 @@ ObjectIDManager* ObjectIDManager::GetInstance() {
 	return &instance;
 }
 
-void ObjectIDManager::RegisterType(const std::string& typeName) {
-	if (counters_.find(typeName) == counters_.end()) {
-		counters_[typeName] = 0;
-		Logger::Log(Logger::GetStream(), std::format("ObjectIDManager: Registered type '{}'\n", typeName));
-	}
-}
-
-int ObjectIDManager::GetNextID(const std::string& typeName) {
-	// タイプが未登録の場合は自動登録
-	RegisterType(typeName);
-
-	// カウンターをインクリメントして返す
-	return ++counters_[typeName];
-}
-
 std::string ObjectIDManager::GenerateName(const std::string& baseName, const std::string& typeName) {
 	// typeNameが空の場合はbaseNameを使用
 	std::string type = typeName.empty() ? baseName : typeName;
-
+	//次のIDを取得
 	int id = GetNextID(type);
+	//種類と番号を返す
 	return std::format("{}_{}", baseName, id);
 }
 
 int ObjectIDManager::GetCurrentCount(const std::string& typeName) const {
+	//現在のカウントを数えて返す
 	auto it = counters_.find(typeName);
 	return (it != counters_.end()) ? it->second : 0;
 }
 
 void ObjectIDManager::ResetCounter(const std::string& typeName) {
+	//特定の種類のカウンター(ID番号)をリセットする
+
 	auto it = counters_.find(typeName);
 	if (it != counters_.end()) {
 		it->second = 0;
 		Logger::Log(Logger::GetStream(), std::format("ObjectIDManager: Reset counter for '{}'\n", typeName));
 	}
+
 }
 
 void ObjectIDManager::ResetAllCounters() {
+	//全てのカウンター（ID）の数をリセットする
 	for (auto& [typeName, counter] : counters_) {
 		counter = 0;
 	}
@@ -69,4 +60,21 @@ void ObjectIDManager::ImGui() {
 		ImGui::TreePop();
 	}
 #endif
+}
+
+void ObjectIDManager::RegisterType(const std::string& typeName) {
+	//タイプを追加する
+	if (counters_.find(typeName) == counters_.end()) {
+		//見つからなかったら追加
+		counters_[typeName] = 0;
+		Logger::Log(Logger::GetStream(), std::format("ObjectIDManager: Registered type '{}'\n", typeName));
+	}
+}
+
+int ObjectIDManager::GetNextID(const std::string& typeName) {
+	// タイプが未登録の場合は自動登録
+	RegisterType(typeName);
+
+	// カウンターをインクリメントして返す
+	return ++counters_[typeName];
 }
