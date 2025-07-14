@@ -21,6 +21,7 @@ enum class MeshType {
 	TRIANGLE,		// 三角形
 	SPHERE,			// 球体
 	SPRITE,			// スプライト（ビルボード）
+	PLANE,			// 平面
 	MODEL_OBJ,		// OBJファイル読み込み
 };
 
@@ -70,6 +71,11 @@ public:
 	/// <param name="size">サイズ</param>
 	void CreateSprite(const Vector2& center = { 0.0f, 0.0f }, const Vector2& size = { 1.0f, 1.0f });
 
+	/// <summary>
+	/// 平面メッシュを作成
+	/// </summary>
+	/// <param name="size">平面のサイズ</param>
+	void CreatePlane(const Vector2& size = { 1.0f, 1.0f });
 
 	/// <summary>
 	/// モデルデータからメッシュを作成
@@ -164,4 +170,3 @@ private:
 	void CalculateTriangleNormals();
 
 };
-

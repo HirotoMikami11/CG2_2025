@@ -52,6 +52,7 @@ private:
 	static const int kMaxTriangleIndex = 2;
 	std::array<std::unique_ptr<Triangle>, kMaxTriangleIndex> triangles_;
 	std::unique_ptr<Sphere> sphere_;
+	std::unique_ptr<Plane> plane_;
 	std::unique_ptr<Model3D> model_;
 
 	std::unique_ptr<Sprite> sprite_;

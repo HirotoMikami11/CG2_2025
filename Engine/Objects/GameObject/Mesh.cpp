@@ -19,6 +19,10 @@ void Mesh::Initialize(DirectXCommon* dxCommon, MeshType meshType)
 		CreateSprite({ 160.0f, 90.0f }, { 320.0f, 180.0f });
 		break;
 
+	case MeshType::PLANE:
+		CreatePlane({ 2.0f, 2.0f }); // デフォルトで2.0f x 2.0f
+		break;
+
 	case MeshType::MODEL_OBJ:
 		// OBJファイルの場合はFormDataを使用するのでアサ―ト
 		assert(false && "Use InitializeFromOBJ for OBJ files");
@@ -47,6 +51,7 @@ std::string Mesh::MeshTypeToString(MeshType type)
 	case MeshType::TRIANGLE:     return "Triangle";
 	case MeshType::SPHERE:       return "Sphere";
 	case MeshType::SPRITE:       return "Sprite";
+	case MeshType::PLANE:        return "Plane";
 	case MeshType::MODEL_OBJ:    return "Model_OBJ";
 	default:                     return "Unknown";
 	}
@@ -183,6 +188,42 @@ void Mesh::CreateSprite(const Vector2& center, const Vector2& size)
 	// インデックスデータ（2つの三角形）
 	indices_ = { 0, 1, 2, 1, 3, 2 };
 
+	CreateVertexBuffer();
+	CreateIndexBuffer();
+}
+
+void Mesh::CreatePlane(const Vector2& size)
+{
+	// 平面用の4頂点
+	vertices_.resize(4);
+
+	float halfWidth = size.x * 0.5f;
+	float halfHeight = size.y * 0.5f;
+
+	// 左下
+	vertices_[0].position = { -halfWidth, -halfHeight, 0.0f, 1.0f };
+	vertices_[0].texcoord = { 0.0f, 1.0f };
+	vertices_[0].normal = { 0.0f, 0.0f, -1.0f };
+
+	// 左上
+	vertices_[1].position = { -halfWidth, halfHeight, 0.0f, 1.0f };
+	vertices_[1].texcoord = { 0.0f, 0.0f };
+	vertices_[1].normal = { 0.0f, 0.0f, -1.0f };
+
+	// 右下
+	vertices_[2].position = { halfWidth, -halfHeight, 0.0f, 1.0f };
+	vertices_[2].texcoord = { 1.0f, 1.0f };
+	vertices_[2].normal = { 0.0f, 0.0f, -1.0f };
+
+	// 右上
+	vertices_[3].position = { halfWidth, halfHeight, 0.0f, 1.0f };
+	vertices_[3].texcoord = { 1.0f, 0.0f };
+	vertices_[3].normal = { 0.0f, 0.0f, -1.0f };
+
+	// インデックスデータ（2つの三角形を反時計回りで定義）
+	indices_ = { 0, 1, 2, 1, 3, 2 };
+
+	// バッファを作成
 	CreateVertexBuffer();
 	CreateIndexBuffer();
 }

@@ -52,7 +52,7 @@ struct DirectionalLight {
 /// <summary>
 /// 平面
 /// </summary>
-struct Plane {
+struct PlaneMath {
 	Vector3 normal;	//法線
 	float distance;//距離
 
@@ -61,7 +61,7 @@ struct Plane {
 /// <summary>
 /// 三角形
 /// </summary>
-struct MultiplyMath {
+struct TriangleMath {
 	Vector3 vertices[3];//頂点
 };
 
@@ -109,18 +109,18 @@ bool IsCollision(const SphereMath& SphereMath1, const SphereMath& SphereMath2);
 /// 球と平面の衝突判定
 /// </summary>
 /// <param name="SphereMath"> 球体/param>
-/// <param name="plane"> 平面</param>
+/// <param name="PlaneMath"> 平面</param>
 /// <returns></returns>
-bool IsCollision(const SphereMath& SphereMath, const Plane& plane);
+bool IsCollision(const SphereMath& SphereMath, const PlaneMath& PlaneMath);
 
 
 /// <summary>
 /// 線分と平面の衝突判定
 /// </summary>
 /// <param name="segment">線分</param>
-/// <param name="plane">平面</param>
+/// <param name="PlaneMath">平面</param>
 /// <returns></returns>
-bool IsCollision(const Segment& segment, const Plane& plane);
+bool IsCollision(const Segment& segment, const PlaneMath& PlaneMath);
 
 
 
@@ -131,14 +131,14 @@ bool IsCollision(const Segment& segment, const Plane& plane);
 /// <param name="normal"></param>
 /// <param name="distance"></param>
 /// <returns></returns>
-Vector3 MakeCollisionPoint(const Segment& segment, const Plane& plane);
+Vector3 MakeCollisionPoint(const Segment& segment, const PlaneMath& PlaneMath);
 /// <summary>
 /// 三角形と線分の衝突判定
 /// </summary>
-/// <param name="MultiplyMath"></param>
+/// <param name="TriangleMath"></param>
 /// <param name="segnent"></param>
 /// <returns></returns>
-bool IsCollision(const MultiplyMath& MultiplyMath, const Segment& segment);
+bool IsCollision(const TriangleMath& TriangleMath, const Segment& segment);
 
 /// <summary>
 /// AABBとAABBの衝突判定

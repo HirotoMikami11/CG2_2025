@@ -85,11 +85,11 @@ bool IsCollision(const SphereMath& SphereMath1, const SphereMath& SphereMath2) {
 }
 
 //球と平面の衝突判定
-bool IsCollision(const SphereMath& SphereMath, const Plane& plane) {
+bool IsCollision(const SphereMath& SphereMath, const PlaneMath& PlaneMath) {
 
 	//1.点と平面との距離
 	//そのままだと符号付き距離になってしまうので、絶対値(abs)を取る
-	float distance = std::abs(Dot(plane.normal, SphereMath.center) - plane.distance);
+	float distance = std::abs(Dot(PlaneMath.normal, SphereMath.center) - PlaneMath.distance);
 
 	//2.1の距離<=球の半径なら衝突
 	if (distance <= SphereMath.radius) {
@@ -102,19 +102,19 @@ bool IsCollision(const SphereMath& SphereMath, const Plane& plane) {
 
 
 //線分と平面の衝突判定
-bool IsCollision(const Segment& segment, const Plane& plane) {
+bool IsCollision(const Segment& segment, const PlaneMath& PlaneMath) {
 	//衝突しているかどうか
 	bool isCollision = false;
 
 	//垂直判定を行うため、法線と線の内積を求める
-	float dot = Dot(plane.normal, segment.diff);
+	float dot = Dot(PlaneMath.normal, segment.diff);
 	//垂直=平行であるので、衝突していない
 	if (dot == 0.0f) {
 		return false;
 	}
 
 	//tを求める
-	float t = (plane.distance - Dot(segment.origin, plane.normal)) / dot;
+	float t = (PlaneMath.distance - Dot(segment.origin, PlaneMath.normal)) / dot;
 
 	//tの値と線の種類によって衝突しているかを判定する
 	//線分なので0~1
@@ -126,14 +126,14 @@ bool IsCollision(const Segment& segment, const Plane& plane) {
 }
 
 // 線分と平面の衝突点の座標を求める
-Vector3 MakeCollisionPoint(const Segment& segment, const Plane& plane) {
+Vector3 MakeCollisionPoint(const Segment& segment, const PlaneMath& PlaneMath) {
 	///衝突点
 	Vector3 CollsionPoint;
 
 	//平面と線の衝突判定と同様
-	float dot = Dot(segment.diff, plane.normal);
+	float dot = Dot(segment.diff, PlaneMath.normal);
 	assert(dot != 0.0f);
-	float t = (plane.distance - (Dot(segment.origin, plane.normal))) / dot;
+	float t = (PlaneMath.distance - (Dot(segment.origin, PlaneMath.normal))) / dot;
 
 	//衝突点を求める
 	//p=origin+tb
@@ -143,41 +143,41 @@ Vector3 MakeCollisionPoint(const Segment& segment, const Plane& plane) {
 
 
 // 三角形と線分の衝突判定
-bool IsCollision(const MultiplyMath& MultiplyMath, const Segment& segment) {
+bool IsCollision(const TriangleMath& TriangleMath, const Segment& segment) {
 	//衝突しているかどうか
 	bool isCollision = false;
 
 	///1.線と三角形の存在する平面との衝突判定を行う
 	//三角形の中心座標求める
-	Vector3 MultiplyMathCenter = {
-		(MultiplyMath.vertices[0].x + MultiplyMath.vertices[1].x + MultiplyMath.vertices[2].x) / 3,
-		(MultiplyMath.vertices[0].y + MultiplyMath.vertices[1].y + MultiplyMath.vertices[2].y) / 3,
-		(MultiplyMath.vertices[0].z + MultiplyMath.vertices[1].z + MultiplyMath.vertices[2].z) / 3
+	Vector3 TriangleMathCenter = {
+		(TriangleMath.vertices[0].x + TriangleMath.vertices[1].x + TriangleMath.vertices[2].x) / 3,
+		(TriangleMath.vertices[0].y + TriangleMath.vertices[1].y + TriangleMath.vertices[2].y) / 3,
+		(TriangleMath.vertices[0].z + TriangleMath.vertices[1].z + TriangleMath.vertices[2].z) / 3
 	};
 
 	//平面を作成する
-	Plane plane;
+	PlaneMath PlaneMath;
 	//距離
-	plane.distance = Distance(MultiplyMathCenter, { 0,0,0 });
+	PlaneMath.distance = Distance(TriangleMathCenter, { 0,0,0 });
 	//法線
-	plane.normal = Cross(Subtract(MultiplyMath.vertices[1], MultiplyMath.vertices[0]), Subtract(MultiplyMath.vertices[2], MultiplyMath.vertices[1]));
+	PlaneMath.normal = Cross(Subtract(TriangleMath.vertices[1], TriangleMath.vertices[0]), Subtract(TriangleMath.vertices[2], TriangleMath.vertices[1]));
 
 
-	if (IsCollision(segment, plane)) {
+	if (IsCollision(segment, PlaneMath)) {
 
 
 		///2.衝突していたら、衝突点が三角形の内側にあるのかを調べる
 		//衝突点pを作成
-		Vector3 p = MakeCollisionPoint(segment, plane);
+		Vector3 p = MakeCollisionPoint(segment, PlaneMath);
 		//衝突点と、三角形それぞれの辺で新たな三角形を作成する。(衝突点が[2]になるように)
 		//a.各辺を結んだベクトル
-		Vector3 v01 = Subtract(MultiplyMath.vertices[1], MultiplyMath.vertices[0]);
-		Vector3 v12 = Subtract(MultiplyMath.vertices[2], MultiplyMath.vertices[1]);
-		Vector3 v20 = Subtract(MultiplyMath.vertices[0], MultiplyMath.vertices[2]);
+		Vector3 v01 = Subtract(TriangleMath.vertices[1], TriangleMath.vertices[0]);
+		Vector3 v12 = Subtract(TriangleMath.vertices[2], TriangleMath.vertices[1]);
+		Vector3 v20 = Subtract(TriangleMath.vertices[0], TriangleMath.vertices[2]);
 		//b.頂点と衝突点pを結んだベクトル
-		Vector3 v1p = Subtract(p, MultiplyMath.vertices[1]);
-		Vector3 v2p = Subtract(p, MultiplyMath.vertices[2]);
-		Vector3 v0p = Subtract(p, MultiplyMath.vertices[0]);
+		Vector3 v1p = Subtract(p, TriangleMath.vertices[1]);
+		Vector3 v2p = Subtract(p, TriangleMath.vertices[2]);
+		Vector3 v0p = Subtract(p, TriangleMath.vertices[0]);
 
 		///法線ベクトルと同じ方向を向いているか見るため、aとbで外積を行う
 		Vector3 cross01 = Cross(v01, v1p);
@@ -187,9 +187,9 @@ bool IsCollision(const MultiplyMath& MultiplyMath, const Segment& segment) {
 		///全ての小さな三角形の外積と法線が同じ方向を向いていたら、衝突している
 			//全ての小さい三角形のクロス積と法線が同じ方法を向いていたら衝突
 		if (
-			Dot(cross01, plane.normal) >= 0.0f &&
-			Dot(cross12, plane.normal) >= 0.0f &&
-			Dot(cross20, plane.normal) >= 0.0f
+			Dot(cross01, PlaneMath.normal) >= 0.0f &&
+			Dot(cross12, PlaneMath.normal) >= 0.0f &&
+			Dot(cross20, PlaneMath.normal) >= 0.0f
 			) {
 			isCollision = true;
 

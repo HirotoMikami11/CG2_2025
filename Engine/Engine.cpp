@@ -102,6 +102,7 @@ void Engine::LoadDefaultResources()
 	// プリミティブ事前読み込み
 	modelManager_->LoadPrimitive(MeshType::SPHERE, "sphere");
 	modelManager_->LoadPrimitive(MeshType::TRIANGLE, "triangle");
+	modelManager_->LoadPrimitive(MeshType::PLANE, "plane");
 
 
 

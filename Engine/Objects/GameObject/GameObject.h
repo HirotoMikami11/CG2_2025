@@ -153,6 +153,22 @@ private:
 };
 
 /// <summary>
+/// 平面オブジェクト
+/// </summary>
+class Plane : public GameObject
+{
+public:
+	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "plane", const std::string& textureName = "white") {
+		GameObject::Initialize(dxCommon, modelTag, textureName);
+		name_ = idManager->GenerateName("Plane");
+		SetLightingEnable(true);
+	}
+
+private:
+	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
+};
+
+/// <summary>
 /// 3Dモデルオブジェクト
 /// </summary>
 class Model3D : public GameObject

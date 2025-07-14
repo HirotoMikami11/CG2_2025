@@ -25,7 +25,7 @@ void DemoScene::LoadResources() {
 	textureManager_ = TextureManager::GetInstance();
 
 	// モデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "plane");
+	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_plane");
 
 	//TODO:スザンヌ
 
@@ -86,6 +86,19 @@ void DemoScene::InitializeGameObjects() {
 	sphere_ = std::make_unique<Sphere>();
 	sphere_->Initialize(directXCommon_, "sphere", "monsterBall");
 	sphere_->SetTransform(transformSphere);
+	///*-----------------------------------------------------------------------*///
+	///									平面									///
+	///*-----------------------------------------------------------------------*///
+	Vector3Transform transformPlane{
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 0.0f, 0.0f},
+		{-3.0f, 1.0f, 0.0f}
+	};
+
+	plane_ = std::make_unique<Plane>();
+	plane_->Initialize(directXCommon_, "plane","uvChecker");
+	plane_->SetTransform(transformPlane);
+
 
 	///*-----------------------------------------------------------------------*///
 	///									model									///
@@ -97,8 +110,11 @@ void DemoScene::InitializeGameObjects() {
 	};
 
 	model_ = std::make_unique<Model3D>();
-	model_->Initialize(directXCommon_, "plane");
+	model_->Initialize(directXCommon_, "model_plane");
 	model_->SetTransform(transformModel);
+
+
+
 
 
 	///*-----------------------------------------------------------------------*///
@@ -161,6 +177,9 @@ void DemoScene::UpdateGameObjects() {
 	// スプライトの更新
 	sprite_->Update(viewProjectionMatrixSprite);
 
+	//平面の更新
+	plane_->Update(viewProjectionMatrix);
+
 	// モデルの更新
 	model_->Update(viewProjectionMatrix);
 
@@ -186,9 +205,14 @@ void DemoScene::DrawGameObjects() {
 	for (int i = 0; i < kMaxTriangleIndex; i++) {
 		triangles_[i]->Draw(directionalLight_);
 	}
+	//平面の描画
+	plane_->Draw(directionalLight_);
+
 
 	// モデルの描画
 	model_->Draw(directionalLight_);
+
+
 
 	// スプライトの描画
 	sprite_->Draw();
@@ -225,6 +249,11 @@ void DemoScene::ImGui() {
 	ImGui::Text("Sprite");
 	sprite_->ImGui();
 
+	ImGui::Spacing();
+
+	// 系mねのImGui
+	ImGui::Text("Plane");
+	plane_->ImGui();
 	ImGui::Spacing();
 
 	// モデルのImGui
