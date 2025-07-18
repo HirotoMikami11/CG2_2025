@@ -160,6 +160,12 @@
     <Filter Include="Engine\Managers\ObjectID">
       <UniqueIdentifier>{6220611e-c1f5-4d43-b5cd-24614a62f6a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader\DepthFog">
+      <UniqueIdentifier>{ead93783-89f3-4008-b074-5f04488acf13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\DepthFog">
+      <UniqueIdentifier>{1bb97fac-4c39-4849-9c2e-a3b167d2d7f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -215,9 +221,6 @@
     </ClCompile>
     <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
       <Filter>Engine\OffScreenRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\PostEffect.cpp">
-      <Filter>Engine\OffScreenRenderer\PostEffect</Filter>
     </ClCompile>
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp">
       <Filter>Engine\FrameTimer</Filter>
@@ -336,6 +339,9 @@
     <ClCompile Include="Engine\Managers\ObjectID\ObjectIDManager.cpp">
       <Filter>Engine\Managers\ObjectID</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\DepthFog</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -376,6 +382,12 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\Line\Line.PS.hlsl">
       <Filter>リソース ファイル\Shader\Line</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\DepthFog\DepthFog.PS.hlsl">
+      <Filter>リソース ファイル\Shader\DepthFog</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\DepthFog\DepthFog.VS.hlsl">
+      <Filter>リソース ファイル\Shader\DepthFog</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -568,6 +580,9 @@
     <ClInclude Include="Engine\Managers\ObjectID\ObjectIDManager.h">
       <Filter>Engine\Managers\ObjectID</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\DepthFog</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
@@ -587,6 +602,9 @@
     </None>
     <None Include="resources\Shader\Line\Line.hlsli">
       <Filter>リソース ファイル\Shader\Line</Filter>
+    </None>
+    <None Include="resources\Shader\DepthFog\DepthFog.hlsli">
+      <Filter>リソース ファイル\Shader\DepthFog</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

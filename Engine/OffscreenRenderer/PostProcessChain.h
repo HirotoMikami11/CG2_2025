@@ -5,15 +5,12 @@
 #include <wrl.h>
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
-#include "MyMath/MyFunction.h"
-#include "BaseSystem/Logger/Logger.h"
 #include "OffscreenRenderer/PostEffect/PostEffect.h"
-
 #include "Objects/Sprite/Sprite.h"
 
 /// <summary>
-/// ポストプロセスチェーンを管理するクラス
-/// 複数のポストエフェクトを順次適用する
+/// ポストプロセスエフェクトチェーン管理クラス
+/// 複数のエフェクトを順番に適用する
 /// </summary>
 class PostProcessChain {
 public:
@@ -23,6 +20,9 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
+	/// <param name="dxCommon">DirectXCommonのポインタ</param>
+	/// <param name="width">処理対象の幅</param>
+	/// <param name="height">処理対象の高さ</param>
 	void Initialize(DirectXCommon* dxCommon, uint32_t width, uint32_t height);
 
 	/// <summary>
@@ -33,29 +33,44 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
+	/// <param name="deltaTime">フレーム時間</param>
 	void Update(float deltaTime);
+
+	/// <summary>
+	/// エフェクトチェーンを適用（通常版）
+	/// </summary>
+	/// <param name="inputSRV">入力テクスチャ</param>
+	/// <returns>最終結果のテクスチャハンドル</returns>
+	D3D12_GPU_DESCRIPTOR_HANDLE ApplyEffects(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV);
+
+	/// <summary>
+	/// エフェクトチェーンを適用（深度テクスチャ対応版）
+	/// </summary>
+	/// <param name="inputSRV">入力カラーテクスチャ</param>
+	/// <param name="depthSRV">深度テクスチャ</param>
+	/// <returns>最終結果のテクスチャハンドル</returns>
+	D3D12_GPU_DESCRIPTOR_HANDLE ApplyEffectsWithDepth(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV);
 
 	/// <summary>
 	/// エフェクトを追加
 	/// </summary>
-	
-	//TODO:ここの実装をaiに頼った為もう一度復習する
-	//ポストエフェクト型のものvector型、配列に追加していき使用する
 	template<typename T>
 	T* AddEffect() {
 		auto effect = std::make_unique<T>();
-		effect->Initialize(dxCommon_);
 		T* ptr = effect.get();
+
+		if (dxCommon_) {
+			effect->Initialize(dxCommon_);
+		}
+
 		effects_.push_back(std::move(effect));
 		return ptr;
 	}
 
 	/// <summary>
-	/// ポストプロセスチェーンを適用
+	/// ImGui表示
 	/// </summary>
-	/// <param name="inputSRV">入力テクスチャ</param>
-	/// <returns>最終結果のSRV</returns>
-	D3D12_GPU_DESCRIPTOR_HANDLE ApplyEffects(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV);
+	void ImGui();
 
 	/// <summary>
 	/// エフェクトの順序を変更
@@ -63,41 +78,48 @@ public:
 	void MoveEffect(size_t from, size_t to);
 
 	/// <summary>
-	/// ImGui表示
+	/// 有効なエフェクトの数を取得
 	/// </summary>
-	void ImGui();
+	/// <returns>有効なエフェクト数</returns>
+	size_t GetActiveEffectCount() const;
 
 private:
 	/// <summary>
-	/// ping-pong用のレンダーターゲットを作成
+	/// 中間バッファを作成
 	/// </summary>
-	void CreatePingPongTargets();
+	void CreateIntermediateBuffers();
 
 	/// <summary>
-	/// フルスクリーン描画用のSpriteを作成
+	/// 中間バッファのSRVを作成
 	/// </summary>
-	void CreateFullscreenSprite();
+	void CreateIntermediateSRVs();
+
+	/// <summary>
+	/// 中間バッファのRTVを作成
+	/// </summary>
+	void CreateIntermediateRTVs();
 
 private:
+	// システム参照
 	DirectXCommon* dxCommon_ = nullptr;
+
+	// バッファサイズ
 	uint32_t width_ = 0;
 	uint32_t height_ = 0;
 
 	// エフェクトリスト
-	//ここにエフェクトを追加し、このvectorの中身を順次使用していく
 	std::vector<std::unique_ptr<PostEffect>> effects_;
 
-	// ping-pong用レンダーターゲット
-	//2つのテクスチャを交互に使用してエフェクトを適用
-	//交互に使用するので2枚以上はいらない
-	Microsoft::WRL::ComPtr<ID3D12Resource> pingPongTextures_[2];
-	DescriptorHeapManager::DescriptorHandle pingPongRTVs_[2];
-	DescriptorHeapManager::DescriptorHandle pingPongSRVs_[2];
+	// 中間バッファ（2つのバッファを交互に使用してピンポン処理）
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateBuffers_[2];
 
-	// フルスクリーン描画用スプライト
-	std::unique_ptr<Sprite> fullscreenSprite_;
+	// 中間バッファ用のハンドル
+	DescriptorHeapManager::DescriptorHandle intermediateSRVHandles_[2];
+	DescriptorHeapManager::DescriptorHandle intermediateRTVHandles_[2];
 
-	// ビューポートとシザー矩形
-	D3D12_VIEWPORT viewport_{};
-	D3D12_RECT scissorRect_{};
+	// エフェクト描画用Sprite
+	std::unique_ptr<Sprite> effectSprite_;
+
+	// 初期化フラグ
+	bool isInitialized_ = false;
 };

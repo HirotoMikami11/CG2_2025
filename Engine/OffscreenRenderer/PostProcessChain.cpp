@@ -1,204 +1,295 @@
 #include "PostProcessChain.h"
-#include "Managers/ImGui/ImGuiManager.h" 
+#include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"
+#include "Managers/ImGui/ImGuiManager.h"
 
 void PostProcessChain::Initialize(DirectXCommon* dxCommon, uint32_t width, uint32_t height) {
 	dxCommon_ = dxCommon;
 	width_ = width;
 	height_ = height;
 
-	// ping-pong用のレンダーターゲットを作成
-	CreatePingPongTargets();
+	// 中間バッファ作成
+	CreateIntermediateBuffers();
+	CreateIntermediateSRVs();
+	CreateIntermediateRTVs();
 
-	// フルスクリーン描画用スプライトを作成
-	CreateFullscreenSprite();
+	// エフェクト描画用Sprite初期化
+	effectSprite_ = std::make_unique<Sprite>();
+	Vector2 center = { static_cast<float>(width_) * 0.5f, static_cast<float>(height_) * 0.5f };
+	Vector2 size = { static_cast<float>(width_), static_cast<float>(height_) };
+	effectSprite_->Initialize(dxCommon_, "", center, size);
 
-	// ビューポート設定
-	viewport_.Width = static_cast<float>(width_);
-	viewport_.Height = static_cast<float>(height_);
-	viewport_.TopLeftX = 0.0f;
-	viewport_.TopLeftY = 0.0f;
-	viewport_.MinDepth = 0.0f;
-	viewport_.MaxDepth = 1.0f;
-
-	// シザー矩形設定
-	scissorRect_.left = 0;
-	scissorRect_.right = width_;
-	scissorRect_.top = 0;
-	scissorRect_.bottom = height_;
-
-	Logger::Log(Logger::GetStream(), "PostProcessChain initialized successfully (Final Fix)!\n");
+	isInitialized_ = true;
+	Logger::Log(Logger::GetStream(), "PostProcessChain initialized with depth support!\n");
 }
 
 void PostProcessChain::Finalize() {
 	// エフェクトの終了処理
 	for (auto& effect : effects_) {
-		effect->Finalize();
+		if (effect) {
+			effect->Finalize();
+		}
 	}
 	effects_.clear();
 
-	// フルスクリーンスプライトの削除
-	fullscreenSprite_.reset();
+	// Spriteの削除
+	effectSprite_.reset();
 
-	// DescriptorHeapManagerからディスクリプタを解放
+	// ディスクリプタの解放
 	auto descriptorManager = dxCommon_->GetDescriptorManager();
 	if (descriptorManager) {
 		for (int i = 0; i < 2; ++i) {
-			if (pingPongRTVs_[i].isValid) {
-				descriptorManager->ReleaseRTV(pingPongRTVs_[i].index);
+			if (intermediateSRVHandles_[i].isValid) {
+				descriptorManager->ReleaseSRV(intermediateSRVHandles_[i].index);
 			}
-			if (pingPongSRVs_[i].isValid) {
-				descriptorManager->ReleaseSRV(pingPongSRVs_[i].index);
+			if (intermediateRTVHandles_[i].isValid) {
+				descriptorManager->ReleaseRTV(intermediateRTVHandles_[i].index);
 			}
 		}
 	}
 
-	Logger::Log(Logger::GetStream(), "PostProcessChain finalized (Final Fix).\n");
+	isInitialized_ = false;
+	Logger::Log(Logger::GetStream(), "PostProcessChain finalized.\n");
 }
 
 void PostProcessChain::Update(float deltaTime) {
-	// エフェクトの更新
-	for (auto& effect : effects_) {
-		effect->Update(deltaTime);
+	if (!isInitialized_) {
+		return;
 	}
 
-	// フルスクリーンスプライトの更新
-	if (fullscreenSprite_) {
-		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
-		fullscreenSprite_->Update(spriteViewProjection);
-	}
-}
-D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) {
-	auto commandList = dxCommon_->GetCommandList();
-
-	// 有効なエフェクトのみを収集
-	std::vector<PostEffect*> activeEffects;
+	// 各エフェクトの更新
 	for (auto& effect : effects_) {
-		if (effect->IsEnabled()) {
-			activeEffects.push_back(effect.get());
+		if (effect && effect->IsEnabled()) {
+			effect->Update(deltaTime);
 		}
 	}
 
-	// エフェクトが一つもない場合は入力をそのまま返す
-	if (activeEffects.empty()) {
+	// エフェクト描画用Spriteの更新
+	if (effectSprite_) {
+		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
+		effectSprite_->Update(spriteViewProjection);
+	}
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) {
+	if (!isInitialized_ || effects_.empty()) {
 		return inputSRV;
 	}
 
+	// 有効なエフェクトがない場合は入力をそのまま返す
+	bool hasActiveEffect = false;
+	for (const auto& effect : effects_) {
+		if (effect && effect->IsEnabled()) {
+			hasActiveEffect = true;
+			break;
+		}
+	}
+
+	if (!hasActiveEffect) {
+		return inputSRV;
+	}
+
+	auto commandList = dxCommon_->GetCommandList();
 	D3D12_GPU_DESCRIPTOR_HANDLE currentInput = inputSRV;
+	int bufferIndex = 0;
 
-	// 各エフェクトを順次適用
-	for (size_t i = 0; i < activeEffects.size(); ++i) {
-		int targetIndex = i % 2;
+	// 各エフェクトを順番に適用
+	for (const auto& effect : effects_) {
+		if (!effect || !effect->IsEnabled()) {
+			continue;
+		}
 
-		// 毎回ping-pongテクスチャをRENDER_TARGET状態に遷移
+		// 深度フォグエフェクトの場合は警告を出す（深度テクスチャが必要）
+		if (dynamic_cast<DepthFogPostEffect*>(effect.get())) {
+			Logger::Log(Logger::GetStream(), "Warning: DepthFogPostEffect requires depth texture. Use ApplyEffectsWithDepth instead.\n");
+			continue;
+		}
+
+		// 出力バッファをレンダーターゲット状態に遷移
 		D3D12_RESOURCE_BARRIER barrier{};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = pingPongTextures_[targetIndex].Get();
+		barrier.Transition.pResource = intermediateBuffers_[bufferIndex].Get();
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-		// バリア実行
 		commandList->ResourceBarrier(1, &barrier);
 
-		// エフェクトを適用
-		activeEffects[i]->Apply(currentInput, pingPongRTVs_[targetIndex].cpuHandle, fullscreenSprite_.get());
+		// 出力先を決定
+		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV = intermediateRTVHandles_[bufferIndex].cpuHandle;
 
-		// レンダーターゲットをシェーダーリソース状態に遷移
+		// エフェクトを適用
+		effect->Apply(currentInput, outputRTV, effectSprite_.get());
+
+		// 出力バッファをシェーダーリソース状態に戻す
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 		commandList->ResourceBarrier(1, &barrier);
 
-		// 次のエフェクトの入力として設定
-		currentInput = pingPongSRVs_[targetIndex].gpuHandle;
+		// 次の入力として今回の出力を設定
+		currentInput = intermediateSRVHandles_[bufferIndex].gpuHandle;
+		bufferIndex = (bufferIndex + 1) % 2;
 	}
 
 	return currentInput;
 }
 
-void PostProcessChain::CreatePingPongTargets() {
-	auto descriptorManager = dxCommon_->GetDescriptorManager();
+D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffectsWithDepth(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV) {
+	if (!isInitialized_ || effects_.empty()) {
+		return inputSRV;
+	}
 
+	// 有効なエフェクトがない場合は入力をそのまま返す
+	bool hasActiveEffect = false;
+	for (const auto& effect : effects_) {
+		if (effect && effect->IsEnabled()) {
+			hasActiveEffect = true;
+			break;
+		}
+	}
+
+	if (!hasActiveEffect) {
+		return inputSRV;
+	}
+
+	auto commandList = dxCommon_->GetCommandList();
+	D3D12_GPU_DESCRIPTOR_HANDLE currentInput = inputSRV;
+	int bufferIndex = 0;
+
+	// 各エフェクトを順番に適用
+	for (const auto& effect : effects_) {
+		if (!effect || !effect->IsEnabled()) {
+			continue;
+		}
+
+		// 出力バッファをレンダーターゲット状態に遷移
+		D3D12_RESOURCE_BARRIER barrier{};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier.Transition.pResource = intermediateBuffers_[bufferIndex].Get();
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		commandList->ResourceBarrier(1, &barrier);
+
+		// 出力先を決定
+		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV = intermediateRTVHandles_[bufferIndex].cpuHandle;
+
+		// 深度フォグエフェクトの場合は専用のApplyを使用
+		DepthFogPostEffect* depthFogEffect = dynamic_cast<DepthFogPostEffect*>(effect.get());
+		if (depthFogEffect) {
+			depthFogEffect->Apply(currentInput, depthSRV, outputRTV, effectSprite_.get());
+		} else {
+			// 通常のエフェクトの場合
+			effect->Apply(currentInput, outputRTV, effectSprite_.get());
+		}
+
+		// 出力バッファをシェーダーリソース状態に戻す
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		commandList->ResourceBarrier(1, &barrier);
+
+		// 次の入力として今回の出力を設定
+		currentInput = intermediateSRVHandles_[bufferIndex].gpuHandle;
+		bufferIndex = (bufferIndex + 1) % 2;
+	}
+
+	return currentInput;
+}
+
+void PostProcessChain::CreateIntermediateBuffers() {
+	// 中間バッファのリソース設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Width = width_;
+	resourceDesc.Height = height_;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+	// ヒープ設定
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+	// クリアカラー設定
+	D3D12_CLEAR_VALUE clearValue{};
+	clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	clearValue.Color[0] = 0.0f;
+	clearValue.Color[1] = 0.0f;
+	clearValue.Color[2] = 0.0f;
+	clearValue.Color[3] = 1.0f;
+
+	// 2つの中間バッファを作成
 	for (int i = 0; i < 2; ++i) {
-		// テクスチャリソース作成
-		D3D12_RESOURCE_DESC resourceDesc{};
-		resourceDesc.Width = width_;
-		resourceDesc.Height = height_;
-		resourceDesc.MipLevels = 1;
-		resourceDesc.DepthOrArraySize = 1;
-		resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		resourceDesc.SampleDesc.Count = 1;
-		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-
-		D3D12_HEAP_PROPERTIES heapProperties{};
-		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-		D3D12_CLEAR_VALUE clearValue{};
-		clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		clearValue.Color[0] = 0.0f;
-		clearValue.Color[1] = 0.0f;
-		clearValue.Color[2] = 0.0f;
-		clearValue.Color[3] = 1.0f;
-
-		// 初期状態をPIXEL_SHADER_RESOURCEに変更（バリアとの整合性のため）
 		HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
 			&heapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&resourceDesc,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 			&clearValue,
-			IID_PPV_ARGS(&pingPongTextures_[i]));
+			IID_PPV_ARGS(&intermediateBuffers_[i]));
+
 		assert(SUCCEEDED(hr));
+	}
 
-		// RTV作成
-		pingPongRTVs_[i] = descriptorManager->AllocateRTV();
-		if (!pingPongRTVs_[i].isValid) {
-			Logger::Log(Logger::GetStream(), std::format("Failed to allocate RTV for ping-pong texture {}\n", i));
-			assert(false);
-			return;
-		}
+	Logger::Log(Logger::GetStream(), "Created intermediate buffers for PostProcessChain.\n");
+}
 
-		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		dxCommon_->GetDevice()->CreateRenderTargetView(
-			pingPongTextures_[i].Get(), &rtvDesc, pingPongRTVs_[i].cpuHandle);
+void PostProcessChain::CreateIntermediateSRVs() {
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+
+	for (int i = 0; i < 2; ++i) {
+		// SRVを割り当て
+		intermediateSRVHandles_[i] = descriptorManager->AllocateSRV();
+		assert(intermediateSRVHandles_[i].isValid);
 
 		// SRV作成
-		pingPongSRVs_[i] = descriptorManager->AllocateSRV();
-		if (!pingPongSRVs_[i].isValid) {
-			Logger::Log(Logger::GetStream(), std::format("Failed to allocate SRV for ping-pong texture {}\n", i));
-			assert(false);
-			return;
-		}
-
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 		srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
-		dxCommon_->GetDevice()->CreateShaderResourceView(
-			pingPongTextures_[i].Get(), &srvDesc, pingPongSRVs_[i].cpuHandle);
 
-		Logger::Log(Logger::GetStream(), std::format("Created ping-pong texture {} successfully!\n", i));
+		dxCommon_->GetDevice()->CreateShaderResourceView(
+			intermediateBuffers_[i].Get(),
+			&srvDesc,
+			intermediateSRVHandles_[i].cpuHandle);
 	}
 
-	Logger::Log(Logger::GetStream(), "PingPong render targets created successfully (PIXEL_SHADER_RESOURCE initial state)!\n");
+	Logger::Log(Logger::GetStream(), "Created intermediate SRVs for PostProcessChain.\n");
 }
 
-void PostProcessChain::CreateFullscreenSprite() {
-	// フルスクリーン描画用スプライトを作成
-	fullscreenSprite_ = std::make_unique<Sprite>();
+void PostProcessChain::CreateIntermediateRTVs() {
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
 
-	// 画面全体をカバーするサイズと位置で初期化
-	Vector2 center = { static_cast<float>(width_) * 0.5f, static_cast<float>(height_) * 0.5f };
-	Vector2 size = { static_cast<float>(width_), static_cast<float>(height_) };
+	for (int i = 0; i < 2; ++i) {
+		// RTVを割り当て
+		intermediateRTVHandles_[i] = descriptorManager->AllocateRTV();
+		assert(intermediateRTVHandles_[i].isValid);
 
-	// 空のテクスチャ名で初期化（エフェクト適用時にテクスチャハンドルを直接指定するため）
-	fullscreenSprite_->Initialize(dxCommon_, "", center, size);
+		// RTV作成
+		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-	Logger::Log(Logger::GetStream(), "Fullscreen sprite created successfully!\n");
+		dxCommon_->GetDevice()->CreateRenderTargetView(
+			intermediateBuffers_[i].Get(),
+			&rtvDesc,
+			intermediateRTVHandles_[i].cpuHandle);
+	}
+
+	Logger::Log(Logger::GetStream(), "Created intermediate RTVs for PostProcessChain.\n");
+}
+
+size_t PostProcessChain::GetActiveEffectCount() const {
+	size_t count = 0;
+	for (const auto& effect : effects_) {
+		if (effect && effect->IsEnabled()) {
+			count++;
+		}
+	}
+	return count;
 }
 
 void PostProcessChain::ImGui() {
@@ -249,16 +340,6 @@ void PostProcessChain::ImGui() {
 
 			ImGui::PopID();
 			ImGui::Separator();
-		}
-
-		// フルスクリーンスプライト情報
-		if (fullscreenSprite_) {
-			ImGui::Separator();
-			ImGui::Text("Fullscreen Sprite Info:");
-			Vector2 pos = fullscreenSprite_->GetPosition();
-			Vector2 size = fullscreenSprite_->GetSize();
-			ImGui::Text("Position: (%.1f, %.1f)", pos.x, pos.y);
-			ImGui::Text("Size: (%.1f, %.1f)", size.x, size.y);
 		}
 	}
 #endif

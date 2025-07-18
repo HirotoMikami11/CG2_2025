@@ -12,6 +12,7 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	CreateRTV();
 	CreateDSV();
 	CreateSRV();
+	CreateDepthSRV();  // 深度用SRV作成を追加
 	CreatePSO();
 
 	// ビューポート設定
@@ -45,12 +46,13 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 	// ライングリッチエフェクトを追加
 	lineGlitchEffect_ = postProcessChain_->AddEffect<LineGlitchPostEffect>();
+	// 深度フォグエフェクトを追加
+	depthFogEffect_ = postProcessChain_->AddEffect<DepthFogPostEffect>();
 
-
-
+	depthFogEffect_->SetEnabled(true);
 
 	// 初期化完了のログを出す
-	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (PostProcess Chain)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (PostProcess Chain with DepthFog)!!\n");
 }
 
 void OffscreenRenderer::Finalize() {
@@ -63,11 +65,11 @@ void OffscreenRenderer::Finalize() {
 	///
 	///ここで追加したエフェクトをnullptrにしておく
 	///
-	
+
 	RGBShiftEffect_ = nullptr;
 	grayscaleEffect_ = nullptr;
 	lineGlitchEffect_ = nullptr;
-
+	depthFogEffect_ = nullptr;  // 深度フォグエフェクトもnullptrに
 	// オフスクリーンSprite削除
 	offscreenSprite_.reset();
 
@@ -83,9 +85,12 @@ void OffscreenRenderer::Finalize() {
 		if (srvHandle_.isValid) {
 			descriptorManager->ReleaseSRV(srvHandle_.index);
 		}
+		if (depthSrvHandle_.isValid) {  // 深度SRVも解放
+			descriptorManager->ReleaseSRV(depthSrvHandle_.index);
+		}
 	}
 
-	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized (PostProcess Chain).\n");
+	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized (PostProcess Chain with DepthFog).\n");
 }
 
 void OffscreenRenderer::Update(float deltaTime) {
@@ -102,11 +107,10 @@ void OffscreenRenderer::Update(float deltaTime) {
 	}
 }
 
-
 void OffscreenRenderer::PreDraw() {
 	auto commandList = dxCommon_->GetCommandList();
 
-	// バリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
+	// カラーバリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
 	D3D12_RESOURCE_BARRIER preDrawBarrier{};
 	preDrawBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	preDrawBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -115,8 +119,25 @@ void OffscreenRenderer::PreDraw() {
 	preDrawBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	preDrawBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-	// バリア実行
-	commandList->ResourceBarrier(1, &preDrawBarrier);
+	// 深度テクスチャは既にDEPTH_WRITE状態で作成されているので、最初のフレームではバリア不要
+	// 2フレーム目以降のためにバリア設定
+	D3D12_RESOURCE_BARRIER depthPreDrawBarrier{};
+	depthPreDrawBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	depthPreDrawBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	depthPreDrawBarrier.Transition.pResource = depthStencilTexture_.Get();
+	depthPreDrawBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	depthPreDrawBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	depthPreDrawBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// 初回フレームはバリア不要、2フレーム目以降はバリア実行
+	static bool isFirstFrame = true;
+	if (isFirstFrame) {
+		commandList->ResourceBarrier(1, &preDrawBarrier);  // カラーのみ
+		isFirstFrame = false;
+	} else {
+		D3D12_RESOURCE_BARRIER barriers[] = { preDrawBarrier, depthPreDrawBarrier };
+		commandList->ResourceBarrier(2, barriers);
+	}
 
 	// レンダーターゲットとデプスステンシルを設定
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandle_.cpuHandle;
@@ -144,7 +165,7 @@ void OffscreenRenderer::PreDraw() {
 void OffscreenRenderer::PostDraw() {
 	auto commandList = dxCommon_->GetCommandList();
 
-	// バリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
+	// カラーバリア構造体を毎回新しく作成（メンバ変数の使い回しを避ける）
 	D3D12_RESOURCE_BARRIER postDrawBarrier{};
 	postDrawBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	postDrawBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -153,8 +174,18 @@ void OffscreenRenderer::PostDraw() {
 	postDrawBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	postDrawBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-	// バリア実行
-	commandList->ResourceBarrier(1, &postDrawBarrier);
+	// 深度バリア構造体（シェーダーリソース用に遷移）
+	D3D12_RESOURCE_BARRIER depthPostDrawBarrier{};
+	depthPostDrawBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	depthPostDrawBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	depthPostDrawBarrier.Transition.pResource = depthStencilTexture_.Get();
+	depthPostDrawBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	depthPostDrawBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	depthPostDrawBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// バリアを同時実行
+	D3D12_RESOURCE_BARRIER barriers[] = { postDrawBarrier, depthPostDrawBarrier };
+	commandList->ResourceBarrier(2, barriers);
 }
 
 void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, float height) {
@@ -171,10 +202,11 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	offscreenSprite_->SetPosition(position);
 	offscreenSprite_->SetSize(size);
 
-	// ポストプロセスチェーンを適用
+	// ポストプロセスチェーンを適用（深度テクスチャも渡す）
 	D3D12_GPU_DESCRIPTOR_HANDLE finalTexture = srvHandle_.gpuHandle;
 	if (postProcessChain_) {
-		finalTexture = postProcessChain_->ApplyEffects(srvHandle_.gpuHandle);
+		// 深度テクスチャ対応版のApplyEffectsを使用
+		finalTexture = postProcessChain_->ApplyEffectsWithDepth(srvHandle_.gpuHandle, depthSrvHandle_.gpuHandle);
 	}
 
 	// PostProcessChain実行後に描画状態を完全にリセット
@@ -202,7 +234,6 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-
 void OffscreenRenderer::InitializeOffscreenSprite() {
 	// オフスクリーン描画用Spriteを作成
 	offscreenSprite_ = std::make_unique<Sprite>();
@@ -216,6 +247,7 @@ void OffscreenRenderer::InitializeOffscreenSprite() {
 
 	Logger::Log(Logger::GetStream(), "Complete initialize offscreen sprite!!\n");
 }
+
 void OffscreenRenderer::CreateRenderTargetTexture() {
 	// リソース設定
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -235,10 +267,10 @@ void OffscreenRenderer::CreateRenderTargetTexture() {
 	// オフスクリーンレンダリング用のクリアカラーを設定
 	D3D12_CLEAR_VALUE clearValue{};
 	clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	clearValue.Color[0] = clearColor_[0];  
-	clearValue.Color[1] = clearColor_[1]; 
-	clearValue.Color[2] = clearColor_[2];  
-	clearValue.Color[3] = clearColor_[3];  
+	clearValue.Color[0] = clearColor_[0];
+	clearValue.Color[1] = clearColor_[1];
+	clearValue.Color[2] = clearColor_[2];
+	clearValue.Color[3] = clearColor_[3];
 
 	// 初期状態をPIXEL_SHADER_RESOURCEに変更（バリアとの整合性のため）
 	HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
@@ -259,7 +291,7 @@ void OffscreenRenderer::CreateDepthStencilTexture() {
 	resourceDesc.Height = height_;
 	resourceDesc.MipLevels = 1;
 	resourceDesc.DepthOrArraySize = 1;
-	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	resourceDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;  // Typelessフォーマットで作成
 	resourceDesc.SampleDesc.Count = 1;
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -269,18 +301,19 @@ void OffscreenRenderer::CreateDepthStencilTexture() {
 
 	D3D12_CLEAR_VALUE depthClearValue{};
 	depthClearValue.DepthStencil.Depth = 1.0f;
-	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;  // DSV用フォーマット
 
+	// 初期状態をDEPTH_WRITEに変更（書き込み準備状態で作成）
 	HRESULT hr = dxCommon_->GetDevice()->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,  // 初期状態を書き込み用に変更
 		&depthClearValue,
 		IID_PPV_ARGS(&depthStencilTexture_));
 
 	assert(SUCCEEDED(hr));
-	Logger::Log(Logger::GetStream(), "Complete create offscreen depth stencil texture!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create offscreen depth stencil texture (Typeless format)!!\n");
 }
 
 void OffscreenRenderer::CreateRTV() {
@@ -326,7 +359,7 @@ void OffscreenRenderer::CreateDSV() {
 
 	// DSV作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;  // DSV用フォーマット
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
 	dxCommon_->GetDevice()->CreateDepthStencilView(
@@ -366,15 +399,41 @@ void OffscreenRenderer::CreateSRV() {
 	Logger::Log(Logger::GetStream(), std::format("Complete create offscreen SRV (Index: {})!!\n", srvHandle_.index));
 }
 
-void OffscreenRenderer::CreatePSO()
-{
+void OffscreenRenderer::CreateDepthSRV() {
+	auto descriptorManager = dxCommon_->GetDescriptorManager();
+	if (!descriptorManager) {
+		Logger::Log(Logger::GetStream(), "DescriptorManager is null\n");
+		return;
+	}
 
+	// 深度用SRVを割り当て
+	depthSrvHandle_ = descriptorManager->AllocateSRV();
+	if (!depthSrvHandle_.isValid) {
+		Logger::Log(Logger::GetStream(), "Failed to allocate depth SRV for offscreen renderer\n");
+		return;
+	}
 
+	// 深度用SRV作成
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;  // 深度読み取り用フォーマット
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+
+	dxCommon_->GetDevice()->CreateShaderResourceView(
+		depthStencilTexture_.Get(),
+		&srvDesc,
+		depthSrvHandle_.cpuHandle);
+
+	Logger::Log(Logger::GetStream(), std::format("Complete create offscreen depth SRV (Index: {})!!\n", depthSrvHandle_.index));
+}
+
+void OffscreenRenderer::CreatePSO() {
 	////																			//
 	////								RootSignature作成							//
 	////																			//
 
-		// RootSignature作成
+	// RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -441,12 +500,10 @@ void OffscreenRenderer::CreatePSO()
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&offscreenRootSignature_));
 	assert(SUCCEEDED(hr));
 
-
-
 	////																			//
 	////							InputLayoutの設定								//
 	////																			//
-	 // InputLayout設定
+	// InputLayout設定
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 
 	inputElementDescs[0].SemanticName = "POSITION";
@@ -528,33 +585,24 @@ void OffscreenRenderer::CreatePSO()
 	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState!!\n");
 }
 
-
 void OffscreenRenderer::ImGui() {
-
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain)")) {
+	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain with DepthFog)")) {
 		// オフスクリーンのサイズ
 		ImGui::Text("Render Target Size: %dx%d", width_, height_);
 		ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
 
 		// レンダーターゲットのハンドル情報
 		if (srvHandle_.isValid) {
-			ImGui::Text("SRV Index: %d", srvHandle_.index);
+			ImGui::Text("Color SRV Index: %d", srvHandle_.index);
 		}
+		if (depthSrvHandle_.isValid) {
+			ImGui::Text("Depth SRV Index: %d", depthSrvHandle_.index);
+		}
+
 		// クリアカラーの設定
 		ImGui::Separator();
 		ImGui::Text("Clear Color Settings:");
-
-		//// カラーピッカーでクリアカラーを編集
-		//float imguiColor[4] = {clearColor_[0], clearColor_[1], clearColor_[2], clearColor_[3]}; // 初期値
-		//if (ImGui::ColorEdit4("Clear Color", imguiColor, ImGuiColorEditFlags_DisplayRGB)) {
-		//	
-		//	clearColor_[0] = imguiColor[0];
-		//	clearColor_[1] = imguiColor[1];
-		//	clearColor_[2] = imguiColor[2];
-		//	clearColor_[3] = imguiColor[3];
-
-		//}
 
 		// オフスクリーンSprite情報
 		if (offscreenSprite_) {
@@ -576,5 +624,4 @@ void OffscreenRenderer::ImGui() {
 		}
 	}
 #endif
-
 }

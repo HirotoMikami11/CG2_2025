@@ -14,9 +14,8 @@
 
 #include "OffscreenRenderer/PostEffect/RGBShift/RGBShiftPostEffect.h"	// RGBシフトエフェクト
 #include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
-#include "OffscreenRenderer/PostEffect/LineGlitch/LineGlitchPostEffect.h"	// `らいんずらし
-
-
+#include "OffscreenRenderer/PostEffect/LineGlitch/LineGlitchPostEffect.h"	// ラインズラシ
+#include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"	// 深度フォグエフェクト
 
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス
@@ -74,6 +73,12 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetOffscreenTextureHandle() const { return srvHandle_.gpuHandle; }
 
 	/// <summary>
+	/// 深度テクスチャのハンドルを取得
+	/// </summary>
+	/// <returns>深度テクスチャのGPUハンドル</returns>
+	D3D12_GPU_DESCRIPTOR_HANDLE GetDepthTextureHandle() const { return depthSrvHandle_.gpuHandle; }
+
+	/// <summary>
 	/// オフスクリーンレンダリングが有効かチェック
 	/// </summary>
 	/// <returns>有効かどうか</returns>
@@ -97,6 +102,12 @@ public:
 	GrayscalePostEffect* GetGrayscaleEffect() { return grayscaleEffect_; }
 
 	/// <summary>
+	/// 深度フォグエフェクトを取得
+	/// </summary>
+	/// <returns>深度フォグポストエフェクトのポインタ</returns>
+	DepthFogPostEffect* GetDepthFogEffect() { return depthFogEffect_; }
+
+	/// <summary>
 	/// ポストプロセスチェーンを取得
 	/// </summary>
 	/// <returns>ポストプロセスチェーンのポインタ</returns>
@@ -117,6 +128,7 @@ private:
 	void CreateRTV();
 	void CreateDSV();
 	void CreateSRV();
+	void CreateDepthSRV();  // 深度用SRV作成
 	void CreatePSO();
 
 	/// <summary>
@@ -137,23 +149,24 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilTexture_;
 	// クリアカラー
 	//float clearColor_[4] = { 0.05f, 0.05f, 0.05f, 1.0f };  
-	float clearColor_[4] = { 0.1f, 0.25f, 0.5f, 1.0f }; 
+	float clearColor_[4] = { 0.1f, 0.25f, 0.5f, 1.0f };
 
 	// ディスクリプタハンドル
 	DescriptorHeapManager::DescriptorHandle rtvHandle_;
 	DescriptorHeapManager::DescriptorHandle dsvHandle_;
 	DescriptorHeapManager::DescriptorHandle srvHandle_;
+	DescriptorHeapManager::DescriptorHandle depthSrvHandle_;
 
 	//PSO
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> offscreenRootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> offscreenPipelineState_;
-
 
 	// オフスクリーン描画専用Sprite（UI用Spriteとは役割が異なる）
 	std::unique_ptr<Sprite> offscreenSprite_;
 
 	// バリア、ビューポート
 	D3D12_RESOURCE_BARRIER barrier_{};
+	D3D12_RESOURCE_BARRIER depthBarrier_{};  
 	D3D12_VIEWPORT viewport_{};
 	D3D12_RECT scissorRect_{};
 
@@ -164,5 +177,5 @@ private:
 	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
 	GrayscalePostEffect* grayscaleEffect_ = nullptr;
 	LineGlitchPostEffect* lineGlitchEffect_ = nullptr;
-
+	DepthFogPostEffect* depthFogEffect_ = nullptr;
 };

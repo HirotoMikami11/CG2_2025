@@ -81,6 +81,22 @@ public:
 	);
 
 	/// <summary>
+	/// 深度テクスチャ対応のカスタムPSOを使用した描画（深度フォグ用）
+	/// </summary>
+	/// <param name="rootSignature">使用するルートシグネチャ</param>
+	/// <param name="pipelineState">使用するパイプラインステート</param>
+	/// <param name="colorTextureHandle">使用するカラーテクスチャハンドル</param>
+	/// <param name="depthTextureHandle">使用する深度テクスチャハンドル</param>
+	/// <param name="materialBufferGPUAddress">使用するマテリアルバッファのGPUアドレス（0の場合は内部マテリアルを使用）</param>
+	void DrawWithCustomPSOAndDepth(
+		ID3D12RootSignature* rootSignature,
+		ID3D12PipelineState* pipelineState,
+		D3D12_GPU_DESCRIPTOR_HANDLE colorTextureHandle,
+		D3D12_GPU_DESCRIPTOR_HANDLE depthTextureHandle,
+		D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress = 0
+	);
+
+	/// <summary>
 	/// ImGui用のデバッグ表示
 	/// </summary>
 	void ImGui();

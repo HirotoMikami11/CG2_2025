@@ -167,6 +167,49 @@ void Sprite::DrawWithCustomPSO(
 	// PSO復元は呼び出し元で行う
 }
 
+void Sprite::DrawWithCustomPSOAndDepth(
+	ID3D12RootSignature* rootSignature,
+	ID3D12PipelineState* pipelineState,
+	D3D12_GPU_DESCRIPTOR_HANDLE colorTextureHandle,
+	D3D12_GPU_DESCRIPTOR_HANDLE depthTextureHandle,
+	D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress)
+{
+	// 非表示、アクティブでない場合は描画しない
+	if (!isVisible_ || !isActive_) {
+		return;
+	}
+
+	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
+
+	// 外部で指定されたPSOを設定
+	commandList->SetGraphicsRootSignature(rootSignature);
+	commandList->SetPipelineState(pipelineState);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// マテリアル（外部指定があればそれを使用、なければ内部のものを使用）
+	D3D12_GPU_VIRTUAL_ADDRESS materialAddress = materialBufferGPUAddress != 0 ?
+		materialBufferGPUAddress : materialResource_->GetGPUVirtualAddress();
+	commandList->SetGraphicsRootConstantBufferView(0, materialAddress);
+
+	// トランスフォーム（Transform2Dを使用）
+	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
+
+	// カラーテクスチャを設定（t0）
+	commandList->SetGraphicsRootDescriptorTable(2, colorTextureHandle);
+
+	// 深度テクスチャを設定（t1）
+	commandList->SetGraphicsRootDescriptorTable(3, depthTextureHandle);
+
+	// 頂点バッファをバインド
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	commandList->IASetIndexBuffer(&indexBufferView_);
+
+	// 描画
+	commandList->DrawIndexedInstanced(static_cast<UINT>(indices_.size()), 1, 0, 0, 0);
+
+	// PSO復元は呼び出し元で行う
+}
+
 void Sprite::ImGui()
 {
 #ifdef _DEBUG
