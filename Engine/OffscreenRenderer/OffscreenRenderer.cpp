@@ -51,6 +51,9 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 
 	depthFogEffect_->SetEnabled(true);
 
+	// 深度ぼかしエフェクトを追加
+	depthOfFieldEffect_ = postProcessChain_->AddEffect<DepthOfFieldPostEffect>();
+
 	// 初期化完了のログを出す
 	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (PostProcess Chain with DepthFog)!!\n");
 }
@@ -69,7 +72,8 @@ void OffscreenRenderer::Finalize() {
 	RGBShiftEffect_ = nullptr;
 	grayscaleEffect_ = nullptr;
 	lineGlitchEffect_ = nullptr;
-	depthFogEffect_ = nullptr;  // 深度フォグエフェクトもnullptrに
+	depthFogEffect_ = nullptr;
+	depthOfFieldEffect_ = nullptr;
 	// オフスクリーンSprite削除
 	offscreenSprite_.reset();
 

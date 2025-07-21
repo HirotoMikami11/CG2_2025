@@ -6,6 +6,7 @@
 
 /// <summary>
 /// ポストエフェクトの基底クラス
+/// 自動深度テクスチャ判定機能付き
 /// </summary>
 class PostEffect {
 public:
@@ -27,12 +28,38 @@ public:
 	virtual void Update(float deltaTime) = 0;
 
 	/// <summary>
-	/// エフェクトを適用
+	/// エフェクトを適用（通常版）
 	/// </summary>
 	/// <param name="inputSRV">入力テクスチャのSRV</param>
 	/// <param name="outputRTV">出力先のRTV</param>
 	/// <param name="renderSprite">描画用スプライト</param>
 	virtual void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, class Sprite* renderSprite) = 0;
+
+	/// <summary>
+	/// エフェクトを適用（深度テクスチャ版）
+	/// 深度テクスチャが不要なエフェクトは通常版のApplyを呼ぶデフォルト実装
+	/// 深度テクスチャが必要なエフェクトはこのメソッドをオーバーライドする
+	/// </summary>
+	/// <param name="inputSRV">入力カラーテクスチャのSRV</param>
+	/// <param name="depthSRV">深度テクスチャのSRV</param>
+	/// <param name="outputRTV">出力先のRTV</param>
+	/// <param name="renderSprite">描画用スプライト</param>
+	virtual void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV,
+		D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, 
+		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV,
+		class Sprite* renderSprite) {
+
+		// デフォルト実装：通常のApplyを呼ぶ（深度テクスチャは無視）
+		Apply(inputSRV, outputRTV, renderSprite);
+	
+	}
+
+	/// <summary>
+	/// このエフェクトが深度テクスチャを必要とするかどうか
+	/// 深度テクスチャが必要なエフェクトはこのメソッドをオーバーライドしてtrueを返す
+	/// </summary>
+	/// <returns>深度テクスチャが必要な場合はtrue</returns>
+	virtual bool RequiresDepthTexture() const { return false; }
 
 	/// <summary>
 	/// エフェクトが有効かどうか

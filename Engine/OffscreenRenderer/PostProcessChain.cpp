@@ -1,5 +1,4 @@
 #include "PostProcessChain.h"
-#include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"
 #include "Managers/ImGui/ImGuiManager.h"
 
 void PostProcessChain::Initialize(DirectXCommon* dxCommon, uint32_t width, uint32_t height) {
@@ -19,7 +18,7 @@ void PostProcessChain::Initialize(DirectXCommon* dxCommon, uint32_t width, uint3
 	effectSprite_->Initialize(dxCommon_, "", center, size);
 
 	isInitialized_ = true;
-	Logger::Log(Logger::GetStream(), "PostProcessChain initialized with depth support!\n");
+	Logger::Log(Logger::GetStream(), "PostProcessChain initialized with automatic depth detection!\n");
 }
 
 void PostProcessChain::Finalize() {
@@ -98,9 +97,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_
 			continue;
 		}
 
-		// 深度フォグエフェクトの場合は警告を出す（深度テクスチャが必要）
-		if (dynamic_cast<DepthFogPostEffect*>(effect.get())) {
-			Logger::Log(Logger::GetStream(), "Warning: DepthFogPostEffect requires depth texture. Use ApplyEffectsWithDepth instead.\n");
+		// 深度テクスチャが必要なエフェクトの場合は自動的にスキップ
+		if (effect->RequiresDepthTexture()) {
+			Logger::Log(Logger::GetStream(), std::format("Warning: {} requires depth texture. Use ApplyEffectsWithDepth instead.\n", effect->GetName()));
 			continue;
 		}
 
@@ -117,7 +116,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_
 		// 出力先を決定
 		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV = intermediateRTVHandles_[bufferIndex].cpuHandle;
 
-		// エフェクトを適用
+		// エフェクトを適用（通常版Apply）
 		effect->Apply(currentInput, outputRTV, effectSprite_.get());
 
 		// 出力バッファをシェーダーリソース状態に戻す
@@ -174,12 +173,12 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffectsWithDepth(D3D12_GPU_DE
 		// 出力先を決定
 		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV = intermediateRTVHandles_[bufferIndex].cpuHandle;
 
-		// 深度フォグエフェクトの場合は専用のApplyを使用
-		DepthFogPostEffect* depthFogEffect = dynamic_cast<DepthFogPostEffect*>(effect.get());
-		if (depthFogEffect) {
-			depthFogEffect->Apply(currentInput, depthSRV, outputRTV, effectSprite_.get());
+		// 深度テクスチャが必要なエフェクトかどうかで自動判定
+		if (effect->RequiresDepthTexture()) {
+			// 深度版のApplyを使用
+			effect->Apply(currentInput, depthSRV, outputRTV, effectSprite_.get());
 		} else {
-			// 通常のエフェクトの場合
+			// 通常版のApplyを使用
 			effect->Apply(currentInput, outputRTV, effectSprite_.get());
 		}
 
@@ -292,18 +291,34 @@ size_t PostProcessChain::GetActiveEffectCount() const {
 	return count;
 }
 
+size_t PostProcessChain::GetDepthRequiredEffectCount() const {
+	size_t count = 0;
+	for (const auto& effect : effects_) {
+		if (effect && effect->IsEnabled() && effect->RequiresDepthTexture()) {
+			count++;
+		}
+	}
+	return count;
+}
+
 void PostProcessChain::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Post Process Chain (Final Fix)")) {
+	if (ImGui::CollapsingHeader("Post Process Chain (Auto Depth Detection)")) {
 		ImGui::Text("Effects Count: %zu", effects_.size());
 		ImGui::Text("Chain Size: %dx%d", width_, height_);
 
 		// 有効なエフェクト数をカウント
-		int activeCount = 0;
-		for (auto& effect : effects_) {
-			if (effect->IsEnabled()) activeCount++;
+		size_t activeCount = GetActiveEffectCount();
+		size_t depthRequiredCount = GetDepthRequiredEffectCount();
+		ImGui::Text("Active Effects: %zu", activeCount);
+		ImGui::Text("Depth Required Effects: %zu", depthRequiredCount);
+
+		// 自動判定の説明
+		if (ImGui::CollapsingHeader("Auto Detection Info")) {
+			ImGui::TextWrapped("This PostProcessChain automatically detects which effects require depth texture.");
+			ImGui::TextWrapped("Effects marked with 'RequiresDepthTexture() = true' will automatically use depth data.");
+			ImGui::TextWrapped("No manual configuration needed when adding new depth-based effects!");
 		}
-		ImGui::Text("Active Effects: %d", activeCount);
 
 		ImGui::Separator();
 
@@ -311,8 +326,12 @@ void PostProcessChain::ImGui() {
 		for (size_t i = 0; i < effects_.size(); ++i) {
 			ImGui::PushID(static_cast<int>(i));
 
-			// エフェクト名とインデックス
-			ImGui::Text("[%zu] %s", i, effects_[i]->GetName().c_str());
+			// エフェクト名とインデックス、深度要求の表示
+			std::string effectInfo = std::format("[{}] {}", i, effects_[i]->GetName());
+			if (effects_[i]->RequiresDepthTexture()) {
+				effectInfo += " [DEPTH]";
+			}
+			ImGui::Text("%s", effectInfo.c_str());
 			ImGui::SameLine();
 
 			// 有効/無効チェックボックス

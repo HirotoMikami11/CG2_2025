@@ -5,35 +5,39 @@
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// 深度フォグポストエフェクト
+/// 深度被写界深度ポストエフェクト
 /// </summary>
-class DepthFogPostEffect : public PostEffect {
+class DepthOfFieldPostEffect : public PostEffect {
 public:
 	/// <summary>
-	/// 深度フォグ専用のパラメータ
+	/// 被写界深度専用のパラメータ
 	/// </summary>
-	struct DepthFogParameters {
-		Vector4 fogColor = { 0.02f, 0.08f, 0.25f, 1.00f };		// フォグの色
+	struct DepthOfFieldParameters {
+		Vector4 focusParams = { 10.0f, 5.0f, 1.0f, 0.0f };	// x:焦点距離, y:焦点範囲, z:ボケ強度, w:未使用
 
-		float fogNear = 0.2f;								// フォグ開始距離（非線形変換対応）
-		float fogFar = 40.0f;								// フォグ終了距離（非線形変換対応）
-		float fogDensity = 1.0f;							// フォグの密度 (0.0f～1.0f)
-		float time = 0.0f;									// アニメーション用時間
+		float focusDistance = 3.0f;		// 焦点距離
+		float focusRange = 11.0f;			// 焦点範囲（この範囲内はシャープ）
+		float blurStrength = 2.0f;			// ボケの強度
+		float time = 0.0f;					// アニメーション用時間
 	};
 
+	//カメラから何単位離れた場所にピントを合わせるかがDistance
+	//focusDistanceが10の時、カメラから10離れた先にピントが合う
+	
+	//ピントが合ってシャープに見える範囲の幅がRange
+	//focusRangeが10の時、焦点距離(Distance)から+-10の範囲にピントが合い鮮明に見える
+	
+	
 	/// <summary>
 	/// エフェクトプリセット
 	/// </summary>
 	enum class EffectPreset {
 		NONE,			// エフェクトなし
-		LIGHT,			// 薄いフォグ
-		HEAVY,			// 濃いフォグ
-		UNDERWATER		// 水中エフェクト（青いフォグ）
 	};
 
 public:
-	DepthFogPostEffect() { name_ = "Depth Fog Effect"; }
-	~DepthFogPostEffect() = default;
+	DepthOfFieldPostEffect() { name_ = "Depth of Field Effect"; }
+	~DepthOfFieldPostEffect() = default;
 
 	// PostEffect インターフェース実装
 	void Initialize(DirectXCommon* dxCommon) override;
@@ -58,13 +62,13 @@ public:
 	bool RequiresDepthTexture() const override { return true; }
 	// 固有メソッド
 	void ApplyPreset(EffectPreset preset);
-	void SetFogColor(const Vector4& color);
-	void SetFogDistance(float fogNear, float fogFar);
-	void SetFogDensity(float density);
-	float GetFogNear() const { return parameters_.fogNear; }
-	float GetFogFar() const { return parameters_.fogFar; }
-	float GetFogDensity() const { return parameters_.fogDensity; }
-	Vector4 GetFogColor() const { return parameters_.fogColor; }
+	void SetFocusDistance(float distance);
+	void SetFocusRange(float range);
+	void SetBlurStrength(float strength);
+
+	float GetFocusDistance() const { return parameters_.focusDistance; }
+	float GetFocusRange() const { return parameters_.focusRange; }
+	float GetBlurStrength() const { return parameters_.blurStrength; }
 
 private:
 	void CreatePSO();
@@ -76,10 +80,10 @@ private:
 	// エフェクトの状態
 	bool isInitialized_ = false;
 
-	// 深度フォグパラメータ
-	DepthFogParameters parameters_;
+	// 被写界深度パラメータ
+	DepthOfFieldParameters parameters_;
 
-	// 深度フォグエフェクト用PSO
+	// 被写界深度エフェクト用PSO
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
@@ -87,8 +91,9 @@ private:
 
 	// バッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> parameterBuffer_;
-	DepthFogParameters* mappedParameters_ = nullptr;
+	DepthOfFieldParameters* mappedParameters_ = nullptr;
 
 	// アニメーション用
 	float animationSpeed_ = 1.0f;
+
 };

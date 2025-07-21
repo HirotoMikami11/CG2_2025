@@ -166,6 +166,12 @@
     <Filter Include="Engine\OffScreenRenderer\PostEffect\DepthFog">
       <UniqueIdentifier>{1bb97fac-4c39-4849-9c2e-a3b167d2d7f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\DepthOfField">
+      <UniqueIdentifier>{a34a6cea-e34a-497d-99f5-411c1eb2cf44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\DepthOfField">
+      <UniqueIdentifier>{c8c0ed53-5763-4b61-99b7-2aa6c4221cce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -342,6 +348,9 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthFog</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\DepthOfField</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -388,6 +397,12 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\DepthFog\DepthFog.VS.hlsl">
       <Filter>リソース ファイル\Shader\DepthFog</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\DepthOfField\DepthOfField.PS.hlsl">
+      <Filter>リソース ファイル\Shader\DepthOfField</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\DepthOfField\DepthOfField.VS.hlsl">
+      <Filter>リソース ファイル\Shader\DepthOfField</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -583,6 +598,9 @@
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthFog</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\DepthOfField</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
@@ -605,6 +623,9 @@
     </None>
     <None Include="resources\Shader\DepthFog\DepthFog.hlsli">
       <Filter>リソース ファイル\Shader\DepthFog</Filter>
+    </None>
+    <None Include="resources\Shader\DepthOfField\DepthOfField.hlsli">
+      <Filter>リソース ファイル\Shader\DepthOfField</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

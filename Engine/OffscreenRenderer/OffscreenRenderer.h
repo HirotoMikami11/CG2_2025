@@ -16,6 +16,7 @@
 #include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
 #include "OffscreenRenderer/PostEffect/LineGlitch/LineGlitchPostEffect.h"	// ラインズラシ
 #include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"	// 深度フォグエフェクト
+#include "OffscreenRenderer/PostEffect/DepthOfField/DepthOfFieldPostEffect.h"	// 深度ぼかしエフェクト
 
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス
@@ -108,6 +109,12 @@ public:
 	DepthFogPostEffect* GetDepthFogEffect() { return depthFogEffect_; }
 
 	/// <summary>
+	/// 深度ぼかしエフェクトを取得
+	/// </summary>
+	/// <returns>深度ぼかしポストエフェクトのポインタ</returns>
+	DepthOfFieldPostEffect* GetDepthOfFieldEffect() { return depthOfFieldEffect_; }
+
+	/// <summary>
 	/// ポストプロセスチェーンを取得
 	/// </summary>
 	/// <returns>ポストプロセスチェーンのポインタ</returns>
@@ -178,4 +185,5 @@ private:
 	GrayscalePostEffect* grayscaleEffect_ = nullptr;
 	LineGlitchPostEffect* lineGlitchEffect_ = nullptr;
 	DepthFogPostEffect* depthFogEffect_ = nullptr;
+	DepthOfFieldPostEffect* depthOfFieldEffect_ = nullptr;
 };

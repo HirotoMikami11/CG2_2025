@@ -11,6 +11,7 @@
 /// <summary>
 /// ポストプロセスエフェクトチェーン管理クラス
 /// 複数のエフェクトを順番に適用する
+/// 自動深度テクスチャ判定機能付き
 /// </summary>
 class PostProcessChain {
 public:
@@ -38,6 +39,7 @@ public:
 
 	/// <summary>
 	/// エフェクトチェーンを適用（通常版）
+	/// 深度テクスチャが必要なエフェクトは自動的にスキップされ警告が出力される
 	/// </summary>
 	/// <param name="inputSRV">入力テクスチャ</param>
 	/// <returns>最終結果のテクスチャハンドル</returns>
@@ -45,6 +47,7 @@ public:
 
 	/// <summary>
 	/// エフェクトチェーンを適用（深度テクスチャ対応版）
+	/// 全てのエフェクトが適用される（深度が必要なものは自動的に深度版Applyが呼ばれる）
 	/// </summary>
 	/// <param name="inputSRV">入力カラーテクスチャ</param>
 	/// <param name="depthSRV">深度テクスチャ</param>
@@ -52,7 +55,7 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE ApplyEffectsWithDepth(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV);
 
 	/// <summary>
-	/// エフェクトを追加
+	/// エフェクトを追加（自動初期化付き）
 	/// </summary>
 	template<typename T>
 	T* AddEffect() {
@@ -75,6 +78,8 @@ public:
 	/// <summary>
 	/// エフェクトの順序を変更
 	/// </summary>
+	/// <param name="from">移動元のインデックス</param>
+	/// <param name="to">移動先のインデックス</param>
 	void MoveEffect(size_t from, size_t to);
 
 	/// <summary>
@@ -82,6 +87,18 @@ public:
 	/// </summary>
 	/// <returns>有効なエフェクト数</returns>
 	size_t GetActiveEffectCount() const;
+
+	/// <summary>
+	/// 深度テクスチャが必要なエフェクトの数を取得
+	/// </summary>
+	/// <returns>深度テクスチャが必要なエフェクト数</returns>
+	size_t GetDepthRequiredEffectCount() const;
+
+	/// <summary>
+	/// エフェクトリストを取得（読み取り専用）
+	/// </summary>
+	/// <returns>エフェクトリストの参照</returns>
+	const std::vector<std::unique_ptr<PostEffect>>& GetEffects() const { return effects_; }
 
 private:
 	/// <summary>
