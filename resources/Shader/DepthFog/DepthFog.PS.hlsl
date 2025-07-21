@@ -24,6 +24,27 @@ float32_t DepthToWorldDistanceLinearized(float32_t depth)
     return linearDepth;
 }
 
+
+// 線形フォグの計算関数
+float32_t CalculateLinearFog(float32_t distance, float32_t fogNear, float32_t fogFar)
+{
+    // 距離が近距離より手前の場合はフォグなし
+    if (distance <= fogNear)
+    {
+        return 0.0f;
+    }
+    
+    // 距離が遠距離より奥の場合は完全にフォグ
+    if (distance >= fogFar)
+    {
+        return 1.0f;
+    }
+    
+    // 線形補間でフォグファクターを計算
+    return (distance - fogNear) / (fogFar - fogNear);
+}
+
+
 PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
@@ -33,7 +54,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     //2. 深度テクスチャから深度値を取得
     float32_t depth = gDepthTexture.Sample(gSampler, input.texcoord).r;
-    
+
     //3. 深度値を世界距離に変換
     float32_t worldDistance = DepthToWorldDistanceLinearized(depth);
     
@@ -47,7 +68,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         fogFactor * DepthFogParameter.fogDensity // フォグファクター × 密度
     );
     
-    // **6. 最終結果を出力**
+    // 6. 最終結果を出力
     output.color = float32_t4(finalColor, baseColor.a);
     
     return output;

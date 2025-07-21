@@ -13,10 +13,10 @@ public:
 	/// 深度フォグ専用のパラメータ
 	/// </summary>
 	struct DepthFogParameters {
-		Vector4 fogColor = { 0.5f, 0.5f, 0.5f, 1.0f };		// フォグの色
+		Vector4 fogColor = { 0.02f, 0.08f, 0.25f, 1.00f };		// フォグの色
 
-		float fogNear = 1.0f;								// フォグ開始距離（非線形変換対応）
-		float fogFar = 20.0f;								// フォグ終了距離（非線形変換対応）
+		float fogNear = 0.2f;								// フォグ開始距離（非線形変換対応）
+		float fogFar = 30.0f;								// フォグ終了距離（非線形変換対応）
 		float fogDensity = 1.0f;							// フォグの密度 (0.0f～1.0f)
 		float time = 0.0f;									// アニメーション用時間
 	};

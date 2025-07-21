@@ -15,25 +15,6 @@ struct DepthFogParameters
     float32_t time; // アニメーション用時間
 };
 
-// 線形フォグの計算関数
-float32_t CalculateLinearFog(float32_t distance, float32_t fogNear, float32_t fogFar)
-{
-    // 距離が近距離より手前の場合はフォグなし
-    if (distance <= fogNear)
-    {
-        return 0.0f;
-    }
-    
-    // 距離が遠距離より奥の場合は完全にフォグ
-    if (distance >= fogFar)
-    {
-        return 1.0f;
-    }
-    
-    // 線形補間でフォグファクターを計算
-    return (distance - fogNear) / (fogFar - fogNear);
-}
-
 // 深度値から世界座標距離への変換（超シンプル版）
 float32_t DepthToWorldDistance(float32_t depth)
 {
