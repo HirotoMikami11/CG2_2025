@@ -592,6 +592,11 @@ void OffscreenRenderer::CreatePSO() {
 void OffscreenRenderer::ImGui() {
 #ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain with DepthFog)")) {
+		ImGui::Separator();
+		// オフスクリーンSprite情報
+		if (ImGui::CollapsingHeader("Offscreen Sprite Info")) {
+#pragma region OffscreenSpriteInfo
+
 		// オフスクリーンのサイズ
 		ImGui::Text("Render Target Size: %dx%d", width_, height_);
 		ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
@@ -604,21 +609,17 @@ void OffscreenRenderer::ImGui() {
 			ImGui::Text("Depth SRV Index: %d", depthSrvHandle_.index);
 		}
 
-		// クリアカラーの設定
-		ImGui::Separator();
-		ImGui::Text("Clear Color Settings:");
-
-		// オフスクリーンSprite情報
-		if (offscreenSprite_) {
-			ImGui::Separator();
-			ImGui::Text("Offscreen Sprite Info:");
-			Vector2 pos = offscreenSprite_->GetPosition();
-			Vector2 size = offscreenSprite_->GetSize();
-			ImGui::Text("Position: (%.1f, %.1f)", pos.x, pos.y);
-			ImGui::Text("Size: (%.1f, %.1f)", size.x, size.y);
-			ImGui::Text("Texture: %s", offscreenSprite_->GetTextureName().c_str());
-			ImGui::Text("Visible: %s", offscreenSprite_->IsVisible() ? "Yes" : "No");
-			ImGui::Text("Active: %s", offscreenSprite_->IsActive() ? "Yes" : "No");
+			if (offscreenSprite_) {
+				ImGui::Separator();
+				Vector2 pos = offscreenSprite_->GetPosition();
+				Vector2 size = offscreenSprite_->GetSize();
+				ImGui::Text("Position: (%.1f, %.1f)", pos.x, pos.y);
+				ImGui::Text("Size: (%.1f, %.1f)", size.x, size.y);
+				ImGui::Text("Texture: %s", offscreenSprite_->GetTextureName().c_str());
+				ImGui::Text("Visible: %s", offscreenSprite_->IsVisible() ? "Yes" : "No");
+				ImGui::Text("Active: %s", offscreenSprite_->IsActive() ? "Yes" : "No");
+			}
+#pragma endregion
 		}
 
 		// ポストプロセスチェーンのImGui

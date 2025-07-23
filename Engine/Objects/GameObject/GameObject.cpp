@@ -33,8 +33,6 @@ void GameObject::Initialize(DirectXCommon* dxCommon, const std::string& modelTag
 	imguiRotation_ = transform_.GetRotation();
 	imguiScale_ = transform_.GetScale();
 	imguiColor_ = material_.GetColor();
-	imguiLighting_ = material_.IsLightingEnabled();
-	imguiLambertian_ = material_.IsLambertianReflectanceEnabled();
 }
 
 void GameObject::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -124,18 +122,25 @@ void GameObject::ImGui() {
 		if (ImGui::CollapsingHeader("Material")) {
 			// ImGui用の値を現在の値で更新
 			imguiColor_ = material_.GetColor();
-			imguiLighting_ = material_.IsLightingEnabled();
-			imguiLambertian_ = material_.IsLambertianReflectanceEnabled();
 
 			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imguiColor_.x))) {
 				material_.SetColor(imguiColor_);
 			}
 
-			if (ImGui::Checkbox("Enable Lighting", &imguiLighting_)) {
-				material_.SetLightingEnable(imguiLighting_);
-			}
-			if (ImGui::Checkbox("Lambertian Reflectance", &imguiLambertian_)) {
-				material_.SetLambertianReflectance(imguiLambertian_);
+			// ライティングモード選択（ComboBox形式）
+			ImGui::Separator();
+
+			// ComboBox用の選択肢配列
+			const char* lightingModeNames[] = { "None", "Lambert", "Half-Lambert" };
+
+			// 現在のモードをインデックスに変換
+			LightingMode currentMode = material_.GetLightingMode();
+			int currentModeIndex = static_cast<int>(currentMode);
+
+			// ComboBoxの表示と選択処理
+			if (ImGui::Combo("Lighting Mode", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
+				// 選択が変わった場合、新しいモードを設定
+				material_.SetLightingMode(static_cast<LightingMode>(currentModeIndex));
 			}
 
 			// UVトランスフォーム
@@ -143,6 +148,7 @@ void GameObject::ImGui() {
 			imguiUvScale_ = material_.GetUVTransformScale();
 			imguiUvRotateZ_ = material_.GetUVTransformRotateZ();
 
+			ImGui::Separator();
 			ImGui::Text("UVTransform");
 			if (ImGui::DragFloat2("UVtranslate", &imguiUvPosition_.x, 0.01f, -10.0f, 10.0f)) {
 				material_.SetUVTransformTranslate(imguiUvPosition_);

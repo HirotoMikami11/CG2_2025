@@ -119,7 +119,7 @@ void DemoScene::InitializeGameObjects() {
 	Vector3Transform transformTeapot{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 3.0f, 0.0f},
-		{-4.2f, -1.2f, 0.0f}
+		{4.0f, -1.2f, 0.0f}
 	};
 
 	modelTeapot_ = std::make_unique<Model3D>();

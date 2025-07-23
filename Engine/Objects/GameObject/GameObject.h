@@ -73,10 +73,8 @@ public:
 	void AddScale(const Vector3& deltaScale) { transform_.AddScale(deltaScale); }
 
 	// Material操作
-	void SetLightingEnable(bool enable) { material_.SetLightingEnable(enable); }
-	void SetLambertianReflectance(bool enable) { material_.SetLambertianReflectance(enable); }
-	bool IsLightingEnabled() const { return material_.IsLightingEnabled(); }
-	bool IsLambertianReflectanceEnabled() const { return material_.IsLambertianReflectanceEnabled(); }
+	void SetLightingMode(LightingMode mode) { material_.SetLightingMode(mode); }
+	LightingMode GetLightingMode() const { return material_.GetLightingMode(); }
 
 	// UV操作
 	void SetUVTransformScale(const Vector2& scale) { material_.SetUVTransformScale(scale); }
@@ -117,8 +115,6 @@ private:
 	Vector2 imguiUvPosition_{ 0.0f, 0.0f };
 	float imguiUvRotateZ_{ 0.0f };
 	Vector2 imguiUvScale_{ 1.0f, 1.0f };
-	bool imguiLighting_ = false;
-	bool imguiLambertian_ = false;
 };
 
 /// <summary>
@@ -130,6 +126,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "triangle", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
 		name_ = idManager->GenerateName("Triangle");
+		SetLightingMode(LightingMode::HalfLambert);
 	}
 
 private:
@@ -145,7 +142,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "sphere", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
 		name_ = idManager->GenerateName("Sphere");
-		SetLightingEnable(true);
+		SetLightingMode(LightingMode::HalfLambert);
 	}
 
 private:
@@ -161,7 +158,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "plane", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
 		name_ = idManager->GenerateName("Plane");
-		SetLightingEnable(true);
+		SetLightingMode(LightingMode::HalfLambert);
 	}
 
 private:
@@ -177,7 +174,8 @@ public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag, const std::string& textureName = "") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
 		name_ = idManager->GenerateName(std::format("Model ({})", modelTag), "Model3D");
-		SetLightingEnable(true);
+		SetLightingMode(LightingMode::HalfLambert);
+
 	}
 
 private:

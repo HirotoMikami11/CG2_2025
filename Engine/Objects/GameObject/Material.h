@@ -8,6 +8,13 @@
 #include "BaseSystem/Logger/Logger.h"
 #include <cassert>
 
+// ライティングモード定義
+enum class LightingMode {
+	None = 0,       // ライティングなし
+	Lambert = 1,    // ランバート反射
+	HalfLambert = 2 // ハーフランバート反射
+};
+
 class Material
 {
 public:
@@ -39,18 +46,14 @@ public:
 
 	//色
 	Vector4 GetColor() const { return materialData_->color; }
-	//ライティング(halfLambert)
-	bool IsLightingEnabled() const { return materialData_->enableLighting; }
-	// Lambert
-	bool IsLambertianReflectanceEnabled() const { return materialData_->useLambertianReflectance; }
+	//ライティングモード
+	LightingMode GetLightingMode() const { return lightingMode_; }
 	// UVトランスフォーム
 	Matrix4x4 GetUVTransform() const { return materialData_->uvTransform; };
 
 	Vector2 GetUVTransformScale()const { return uvScale_; };
 	float GetUVTransformRotateZ()const { return uvRotateZ_; };
 	Vector2 GetUVTransformTranslate()const { return uvTranslate_; };
-
-
 
 	//マテリアルリソース
 	ID3D12Resource* GetResource() const { return materialResource_.Get(); }
@@ -60,15 +63,15 @@ public:
 	//Setter
 
 	void SetColor(const Vector4& color) { materialData_->color = color; }
-	// ライティングの有効/無効
-	void SetLightingEnable(bool enable) { materialData_->enableLighting = enable ? 1 : 0; }
-	//Lambert
-	void SetLambertianReflectance(bool enable) { materialData_->useLambertianReflectance = enable ? 1 : 0; }
+
+	// ライティングモード設定
+	void SetLightingMode(LightingMode mode);
+
 	// UVトランスフォーム
 	void SetUVTransform(const Matrix4x4& uvTransform) { materialData_->uvTransform = uvTransform; }
 	void SetUVTransformScale(const Vector2 uvScale) { uvScale_ = uvScale; UpdateUVTransform(); };
-	void SetUVTransformRotateZ(const float uvRotateZ) { uvRotateZ_ = uvRotateZ; UpdateUVTransform();};
-	void SetUVTransformTranslate(const Vector2 uvTranslate) { uvTranslate_ = uvTranslate; UpdateUVTransform();};
+	void SetUVTransformRotateZ(const float uvRotateZ) { uvRotateZ_ = uvRotateZ; UpdateUVTransform(); };
+	void SetUVTransformTranslate(const Vector2 uvTranslate) { uvTranslate_ = uvTranslate; UpdateUVTransform(); };
 
 private:
 	// マテリアルリソース
@@ -76,11 +79,11 @@ private:
 	// マテリアルデータへのポインタ（Map済み）
 	MaterialData* materialData_ = nullptr;
 
+	// ライティングモード
+	LightingMode lightingMode_ = LightingMode::None;
 
 	// UVTransformを変更するための変数
 	Vector2 uvTranslate_ = { 0.0f,0.0f };
 	Vector2 uvScale_ = { 1.0f,1.0f };
 	float uvRotateZ_ = { 0.0f };
-
 };
-
