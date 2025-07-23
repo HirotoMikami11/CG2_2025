@@ -168,65 +168,45 @@ void GameObject::ImGui() {
 			ImGui::Text("Shared: Yes (Memory Optimized)");
 		}
 
-		// テクスチャ設定（プリミティブ用）
+		// テクスチャ設定（シンプル版）
 		if (ImGui::CollapsingHeader("Texture")) {
+			// 現在のテクスチャ状態表示
 			if (sharedModel_ && sharedModel_->HasTexture()) {
 				ImGui::Text("Model Texture: %s", sharedModel_->GetTextureTagName().c_str());
-			} else {
-				ImGui::Text("Model Texture: None");
 			}
 
-			if (!textureName_.empty()) {
-				ImGui::Text("Current Custom Texture: %s", textureName_.c_str());
+			// カスタムテクスチャ選択
+			std::vector<std::string> textureList = textureManager_->GetTextureTagList();
+			if (!textureList.empty()) {
+				// const char*配列を作成（正しい方法）
+				std::vector<const char*> textureNames;
+				textureNames.push_back("Default");
+
+				for (const auto& texture : textureList) {
+					textureNames.push_back(texture.c_str());
+				}
+
+				// 現在の選択インデックス
+				int currentIndex = 0;
+				if (!textureName_.empty()) {
+					for (size_t i = 0; i < textureList.size(); ++i) {
+						if (textureList[i] == textureName_) {
+							currentIndex = static_cast<int>(i + 1);
+							break;
+						}
+					}
+				}
+
+				// ComboBox表示
+				if (ImGui::Combo("Custom Texture", &currentIndex, textureNames.data(), static_cast<int>(textureNames.size()))) {
+					if (currentIndex == 0) {
+						SetTexture(""); // Default選択時
+					} else {
+						SetTexture(textureList[currentIndex - 1]);
+					}
+				}
 			} else {
-				ImGui::Text("Current Custom Texture: None");
-			}
-
-			// テクスチャの動的切り替え（プリミティブ用）
-			ImGui::Separator();
-			ImGui::Text("Set Custom Texture:");
-
-			// uvCheckerボタン
-			if (textureName_ == "uvChecker") {
-				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-				if (ImGui::Button("uvChecker")) {
-					SetTexture("uvChecker");
-				}
-				ImGui::PopStyleColor();
-			} else {
-				if (ImGui::Button("uvChecker")) {
-					SetTexture("uvChecker");
-				}
-			}
-
-			ImGui::SameLine();
-
-			// monsterBallボタン
-			if (textureName_ == "monsterBall") {
-				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-				if (ImGui::Button("monsterBall")) {
-					SetTexture("monsterBall");
-				}
-				ImGui::PopStyleColor();
-			} else {
-				if (ImGui::Button("monsterBall")) {
-					SetTexture("monsterBall");
-				}
-			}
-
-			ImGui::SameLine();
-
-			// whiteボタン
-			if (textureName_ == "white") {
-				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-				if (ImGui::Button("white")) {
-					SetTexture("white");
-				}
-				ImGui::PopStyleColor();
-			} else {
-				if (ImGui::Button("white")) {
-					SetTexture("white");
-				}
+				ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No textures loaded");
 			}
 		}
 

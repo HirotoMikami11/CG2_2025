@@ -79,6 +79,12 @@ public:
 	size_t GetTextureCount() const { return textures_.size(); }
 
 	/// <summary>
+	/// 読み込まれているテクスチャのタグ名リストを取得
+	/// </summary>
+	/// <returns>テクスチャタグ名のリスト</returns>
+	std::vector<std::string> GetTextureTagList() const;
+
+	/// <summary>
 	/// 利用可能なSRVスロット数を取得
 	/// </summary>
 	/// <returns>利用可能なスロット数</returns>

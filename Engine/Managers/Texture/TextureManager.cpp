@@ -117,6 +117,20 @@ bool TextureManager::HasTexture(const std::string& tagName) const {
 	return textures_.find(tagName) != textures_.end();
 }
 
+std::vector<std::string> TextureManager::GetTextureTagList() const {
+	std::vector<std::string> tagList;
+	tagList.reserve(textures_.size()); // メモリの効率化
+
+	for (const auto& pair : textures_) {
+		tagList.push_back(pair.first);
+	}
+	// アルファベット順にソート
+	std::sort(tagList.begin(), tagList.end());
+
+	return tagList;
+}
+
+
 uint32_t TextureManager::GetAvailableSRVCount() const {
 	auto descriptorManager = dxCommon_->GetDescriptorManager();
 	if (descriptorManager) {

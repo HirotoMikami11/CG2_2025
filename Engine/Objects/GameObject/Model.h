@@ -103,4 +103,18 @@ private:
 	/// マテリアルファイルを読み込む
 	/// </summary>
 	MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
+
+	/// <summary>
+	/// ファイル名から拡張子を除去
+	/// </summary>
+	/// <param name="filename">ファイル名</param>
+	/// <returns>拡張子を除いたファイル名</returns>
+	std::string GetFileNameWithoutExtension(const std::string& filename);
+
+	/// <summary>
+	/// テクスチャファイルパスから画像ファイル名（拡張子なし）を抽出
+	/// </summary>
+	/// <param name="texturePath">テクスチャファイルのフルパス</param>
+	/// <returns>画像ファイル名（拡張子なし）</returns>
+	std::string GetTextureFileNameFromPath(const std::string& texturePath);
 };

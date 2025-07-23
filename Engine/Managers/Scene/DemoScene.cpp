@@ -25,7 +25,7 @@ void DemoScene::LoadResources() {
 	textureManager_ = TextureManager::GetInstance();
 
 	// モデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_plane");
+	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_Plane");
 
 	//TODO:スザンヌ
 	//modelManager_->LoadModel("resources/Model/Suzanne", "suzanne.obj", "model_Suzanne");
@@ -110,7 +110,7 @@ void DemoScene::InitializeGameObjects() {
 	};
 
 	model_ = std::make_unique<Model3D>();
-	model_->Initialize(directXCommon_, "model_plane");
+	model_->Initialize(directXCommon_, "model_Plane");
 	model_->SetTransform(transformModel);
 
 	///*-----------------------------------------------------------------------*///

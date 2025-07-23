@@ -15,10 +15,14 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 		//データを読み込む
 		modelData_ = LoadObjFile(directoryPath, filename);
 		mesh_.InitializeFromData(directXCommon_, modelData_);
-		// OBJファイル用の固有タグ名を生成
-		textureTagName_ = filename + "_obj_texture";
+
+		// テクスチャファイルパスから画像ファイル名を抽出してタグ名にする
+		if (!modelData_.material.textureFilePath.empty()) {
+			textureTagName_ = GetTextureFileNameFromPath(modelData_.material.textureFilePath);
+			TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, textureTagName_);
+		}
+
 		filePath_ = directoryPath + "/" + filename;
-		TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, textureTagName_);
 	} else {
 		///モデル以外の場合は、パス入れないで生成
 		mesh_.Initialize(directXCommon_, meshType);
@@ -53,10 +57,10 @@ bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& fil
 	// マテリアルを初期化
 	material_.Initialize(dxCommon);
 
-	// テクスチャを読み込み（OBJファイル用の固有タグ名を生成）
-	textureTagName_ = filename + "_obj_texture";
-
+	// テクスチャファイルパスから画像ファイル名を抽出してタグ名にする
 	if (!modelData_.material.textureFilePath.empty()) {
+		textureTagName_ = GetTextureFileNameFromPath(modelData_.material.textureFilePath);
+
 		TextureManager* textureManager = TextureManager::GetInstance();
 		if (!textureManager->LoadTexture(modelData_.material.textureFilePath, textureTagName_)) {
 			Logger::Log(Logger::GetStream(), std::format("Failed to load texture for model: {}\n", filename));
@@ -91,6 +95,35 @@ void Model::Unload() {
 	textureTagName_.clear();
 	filePath_.clear();
 	modelData_ = ModelData(); // モデルデータをリセット
+}
+
+std::string Model::GetFileNameWithoutExtension(const std::string& filename) {
+	// 最後のドット（拡張子の開始位置）を見つける
+	size_t lastDotPos = filename.find_last_of('.');
+
+	if (lastDotPos != std::string::npos && lastDotPos > 0) {
+		// 拡張子がある場合は、それを除いた部分を返す
+		return filename.substr(0, lastDotPos);
+	}
+
+	// 拡張子がない場合はそのまま返す
+	return filename;
+}
+
+std::string Model::GetTextureFileNameFromPath(const std::string& texturePath) {
+	// パス区切り文字を探す
+	size_t lastSlashPos = texturePath.find_last_of("/\\");
+
+	// ファイル名部分を抽出
+	std::string fileName;
+	if (lastSlashPos != std::string::npos) {
+		fileName = texturePath.substr(lastSlashPos + 1);
+	} else {
+		fileName = texturePath; // パス区切りがない場合はそのまま
+	}
+
+	// 拡張子を除去
+	return GetFileNameWithoutExtension(fileName);
 }
 
 MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
