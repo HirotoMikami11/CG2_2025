@@ -123,6 +123,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Line\Line.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp" />
+    <ClCompile Include="Engine\OffscreenRenderer\LayeredPostProcessChain.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.cpp" />
@@ -257,6 +258,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Line\Line.h" />
     <ClInclude Include="Engine\Objects\Sprite\Sprite.h" />
     <ClInclude Include="Engine\Objects\Sprite\Transform2D.h" />
+    <ClInclude Include="Engine\OffscreenRenderer\LayeredPostProcessChain.h" />
     <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.h" />
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.h" />

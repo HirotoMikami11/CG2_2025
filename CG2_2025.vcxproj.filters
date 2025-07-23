@@ -225,9 +225,6 @@
     <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp">
       <Filter>Engine\OffScreenRenderer</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
-      <Filter>Engine\OffScreenRenderer</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp">
       <Filter>Engine\FrameTimer</Filter>
     </ClCompile>
@@ -351,6 +348,12 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthOfField</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\LayeredPostProcessChain.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -461,9 +464,6 @@
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h">
-      <Filter>Engine\OffScreenRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h">
       <Filter>Engine\OffScreenRenderer</Filter>
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\PostEffect.h">
@@ -600,6 +600,12 @@
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthOfField</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\LayeredPostProcessChain.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

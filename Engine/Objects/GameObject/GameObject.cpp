@@ -130,6 +130,7 @@ void GameObject::ImGui() {
 			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imguiColor_.x))) {
 				material_.SetColor(imguiColor_);
 			}
+
 			if (ImGui::Checkbox("Enable Lighting", &imguiLighting_)) {
 				material_.SetLightingEnable(imguiLighting_);
 			}
@@ -222,11 +223,6 @@ void GameObject::ImGui() {
 				if (ImGui::Button("white")) {
 					SetTexture("white");
 				}
-			}
-
-			// テクスチャクリアボタン
-			if (ImGui::Button("Clear Custom Texture")) {
-				SetTexture("");
 			}
 		}
 

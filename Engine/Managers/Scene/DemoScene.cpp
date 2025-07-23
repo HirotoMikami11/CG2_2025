@@ -28,11 +28,11 @@ void DemoScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_plane");
 
 	//TODO:スザンヌ
-
+	//modelManager_->LoadModel("resources/Model/Suzanne", "suzanne.obj", "model_Suzanne");
 	//バニー
-
-	//ティーカップ
-
+	//modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");
+	//ティーポット
+	modelManager_->LoadModel("resources/Model/Teapot", "teapot.obj", "model_Teapot");
 
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
 
@@ -96,7 +96,7 @@ void DemoScene::InitializeGameObjects() {
 	};
 
 	plane_ = std::make_unique<Plane>();
-	plane_->Initialize(directXCommon_, "plane","uvChecker");
+	plane_->Initialize(directXCommon_, "plane", "uvChecker");
 	plane_->SetTransform(transformPlane);
 
 
@@ -113,8 +113,18 @@ void DemoScene::InitializeGameObjects() {
 	model_->Initialize(directXCommon_, "model_plane");
 	model_->SetTransform(transformModel);
 
+	///*-----------------------------------------------------------------------*///
+	///									Teapot									///
+	///*-----------------------------------------------------------------------*///
+	Vector3Transform transformTeapot{
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 3.0f, 0.0f},
+		{-4.2f, -1.2f, 0.0f}
+	};
 
-
+	modelTeapot_ = std::make_unique<Model3D>();
+	modelTeapot_->Initialize(directXCommon_, "model_Teapot");
+	modelTeapot_->SetTransform(transformTeapot);
 
 
 	///*-----------------------------------------------------------------------*///
@@ -182,6 +192,8 @@ void DemoScene::UpdateGameObjects() {
 
 	// モデルの更新
 	model_->Update(viewProjectionMatrix);
+	// ティーポットモデルの更新
+	modelTeapot_->Update(viewProjectionMatrix);
 
 	// グリッド線更新
 	gridLine_->Update(viewProjectionMatrix);
@@ -211,7 +223,8 @@ void DemoScene::DrawGameObjects() {
 
 	// モデルの描画
 	model_->Draw(directionalLight_);
-
+	//ティーポットモデルの描画
+	modelTeapot_->Draw(directionalLight_);
 
 
 	// スプライトの描画
@@ -259,6 +272,11 @@ void DemoScene::ImGui() {
 	// モデルのImGui
 	ImGui::Text("Model");
 	model_->ImGui();
+
+	ImGui::Spacing();
+	// モデルのImGui
+	ImGui::Text("ModelTeapot");
+	modelTeapot_->ImGui();
 
 	ImGui::Spacing();
 
