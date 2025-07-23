@@ -120,36 +120,12 @@ void GameObject::ImGui() {
 
 		// Material（既存のMaterialクラスのデータを表示・操作）
 		if (ImGui::CollapsingHeader("Material")) {
-			// ImGui用の値を現在の値で更新
-			imguiColor_ = material_.GetColor();
-
-			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imguiColor_.x))) {
-				material_.SetColor(imguiColor_);
-			}
-
-			// ライティングモード選択（ComboBox形式）
-			ImGui::Separator();
-
-			// ComboBox用の選択肢配列
-			const char* lightingModeNames[] = { "None", "Lambert", "Half-Lambert" };
-
-			// 現在のモードをインデックスに変換
-			LightingMode currentMode = material_.GetLightingMode();
-			int currentModeIndex = static_cast<int>(currentMode);
-
-			// ComboBoxの表示と選択処理
-			if (ImGui::Combo("Lighting Mode", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
-				// 選択が変わった場合、新しいモードを設定
-				material_.SetLightingMode(static_cast<LightingMode>(currentModeIndex));
-			}
 
 			// UVトランスフォーム
 			imguiUvPosition_ = material_.GetUVTransformTranslate();
 			imguiUvScale_ = material_.GetUVTransformScale();
 			imguiUvRotateZ_ = material_.GetUVTransformRotateZ();
 
-			ImGui::Separator();
-			ImGui::Text("UVTransform");
 			if (ImGui::DragFloat2("UVtranslate", &imguiUvPosition_.x, 0.01f, -10.0f, 10.0f)) {
 				material_.SetUVTransformTranslate(imguiUvPosition_);
 			}
@@ -159,6 +135,28 @@ void GameObject::ImGui() {
 			if (ImGui::SliderAngle("UVrotate", &imguiUvRotateZ_)) {
 				material_.SetUVTransformRotateZ(imguiUvRotateZ_);
 			}
+
+			// ImGui用の値を現在の値で更新
+			imguiColor_ = material_.GetColor();
+			if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&imguiColor_.x))) {
+				material_.SetColor(imguiColor_);
+			}
+
+			// ライティング選択（ComboBox形式）
+			// ComboBox用の選択肢配列
+			const char* lightingModeNames[] = { "None", "Lambert", "Half-Lambert" };
+
+			// 現在のモードをインデックスに変換
+			LightingMode currentMode = material_.GetLightingMode();
+			int currentModeIndex = static_cast<int>(currentMode);
+
+			// ComboBoxの表示と選択処理
+			if (ImGui::Combo("Lighting", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
+				// 選択が変わった場合、新しいモードを設定
+				material_.SetLightingMode(static_cast<LightingMode>(currentModeIndex));
+			}
+
+
 		}
 
 		// メッシュ情報（共有メッシュの情報を表示）

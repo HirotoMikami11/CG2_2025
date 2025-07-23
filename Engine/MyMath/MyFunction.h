@@ -132,6 +132,7 @@ bool IsCollision(const Segment& segment, const PlaneMath& PlaneMath);
 /// <param name="distance"></param>
 /// <returns></returns>
 Vector3 MakeCollisionPoint(const Segment& segment, const PlaneMath& PlaneMath);
+
 /// <summary>
 /// 三角形と線分の衝突判定
 /// </summary>
