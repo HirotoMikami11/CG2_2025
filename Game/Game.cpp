@@ -23,7 +23,7 @@ void Game::Initialize() {
 }
 
 void Game::InitializeScenes() {
-	// GameSceneの登録
+	// Sceneの登録
 	auto demoScene = std::make_unique<DemoScene>();
 	sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
 

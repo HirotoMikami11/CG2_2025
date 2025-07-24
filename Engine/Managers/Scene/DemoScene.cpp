@@ -207,6 +207,15 @@ void DemoScene::Draw() {
 
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
+
+	// UI(スプライトなど)の描画
+	DrawUI();
+}
+
+void DemoScene::DrawUI()
+{
+	// スプライトの描画
+	sprite_->Draw();
 }
 
 void DemoScene::DrawGameObjects() {
@@ -227,8 +236,7 @@ void DemoScene::DrawGameObjects() {
 	modelTeapot_->Draw(directionalLight_);
 
 
-	// スプライトの描画
-	sprite_->Draw();
+
 }
 
 void DemoScene::OnEnter() {

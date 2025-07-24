@@ -34,6 +34,7 @@ public:
 
 	void Update() override;
 	void Draw() override;
+	void DrawUI();
 	void Finalize() override;
 
 	// シーンの出入り時の処理

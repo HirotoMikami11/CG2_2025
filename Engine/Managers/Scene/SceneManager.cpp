@@ -42,10 +42,12 @@ void SceneManager::Update() {
 }
 
 void SceneManager::Draw() {
+	
 	// 現在のシーンの描画
 	if (currentScene_) {
 		currentScene_->Draw();
 	}
+
 	// フェードの描画（最前面）
 	if (fadeManager_) {
 		fadeManager_->Draw();
