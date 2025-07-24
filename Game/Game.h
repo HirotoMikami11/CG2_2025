@@ -19,7 +19,17 @@ public:
 
 	void Initialize();
 	void Update();
-	void Draw();
+
+	/// <summary>
+	/// 3D描画（オフスクリーン内）
+	/// </summary>
+	void Draw3D();
+
+	/// <summary>
+	/// UI描画（オフスクリーン外）
+	/// </summary>
+	void DrawUI();
+
 	void Finalize();
 
 private:
@@ -34,5 +44,4 @@ private:
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
-
 };

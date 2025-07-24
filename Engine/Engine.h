@@ -23,8 +23,6 @@
 #include "Objects/Sprite/Sprite.h"
 #include "Objects/Light/Light.h"
 
-
-
 class Engine {
 public:
 	//シングルトン
@@ -43,14 +41,24 @@ public:
 	void Update();
 
 	/// <summary>
-	/// 描画前処理
+	/// 3D描画前処理（オフスクリーン描画開始）
 	/// </summary>
-	void StartDraw();
+	void StartDraw3D();
 
 	/// <summary>
-	/// 描画後処理
+	/// 3D描画後処理（オフスクリーン描画終了)
 	/// </summary>
-	void EndDraw();
+	void EndDraw3D();
+
+	/// <summary>
+	/// UI描画前処理（バックバッファ描画開始）
+	/// </summary>
+	void StartDrawUI();
+
+	/// <summary>
+	/// UI描画後処理（バックバッファ描画終了）
+	/// </summary>
+	void EndDrawUI();
 
 	/// <summary>
 	/// 終了処理
@@ -61,7 +69,6 @@ public:
 	/// Imgui
 	/// </summary>
 	void ImGui();
-
 
 	// ゲッター
 	WinApp* GetWinApp() const { return winApp_.get(); }
@@ -94,14 +101,11 @@ private:
 	/// </summary>
 	void LoadDefaultResources();
 
-
 	// 基盤システム
 	std::unique_ptr<WinApp> winApp_;
 	std::unique_ptr<DirectXCommon> directXCommon_;
 
 	// オフスクリーン
-	// TODO: 今後ゲームシーンの方でいろいろ操作できるようにしたい
-	//場合によってはゲームシーンに移植
 	std::unique_ptr<OffscreenRenderer> offscreenRenderer_;
 
 	// マネージャー

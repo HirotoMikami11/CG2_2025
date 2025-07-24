@@ -35,8 +35,6 @@ void DemoScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/Teapot", "teapot.obj", "model_Teapot");
 
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
-
-
 }
 
 
@@ -197,24 +195,18 @@ void DemoScene::UpdateGameObjects() {
 
 	// グリッド線更新
 	gridLine_->Update(viewProjectionMatrix);
-
 }
 
-void DemoScene::Draw() {
-	// グリッド線を描画
+void DemoScene::Draw3D() {
+	// グリッド線を描画（3D要素）
 	gridLine_->Draw(viewProjectionMatrix);
 
-
-	// ゲームオブジェクトの描画（オフスクリーンに描画）
+	// 3Dゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
-
-	// UI(スプライトなど)の描画
-	DrawUI();
 }
 
-void DemoScene::DrawUI()
-{
-	// スプライトの描画
+void DemoScene::DrawUI() {
+	// UI(スプライトなど)の描画（オフスクリーン外に描画）
 	sprite_->Draw();
 }
 
@@ -229,14 +221,10 @@ void DemoScene::DrawGameObjects() {
 	//平面の描画
 	plane_->Draw(directionalLight_);
 
-
 	// モデルの描画
 	model_->Draw(directionalLight_);
 	//ティーポットモデルの描画
 	modelTeapot_->Draw(directionalLight_);
-
-
-
 }
 
 void DemoScene::OnEnter() {

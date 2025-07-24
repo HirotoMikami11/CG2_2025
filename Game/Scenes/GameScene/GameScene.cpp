@@ -219,13 +219,7 @@ void GameScene::Update() {
 
 
 
-
-
-
-
-
-
-void GameScene::Draw() {
+void GameScene::Draw3D() {
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }
@@ -406,6 +400,10 @@ void GameScene::ImGui() {
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
 #endif
+}
+
+void GameScene::DrawUI()
+{
 }
 
 void GameScene::Finalize() {

@@ -25,7 +25,16 @@ public:
 	void Initialize() override;
 
 	void Update() override;
-	void Draw() override;
+
+	/// <summary>
+	/// 3D描画処理（オフスクリーン内）
+	/// </summary>
+	void Draw3D() override;
+
+	/// <summary>
+	/// UI描画処理（オフスクリーン外）
+	/// </summary>
+	void DrawUI() override;
 	void Finalize() override;
 
 	// シーンの出入り時の処理

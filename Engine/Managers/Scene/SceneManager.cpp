@@ -10,7 +10,6 @@ SceneManager* SceneManager::GetInstance() {
 void SceneManager::Initialize() {
 	fadeManager_ = std::make_unique<FadeManager>();
 	fadeManager_->Initialize();
-
 }
 
 void SceneManager::LoadAllSceneResources() {
@@ -41,14 +40,20 @@ void SceneManager::Update() {
 	}
 }
 
-void SceneManager::Draw() {
-	
-	// 現在のシーンの描画
+void SceneManager::Draw3D() {
+	// 現在のシーンの3D描画（オフスクリーン内）
 	if (currentScene_) {
-		currentScene_->Draw();
+		currentScene_->Draw3D();
+	}
+}
+
+void SceneManager::DrawUI() {
+	// 現在のシーンのUI描画（オフスクリーン外）
+	if (currentScene_) {
+		currentScene_->DrawUI();
 	}
 
-	// フェードの描画（最前面）
+	// フェードの描画（最前面、オフスクリーン外）
 	if (fadeManager_) {
 		fadeManager_->Draw();
 	}
@@ -347,6 +352,13 @@ void SceneManager::DrawScenesUI() {
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Next Scene: %s", nextSceneName_.c_str());
 		ImGui::Text("(Will change next frame)");
 	}
+
+	// 描画レイヤー情報の表示
+	ImGui::Separator();
+	ImGui::Text("Rendering Layers:");
+	ImGui::Text("3D Objects -> Offscreen (with post-processing)");
+	ImGui::Text("UI Elements -> Direct to backbuffer");
+	ImGui::Text("Fade Effect -> Direct to backbuffer (front-most)");
 #endif
 }
 

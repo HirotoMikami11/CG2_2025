@@ -217,7 +217,12 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	// バックバッファのレンダーターゲットを再設定
 	UINT backBufferIndex = dxCommon_->GetSwapChain()->GetCurrentBackBufferIndex();
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = dxCommon_->GetRTVHandle(backBufferIndex);
-	commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+	/// オフスクリーンの外にも3DObjectが描画できるようにレンダーターゲットに深度も入れておく
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dxCommon_->GetDescriptorManager()->GetCPUHandle(
+		DescriptorHeapManager::HeapType::DSV, GraphicsConfig::kMainDSVIndex);
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+	//commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
 
 	// ディスクリプタヒープを再設定
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = {
@@ -232,10 +237,16 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 		finalTexture
 	);
 
+
+
+
+
 	// スプライト用PSOから通常描画用PSOに戻す
 	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
 	commandList->SetPipelineState(dxCommon_->GetPipelineState());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
 }
 
 void OffscreenRenderer::InitializeOffscreenSprite() {

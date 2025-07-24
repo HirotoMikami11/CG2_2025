@@ -1,6 +1,5 @@
 #include "Engine.h"
 
-
 Engine* Engine::GetInstance() {
 	static Engine instance;
 	return &instance;
@@ -62,11 +61,8 @@ void Engine::InitializeManagers() {
 	offscreenRenderer_->Initialize(directXCommon_.get());
 }
 
-void Engine::LoadDefaultResources()
-{
-
+void Engine::LoadDefaultResources() {
 	///汎用的でエンジン側で先に読み込んでおきたいもののみここで読み込む
-
 
 	///*-----------------------------------------------------------------------*///
 	///								テクスチャの読み込み							///
@@ -75,7 +71,6 @@ void Engine::LoadDefaultResources()
 	textureManager_->LoadTexture("resources/uvChecker.png", "uvChecker");
 	textureManager_->LoadTexture("resources/monsterBall.png", "monsterBall");
 	textureManager_->LoadTexture("resources/white2x2.png", "white");
-
 
 	///*-----------------------------------------------------------------------*///
 	///								音声データの読み込み							///
@@ -103,9 +98,6 @@ void Engine::LoadDefaultResources()
 	modelManager_->LoadPrimitive(MeshType::SPHERE, "sphere");
 	modelManager_->LoadPrimitive(MeshType::TRIANGLE, "triangle");
 	modelManager_->LoadPrimitive(MeshType::PLANE, "plane");
-
-
-
 }
 
 void Engine::Update() {
@@ -123,39 +115,38 @@ void Engine::Update() {
 	/// ImGuiの受付開始
 	imguiManager_->Begin();
 
-
 	// オフスクリーンレンダラーの更新（エフェクト含む)
 	offscreenRenderer_->Update(frameTimer_->GetDeltaTime());
-
-
 }
 
-void Engine::StartDraw() {
-
+void Engine::StartDraw3D() {
 	/// ImGuiの受付終了
 	imguiManager_->End();
 
 	// フレーム開始
 	directXCommon_->BeginFrame();
 
-	/// オフスクリーンの描画準備
+	/// オフスクリーンの描画準備（3D描画用）
 	offscreenRenderer_->PreDraw();
-	// TODO:オフスクリーンの中か外か選べるようにする
-
-
 }
 
-void Engine::EndDraw() {
-
+void Engine::EndDraw3D() {
 	/// オフスクリーンの描画終了
 	offscreenRenderer_->PostDraw();
+}
 
-	// 通常描画の描画準備
+
+void Engine::StartDrawUI() {
+
+	// 通常描画の描画準備（バックバッファ描画開始）
 	directXCommon_->PreDraw();
 
 	// オフスクリーンの画面の実態描画
 	offscreenRenderer_->DrawOffscreenTexture();
+}
 
+
+void Engine::EndDrawUI() {
 	// ImGuiの画面への描画
 	imguiManager_->Draw(directXCommon_->GetCommandList());
 
@@ -164,11 +155,9 @@ void Engine::EndDraw() {
 
 	// 描画そのもののEndFrame
 	directXCommon_->EndFrame();
-
 }
 
 void Engine::Finalize() {
-
 	// ImGui終了処理
 	if (imguiManager_) {
 		imguiManager_->Finalize();
@@ -216,10 +205,8 @@ void Engine::Finalize() {
 	CoUninitialize();
 }
 
-void Engine::ImGui()
-{
+void Engine::ImGui() {
 #ifdef _DEBUG
-
 	//開発用UIの処理
 	ImGui::Begin("Engine_data");
 

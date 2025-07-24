@@ -98,6 +98,7 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle(int index) const { return rtvHandles[index]; }
 
 
+
 private:
 
 

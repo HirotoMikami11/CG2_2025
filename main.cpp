@@ -24,13 +24,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Game* game = new Game;
 	game->Initialize();
 
-
 	///*-----------------------------------------------------------------------*///
 	//																			//
 	///									メインループ							   ///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-
 
 	//ウィンドウのxボタンが押されるまでループ
 	while (!engine->IsClosedWindow()) {
@@ -56,17 +54,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//																			//
 		///*-----------------------------------------------------------------------*///
 
-		///描画前処理
-		engine->StartDraw();
+		/// 3D描画前処理（オフスクリーン描画開始）
+		engine->StartDraw3D();
 
+		/// 3D描画（オフスクリーン内、ポストプロセス適用対象）
+		game->Draw3D();
 
-		//ゲームの描画
-		game->Draw();
+		/// 3D描画後処理（オフスクリーン終了)
+		engine->EndDraw3D();
 
+		/// UI描画前処理(バックバッファ描画開始）
+		engine->StartDrawUI();
 
-		///描画後処理
-		engine->EndDraw();
+		/// UI描画（バックバッファ直接、ポストプロセス適用外）
+		game->DrawUI();
 
+		/// UI描画後処理（バックバッファ描画終了）
+		engine->EndDrawUI();
 	}
 
 	///*-----------------------------------------------------------------------*///
@@ -79,11 +83,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	game->Finalize();
 	delete game;
 
-
 	// エンジンの終了処理(最後)
 	engine->Finalize();
 
 	return 0;
-
-
 }

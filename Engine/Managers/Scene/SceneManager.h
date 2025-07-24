@@ -24,9 +24,14 @@ public:
 	void Update();
 
 	/// <summary>
-	/// 描画
+	/// 3D描画（オフスクリーン内）
 	/// </summary>
-	void Draw();
+	void Draw3D();
+
+	/// <summary>
+	/// UI描画（オフスクリーン外）
+	/// </summary>
+	void DrawUI();
 
 	/// <summary>
 	/// 終了処理

@@ -1,6 +1,5 @@
 #include "Game.h"
 
-
 Game::Game() :
 	textureManager_(nullptr),
 	modelManager_(nullptr),
@@ -33,19 +32,14 @@ void Game::InitializeScenes() {
 	auto titleScene = std::make_unique<TitleScene>();
 	sceneManager_->RegisterScene("TitleScene", std::move(titleScene));
 
-
 	// 将来的に追加するシーン
 	// auto debugScene = std::make_unique<DebugScene>();
 	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));
-
-
 
 	// (初期化時に一度だけ)既に登録されているシーンのリソースを読み込み
 	sceneManager_->LoadAllSceneResources();
 	// デフォルトシーンを設定（最初に表示するシーン）
 	sceneManager_->ChangeScene("DemoScene");
-
-
 }
 
 void Game::Update() {
@@ -60,10 +54,17 @@ void Game::Update() {
 	}
 }
 
-void Game::Draw() {
-	// シーンマネージャーの描画
+void Game::Draw3D() {
+	// シーンマネージャーの3D描画（オフスクリーン内）
 	if (sceneManager_) {
-		sceneManager_->Draw();
+		sceneManager_->Draw3D();
+	}
+}
+
+void Game::DrawUI() {
+	// シーンマネージャーのUI描画（オフスクリーン外）
+	if (sceneManager_) {
+		sceneManager_->DrawUI();
 	}
 }
 
