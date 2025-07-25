@@ -303,7 +303,7 @@ size_t PostProcessChain::GetDepthRequiredEffectCount() const {
 
 void PostProcessChain::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Post Process Chain (Auto Depth Detection)")) {
+	if (ImGui::TreeNode("Post Process Chain (Auto Depth Detection)")) {
 		ImGui::Text("Effects Count: %zu", effects_.size());
 		ImGui::Text("Chain Size: %dx%d", width_, height_);
 
@@ -360,8 +360,11 @@ void PostProcessChain::ImGui() {
 			ImGui::PopID();
 			ImGui::Separator();
 		}
+	ImGui::TreePop();
 	}
+
 #endif
+
 }
 
 void PostProcessChain::MoveEffect(size_t from, size_t to) {

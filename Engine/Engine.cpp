@@ -216,6 +216,9 @@ void Engine::ImGui() {
 	/// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
 	offscreenRenderer_->ImGui();
 
+	///inputManager
+	inputManager_->ImGui();
+
 	ImGui::End();
 
 	// カメラコントローラーのデバッグUI
@@ -223,5 +226,9 @@ void Engine::ImGui() {
 		//カメラコントローラーのアップデートがないとエラー
 		cameraController_->ImGui();
 	}
+
+
+
+	
 #endif
 }

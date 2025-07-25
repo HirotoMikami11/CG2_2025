@@ -21,23 +21,25 @@ public:
 	// ゲームパッドのボタン定義
 	enum class GamePadButton {
 		//十字キー
-		UP = XINPUT_GAMEPAD_DPAD_UP,			//
-		DOWN = XINPUT_GAMEPAD_DPAD_DOWN,		//
-		LEFT = XINPUT_GAMEPAD_DPAD_LEFT,		//
-		RIGHT = XINPUT_GAMEPAD_DPAD_RIGHT,		//
+		UP = XINPUT_GAMEPAD_DPAD_UP,			//十字上
+		DOWN = XINPUT_GAMEPAD_DPAD_DOWN,		//十字下
+		LEFT = XINPUT_GAMEPAD_DPAD_LEFT,		//十字左
+		RIGHT = XINPUT_GAMEPAD_DPAD_RIGHT,		//十字右
 		//真ん中のボタン
 		START = XINPUT_GAMEPAD_START,			//
 		BACK = XINPUT_GAMEPAD_BACK,				//
+
+		//スティック押し込み
+		LS = XINPUT_GAMEPAD_LEFT_THUMB,     // 左スティック押し込み
+		RS = XINPUT_GAMEPAD_RIGHT_THUMB,    // 右スティック押し込み
 		//背面
-		LT = XINPUT_GAMEPAD_LEFT_THUMB,			//
-		RT = XINPUT_GAMEPAD_RIGHT_THUMB,		//
-		LB = XINPUT_GAMEPAD_LEFT_SHOULDER,		//
-		RB = XINPUT_GAMEPAD_RIGHT_SHOULDER,		//
+		LB = XINPUT_GAMEPAD_LEFT_SHOULDER,		//LB
+		RB = XINPUT_GAMEPAD_RIGHT_SHOULDER,		//RB
 		//ボタン
-		A = XINPUT_GAMEPAD_A,					//
-		B = XINPUT_GAMEPAD_B,					//
-		X = XINPUT_GAMEPAD_X,					//
-		Y = XINPUT_GAMEPAD_Y					//
+		A = XINPUT_GAMEPAD_A,					//A
+		B = XINPUT_GAMEPAD_B,					//B
+		X = XINPUT_GAMEPAD_X,					//X
+		Y = XINPUT_GAMEPAD_Y					//Y
 	};
 
 	// アナログスティック定義
@@ -122,7 +124,7 @@ public:
 	/// </summary>
 	/// /// <param name="buttonNumber">マウスボタン番号(0:左,1:右,2:中,3~7:拡張マウスボタン)</param>
 	bool IsMouseButtonRelease(int buttonNumber) const;
-	
+
 	bool IsMoveMouseWheel()const;
 
 	/// <summary>
@@ -210,6 +212,43 @@ public:
 	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
 	float GetRightTrigger(int controllerIndex = 0) const;
 
+
+	/// <summary>
+	/// 左トリガーがボタンとして押されている状態か (0.5f以上で押されたと判定)
+	/// </summary>
+	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
+	bool IsLeftTriggerDown(int controllerIndex = 0) const;
+
+	/// <summary>
+	/// 右トリガーがボタンとして押されている状態か  (0.5f以上で押されたと判定)
+	/// </summary>
+	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
+	bool IsRightTriggerDown(int controllerIndex = 0) const;
+
+	/// <summary>
+	/// 左トリガーがボタンとして押された瞬間か
+	/// </summary>
+	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
+	bool IsLeftTriggerTrigger(int controllerIndex = 0) const;
+
+	/// <summary>
+	/// 右トリガーがボタンとして押された瞬間か
+	/// </summary>
+	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
+	bool IsRightTriggerTrigger(int controllerIndex = 0) const;
+
+	/// <summary>
+	/// 左トリガーがボタンとして離された瞬間か
+	/// </summary>
+	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
+	bool IsLeftTriggerRelease(int controllerIndex = 0) const;
+
+	/// <summary>
+	/// 右トリガーがボタンとして離された瞬間か
+	/// </summary>
+	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
+	bool IsRightTriggerRelease(int controllerIndex = 0) const;
+
 	/// <summary>
 	/// ゲームパッドの振動を設定
 	/// </summary>
@@ -223,6 +262,12 @@ public:
 	/// </summary>
 	/// <param name="controllerIndex">コントローラー番号(0~1)</param>
 	void StopGamePadVibration(int controllerIndex = 0);
+
+	/// <summary>
+	/// imgui
+	/// </summary>
+	void ImGui();
+
 
 
 private:
@@ -255,8 +300,19 @@ private:
 	XINPUT_STATE gamePadState[MAX_CONTROLLERS] = {};
 	XINPUT_STATE preGamePadState[MAX_CONTROLLERS] = {};
 	bool gamePadConnected[MAX_CONTROLLERS] = {};
+	// トリガーボタンがボタンとして押される値（0.0f～1.0fの範囲で）cppに移動
+	//static const float TRIGGER_BUTTON_THRESHOLD = 0.5f;
+
+
 	// スティックのデッドゾーン処理
 	float ApplyDeadZone(SHORT value, SHORT deadZone) const;
 
+	/// <summary>
+	/// stickの信号を表示
+	/// </summary>
+	/// <param name="lx"></param>
+	/// <param name="ly"></param>
+	/// <returns></returns>
+	void DrawJoystickVisualizer(float lx, float ly);
 
 };

@@ -603,22 +603,24 @@ void OffscreenRenderer::CreatePSO() {
 void OffscreenRenderer::ImGui() {
 #ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain with DepthFog)")) {
+
+
 		ImGui::Separator();
-		// オフスクリーンSprite情報
-		if (ImGui::CollapsingHeader("Offscreen Sprite Info")) {
+		// オフスクリーンSprite情報	
+		if (ImGui::TreeNode("Offscreen Sprite Info")) {
 #pragma region OffscreenSpriteInfo
 
-		// オフスクリーンのサイズ
-		ImGui::Text("Render Target Size: %dx%d", width_, height_);
-		ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
+			// オフスクリーンのサイズ
+			ImGui::Text("Render Target Size: %dx%d", width_, height_);
+			ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
 
-		// レンダーターゲットのハンドル情報
-		if (srvHandle_.isValid) {
-			ImGui::Text("Color SRV Index: %d", srvHandle_.index);
-		}
-		if (depthSrvHandle_.isValid) {
-			ImGui::Text("Depth SRV Index: %d", depthSrvHandle_.index);
-		}
+			// レンダーターゲットのハンドル情報
+			if (srvHandle_.isValid) {
+				ImGui::Text("Color SRV Index: %d", srvHandle_.index);
+			}
+			if (depthSrvHandle_.isValid) {
+				ImGui::Text("Depth SRV Index: %d", depthSrvHandle_.index);
+			}
 
 			if (offscreenSprite_) {
 				ImGui::Separator();
@@ -630,7 +632,9 @@ void OffscreenRenderer::ImGui() {
 				ImGui::Text("Visible: %s", offscreenSprite_->IsVisible() ? "Yes" : "No");
 				ImGui::Text("Active: %s", offscreenSprite_->IsActive() ? "Yes" : "No");
 			}
+
 #pragma endregion
+			ImGui::TreePop();
 		}
 
 		// ポストプロセスチェーンのImGui
