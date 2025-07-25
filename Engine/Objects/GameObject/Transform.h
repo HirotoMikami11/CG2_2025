@@ -7,10 +7,6 @@
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 
-
-class DirectXCommon;
-
-
 class Transform final
 {
 

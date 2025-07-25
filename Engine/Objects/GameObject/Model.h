@@ -11,7 +11,7 @@
 #include "Managers/Texture/TextureManager.h"
 
 /// <summary>
-/// 共有可能なモデルクラス - TextureManagerと同様の設計
+/// 共有可能なモデルクラス
 /// </summary>
 class Model
 {

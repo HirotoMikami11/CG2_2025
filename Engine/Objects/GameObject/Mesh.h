@@ -13,7 +13,6 @@
 #include <sstream>
 
 
-
 /// <summary>
 /// メッシュの種類
 /// </summary>
@@ -48,10 +47,6 @@ public:
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	/// <param name="modelData">モデルデータ</param>
 	void InitializeFromData(DirectXCommon* dxCommon, const ModelData& modelData);
-
-
-
-
 
 	/// <summary>
 	/// 三角形メッシュを作成
