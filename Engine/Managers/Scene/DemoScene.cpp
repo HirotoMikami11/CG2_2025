@@ -197,7 +197,7 @@ void DemoScene::UpdateGameObjects() {
 	gridLine_->Update(viewProjectionMatrix);
 }
 
-void DemoScene::Draw3D() {
+void DemoScene::DrawOffscreen() {
 	// グリッド線を描画（3D要素）
 	gridLine_->Draw(viewProjectionMatrix);
 
@@ -205,7 +205,7 @@ void DemoScene::Draw3D() {
 	DrawGameObjects();
 }
 
-void DemoScene::DrawUI() {
+void DemoScene::DrawBackBuffer() {
 	// UI(スプライトなど)の描画（オフスクリーン外に描画）
 	sprite_->Draw();
 }

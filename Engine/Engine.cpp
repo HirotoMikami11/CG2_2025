@@ -119,7 +119,8 @@ void Engine::Update() {
 	offscreenRenderer_->Update(frameTimer_->GetDeltaTime());
 }
 
-void Engine::StartDraw3D() {
+
+void Engine::StartDrawOffscreen() {
 	/// ImGuiの受付終了
 	imguiManager_->End();
 
@@ -130,13 +131,13 @@ void Engine::StartDraw3D() {
 	offscreenRenderer_->PreDraw();
 }
 
-void Engine::EndDraw3D() {
+void Engine::EndDrawOffscreen() {
 	/// オフスクリーンの描画終了
 	offscreenRenderer_->PostDraw();
 }
 
 
-void Engine::StartDrawUI() {
+void Engine::StartDrawBackBuffer() {
 
 	// 通常描画の描画準備（バックバッファ描画開始）
 	directXCommon_->PreDraw();
@@ -146,7 +147,7 @@ void Engine::StartDrawUI() {
 }
 
 
-void Engine::EndDrawUI() {
+void Engine::EndDrawBackBuffer() {
 	// ImGuiの画面への描画
 	imguiManager_->Draw(directXCommon_->GetCommandList());
 

@@ -54,17 +54,17 @@ void Game::Update() {
 	}
 }
 
-void Game::Draw3D() {
+void Game::DrawOffscreen() {
 	// シーンマネージャーの3D描画（オフスクリーン内）
 	if (sceneManager_) {
-		sceneManager_->Draw3D();
+		sceneManager_->DrawOffscreen();
 	}
 }
 
-void Game::DrawUI() {
+void Game::DrawBackBuffer() {
 	// シーンマネージャーのUI描画（オフスクリーン外）
 	if (sceneManager_) {
-		sceneManager_->DrawUI();
+		sceneManager_->DrawBackBuffer();
 	}
 }
 

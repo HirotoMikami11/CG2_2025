@@ -101,11 +101,11 @@ void TitleScene::UpdateGameObjects() {
 	TitlePlayer_->Update(viewProjectionMatrix);
 }
 
-void TitleScene::Draw3D() {
+void TitleScene::DrawOffscreen() {
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }
-void TitleScene::DrawUI()
+void TitleScene::DrawBackBuffer()
 {
 	//一応3Dのものも外に置けるようにした
 

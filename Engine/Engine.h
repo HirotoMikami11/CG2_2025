@@ -43,22 +43,22 @@ public:
 	/// <summary>
 	/// 3D描画前処理（オフスクリーン描画開始）
 	/// </summary>
-	void StartDraw3D();
+	void StartDrawOffscreen();
 
 	/// <summary>
 	/// 3D描画後処理（オフスクリーン描画終了)
 	/// </summary>
-	void EndDraw3D();
+	void EndDrawOffscreen();
 
 	/// <summary>
 	/// UI描画前処理（バックバッファ描画開始）
 	/// </summary>
-	void StartDrawUI();
+	void StartDrawBackBuffer();
 
 	/// <summary>
 	/// UI描画後処理（バックバッファ描画終了）
 	/// </summary>
-	void EndDrawUI();
+	void EndDrawBackBuffer();
 
 	/// <summary>
 	/// 終了処理

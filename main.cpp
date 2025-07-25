@@ -55,22 +55,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///*-----------------------------------------------------------------------*///
 
 		/// 3D描画前処理（オフスクリーン描画開始）
-		engine->StartDraw3D();
+		engine->StartDrawOffscreen();
 
 		/// 3D描画（オフスクリーン内、ポストプロセス適用対象）
-		game->Draw3D();
+		game->DrawOffscreen();
 
 		/// 3D描画後処理（オフスクリーン終了)
-		engine->EndDraw3D();
+		engine->EndDrawOffscreen();
 
 		/// UI描画前処理(バックバッファ描画開始）
-		engine->StartDrawUI();
+		engine->StartDrawBackBuffer();
 
 		/// UI描画（バックバッファ直接、ポストプロセス適用外）
-		game->DrawUI();
+		game->DrawBackBuffer();
 
 		/// UI描画後処理（バックバッファ描画終了）
-		engine->EndDrawUI();
+		engine->EndDrawBackBuffer();
 	}
 
 	///*-----------------------------------------------------------------------*///

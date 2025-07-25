@@ -40,17 +40,17 @@ void SceneManager::Update() {
 	}
 }
 
-void SceneManager::Draw3D() {
+void SceneManager::DrawOffscreen() {
 	// 現在のシーンの3D描画（オフスクリーン内）
 	if (currentScene_) {
-		currentScene_->Draw3D();
+		currentScene_->DrawOffscreen();
 	}
 }
 
-void SceneManager::DrawUI() {
+void SceneManager::DrawBackBuffer() {
 	// 現在のシーンのUI描画（オフスクリーン外）
 	if (currentScene_) {
-		currentScene_->DrawUI();
+		currentScene_->DrawBackBuffer();
 	}
 
 	// フェードの描画（最前面、オフスクリーン外）

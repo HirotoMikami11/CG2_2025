@@ -219,7 +219,7 @@ void GameScene::Update() {
 
 
 
-void GameScene::Draw3D() {
+void GameScene::DrawOffscreen() {
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }
@@ -402,7 +402,7 @@ void GameScene::ImGui() {
 #endif
 }
 
-void GameScene::DrawUI()
+void GameScene::DrawBackBuffer()
 {
 }
 

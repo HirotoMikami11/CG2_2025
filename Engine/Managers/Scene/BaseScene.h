@@ -28,13 +28,13 @@ public:
 	/// 3D描画処理（オフスクリーン内で描画される）
 	/// グリッド、3Dオブジェクト、ライティングなど
 	/// </summary>
-	virtual void Draw3D() = 0;
+	virtual void DrawOffscreen() = 0;
 
 	/// <summary>
 	/// UI描画処理（オフスクリーン外で描画される）
 	/// スプライト、テキスト、2D要素など
 	/// </summary>
-	virtual void DrawUI() {}
+	virtual void DrawBackBuffer() {}
 
 	/// <summary>
 	/// 終了処理

@@ -26,12 +26,12 @@ public:
 	/// <summary>
 	/// 3D描画（オフスクリーン内）
 	/// </summary>
-	void Draw3D();
+	void DrawOffscreen();
 
 	/// <summary>
 	/// UI描画（オフスクリーン外）
 	/// </summary>
-	void DrawUI();
+	void DrawBackBuffer();
 
 	/// <summary>
 	/// 終了処理
