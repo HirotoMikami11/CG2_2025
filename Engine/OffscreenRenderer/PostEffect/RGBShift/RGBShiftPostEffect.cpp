@@ -12,7 +12,7 @@ void RGBShiftPostEffect::Initialize(DirectXCommon* dxCommon) {
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "RGBShiftPostEffect initialized successfully (Sprite version)!\n");
+	Logger::Log(Logger::GetStream(), "RGBShiftPostEffect initialized successfully (OffscreenTriangle version)!\n");
 }
 
 void RGBShiftPostEffect::Finalize() {
@@ -23,7 +23,7 @@ void RGBShiftPostEffect::Finalize() {
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "RGBShiftPostEffect finalized (Sprite version).\n");
+	Logger::Log(Logger::GetStream(), "RGBShiftPostEffect finalized (OffscreenTriangle version).\n");
 }
 
 void RGBShiftPostEffect::Update(float deltaTime) {
@@ -38,7 +38,11 @@ void RGBShiftPostEffect::Update(float deltaTime) {
 	UpdateParameterBuffer();
 }
 
-void RGBShiftPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
+void RGBShiftPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
+	if (!isEnabled_ || !isInitialized_ || !renderTriangle) {
+		return;
+	}
+
 	auto commandList = dxCommon_->GetCommandList();
 
 	// レンダーターゲットを設定
@@ -54,8 +58,8 @@ void RGBShiftPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_D
 	};
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	// Spriteを使用してカスタムPSOで描画
-	renderSprite->DrawWithCustomPSO(
+	// OffscreenTriangleを使用してカスタムPSOで描画
+	renderTriangle->DrawWithCustomPSO(
 		rootSignature_.Get(),
 		pipelineState_.Get(),
 		inputSRV,
@@ -64,7 +68,7 @@ void RGBShiftPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_D
 }
 
 void RGBShiftPostEffect::CreatePSO() {
-	// グリッチエフェクト用のルートシグネチャ作成
+	// RGBシフトエフェクト用のルートシグネチャ作成（OffscreenTriangle版）
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -75,24 +79,20 @@ void RGBShiftPostEffect::CreatePSO() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter（3つ：Parameters、Transform、Texture）
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	// RootParameter（2つ：Parameters、Texture）
+	// OffscreenTriangleは変換行列を必要としないため、Transformパラメータは削除
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
-	// GlitchParameters (b0)
+	// RGBShiftParameters (b0)
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// Transform (b0) - 頂点シェーダー用
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
-
 	// Texture (t0)
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -123,7 +123,7 @@ void RGBShiftPostEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定
+	// InputLayout設定（位置とUV座標のみ）
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -134,8 +134,6 @@ void RGBShiftPostEffect::CreatePSO() {
 	inputElementDescs[1].SemanticIndex = 0;
 	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	// normalはグリッチエフェクトでは不要なので消す
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -150,8 +148,8 @@ void RGBShiftPostEffect::CreatePSO() {
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-	// グリッチ用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"resources/Shader/RGBShift/RGBShift.VS.hlsl", L"vs_6_0");
+	// RGBシフト用シェーダーをコンパイル
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
 	pixelShaderBlob_ = CompileShader(L"resources/Shader/RGBShift/RGBShift.PS.hlsl", L"ps_6_0");
@@ -184,13 +182,13 @@ void RGBShiftPostEffect::CreatePSO() {
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create RGB shift PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create RGB Shift PSO (OffscreenTriangle version)!!\n");
 }
 
 void RGBShiftPostEffect::CreateParameterBuffer() {
 	// 構造体サイズをデバッグ出力
-	size_t structSize = sizeof(GlitchParameters);
-	Logger::Log(Logger::GetStream(), std::format("GlitchParameters size: {} bytes\n", structSize));
+	size_t structSize = sizeof(RGBShiftParameters);
+	Logger::Log(Logger::GetStream(), std::format("RGBShiftParameters size: {} bytes\n", structSize));
 
 	// 256バイト境界に揃える（DirectX12の要件）
 	size_t alignedSize = (structSize + 255) & ~255;
@@ -203,7 +201,7 @@ void RGBShiftPostEffect::CreateParameterBuffer() {
 	// 初期データを設定
 	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create Glitch parameter buffer (Sprite version)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create RGB Shift parameter buffer (OffscreenTriangle version)!!\n");
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> RGBShiftPostEffect::CompileShader(
@@ -236,12 +234,12 @@ void RGBShiftPostEffect::ApplyPreset(EffectPreset preset) {
 		break;
 
 	case EffectPreset::MEDIUM:
-		parameters_.rgbShiftStrength = 2.0f;
+		parameters_.rgbShiftStrength = 1.5f;
 		SetEnabled(true);
 		break;
 
 	case EffectPreset::INTENSE:
-		parameters_.rgbShiftStrength = 5.0f;
+		parameters_.rgbShiftStrength = 3.0f;
 		SetEnabled(true);
 		break;
 	}
@@ -256,7 +254,6 @@ void RGBShiftPostEffect::SetRGBShiftStrength(float strength) {
 
 void RGBShiftPostEffect::ImGui() {
 #ifdef _DEBUG
-
 	if (ImGui::TreeNode(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
@@ -276,9 +273,9 @@ void RGBShiftPostEffect::ImGui() {
 
 			// 個別パラメータ調整
 			if (ImGui::TreeNode("Manual Settings")) {
-				float rgbShift = parameters_.rgbShiftStrength;
-				if (ImGui::SliderFloat("RGB Shift Strength", &rgbShift, 0.0f, 10.0f)) {
-					SetRGBShiftStrength(rgbShift);
+				float rgbShiftStrength = parameters_.rgbShiftStrength;
+				if (ImGui::SliderFloat("RGB Shift Strength", &rgbShiftStrength, 0.0f, 5.0f)) {
+					SetRGBShiftStrength(rgbShiftStrength);
 				}
 
 				if (ImGui::SliderFloat("Animation Speed", &animationSpeed_, 0.0f, 3.0f)) {
@@ -290,12 +287,11 @@ void RGBShiftPostEffect::ImGui() {
 			// 情報表示
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", parameters_.time);
-			ImGui::Text("RGB Shift: %.2f", parameters_.rgbShiftStrength);
+			ImGui::Text("RGB Shift Strength: %.2f", parameters_.rgbShiftStrength);
 			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 
 		ImGui::TreePop();
 	}
-
 #endif
 }

@@ -40,7 +40,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon) override;
 	void Finalize() override;
 	void Update(float deltaTime) override;
-	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) override;
+	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) override;
 	bool IsEnabled() const override { return isEnabled_; }
 	void SetEnabled(bool enabled) override { isEnabled_ = enabled; }
 	void ImGui() override;

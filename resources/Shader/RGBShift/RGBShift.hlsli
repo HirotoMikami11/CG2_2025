@@ -1,10 +1,6 @@
-struct VertexShaderOutput
-{
-    float32_t4 position : SV_POSITION;
-    float32_t2 texcoord : TEXCOORD0;
-};
+#include "resources/Shader/FullscreenTriangle/FullscreenTriangle.hlsli"
 
-// RGBシフト
+// RGBシフトパラメータ
 struct RGBShiftParameters
 {
     float32_t rgbShiftStrength; // RGBシフトの強度

@@ -11,14 +11,12 @@ void PostProcessChain::Initialize(DirectXCommon* dxCommon, uint32_t width, uint3
 	CreateIntermediateSRVs();
 	CreateIntermediateRTVs();
 
-	// エフェクト描画用Sprite初期化
-	effectSprite_ = std::make_unique<Sprite>();
-	Vector2 center = { static_cast<float>(width_) * 0.5f, static_cast<float>(height_) * 0.5f };
-	Vector2 size = { static_cast<float>(width_), static_cast<float>(height_) };
-	effectSprite_->Initialize(dxCommon_, "", center, size);
+	// エフェクト描画用OffscreenTriangle初期化（Sprite置き換え）
+	offscreenTriangle_ = std::make_unique<OffscreenTriangle>();
+	offscreenTriangle_->Initialize(dxCommon_);
 
 	isInitialized_ = true;
-	Logger::Log(Logger::GetStream(), "PostProcessChain initialized with automatic depth detection!\n");
+	Logger::Log(Logger::GetStream(), "PostProcessChain initialized with OffscreenTriangle!\n");
 }
 
 void PostProcessChain::Finalize() {
@@ -30,8 +28,11 @@ void PostProcessChain::Finalize() {
 	}
 	effects_.clear();
 
-	// Spriteの削除
-	effectSprite_.reset();
+	// OffscreenTriangleの削除（Sprite置き換え）
+	if (offscreenTriangle_) {
+		offscreenTriangle_->Finalize();
+		offscreenTriangle_.reset();
+	}
 
 	// ディスクリプタの解放
 	auto descriptorManager = dxCommon_->GetDescriptorManager();
@@ -62,15 +63,11 @@ void PostProcessChain::Update(float deltaTime) {
 		}
 	}
 
-	// エフェクト描画用Spriteの更新
-	if (effectSprite_) {
-		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
-		effectSprite_->Update(spriteViewProjection);
-	}
+	// OffscreenTriangleの更新は特に不要（状態を持たないため）
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) {
-	if (!isInitialized_ || effects_.empty()) {
+	if (!isInitialized_ || effects_.empty() || !offscreenTriangle_) {
 		return inputSRV;
 	}
 
@@ -116,8 +113,8 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_
 		// 出力先を決定
 		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV = intermediateRTVHandles_[bufferIndex].cpuHandle;
 
-		// エフェクトを適用（通常版Apply）
-		effect->Apply(currentInput, outputRTV, effectSprite_.get());
+		// エフェクトを適用（通常版Apply、OffscreenTriangle使用）
+		effect->Apply(currentInput, outputRTV, offscreenTriangle_.get());
 
 		// 出力バッファをシェーダーリソース状態に戻す
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -133,7 +130,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffects(D3D12_GPU_DESCRIPTOR_
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffectsWithDepth(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV) {
-	if (!isInitialized_ || effects_.empty()) {
+	if (!isInitialized_ || effects_.empty() || !offscreenTriangle_) {
 		return inputSRV;
 	}
 
@@ -175,11 +172,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffectsWithDepth(D3D12_GPU_DE
 
 		// 深度テクスチャが必要なエフェクトかどうかで自動判定
 		if (effect->RequiresDepthTexture()) {
-			// 深度版のApplyを使用
-			effect->Apply(currentInput, depthSRV, outputRTV, effectSprite_.get());
+			// 深度版のApplyを使用（OffscreenTriangle使用）
+			effect->Apply(currentInput, depthSRV, outputRTV, offscreenTriangle_.get());
 		} else {
-			// 通常版のApplyを使用
-			effect->Apply(currentInput, outputRTV, effectSprite_.get());
+			// 通常版のApplyを使用（OffscreenTriangle使用）
+			effect->Apply(currentInput, outputRTV, offscreenTriangle_.get());
 		}
 
 		// 出力バッファをシェーダーリソース状態に戻す
@@ -303,7 +300,7 @@ size_t PostProcessChain::GetDepthRequiredEffectCount() const {
 
 void PostProcessChain::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode("Post Process Chain (Auto Depth Detection)")) {
+	if (ImGui::TreeNode("Post Process Chain (OffscreenTriangle)")) {
 		ImGui::Text("Effects Count: %zu", effects_.size());
 		ImGui::Text("Chain Size: %dx%d", width_, height_);
 
@@ -313,11 +310,16 @@ void PostProcessChain::ImGui() {
 		ImGui::Text("Active Effects: %zu", activeCount);
 		ImGui::Text("Depth Required Effects: %zu", depthRequiredCount);
 
+		// OffscreenTriangle情報
+		ImGui::Separator();
+		ImGui::Text("Render Method: OffscreenTriangle (Large Triangle)");
+		ImGui::Text("Triangle Valid: %s", offscreenTriangle_ && offscreenTriangle_->IsValid() ? "YES" : "NO");
+
 		// 自動判定の説明
 		if (ImGui::CollapsingHeader("Auto Detection Info")) {
 			ImGui::TextWrapped("This PostProcessChain automatically detects which effects require depth texture.");
 			ImGui::TextWrapped("Effects marked with 'RequiresDepthTexture() = true' will automatically use depth data.");
-			ImGui::TextWrapped("No manual configuration needed when adding new depth-based effects!");
+			ImGui::TextWrapped("Now using OffscreenTriangle instead of Sprite for better performance!");
 		}
 
 		ImGui::Separator();
@@ -360,11 +362,9 @@ void PostProcessChain::ImGui() {
 			ImGui::PopID();
 			ImGui::Separator();
 		}
-	ImGui::TreePop();
+		ImGui::TreePop();
 	}
-
 #endif
-
 }
 
 void PostProcessChain::MoveEffect(size_t from, size_t to) {

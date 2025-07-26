@@ -2,40 +2,27 @@
 
 ConstantBuffer<GrayscaleParameters> GrayscaleParameter : register(b0);
 
-Texture2D<float32_t4> gTexture : register(t0);
+Texture2D<float32_t4> gTexture : register(t0); // カラーテクスチャのみ
 SamplerState gSampler : register(s0);
 
-// グレースケール変換関数（加重平均）
-float3 toGrayscale(float3 color)
+FullscreenPixelOutput main(FullscreenVertexOutput input)
 {
-    float luminance = dot(color, float3(0.299, 0.587, 0.114));
-    return float3(luminance, luminance, luminance);
-}
-
-// カラーとグレースケールをイージングする関数
-// 元の色とイージングのtの入れる
-// 0に近ければ近いほど元の色に、1に近いほどグレースケールに。
-float3 applyGrayscale(float3 color, float t)
-{
-    float3 grayscale = toGrayscale(color);
-    return lerp(color, grayscale, t);
-}
-
-struct PixelShaderOutput
-{
-    float32_t4 color : SV_TARGET0;
-};
-
-PixelShaderOutput main(VertexShaderOutput input)
-{
-    PixelShaderOutput output;
+    FullscreenPixelOutput output;
     
-    // テクスチャをサンプリング
-    float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    // 1. テクスチャから元の色を取得
+    float32_t4 originalColor = gTexture.Sample(gSampler, input.texcoord);
     
-    // グレースケールを適用
-    output.color.rgb = applyGrayscale(textureColor.rgb, GrayscaleParameter.grayIntensity);
-    output.color.a = textureColor.a;
+    // 2. グレースケールを適用
+    float32_t3 processedColor = ApplyGrayscale(
+        originalColor.rgb,
+        GrayscaleParameter.grayIntensity
+    );
+    
+    // 3. 基本色を乗算（通常は白色なので変化なし）
+    processedColor *= GrayscaleParameter.color.rgb;
+    
+    // 4. 最終結果を出力（アルファチャンネルは保持）
+    output.color = float32_t4(processedColor, originalColor.a);
     
     return output;
 }

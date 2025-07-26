@@ -29,8 +29,8 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	scissorRect_.top = 0;
 	scissorRect_.bottom = height_;
 
-	// オフスクリーン描画用Spriteを初期化
-	InitializeOffscreenSprite();
+	// オフスクリーン描画用OffscreenTriangleを初期化（Sprite置き換え）
+	InitializeOffscreenTriangle();
 
 	// ポストプロセスチェーンを初期化
 	postProcessChain_ = std::make_unique<PostProcessChain>();
@@ -42,20 +42,21 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 
 	// グリッチエフェクトを追加
 	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
-	// グレースケールエフェクトを追加
-	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 	// ライングリッチエフェクトを追加
 	lineGlitchEffect_ = postProcessChain_->AddEffect<LineGlitchPostEffect>();
+	// グレースケールエフェクトを追加
+	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 	// 深度フォグエフェクトを追加
 	depthFogEffect_ = postProcessChain_->AddEffect<DepthFogPostEffect>();
-
 	depthFogEffect_->SetEnabled(true);
-
 	// 深度ぼかしエフェクトを追加
 	depthOfFieldEffect_ = postProcessChain_->AddEffect<DepthOfFieldPostEffect>();
 
+
+
+
 	// 初期化完了のログを出す
-	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (PostProcess Chain with DepthFog)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete OffscreenRenderer initialized (PostProcess Chain with OffscreenTriangle)!!\n");
 }
 
 void OffscreenRenderer::Finalize() {
@@ -69,13 +70,19 @@ void OffscreenRenderer::Finalize() {
 	///ここで追加したエフェクトをnullptrにしておく
 	///
 
-	RGBShiftEffect_ = nullptr;
+
+
 	grayscaleEffect_ = nullptr;
-	lineGlitchEffect_ = nullptr;
 	depthFogEffect_ = nullptr;
+	RGBShiftEffect_ = nullptr;
+	lineGlitchEffect_ = nullptr;
 	depthOfFieldEffect_ = nullptr;
-	// オフスクリーンSprite削除
-	offscreenSprite_.reset();
+
+	// オフスクリーンOffscreenTriangle削除（Sprite置き換え）
+	if (offscreenTriangle_) {
+		offscreenTriangle_->Finalize();
+		offscreenTriangle_.reset();
+	}
 
 	// DescriptorHeapManagerからディスクリプタを解放
 	auto descriptorManager = dxCommon_->GetDescriptorManager();
@@ -94,20 +101,13 @@ void OffscreenRenderer::Finalize() {
 		}
 	}
 
-	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized (PostProcess Chain with DepthFog).\n");
+	Logger::Log(Logger::GetStream(), "OffscreenRenderer finalized (PostProcess Chain with OffscreenTriangle).\n");
 }
 
 void OffscreenRenderer::Update(float deltaTime) {
 	// ポストプロセスチェーンの更新
 	if (postProcessChain_) {
 		postProcessChain_->Update(deltaTime);
-	}
-
-	// オフスクリーンSpriteの更新
-	if (offscreenSprite_) {
-		// スプライト用のビュープロジェクション行列で更新
-		Matrix4x4 spriteViewProjection = MakeViewProjectionMatrixSprite();
-		offscreenSprite_->Update(spriteViewProjection);
 	}
 }
 
@@ -192,19 +192,12 @@ void OffscreenRenderer::PostDraw() {
 	commandList->ResourceBarrier(2, barriers);
 }
 
-void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, float height) {
-	if (!offscreenSprite_) {
+void OffscreenRenderer::DrawOffscreenTexture() {
+	if (!offscreenTriangle_) {
 		return;
 	}
 
 	auto commandList = dxCommon_->GetCommandList();
-
-	// 引数からSpriteの位置とサイズを設定
-	Vector2 position = { x + width * 0.5f, y + height * 0.5f };  // 中心座標
-	Vector2 size = { width, height };
-
-	offscreenSprite_->SetPosition(position);
-	offscreenSprite_->SetSize(size);
 
 	// ポストプロセスチェーンを適用（深度テクスチャも渡す）
 	D3D12_GPU_DESCRIPTOR_HANDLE finalTexture = srvHandle_.gpuHandle;
@@ -221,8 +214,6 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dxCommon_->GetDescriptorManager()->GetCPUHandle(
 		DescriptorHeapManager::HeapType::DSV, GraphicsConfig::kMainDSVIndex);
 	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
-	//commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-
 
 	// ディスクリプタヒープを再設定
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[] = {
@@ -230,37 +221,25 @@ void OffscreenRenderer::DrawOffscreenTexture(float x, float y, float width, floa
 	};
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	// 最終結果を描画
-	offscreenSprite_->DrawWithCustomPSO(
+	// 最終結果を描画（OffscreenTriangle使用）
+	offscreenTriangle_->DrawWithCustomPSO(
 		offscreenRootSignature_.Get(),
 		offscreenPipelineState_.Get(),
 		finalTexture
 	);
 
-
-
-
-
-	// スプライト用PSOから通常描画用PSOに戻す
+	// オフスクリーン用PSOから通常描画用PSOに戻す
 	commandList->SetGraphicsRootSignature(dxCommon_->GetRootSignature());
 	commandList->SetPipelineState(dxCommon_->GetPipelineState());
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-
 }
 
-void OffscreenRenderer::InitializeOffscreenSprite() {
-	// オフスクリーン描画用Spriteを作成
-	offscreenSprite_ = std::make_unique<Sprite>();
+void OffscreenRenderer::InitializeOffscreenTriangle() {
+	// オフスクリーン描画用OffscreenTriangleを作成（Sprite置き換え）
+	offscreenTriangle_ = std::make_unique<OffscreenTriangle>();
+	offscreenTriangle_->Initialize(dxCommon_);
 
-	// フルスクリーンサイズで初期化
-	Vector2 center = { static_cast<float>(width_) * 0.5f, static_cast<float>(height_) * 0.5f };
-	Vector2 size = { static_cast<float>(width_), static_cast<float>(height_) };
-
-	// 空のテクスチャ名で初期化（DrawWithCustomPSOでテクスチャハンドルを直接指定するため）
-	offscreenSprite_->Initialize(dxCommon_, "", center, size);
-
-	Logger::Log(Logger::GetStream(), "Complete initialize offscreen sprite!!\n");
+	Logger::Log(Logger::GetStream(), "Complete initialize offscreen triangle (replacing sprite)!!\n");
 }
 
 void OffscreenRenderer::CreateRenderTargetTexture() {
@@ -448,7 +427,7 @@ void OffscreenRenderer::CreatePSO() {
 	////								RootSignature作成							//
 	////																			//
 
-	// RootSignature作成
+	// RootSignature作成（OffscreenTriangle用に簡略化）
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -459,36 +438,21 @@ void OffscreenRenderer::CreatePSO() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
-
-	// PixelShader Material
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[0].Descriptor.ShaderRegister = 0;
-
-	// VertexShader Transform
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
+	// RootParameter作成（OffscreenTriangle用に簡略化：テクスチャのみ）
+	D3D12_ROOT_PARAMETER rootParameters[1] = {};
 
 	// DescriptorTable
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-
-	// DirectionalLight
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[3].Descriptor.ShaderRegister = 1;
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 	// Sampler設定
 	D3D12_STATIC_SAMPLER_DESC samplers[1] = {};
 	samplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 	samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 	samplers[0].ShaderRegister = 0;
@@ -518,8 +482,8 @@ void OffscreenRenderer::CreatePSO() {
 	////																			//
 	////							InputLayoutの設定								//
 	////																			//
-	// InputLayout設定
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+	// InputLayout設定（OffscreenTriangle用：位置とUV座標のみ）
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -530,11 +494,6 @@ void OffscreenRenderer::CreatePSO() {
 	inputElementDescs[1].SemanticIndex = 0;
 	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -556,9 +515,9 @@ void OffscreenRenderer::CreatePSO() {
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-	// シェーダーコンパイル（DirectXCommonの機能を利用）
+	// シェーダーコンパイル（OffscreenTriangle用シェーダーを使用）
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = DirectXCommon::CompileShader(
-		L"resources/Shader/Sprite/Sprite.VS.hlsl",
+		L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl",
 		L"vs_6_0",
 		dxCommon_->GetDxcUtils(),
 		dxCommon_->GetDxcCompiler(),
@@ -566,7 +525,7 @@ void OffscreenRenderer::CreatePSO() {
 	assert(vertexShaderBlob != nullptr);
 
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = DirectXCommon::CompileShader(
-		L"resources/Shader/Offscreen.PS.hlsl",
+		L"resources/Shader/FullscreenTriangle/FullscreenTriangle.PS.hlsl",
 		L"ps_6_0",
 		dxCommon_->GetDxcUtils(),
 		dxCommon_->GetDxcCompiler(),
@@ -597,18 +556,17 @@ void OffscreenRenderer::CreatePSO() {
 		IID_PPV_ARGS(&offscreenPipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState (OffscreenTriangle version)!!\n");
 }
 
 void OffscreenRenderer::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Offscreen Renderer (PostProcess Chain with DepthFog)")) {
-
+	if (ImGui::CollapsingHeader("Offscreen Renderer (OffscreenTriangle)")) {
 
 		ImGui::Separator();
-		// オフスクリーンSprite情報	
-		if (ImGui::TreeNode("Offscreen Sprite Info")) {
-#pragma region OffscreenSpriteInfo
+		// オフスクリーンOffscreenTriangle情報
+		if (ImGui::TreeNode("Offscreen Triangle Info")) {
+#pragma region OffscreenTriangleInfo
 
 			// オフスクリーンのサイズ
 			ImGui::Text("Render Target Size: %dx%d", width_, height_);
@@ -622,15 +580,11 @@ void OffscreenRenderer::ImGui() {
 				ImGui::Text("Depth SRV Index: %d", depthSrvHandle_.index);
 			}
 
-			if (offscreenSprite_) {
+			if (offscreenTriangle_) {
 				ImGui::Separator();
-				Vector2 pos = offscreenSprite_->GetPosition();
-				Vector2 size = offscreenSprite_->GetSize();
-				ImGui::Text("Position: (%.1f, %.1f)", pos.x, pos.y);
-				ImGui::Text("Size: (%.1f, %.1f)", size.x, size.y);
-				ImGui::Text("Texture: %s", offscreenSprite_->GetTextureName().c_str());
-				ImGui::Text("Visible: %s", offscreenSprite_->IsVisible() ? "Yes" : "No");
-				ImGui::Text("Active: %s", offscreenSprite_->IsActive() ? "Yes" : "No");
+				ImGui::Text("Triangle Valid: %s", offscreenTriangle_->IsValid() ? "Yes" : "No");
+				ImGui::Text("Render Method: Large Triangle (3 vertices)");
+				ImGui::Text("Coverage: Fullscreen + border area");
 			}
 
 #pragma endregion

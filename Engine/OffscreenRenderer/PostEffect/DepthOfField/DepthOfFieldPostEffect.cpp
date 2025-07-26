@@ -12,7 +12,7 @@ void DepthOfFieldPostEffect::Initialize(DirectXCommon* dxCommon) {
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "DepthOfFieldPostEffect initialized successfully!\n");
+	Logger::Log(Logger::GetStream(), "DepthOfFieldPostEffect initialized successfully (OffscreenTriangle version)!\n");
 }
 
 void DepthOfFieldPostEffect::Finalize() {
@@ -23,7 +23,7 @@ void DepthOfFieldPostEffect::Finalize() {
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "DepthOfFieldPostEffect finalized.\n");
+	Logger::Log(Logger::GetStream(), "DepthOfFieldPostEffect finalized (OffscreenTriangle version).\n");
 }
 
 void DepthOfFieldPostEffect::Update(float deltaTime) {
@@ -34,18 +34,18 @@ void DepthOfFieldPostEffect::Update(float deltaTime) {
 	// 時間を更新
 	parameters_.time += deltaTime * animationSpeed_;
 
-
 	// パラメータバッファを更新
 	UpdateParameterBuffer();
 }
 
-void DepthOfFieldPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
+void DepthOfFieldPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
 	// 基底クラスのApplyは使用しない（深度テクスチャが必要なため）
+	// 代わりに専用のApplyを使用することを推奨
 	Logger::Log(Logger::GetStream(), "Warning: DepthOfFieldPostEffect requires depth texture. Use Apply with depthSRV parameter.\n");
 }
 
-void DepthOfFieldPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
-	if (!isEnabled_ || !isInitialized_) {
+void DepthOfFieldPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
+	if (!isEnabled_ || !isInitialized_ || !renderTriangle) {
 		return;
 	}
 
@@ -64,8 +64,7 @@ void DepthOfFieldPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_G
 	};
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	// Spriteの新しいDrawWithCustomPSOAndDepth関数を使用して描画
-	renderSprite->DrawWithCustomPSOAndDepth(
+	renderTriangle->DrawWithCustomPSOAndDepth(
 		rootSignature_.Get(),
 		pipelineState_.Get(),
 		inputSRV,		// カラーテクスチャ
@@ -75,7 +74,7 @@ void DepthOfFieldPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_G
 }
 
 void DepthOfFieldPostEffect::CreatePSO() {
-	// 被写界深度エフェクト用のルートシグネチャ作成
+	// 被写界深度エフェクト用のルートシグネチャ作成（OffscreenTriangle版）
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -94,30 +93,25 @@ void DepthOfFieldPostEffect::CreatePSO() {
 	descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter（4つ：DepthOfFieldParameters、Transform、ColorTexture、DepthTexture）
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	// RootParameter（3つ：DepthOfFieldParameters、ColorTexture、DepthTexture）
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
 	// DepthOfFieldParameters (b0) - PixelShader用
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// Transform (b0) - VertexShader用
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
-
 	// ColorTexture (t0)
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
 
 	// DepthTexture (t1)
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[3].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];
-	rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -148,7 +142,7 @@ void DepthOfFieldPostEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定
+	// InputLayout設定（位置とUV座標のみ）
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -170,11 +164,11 @@ void DepthOfFieldPostEffect::CreatePSO() {
 
 	// RasterizerState設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;  // カリングを無効に変更
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// 被写界深度用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"resources/Shader/DepthOfField/DepthOfField.VS.hlsl", L"vs_6_0");
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
 	pixelShaderBlob_ = CompileShader(L"resources/Shader/DepthOfField/DepthOfField.PS.hlsl", L"ps_6_0");
@@ -207,7 +201,7 @@ void DepthOfFieldPostEffect::CreatePSO() {
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create DepthOfField PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create DepthOfField PSO (OffscreenTriangle version)!!\n");
 }
 
 void DepthOfFieldPostEffect::CreateParameterBuffer() {
@@ -226,7 +220,7 @@ void DepthOfFieldPostEffect::CreateParameterBuffer() {
 	// 初期データを設定
 	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create DepthOfField parameter buffer!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create DepthOfField parameter buffer (OffscreenTriangle version)!!\n");
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> DepthOfFieldPostEffect::CompileShader(
@@ -287,7 +281,6 @@ void DepthOfFieldPostEffect::ImGui() {
 			// プリセット選択
 			if (ImGui::TreeNode("Presets")) {
 				if (ImGui::Button("None")) ApplyPreset(EffectPreset::NONE);
-				ImGui::SameLine();
 				ImGui::TreePop();
 			}
 

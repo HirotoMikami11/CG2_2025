@@ -130,9 +130,6 @@
     <Filter Include="Game\Objects\GameCamera">
       <UniqueIdentifier>{1f0a3efa-dca2-447c-b994-cd9562ff2d7d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル\Shader\Offscreen">
-      <UniqueIdentifier>{e28376ba-145a-4bb9-a378-ded6a9af5dcc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\Objects\DeathParticles">
       <UniqueIdentifier>{4cae9bdc-8f4c-44bd-a3f7-d610a56e63e5}</UniqueIdentifier>
     </Filter>
@@ -171,6 +168,12 @@
     </Filter>
     <Filter Include="リソース ファイル\Shader\DepthOfField">
       <UniqueIdentifier>{c8c0ed53-5763-4b61-99b7-2aa6c4221cce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\OffscreenTriangle">
+      <UniqueIdentifier>{df4cce09-6829-41da-8568-e0962325cd7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\Shader\FullscreenTriangle">
+      <UniqueIdentifier>{3285d2d3-9ac9-4b09-b4bc-885fd4913733}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -227,9 +230,6 @@
     </ClCompile>
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp">
       <Filter>Engine\FrameTimer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp">
-      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
     </ClCompile>
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
@@ -318,9 +318,6 @@
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
       <Filter>Engine\Managers\Model</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp">
-      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\CameraController\Camera.cpp">
       <Filter>Engine\CameraController\NormalCamera</Filter>
     </ClCompile>
@@ -345,21 +342,24 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthFog</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\OffscreenTriangle\OffscreenTriangle.cpp">
+      <Filter>Engine\OffScreenRenderer\OffscreenTriangle</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthOfField</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\OffscreenRenderer\LayeredPostProcessChain.cpp">
-      <Filter>Engine\OffScreenRenderer</Filter>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\OffscreenRenderer\PostProcessChain.cpp">
-      <Filter>Engine\OffScreenRenderer</Filter>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Grayscale</Filter>
-    </FxCompile>
-    <FxCompile Include="resources\Shader\Grayscale\Grayscale.VS.hlsl">
       <Filter>リソース ファイル\Shader\Grayscale</Filter>
     </FxCompile>
     <FxCompile Include="resources\Shader\Object3d\Object3d.PS.hlsl">
@@ -374,20 +374,11 @@
     <FxCompile Include="resources\Shader\Sprite\Sprite.VS.hlsl">
       <Filter>リソース ファイル\Shader\Sprite</Filter>
     </FxCompile>
-    <FxCompile Include="resources\Shader\Offscreen.PS.hlsl">
-      <Filter>リソース ファイル\Shader\Offscreen</Filter>
-    </FxCompile>
     <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.PS.hlsl">
       <Filter>リソース ファイル\Shader\LineGltich</Filter>
     </FxCompile>
     <FxCompile Include="resources\Shader\RGBShift\RGBShift.PS.hlsl">
       <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
-    <FxCompile Include="resources\Shader\RGBShift\RGBShift.VS.hlsl">
-      <Filter>リソース ファイル\Shader\RGBShift</Filter>
-    </FxCompile>
-    <FxCompile Include="resources\Shader\LineGlitch\LineGlitch.VS.hlsl">
-      <Filter>リソース ファイル\Shader\LineGltich</Filter>
     </FxCompile>
     <FxCompile Include="resources\Shader\Line\Line.VS.hlsl">
       <Filter>リソース ファイル\Shader\Line</Filter>
@@ -398,14 +389,14 @@
     <FxCompile Include="resources\Shader\DepthFog\DepthFog.PS.hlsl">
       <Filter>リソース ファイル\Shader\DepthFog</Filter>
     </FxCompile>
-    <FxCompile Include="resources\Shader\DepthFog\DepthFog.VS.hlsl">
-      <Filter>リソース ファイル\Shader\DepthFog</Filter>
-    </FxCompile>
     <FxCompile Include="resources\Shader\DepthOfField\DepthOfField.PS.hlsl">
       <Filter>リソース ファイル\Shader\DepthOfField</Filter>
     </FxCompile>
-    <FxCompile Include="resources\Shader\DepthOfField\DepthOfField.VS.hlsl">
-      <Filter>リソース ファイル\Shader\DepthOfField</Filter>
+    <FxCompile Include="resources\Shader\OffscreenTriangle\FullscreenTriangle.PS.hlsl">
+      <Filter>リソース ファイル\Shader\FullscreenTriangle</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\OffscreenTriangle\FullscreenTriangle.VS.hlsl">
+      <Filter>リソース ファイル\Shader\FullscreenTriangle</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -471,9 +462,6 @@
     </ClInclude>
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h">
       <Filter>Engine\FrameTimer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h">
-      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
@@ -568,9 +556,6 @@
     <ClInclude Include="Engine\Managers\Model\ModelManager.h">
       <Filter>Engine\Managers\Model</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h">
-      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\CameraController\BaseCamera.h">
       <Filter>Engine\CameraController</Filter>
     </ClInclude>
@@ -598,14 +583,20 @@
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthFog\DepthFogPostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthFog</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h">
+      <Filter>Engine\OffScreenRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\OffscreenTriangle\OffscreenTriangle.h">
+      <Filter>Engine\OffScreenRenderer\OffscreenTriangle</Filter>
+    </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\DepthOfField\DepthOfFieldPostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\DepthOfField</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\OffscreenRenderer\LayeredPostProcessChain.h">
-      <Filter>Engine\OffScreenRenderer</Filter>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\LineGlitch\LineGlitchPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\LineGlitch</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\OffscreenRenderer\PostProcessChain.h">
-      <Filter>Engine\OffScreenRenderer</Filter>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -632,6 +623,9 @@
     </None>
     <None Include="resources\Shader\DepthOfField\DepthOfField.hlsli">
       <Filter>リソース ファイル\Shader\DepthOfField</Filter>
+    </None>
+    <None Include="resources\Shader\OffscreenTriangle\FullscreenTriangle.hlsli">
+      <Filter>リソース ファイル\Shader\FullscreenTriangle</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@ void LineGlitchPostEffect::Initialize(DirectXCommon* dxCommon) {
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "LineGlitchPostEffect initialized successfully (Sprite version)!\n");
+	Logger::Log(Logger::GetStream(), "LineGlitchPostEffect initialized successfully (OffscreenTriangle version)!\n");
 }
 
 void LineGlitchPostEffect::Finalize() {
@@ -23,7 +23,7 @@ void LineGlitchPostEffect::Finalize() {
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "LineGlitchPostEffect finalized (Sprite version).\n");
+	Logger::Log(Logger::GetStream(), "LineGlitchPostEffect finalized (OffscreenTriangle version).\n");
 }
 
 void LineGlitchPostEffect::Update(float deltaTime) {
@@ -38,7 +38,11 @@ void LineGlitchPostEffect::Update(float deltaTime) {
 	UpdateParameterBuffer();
 }
 
-void LineGlitchPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
+void LineGlitchPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
+	if (!isEnabled_ || !isInitialized_ || !renderTriangle) {
+		return;
+	}
+
 	auto commandList = dxCommon_->GetCommandList();
 
 	// レンダーターゲットを設定
@@ -54,8 +58,8 @@ void LineGlitchPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU
 	};
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	// Spriteを使用してカスタムPSOで描画
-	renderSprite->DrawWithCustomPSO(
+	// OffscreenTriangleを使用してカスタムPSOで描画
+	renderTriangle->DrawWithCustomPSO(
 		rootSignature_.Get(),
 		pipelineState_.Get(),
 		inputSRV,
@@ -64,7 +68,7 @@ void LineGlitchPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU
 }
 
 void LineGlitchPostEffect::CreatePSO() {
-	// ライングリッチエフェクト用のルートシグネチャ作成
+	// ライングリッチエフェクト用のルートシグネチャ作成（OffscreenTriangle版）
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -75,24 +79,19 @@ void LineGlitchPostEffect::CreatePSO() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter（3つ：Parameters、Transform、Texture）
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	// RootParameter（2つ：Parameters、Texture）
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
 	// LineGlitchParameters (b0)
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// Transform (b0) - 頂点シェーダー用
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
-
 	// Texture (t0)
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -123,7 +122,7 @@ void LineGlitchPostEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定
+	// InputLayout設定（位置とUV座標のみ）
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -149,7 +148,7 @@ void LineGlitchPostEffect::CreatePSO() {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// ライングリッチ用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"resources/Shader/LineGlitch/LineGlitch.VS.hlsl", L"vs_6_0");
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
 	pixelShaderBlob_ = CompileShader(L"resources/Shader/LineGlitch/LineGlitch.PS.hlsl", L"ps_6_0");
@@ -182,7 +181,7 @@ void LineGlitchPostEffect::CreatePSO() {
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create Line Glitch PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create Line Glitch PSO (OffscreenTriangle version)!!\n");
 }
 
 void LineGlitchPostEffect::CreateParameterBuffer() {
@@ -201,7 +200,7 @@ void LineGlitchPostEffect::CreateParameterBuffer() {
 	// 初期データを設定
 	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create LineGlitch parameter buffer (Sprite version)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create LineGlitch parameter buffer (OffscreenTriangle version)!!\n");
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> LineGlitchPostEffect::CompileShader(
@@ -265,11 +264,11 @@ void LineGlitchPostEffect::SetNoiseInterval(float interval) {
 
 void LineGlitchPostEffect::ImGui() {
 #ifdef _DEBUG
-
 	if (ImGui::TreeNode(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
+		ImGui::Text("Render Method: OffscreenTriangle");
 
 		if (isEnabled_) {
 			// プリセット選択
@@ -313,6 +312,5 @@ void LineGlitchPostEffect::ImGui() {
 
 		ImGui::TreePop();
 	}
-
 #endif
 }

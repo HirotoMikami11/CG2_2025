@@ -6,12 +6,13 @@
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "OffscreenRenderer/PostEffect/PostEffect.h"
-#include "Objects/Sprite/Sprite.h"
+#include "OffscreenRenderer/OffscreenTriangle/OffscreenTriangle.h"
 
 /// <summary>
 /// ポストプロセスエフェクトチェーン管理クラス
 /// 複数のエフェクトを順番に適用する
 /// 自動深度テクスチャ判定機能付き
+/// OffscreenTriangle使用版
 /// </summary>
 class PostProcessChain {
 public:
@@ -134,8 +135,8 @@ private:
 	DescriptorHeapManager::DescriptorHandle intermediateSRVHandles_[2];
 	DescriptorHeapManager::DescriptorHandle intermediateRTVHandles_[2];
 
-	// エフェクト描画用Sprite
-	std::unique_ptr<Sprite> effectSprite_;
+	// エフェクト描画用OffscreenTriangle（Sprite置き換え）
+	std::unique_ptr<OffscreenTriangle> offscreenTriangle_;
 
 	// 初期化フラグ
 	bool isInitialized_ = false;

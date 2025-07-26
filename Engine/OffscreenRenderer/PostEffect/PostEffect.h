@@ -3,10 +3,12 @@
 #include <wrl.h>
 #include <string>
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
+#include "OffscreenRenderer/OffscreenTriangle/OffscreenTriangle.h"
 
 /// <summary>
 /// ポストエフェクトの基底クラス
 /// 自動深度テクスチャ判定機能付き
+/// OffscreenTriangle使用版
 /// </summary>
 class PostEffect {
 public:
@@ -32,8 +34,8 @@ public:
 	/// </summary>
 	/// <param name="inputSRV">入力テクスチャのSRV</param>
 	/// <param name="outputRTV">出力先のRTV</param>
-	/// <param name="renderSprite">描画用スプライト</param>
-	virtual void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, class Sprite* renderSprite) = 0;
+	/// <param name="renderTriangle">描画用三角形</param>
+	virtual void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) = 0;
 
 	/// <summary>
 	/// エフェクトを適用（深度テクスチャ版）
@@ -43,15 +45,14 @@ public:
 	/// <param name="inputSRV">入力カラーテクスチャのSRV</param>
 	/// <param name="depthSRV">深度テクスチャのSRV</param>
 	/// <param name="outputRTV">出力先のRTV</param>
-	/// <param name="renderSprite">描画用スプライト</param>
+	/// <param name="renderTriangle">描画用三角形</param>
 	virtual void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV,
-		D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, 
+		D3D12_GPU_DESCRIPTOR_HANDLE depthSRV,
 		D3D12_CPU_DESCRIPTOR_HANDLE outputRTV,
-		class Sprite* renderSprite) {
+		OffscreenTriangle* renderTriangle) {
 
 		// デフォルト実装：通常のApplyを呼ぶ（深度テクスチャは無視）
-		Apply(inputSRV, outputRTV, renderSprite);
-	
+		Apply(inputSRV, outputRTV, renderTriangle);
 	}
 
 	/// <summary>

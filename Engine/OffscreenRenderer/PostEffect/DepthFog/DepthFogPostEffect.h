@@ -1,11 +1,10 @@
 #pragma once
 #include "OffscreenRenderer/PostEffect/PostEffect.h"
-#include "Objects/Sprite/Sprite.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// 深度フォグポストエフェクト
+/// 深度フォグポストエフェクト（OffscreenTriangle使用版）
 /// </summary>
 class DepthFogPostEffect : public PostEffect {
 public:
@@ -39,7 +38,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon) override;
 	void Finalize() override;
 	void Update(float deltaTime) override;
-	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) override;
+	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) override;
 
 	/// <summary>
 	/// 深度テクスチャも受け取る専用Apply
@@ -47,15 +46,16 @@ public:
 	/// <param name="inputSRV">入力カラーテクスチャのSRV</param>
 	/// <param name="depthSRV">深度テクスチャのSRV</param>
 	/// <param name="outputRTV">出力先のRTV</param>
-	/// <param name="renderSprite">描画用スプライト</param>
-	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite);
+	/// <param name="renderTriangle">描画用三角形</param>
+	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle);
 
 	bool IsEnabled() const override { return isEnabled_; }
 	void SetEnabled(bool enabled) override { isEnabled_ = enabled; }
 	void ImGui() override;
 	const std::string& GetName() const override { return name_; }
-	// 深度が必要なのでtureでオーバーライド
+	// 深度が必要なのでtrueでオーバーライド
 	bool RequiresDepthTexture() const override { return true; }
+
 	// 固有メソッド
 	void ApplyPreset(EffectPreset preset);
 	void SetFogColor(const Vector4& color);

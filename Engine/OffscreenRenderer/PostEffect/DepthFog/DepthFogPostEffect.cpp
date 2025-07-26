@@ -12,7 +12,7 @@ void DepthFogPostEffect::Initialize(DirectXCommon* dxCommon) {
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "DepthFogPostEffect initialized successfully (Sprite version)!\n");
+	Logger::Log(Logger::GetStream(), "DepthFogPostEffect initialized successfully (OffscreenTriangle version)!\n");
 }
 
 void DepthFogPostEffect::Finalize() {
@@ -23,7 +23,7 @@ void DepthFogPostEffect::Finalize() {
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "DepthFogPostEffect finalized (Sprite version).\n");
+	Logger::Log(Logger::GetStream(), "DepthFogPostEffect finalized (OffscreenTriangle version).\n");
 }
 
 void DepthFogPostEffect::Update(float deltaTime) {
@@ -38,14 +38,14 @@ void DepthFogPostEffect::Update(float deltaTime) {
 	UpdateParameterBuffer();
 }
 
-void DepthFogPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
+void DepthFogPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
 	// 基底クラスのApplyは使用しない（深度テクスチャが必要なため）
 	// 代わりに専用のApplyを使用することを推奨
 	Logger::Log(Logger::GetStream(), "Warning: DepthFogPostEffect requires depth texture. Use Apply with depthSRV parameter.\n");
 }
 
-void DepthFogPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
-	if (!isEnabled_ || !isInitialized_) {
+void DepthFogPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
+	if (!isEnabled_ || !isInitialized_ || !renderTriangle) {
 		return;
 	}
 
@@ -64,8 +64,8 @@ void DepthFogPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_D
 	};
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	// Spriteの新しいDrawWithCustomPSOAndDepth関数を使用して描画
-	renderSprite->DrawWithCustomPSOAndDepth(
+	// OffscreenTriangleの新しいDrawWithCustomPSOAndDepth関数を使用して描画
+	renderTriangle->DrawWithCustomPSOAndDepth(
 		rootSignature_.Get(),
 		pipelineState_.Get(),
 		inputSRV,		// カラーテクスチャ
@@ -94,30 +94,26 @@ void DepthFogPostEffect::CreatePSO() {
 	descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter（4つ：DepthFogParameters、Transform、ColorTexture、DepthTexture）
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+	// RootParameter（3つ：DepthFogParameters、ColorTexture、DepthTexture）
+	// OffscreenTriangleは変換行列を必要としないため、Transformパラメータは削除
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
 	// DepthFogParameters (b0) - PixelShader用
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// Transform (b0) - VertexShader用
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
-
 	// ColorTexture (t0)
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
 
 	// DepthTexture (t1)
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[3].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];
-	rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -148,7 +144,7 @@ void DepthFogPostEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定（normalは削除）
+	// InputLayout設定（位置とUV座標のみ）
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -173,8 +169,8 @@ void DepthFogPostEffect::CreatePSO() {
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-	// 深度フォグ用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"resources/Shader/DepthFog/DepthFog.VS.hlsl", L"vs_6_0");
+	// 深度フォグ用シェーダーをコンパイル 
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
 	pixelShaderBlob_ = CompileShader(L"resources/Shader/DepthFog/DepthFog.PS.hlsl", L"ps_6_0");
@@ -207,7 +203,7 @@ void DepthFogPostEffect::CreatePSO() {
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create DepthFog PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create DepthFog PSO (OffscreenTriangle version)!!\n");
 }
 
 void DepthFogPostEffect::CreateParameterBuffer() {
@@ -226,7 +222,7 @@ void DepthFogPostEffect::CreateParameterBuffer() {
 	// 初期データを設定
 	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create DepthFog parameter buffer (Sprite version)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create DepthFog parameter buffer (OffscreenTriangle version)!!\n");
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> DepthFogPostEffect::CompileShader(
@@ -246,6 +242,7 @@ void DepthFogPostEffect::UpdateParameterBuffer() {
 		*mappedParameters_ = parameters_;
 	}
 }
+
 void DepthFogPostEffect::ApplyPreset(EffectPreset preset) {
 	switch (preset) {
 	case EffectPreset::NONE:
@@ -302,6 +299,7 @@ void DepthFogPostEffect::ImGui() {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
+		ImGui::Text("Render Method: OffscreenTriangle");
 
 		if (isEnabled_) {
 			// プリセット選択

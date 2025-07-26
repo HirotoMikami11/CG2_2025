@@ -1,22 +1,21 @@
 #pragma once
 #include "OffscreenRenderer/PostEffect/PostEffect.h"
-#include "Objects/Sprite/Sprite.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// RGBシフトのグリッチエフェクト（Sprite使用版）
+/// RGBシフトポストエフェクト（OffscreenTriangle使用版）
 /// </summary>
 class RGBShiftPostEffect : public PostEffect {
 public:
 	/// <summary>
 	/// RGBシフト専用のパラメータ
 	/// </summary>
-	struct GlitchParameters {
-		float rgbShiftStrength = 1.0f;		// RGBシフトの強度 (0.0f～10.0f)
+	struct RGBShiftParameters {
+		float rgbShiftStrength = 1.0f;		// RGBシフトの強度
 		float time = 0.0f;					// 時間（アニメーション用）
 		float unused1 = 0.0f;				// パディング
-		float unused2 = 0.0f;				// パディング（16バイト境界）
+		float unused2 = 0.0f;				// パディング（16バイト境界合わせ）
 	};
 
 	/// <summary>
@@ -30,14 +29,14 @@ public:
 	};
 
 public:
-	RGBShiftPostEffect() { name_ = "RGBShift Effect"; }
+	RGBShiftPostEffect() { name_ = "RGB Shift Effect"; }
 	~RGBShiftPostEffect() = default;
 
 	// PostEffect インターフェース実装
 	void Initialize(DirectXCommon* dxCommon) override;
 	void Finalize() override;
 	void Update(float deltaTime) override;
-	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) override;
+	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) override;
 	bool IsEnabled() const override { return isEnabled_; }
 	void SetEnabled(bool enabled) override { isEnabled_ = enabled; }
 	void ImGui() override;
@@ -46,6 +45,7 @@ public:
 	// 固有メソッド
 	void ApplyPreset(EffectPreset preset);
 	void SetRGBShiftStrength(float strength);
+	float GetRGBShiftStrength() const { return parameters_.rgbShiftStrength; }
 
 private:
 	void CreatePSO();
@@ -58,9 +58,9 @@ private:
 	bool isInitialized_ = false;
 
 	// RGBシフトパラメータ
-	GlitchParameters parameters_;
+	RGBShiftParameters parameters_;
 
-	// グリッチエフェクト用PSO
+	// RGBシフトエフェクト用PSO
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState_;
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
@@ -68,7 +68,7 @@ private:
 
 	// バッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> parameterBuffer_;
-	GlitchParameters* mappedParameters_ = nullptr;
+	RGBShiftParameters* mappedParameters_ = nullptr;
 
 	// アニメーション用
 	float animationSpeed_ = 1.0f;

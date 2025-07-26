@@ -9,18 +9,21 @@
 #include "BaseSystem/Logger/Logger.h"
 #include "MyMath/MyFunction.h"
 
-#include "Objects/Sprite/Sprite.h"				// Spriteクラスを使用
+#include "OffscreenRenderer/OffscreenTriangle/OffscreenTriangle.h"				// OffscreenTriangleクラスを使用
 #include "OffscreenRenderer/PostProcessChain.h"	// ポストプロセスチェーン
 
 #include "OffscreenRenderer/PostEffect/RGBShift/RGBShiftPostEffect.h"	// RGBシフトエフェクト
-#include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
 #include "OffscreenRenderer/PostEffect/LineGlitch/LineGlitchPostEffect.h"	// ラインズラシ
-#include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"	// 深度フォグエフェクト
+#include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
+
 #include "OffscreenRenderer/PostEffect/DepthOfField/DepthOfFieldPostEffect.h"	// 深度ぼかしエフェクト
+#include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"	// 深度フォグエフェクト
+
 
 /// <summary>
 /// オフスクリーンレンダリングを管理するクラス
 /// ポストプロセスチェーンで複数エフェクトの重ね掛けできる
+/// OffscreenTriangle使用版（Sprite脱却）
 /// </summary>
 class OffscreenRenderer {
 public:
@@ -58,14 +61,8 @@ public:
 
 	/// <summary>
 	/// オフスクリーンテクスチャを描画（ポストプロセスチェーン対応）
-	/// 通常のUI用Spriteとは異なる、オフスクリーン専用の描画処理
 	/// ポストプロセスチェーンを通して複数エフェクトを適用
-	/// </summary>
-	/// <param name="x">描画位置X</param>
-	/// <param name="y">描画位置Y</param>
-	/// <param name="width">描画幅</param>
-	/// <param name="height">描画高さ</param>
-	void DrawOffscreenTexture(float x = 0.0f, float y = 0.0f, float width = GraphicsConfig::kClientWidth, float height = GraphicsConfig::kClientHeight);
+	void DrawOffscreenTexture();
 
 	/// <summary>
 	/// オフスクリーンテクスチャのハンドルを取得
@@ -90,11 +87,18 @@ public:
 	/// </summary>
 	void ImGui();
 
+
 	/// <summary>
-	/// グリッチエフェクトを取得（PostProcessChain版）
+	/// RGBShiftを取得
 	/// </summary>
 	/// <returns>RGBシフトポストエフェクトのポインタ</returns>
-	RGBShiftPostEffect* GetGlitchEffect() { return RGBShiftEffect_; }
+	RGBShiftPostEffect* GetRGBShiftEffect() { return RGBShiftEffect_; }
+
+	/// <summary>
+	/// ラインずらしを取得
+	/// </summary>
+	/// <returns>ラインずらしのポインタ</returns>
+	LineGlitchPostEffect* GetLineGlitchEffect() { return lineGlitchEffect_; }
 
 	/// <summary>
 	/// グレースケールエフェクトを取得
@@ -103,16 +107,17 @@ public:
 	GrayscalePostEffect* GetGrayscaleEffect() { return grayscaleEffect_; }
 
 	/// <summary>
+	/// 深度ぼかしエフェクトを取得
+	/// </summary>
+	/// <returns>深度ぼかしポストエフェクトのポインタ</returns>
+	DepthOfFieldPostEffect* GetDepthOfFieldEffect() { return depthOfFieldEffect_; }
+
+	/// <summary>
 	/// 深度フォグエフェクトを取得
 	/// </summary>
 	/// <returns>深度フォグポストエフェクトのポインタ</returns>
 	DepthFogPostEffect* GetDepthFogEffect() { return depthFogEffect_; }
 
-	/// <summary>
-	/// 深度ぼかしエフェクトを取得
-	/// </summary>
-	/// <returns>深度ぼかしポストエフェクトのポインタ</returns>
-	DepthOfFieldPostEffect* GetDepthOfFieldEffect() { return depthOfFieldEffect_; }
 
 	/// <summary>
 	/// ポストプロセスチェーンを取得
@@ -121,10 +126,10 @@ public:
 	PostProcessChain* GetPostProcessChain() { return postProcessChain_.get(); }
 
 	/// <summary>
-	/// オフスクリーン用Spriteを取得（デバッグ用）
+	/// オフスクリーン用OffscreenTriangleを取得（デバッグ用）
 	/// </summary>
-	/// <returns>オフスクリーン用Spriteのポインタ</returns>
-	Sprite* GetOffscreenSprite() { return offscreenSprite_.get(); }
+	/// <returns>オフスクリーン用OffscreenTriangleのポインタ</returns>
+	OffscreenTriangle* GetOffscreenTriangle() { return offscreenTriangle_.get(); }
 
 private:
 	/// <summary>
@@ -139,9 +144,9 @@ private:
 	void CreatePSO();
 
 	/// <summary>
-	/// オフスクリーン描画用のSpriteを初期化
+	/// オフスクリーン描画用のOffscreenTriangleを初期化
 	/// </summary>
-	void InitializeOffscreenSprite();
+	void InitializeOffscreenTriangle();
 
 private:
 	// DirectXCommonへの参照
@@ -168,12 +173,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> offscreenRootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> offscreenPipelineState_;
 
-	// オフスクリーン描画専用Sprite（UI用Spriteとは役割が異なる）
-	std::unique_ptr<Sprite> offscreenSprite_;
+	// オフスクリーン描画専用OffscreenTriangle（Sprite置き換え）
+	std::unique_ptr<OffscreenTriangle> offscreenTriangle_;
 
 	// バリア、ビューポート
 	D3D12_RESOURCE_BARRIER barrier_{};
-	D3D12_RESOURCE_BARRIER depthBarrier_{};  
+	D3D12_RESOURCE_BARRIER depthBarrier_{};
 	D3D12_VIEWPORT viewport_{};
 	D3D12_RECT scissorRect_{};
 
@@ -182,8 +187,9 @@ private:
 
 	// 個別エフェクトへの参照（設定用）
 	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
-	GrayscalePostEffect* grayscaleEffect_ = nullptr;
 	LineGlitchPostEffect* lineGlitchEffect_ = nullptr;
+	GrayscalePostEffect* grayscaleEffect_ = nullptr;
+
 	DepthFogPostEffect* depthFogEffect_ = nullptr;
 	DepthOfFieldPostEffect* depthOfFieldEffect_ = nullptr;
 };

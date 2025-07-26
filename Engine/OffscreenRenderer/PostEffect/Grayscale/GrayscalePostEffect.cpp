@@ -12,7 +12,7 @@ void GrayscalePostEffect::Initialize(DirectXCommon* dxCommon) {
 
 	isInitialized_ = true;
 
-	Logger::Log(Logger::GetStream(), "GrayscalePostEffect initialized successfully (Sprite version)!\n");
+	Logger::Log(Logger::GetStream(), "GrayscalePostEffect initialized successfully (OffscreenTriangle version)!\n");
 }
 
 void GrayscalePostEffect::Finalize() {
@@ -23,7 +23,7 @@ void GrayscalePostEffect::Finalize() {
 	}
 
 	isInitialized_ = false;
-	Logger::Log(Logger::GetStream(), "GrayscalePostEffect finalized (Sprite version).\n");
+	Logger::Log(Logger::GetStream(), "GrayscalePostEffect finalized (OffscreenTriangle version).\n");
 }
 
 void GrayscalePostEffect::Update(float deltaTime) {
@@ -38,7 +38,11 @@ void GrayscalePostEffect::Update(float deltaTime) {
 	UpdateParameterBuffer();
 }
 
-void GrayscalePostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) {
+void GrayscalePostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) {
+	if (!isEnabled_ || !isInitialized_ || !renderTriangle) {
+		return;
+	}
+
 	auto commandList = dxCommon_->GetCommandList();
 
 	// レンダーターゲットを設定
@@ -54,8 +58,8 @@ void GrayscalePostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_
 	};
 	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
-	// Spriteを使用してカスタムPSOで描画
-	renderSprite->DrawWithCustomPSO(
+	// OffscreenTriangleを使用してカスタムPSOで描画
+	renderTriangle->DrawWithCustomPSO(
 		rootSignature_.Get(),
 		pipelineState_.Get(),
 		inputSRV,
@@ -75,24 +79,20 @@ void GrayscalePostEffect::CreatePSO() {
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// RootParameter（3つ：Parameters、Transform、Texture）
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	// RootParameter（2つ：Parameters、Texture）
+	// OffscreenTriangleは変換行列を必要としないため、Transformパラメータは削除
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
 
 	// GrayscaleParameters (b0)
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 
-	// Transform (b0) - 頂点シェーダー用
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rootParameters[1].Descriptor.ShaderRegister = 0;
-
 	// Texture (t0)
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 	// Sampler
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -123,7 +123,7 @@ void GrayscalePostEffect::CreatePSO() {
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
 	assert(SUCCEEDED(hr));
 
-	// InputLayout設定（normalを削除）
+	// InputLayout設定（位置とUV座標のみ）
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
@@ -148,8 +148,8 @@ void GrayscalePostEffect::CreatePSO() {
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-	// グレースケール用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"resources/Shader/Grayscale/Grayscale.VS.hlsl", L"vs_6_0");
+	// グレースケール用シェーダーをコンパイル 
+	vertexShaderBlob_ = CompileShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"vs_6_0");
 	assert(vertexShaderBlob_ != nullptr);
 
 	pixelShaderBlob_ = CompileShader(L"resources/Shader/Grayscale/Grayscale.PS.hlsl", L"ps_6_0");
@@ -182,7 +182,7 @@ void GrayscalePostEffect::CreatePSO() {
 		IID_PPV_ARGS(&pipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create Grayscale PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create Grayscale PSO (OffscreenTriangle version)!!\n");
 }
 
 void GrayscalePostEffect::CreateParameterBuffer() {
@@ -201,7 +201,7 @@ void GrayscalePostEffect::CreateParameterBuffer() {
 	// 初期データを設定
 	UpdateParameterBuffer();
 
-	Logger::Log(Logger::GetStream(), "Complete create Grayscale parameter buffer (Sprite version)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create Grayscale parameter buffer (OffscreenTriangle version)!!\n");
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> GrayscalePostEffect::CompileShader(
@@ -258,6 +258,7 @@ void GrayscalePostEffect::ImGui() {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
+		ImGui::Text("Render Method: OffscreenTriangle");
 
 		if (isEnabled_) {
 			// プリセット選択
@@ -293,6 +294,5 @@ void GrayscalePostEffect::ImGui() {
 
 		ImGui::TreePop();
 	}
-
 #endif
 }

@@ -6,12 +6,6 @@ Texture2D<float32_t4> gColorTexture : register(t0); // カラーテクスチャ
 Texture2D<float32_t> gDepthTexture : register(t1); // 深度テクスチャ
 SamplerState gSampler : register(s0);
 
-struct PixelShaderOutput
-{
-    float32_t4 color : SV_TARGET0;
-};
-
-
 // ガウシアンブラーの簡易版
 float32_t4 ApplyGaussianBlur(Texture2D<float32_t4> colorTexture, SamplerState sampler, float2 texcoord, float32_t blurRadius)
 {
@@ -35,8 +29,7 @@ float32_t4 ApplyGaussianBlur(Texture2D<float32_t4> colorTexture, SamplerState sa
             if (sampleCoord.x >= 0.0f && sampleCoord.x <= 1.0f &&
                 sampleCoord.y >= 0.0f && sampleCoord.y <= 1.0f)
             {
-                float32_t4 sampleColor = colorTexture.Sample(
-                sampler, sampleCoord);
+                float32_t4 sampleColor = colorTexture.Sample(sampler, sampleCoord);
                 
                 // ガウシアン重みを計算
                 int weightIndex = max(abs(x), abs(y));
@@ -58,9 +51,9 @@ float32_t4 ApplyGaussianBlur(Texture2D<float32_t4> colorTexture, SamplerState sa
     return result;
 }
 
-PixelShaderOutput main(VertexShaderOutput input)
+FullscreenPixelOutput main(FullscreenVertexOutput input)
 {
-    PixelShaderOutput output;
+    FullscreenPixelOutput output;
     
     // 1. カラーテクスチャから元の色を取得
     float32_t4 baseColor = gColorTexture.Sample(gSampler, input.texcoord);

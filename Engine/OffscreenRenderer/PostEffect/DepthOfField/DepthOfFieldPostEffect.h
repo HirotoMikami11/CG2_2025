@@ -1,11 +1,10 @@
 #pragma once
 #include "OffscreenRenderer/PostEffect/PostEffect.h"
-#include "Objects/Sprite/Sprite.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// 深度被写界深度ポストエフェクト
+/// 深度被写界深度ポストエフェクト（OffscreenTriangle使用版）
 /// </summary>
 class DepthOfFieldPostEffect : public PostEffect {
 public:
@@ -23,11 +22,10 @@ public:
 
 	//カメラから何単位離れた場所にピントを合わせるかがDistance
 	//focusDistanceが10の時、カメラから10離れた先にピントが合う
-	
+
 	//ピントが合ってシャープに見える範囲の幅がRange
 	//focusRangeが10の時、焦点距離(Distance)から+-10の範囲にピントが合い鮮明に見える
-	
-	
+
 	/// <summary>
 	/// エフェクトプリセット
 	/// </summary>
@@ -43,7 +41,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon) override;
 	void Finalize() override;
 	void Update(float deltaTime) override;
-	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite) override;
+	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle) override;
 
 	/// <summary>
 	/// 深度テクスチャも受け取る専用Apply
@@ -51,15 +49,16 @@ public:
 	/// <param name="inputSRV">入力カラーテクスチャのSRV</param>
 	/// <param name="depthSRV">深度テクスチャのSRV</param>
 	/// <param name="outputRTV">出力先のRTV</param>
-	/// <param name="renderSprite">描画用スプライト</param>
-	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, Sprite* renderSprite);
+	/// <param name="renderTriangle">描画用三角形</param>
+	void Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV, D3D12_CPU_DESCRIPTOR_HANDLE outputRTV, OffscreenTriangle* renderTriangle);
 
 	bool IsEnabled() const override { return isEnabled_; }
 	void SetEnabled(bool enabled) override { isEnabled_ = enabled; }
 	void ImGui() override;
 	const std::string& GetName() const override { return name_; }
-	// 深度が必要なのでtureでオーバーライド
+	// 深度が必要なのでtrueでオーバーライド
 	bool RequiresDepthTexture() const override { return true; }
+
 	// 固有メソッド
 	void ApplyPreset(EffectPreset preset);
 	void SetFocusDistance(float distance);
@@ -95,5 +94,4 @@ private:
 
 	// アニメーション用
 	float animationSpeed_ = 1.0f;
-
 };
