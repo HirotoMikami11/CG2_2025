@@ -175,6 +175,12 @@
     <Filter Include="リソース ファイル\Shader\FullscreenTriangle">
       <UniqueIdentifier>{3285d2d3-9ac9-4b09-b4bc-885fd4913733}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\Shader\Vignette">
+      <UniqueIdentifier>{49708c73-3b1a-4356-9623-7e6d5243fcd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\OffScreenRenderer\PostEffect\Vignette">
+      <UniqueIdentifier>{37751160-5f38-46cc-ab72-c6d49befc1e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -357,6 +363,9 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Vignette\VignettePostEffect.cpp">
+      <Filter>Engine\OffScreenRenderer\PostEffect\Vignette</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -397,6 +406,9 @@
     </FxCompile>
     <FxCompile Include="resources\Shader\OffscreenTriangle\FullscreenTriangle.VS.hlsl">
       <Filter>リソース ファイル\Shader\FullscreenTriangle</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shader\Vignette\Vignette.PS.hlsl">
+      <Filter>リソース ファイル\Shader\Vignette</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -598,6 +610,9 @@
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\RGBShift\RGBShiftPostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\RGBShift</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Vignette\VignettePostEffect.h">
+      <Filter>Engine\OffScreenRenderer\PostEffect\Vignette</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\Shader\Grayscale\Grayscale.hlsli">
@@ -626,6 +641,9 @@
     </None>
     <None Include="resources\Shader\OffscreenTriangle\FullscreenTriangle.hlsli">
       <Filter>リソース ファイル\Shader\FullscreenTriangle</Filter>
+    </None>
+    <None Include="resources\Shader\Vignette\Vignette.hlsli">
+      <Filter>リソース ファイル\Shader\Vignette</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -40,18 +40,22 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	///ここにエフェクトを追加していく
 	///
 
-	// グリッチエフェクトを追加
-	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
-	// ライングリッチエフェクトを追加
-	lineGlitchEffect_ = postProcessChain_->AddEffect<LineGlitchPostEffect>();
-	// グレースケールエフェクトを追加
-	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 	// 深度フォグエフェクトを追加
 	depthFogEffect_ = postProcessChain_->AddEffect<DepthFogPostEffect>();
 	depthFogEffect_->SetEnabled(true);
 	// 深度ぼかしエフェクトを追加
 	depthOfFieldEffect_ = postProcessChain_->AddEffect<DepthOfFieldPostEffect>();
 
+
+	// グリッチエフェクトを追加
+	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
+	// ライングリッチエフェクトを追加
+	lineGlitchEffect_ = postProcessChain_->AddEffect<LineGlitchPostEffect>();
+	// グレースケールエフェクトを追加
+	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
+	// ビネットエフェクトを追加
+	vignetteEffect_ = postProcessChain_->AddEffect<VignettePostEffect>();
+	vignetteEffect_->SetEnabled(true);
 
 
 
@@ -75,6 +79,7 @@ void OffscreenRenderer::Finalize() {
 	grayscaleEffect_ = nullptr;
 	depthFogEffect_ = nullptr;
 	RGBShiftEffect_ = nullptr;
+	vignetteEffect_ = nullptr;
 	lineGlitchEffect_ = nullptr;
 	depthOfFieldEffect_ = nullptr;
 

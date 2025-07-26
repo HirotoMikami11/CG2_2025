@@ -15,6 +15,7 @@
 #include "OffscreenRenderer/PostEffect/RGBShift/RGBShiftPostEffect.h"	// RGBシフトエフェクト
 #include "OffscreenRenderer/PostEffect/LineGlitch/LineGlitchPostEffect.h"	// ラインズラシ
 #include "OffscreenRenderer/PostEffect/Grayscale/GrayscalePostEffect.h"	// グレースケールエフェクト
+#include "OffscreenRenderer/PostEffect/Vignette/VignettePostEffect.h"	// ビネットエフェクト
 
 #include "OffscreenRenderer/PostEffect/DepthOfField/DepthOfFieldPostEffect.h"	// 深度ぼかしエフェクト
 #include "OffscreenRenderer/PostEffect/DepthFog/DepthFogPostEffect.h"	// 深度フォグエフェクト
@@ -107,6 +108,12 @@ public:
 	GrayscalePostEffect* GetGrayscaleEffect() { return grayscaleEffect_; }
 
 	/// <summary>
+	/// ビネットエフェクトを取得
+	/// </summary>
+	/// <returns>ビネットポストエフェクトのポインタ</returns>
+	VignettePostEffect* GetVignetteEffect() { return vignetteEffect_; }
+
+	/// <summary>
 	/// 深度ぼかしエフェクトを取得
 	/// </summary>
 	/// <returns>深度ぼかしポストエフェクトのポインタ</returns>
@@ -189,6 +196,7 @@ private:
 	RGBShiftPostEffect* RGBShiftEffect_ = nullptr;
 	LineGlitchPostEffect* lineGlitchEffect_ = nullptr;
 	GrayscalePostEffect* grayscaleEffect_ = nullptr;
+	VignettePostEffect* vignetteEffect_ = nullptr;
 
 	DepthFogPostEffect* depthFogEffect_ = nullptr;
 	DepthOfFieldPostEffect* depthOfFieldEffect_ = nullptr;
