@@ -13,7 +13,7 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 	///モデルの場合は、ファイルパスなどを入れる
 	if (meshType == MeshType::MODEL_OBJ) {
 		//複数オブジェクト対応でデータを読み込む
-		modelDataList_ = LoadObjFileMulti(directoryPath, filename);
+		modelDataList_ = LoadObjFile(directoryPath, filename);
 
 		// 各ModelDataからMeshを作成
 		meshes_.clear();
@@ -62,7 +62,7 @@ bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& fil
 	filePath_ = directoryPath + "/" + filename;
 
 	// 複数オブジェクト対応でOBJファイルを読み込み
-	modelDataList_ = LoadObjFileMulti(directoryPath, filename);
+	modelDataList_ = LoadObjFile(directoryPath, filename);
 
 	// 各ModelDataからMeshを作成
 	meshes_.clear();
@@ -180,7 +180,7 @@ MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPa
 	return materialData;
 }
 
-std::vector<ModelData> Model::LoadObjFileMulti(const std::string& directoryPath, const std::string& filename) {
+std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる変数の宣言
 	std::vector<ModelData> modelDataList;	//構築するModelDataのリスト
 	std::vector<Vector4> positions;			//位置（全オブジェクト共通）

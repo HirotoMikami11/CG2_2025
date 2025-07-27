@@ -12,7 +12,7 @@
 #include "Managers/Texture/TextureManager.h"
 
 /// <summary>
-/// 共有可能なモデルクラス（複数メッシュ対応）
+/// 共有可能なモデルクラス
 /// </summary>
 class Model
 {
@@ -54,6 +54,7 @@ public:
 
 	// メッシュ関連のアクセサ
 	size_t GetMeshCount() const { return meshes_.size(); }
+
 	Mesh& GetMesh(size_t index = 0) {
 		if (index >= meshes_.size()) {
 			Logger::Log(Logger::GetStream(), std::format("Mesh index {} out of range (max: {})\n", index, meshes_.size() - 1));
@@ -61,6 +62,7 @@ public:
 		}
 		return meshes_[index];
 	}
+	
 	const Mesh& GetMesh(size_t index = 0) const {
 		if (index >= meshes_.size()) {
 			Logger::Log(Logger::GetStream(), std::format("Mesh index {} out of range (max: {})\n", index, meshes_.size() - 1));
@@ -121,7 +123,7 @@ private:
 	/// <summary>
 	/// OBJファイルを読み込む
 	/// </summary>
-	std::vector<ModelData> LoadObjFileMulti(const std::string& directoryPath, const std::string& filename);
+	std::vector<ModelData> LoadObjFile(const std::string& directoryPath, const std::string& filename);
 
 
 	/// <summary>

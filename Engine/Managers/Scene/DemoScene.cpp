@@ -37,7 +37,7 @@ void DemoScene::LoadResources() {
 	//マルチメッシュ
 	modelManager_->LoadModel("resources/Model/MultiMesh", "multiMesh.obj", "model_MultiMesh");
 	//マルチマテリアル
-	//modelManager_->LoadModel("resources/Model/MultiMaterial", "multiMaterial.obj", "model_MultiMaterial");
+	modelManager_->LoadModel("resources/Model/MultiMaterial", "multiMaterial.obj", "model_MultiMaterial");
 
 
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
@@ -146,15 +146,15 @@ void DemoScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	///								MultiMaterial								///
 	///*-----------------------------------------------------------------------*///
-	//Vector3Transform transformMultiMaterial{
-	//	{1.0f, 1.0f, 1.0f},
-	//	{0.0f, 3.0f, 0.0f},
-	//	{4.0f, -1.2f, 0.0f}
-	//};
+	Vector3Transform transformMultiMaterial{
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 3.0f, 0.0f},
+		{4.0f, -1.2f, 0.0f}
+	};
 
-	//modelMultiMaterial_ = std::make_unique<Model3D>();
-	//modelMultiMaterial_->Initialize(directXCommon_, "model_MultiMaterial");
-	//modelMultiMaterial_->SetTransform(transformMultiMaterial);
+	modelMultiMaterial_ = std::make_unique<Model3D>();
+	modelMultiMaterial_->Initialize(directXCommon_, "model_MultiMaterial");
+	modelMultiMaterial_->SetTransform(transformMultiMaterial);
 
 
 	///*-----------------------------------------------------------------------*///
@@ -227,6 +227,8 @@ void DemoScene::UpdateGameObjects() {
 
 	modelMultiMesh_->Update(viewProjectionMatrix);
 
+	modelMultiMaterial_->Update(viewProjectionMatrix);
+
 	// グリッド線更新
 	gridLine_->Update(viewProjectionMatrix);
 }
@@ -261,6 +263,7 @@ void DemoScene::DrawGameObjects() {
 	modelTeapot_->Draw(directionalLight_);
 
 	modelMultiMesh_->Draw(directionalLight_);
+	modelMultiMaterial_->Draw(directionalLight_);
 }
 
 void DemoScene::OnEnter() {
@@ -316,6 +319,13 @@ void DemoScene::ImGui() {
 	modelMultiMesh_->ImGui();
 
 	ImGui::Spacing();
+	// モデルのImGui
+	ImGui::Text("ModelMultiMaterial");
+	modelMultiMaterial_->ImGui();
+
+	ImGui::Spacing();
+
+
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
