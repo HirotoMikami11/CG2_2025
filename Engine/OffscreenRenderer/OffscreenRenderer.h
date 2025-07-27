@@ -180,7 +180,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> offscreenRootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> offscreenPipelineState_;
 
-	// オフスクリーン描画専用OffscreenTriangle（Sprite置き換え）
+	// オフスクリーン描画専用OffscreenTriangle
 	std::unique_ptr<OffscreenTriangle> offscreenTriangle_;
 
 	// バリア、ビューポート

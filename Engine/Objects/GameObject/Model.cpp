@@ -12,20 +12,35 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 
 	///モデルの場合は、ファイルパスなどを入れる
 	if (meshType == MeshType::MODEL_OBJ) {
-		//データを読み込む
-		modelData_ = LoadObjFile(directoryPath, filename);
-		mesh_.InitializeFromData(directXCommon_, modelData_);
+		//複数オブジェクト対応でデータを読み込む
+		modelDataList_ = LoadObjFileMulti(directoryPath, filename);
+
+		// 各ModelDataからMeshを作成
+		meshes_.clear();
+		for (const auto& modelData : modelDataList_) {
+			Mesh mesh;
+			mesh.InitializeFromData(directXCommon_, modelData);
+			meshes_.push_back(std::move(mesh));
+		}
 
 		// テクスチャファイルパスから画像ファイル名を抽出してタグ名にする
-		if (!modelData_.material.textureFilePath.empty()) {
-			textureTagName_ = GetTextureFileNameFromPath(modelData_.material.textureFilePath);
-			TextureManager::GetInstance()->LoadTexture(modelData_.material.textureFilePath, textureTagName_);
+		// 最初のモデルデータのテクスチャを使用
+		if (!modelDataList_.empty() && !modelDataList_[0].material.textureFilePath.empty()) {
+			textureTagName_ = GetTextureFileNameFromPath(modelDataList_[0].material.textureFilePath);
+			TextureManager::GetInstance()->LoadTexture(modelDataList_[0].material.textureFilePath, textureTagName_);
 		}
 
 		filePath_ = directoryPath + "/" + filename;
 	} else {
 		///モデル以外の場合は、パス入れないで生成
-		mesh_.Initialize(directXCommon_, meshType);
+		Mesh mesh;
+		mesh.Initialize(directXCommon_, meshType);
+		meshes_.clear();
+		meshes_.push_back(std::move(mesh));
+
+		objectNames_.clear();
+		objectNames_.push_back("primitive_" + Mesh::MeshTypeToString(meshType));
+
 		filePath_ = "primitive_" + Mesh::MeshTypeToString(meshType);
 	}
 
@@ -35,8 +50,6 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 
 	// マテリアル用のリソースを作る
 	material_.Initialize(directXCommon_);
-	//ライト付きオブジェクト用設定
-	//material_.SetLitObjectSettings();
 }
 
 bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& filename, DirectXCommon* dxCommon) {
@@ -48,27 +61,33 @@ bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& fil
 	directXCommon_ = dxCommon;
 	filePath_ = directoryPath + "/" + filename;
 
-	// OBJファイルを読み込み
-	modelData_ = LoadObjFile(directoryPath, filename);
+	// 複数オブジェクト対応でOBJファイルを読み込み
+	modelDataList_ = LoadObjFileMulti(directoryPath, filename);
 
-	// メッシュを作成
-	mesh_.InitializeFromData(dxCommon, modelData_);
+	// 各ModelDataからMeshを作成
+	meshes_.clear();
+	for (const auto& modelData : modelDataList_) {
+		Mesh mesh;
+		mesh.InitializeFromData(dxCommon, modelData);
+		meshes_.push_back(std::move(mesh));
+	}
 
 	// マテリアルを初期化
 	material_.Initialize(dxCommon);
 
 	// テクスチャファイルパスから画像ファイル名を抽出してタグ名にする
-	if (!modelData_.material.textureFilePath.empty()) {
-		textureTagName_ = GetTextureFileNameFromPath(modelData_.material.textureFilePath);
+	// 最初のモデルデータのテクスチャを使用
+	if (!modelDataList_.empty() && !modelDataList_[0].material.textureFilePath.empty()) {
+		textureTagName_ = GetTextureFileNameFromPath(modelDataList_[0].material.textureFilePath);
 
 		TextureManager* textureManager = TextureManager::GetInstance();
-		if (!textureManager->LoadTexture(modelData_.material.textureFilePath, textureTagName_)) {
+		if (!textureManager->LoadTexture(modelDataList_[0].material.textureFilePath, textureTagName_)) {
 			Logger::Log(Logger::GetStream(), std::format("Failed to load texture for model: {}\n", filename));
 			textureTagName_.clear();
 		}
 	}
 
-	Logger::Log(Logger::GetStream(), std::format("Model loaded from OBJ: {}\n", filename));
+	Logger::Log(Logger::GetStream(), std::format("Model loaded from OBJ: {} ({} meshes)\n", filename, meshes_.size()));
 	return true;
 }
 
@@ -76,7 +95,14 @@ bool Model::LoadFromPrimitive(MeshType meshType, DirectXCommon* dxCommon) {
 	directXCommon_ = dxCommon;
 
 	// プリミティブメッシュを作成
-	mesh_.Initialize(dxCommon, meshType);
+	Mesh mesh;
+	mesh.Initialize(dxCommon, meshType);
+
+	meshes_.clear();
+	meshes_.push_back(std::move(mesh));
+
+	objectNames_.clear();
+	objectNames_.push_back("primitive_" + Mesh::MeshTypeToString(meshType));
 
 	// マテリアルを初期化
 	material_.Initialize(dxCommon);
@@ -90,11 +116,12 @@ bool Model::LoadFromPrimitive(MeshType meshType, DirectXCommon* dxCommon) {
 }
 
 void Model::Unload() {
-	mesh_ = Mesh(); // メッシュをリセット
+	meshes_.clear(); // 全メッシュをクリア
+	objectNames_.clear();
 	material_ = Material(); // マテリアルをリセット
 	textureTagName_.clear();
 	filePath_.clear();
-	modelData_ = ModelData(); // モデルデータをリセット
+	modelDataList_.clear(); // モデルデータリストをクリア
 }
 
 std::string Model::GetFileNameWithoutExtension(const std::string& filename) {
@@ -125,7 +152,6 @@ std::string Model::GetTextureFileNameFromPath(const std::string& texturePath) {
 	// 拡張子を除去
 	return GetFileNameWithoutExtension(fileName);
 }
-
 MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
 {
 	//1.中で必要となる変数の宣言
@@ -154,78 +180,120 @@ MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPa
 	return materialData;
 }
 
-ModelData Model::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+std::vector<ModelData> Model::LoadObjFileMulti(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる変数の宣言
-	ModelData modelData;				//構築するModelData
-	std::vector<Vector4> positions;		//位置
-	std::vector<Vector3> normals;		//法線
-	std::vector<Vector2> texcoords;		//テクスチャ座標
-	std::string line;					//ファイルから読んだ1行を格納するもの
+	std::vector<ModelData> modelDataList;	//構築するModelDataのリスト
+	std::vector<Vector4> positions;			//位置（全オブジェクト共通）
+	std::vector<Vector3> normals;			//法線（全オブジェクト共通）
+	std::vector<Vector2> texcoords;			//テクスチャ座標（全オブジェクト共通）
+
+	std::string line;						//ファイルから読んだ1行を格納するもの
+
+	MaterialDataModel sharedMaterial;		//共有マテリアル情報
+	ModelData currentModel;					//現在処理中のモデル
+	std::string currentObjectName = "default"; // 現在のオブジェクト名
+	bool hasCurrentObject = false;			//現在処理中のオブジェクトがあるか
+	bool hasExplicitObjects = false;		//明示的にオブジェクト名が指定されているか
 
 	//2.ファイルを開く
-	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
-	assert(file.is_open());//開けなかった場合は停止する
+	std::ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());
 
 	//3.実際にファイルを読み、ModelDataを構築していく
 	while (std::getline(file, line)) {
 		std::string identifier;
 		std::istringstream s(line);
-		s >> identifier;	//先頭の識別子を読む
+		s >> identifier;
 
 		if (identifier == "v") {		//識別子がvの場合	頂点位置
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
-			position.w = 1.0f;	//w成分は1.0fで初期化
-			positions.push_back(position);//位置を格納する
+			position.w = 1.0f;
+			positions.push_back(position);
 
 		} else if (identifier == "vt") {//識別子がvtの場合	頂点テクスチャ
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
-			texcoords.push_back(texcoord);//テクスチャ座標を格納する
+			texcoords.push_back(texcoord);
 
 		} else if (identifier == "vn") {//識別子がvnの場合	頂点法線
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
-			normals.push_back(normal);//法線を格納する
+			normals.push_back(normal);
+
+		} else if (identifier == "o") {	//識別子がoの場合	オブジェクト名
+			hasExplicitObjects = true; // 明示的なオブジェクト定義があることを記録
+
+			// 前のオブジェクトがあれば保存
+			if (hasCurrentObject && !currentModel.vertices.empty()) {
+				currentModel.material = sharedMaterial;
+				modelDataList.push_back(currentModel);
+				objectNames_.push_back(currentObjectName);
+			}
+
+			// 新しいオブジェクトを開始
+			s >> currentObjectName;
+			currentModel = ModelData(); // リセット
+			hasCurrentObject = true;
 
 		} else if (identifier == "f") {	//識別子がfの場合	面
+			// オブジェクト名が指定されていない場合はデフォルトオブジェクトを作成
+			if (!hasCurrentObject) {
+				hasCurrentObject = true;
+				// 明示的なオブジェクト定義がない場合は "default" を使用
+				currentObjectName = hasExplicitObjects ? "unnamed" : "default";
+			}
+
 			//面は三角形限定
-			VertexData triangle[3];//三角形の頂点データを格納する
+			VertexData triangle[3];
 
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				std::string vertexDefinition;
-				s >> vertexDefinition;	//頂点の情報を読む
-				//頂点の要素へのindexは「位置/UV/法線」で格納されているので、分解してindexを取得する
+				s >> vertexDefinition;
+
 				std::stringstream v(vertexDefinition);
 				uint32_t elementIndices[3];
 				for (int32_t element = 0; element < 3; ++element) {
 					std::string index;
-					std::getline(v, index, '/');// '/'区切りでインデックスを読んでいく
+					std::getline(v, index, '/');
 					elementIndices[element] = std::stoi(index);
 				}
 
 				//要素へのindexから、実際の要素の値を取得して頂点を構成する
-				Vector4 position = positions[elementIndices[0] - 1];	//位置は1始まりなので-1する
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];	//テクスチャ座標も-1
-				Vector3 normal = normals[elementIndices[2] - 1];		//法線も-1
+				Vector4 position = positions[elementIndices[0] - 1];
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				Vector3 normal = normals[elementIndices[2] - 1];
 
 				//右手座標系から左手座標系に変換する
 				position.x *= -1.0f;
 				normal.x *= -1.0f;
-				texcoord.y = 1.0f - texcoord.y; // Y軸反転
-				triangle[faceVertex] = { position, texcoord, normal };//頂点データを構成する
+				texcoord.y = 1.0f - texcoord.y;
+				triangle[faceVertex] = { position, texcoord, normal };
 			}
-			modelData.vertices.push_back(triangle[2]);//頂点データを格納する
-			modelData.vertices.push_back(triangle[1]);//頂点データを格納する
-			modelData.vertices.push_back(triangle[0]);//頂点データを格納する
+			currentModel.vertices.push_back(triangle[2]);
+			currentModel.vertices.push_back(triangle[1]);
+			currentModel.vertices.push_back(triangle[0]);
+
 		} else if (identifier == "mtllib") {
 			//materialTemplateLibraryファイルの名前を取得する
 			std::string materialFilename;
 			s >> materialFilename;
-			//objファイルとmtlファイルは同じディレクトリにあるので、ディレクトリ・ファイル名を渡す
-			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+			sharedMaterial = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
 	}
-	//4.ModelDataを返す
-	return modelData;
+
+	// 最後のオブジェクトを保存
+	if (hasCurrentObject && !currentModel.vertices.empty()) {
+		currentModel.material = sharedMaterial;
+		modelDataList.push_back(currentModel);
+		objectNames_.push_back(currentObjectName);
+	}
+
+	Logger::Log(Logger::GetStream(), std::format("Loaded {} objects from {}\n", modelDataList.size(), filename));
+	for (size_t i = 0; i < objectNames_.size(); ++i) {
+		Logger::Log(Logger::GetStream(), std::format("  Object {}: {} ({} vertices)\n",
+			i, objectNames_[i], modelDataList[i].vertices.size()));
+	}
+
+	return modelDataList;
 }

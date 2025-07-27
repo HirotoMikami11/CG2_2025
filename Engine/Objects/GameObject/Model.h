@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <vector>
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "MyMath/MyFunction.h"
@@ -11,7 +12,7 @@
 #include "Managers/Texture/TextureManager.h"
 
 /// <summary>
-/// 共有可能なモデルクラス
+/// 共有可能なモデルクラス（複数メッシュ対応）
 /// </summary>
 class Model
 {
@@ -51,12 +52,30 @@ public:
 	/// </summary>
 	void Unload();
 
-	//非const
+	// メッシュ関連のアクセサ
+	size_t GetMeshCount() const { return meshes_.size(); }
+	Mesh& GetMesh(size_t index = 0) {
+		if (index >= meshes_.size()) {
+			Logger::Log(Logger::GetStream(), std::format("Mesh index {} out of range (max: {})\n", index, meshes_.size() - 1));
+			return meshes_[0]; // フォールバック
+		}
+		return meshes_[index];
+	}
+	const Mesh& GetMesh(size_t index = 0) const {
+		if (index >= meshes_.size()) {
+			Logger::Log(Logger::GetStream(), std::format("Mesh index {} out of range (max: {})\n", index, meshes_.size() - 1));
+			return meshes_[0]; // フォールバック
+		}
+		return meshes_[index];
+	}
+
+	// 全メッシュへのアクセス
+	std::vector<Mesh>& GetMeshes() { return meshes_; }
+	const std::vector<Mesh>& GetMeshes() const { return meshes_; }
+
+	// マテリアル関連（最初のメッシュのマテリアルを返す）
 	Material& GetMaterial() { return material_; }
-	Mesh& GetMesh() { return mesh_; }
-	//const
 	const Material& GetMaterial() const { return material_; }
-	const Mesh& GetMesh() const { return mesh_; }
 
 	// テクスチャタグ名の設定と取得
 	void SetTextureTagName(const std::string& tagName) { textureTagName_ = tagName; }
@@ -67,7 +86,7 @@ public:
 	/// モデルが有効かどうか
 	/// </summary>
 	/// <returns>有効かどうか</returns>
-	bool IsValid() const { return mesh_.GetVertexCount() > 0; }
+	bool IsValid() const { return !meshes_.empty() && meshes_[0].GetVertexCount() > 0; }
 
 	/// <summary>
 	/// ファイルパスを取得
@@ -75,20 +94,25 @@ public:
 	/// <returns>ファイルパス</returns>
 	const std::string& GetFilePath() const { return filePath_; }
 
+	/// <summary>
+	/// オブジェクト名のリストを取得
+	/// </summary>
+	/// <returns>オブジェクト名のリスト</returns>
+	const std::vector<std::string>& GetObjectNames() const { return objectNames_; }
+
 private:
 	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	///material（bool型でlight用のセットか、defaultかどうかをinitilizeで決める。通常はdefault）
-	//実際のマテリアル
+	// マテリアル（全メッシュで共有）
 	Material material_;
 
-	///mesh(meeshTypeを引数に入れたらinitilizeでcreateTriangleできるようにする（他の図形でも）)
-	//実際のメッシュ
-	Mesh mesh_;
+	// 複数メッシュ対応
+	std::vector<Mesh> meshes_;
+	std::vector<std::string> objectNames_; // 各メッシュのオブジェクト名
 
-	//ロードしたデータを保持しておく、material meshに渡すためのもの
-	ModelData modelData_;
+	// ロードしたデータを保持しておく
+	std::vector<ModelData> modelDataList_;
 	// テクスチャのタグ名を保存
 	std::string textureTagName_;
 	// ファイルパス（デバッグ用）
@@ -97,7 +121,8 @@ private:
 	/// <summary>
 	/// OBJファイルを読み込む
 	/// </summary>
-	ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename);
+	std::vector<ModelData> LoadObjFileMulti(const std::string& directoryPath, const std::string& filename);
+
 
 	/// <summary>
 	/// マテリアルファイルを読み込む
