@@ -29,8 +29,9 @@ void DemoScene::LoadResources() {
 
 	//TODO:スザンヌ
 	//modelManager_->LoadModel("resources/Model/Suzanne", "suzanne.obj", "model_Suzanne");
+
 	//バニー
-	//modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");
+	modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");
 	//ティーポット
 	modelManager_->LoadModel("resources/Model/Teapot", "teapot.obj", "model_Teapot");
 
@@ -53,8 +54,8 @@ void DemoScene::Initialize() {
 	///*-----------------------------------------------------------------------*///
 	cameraController_ = CameraController::GetInstance();
 	// 座標と回転を指定して初期化
-	Vector3 initialPosition = { 0.0f, 3.0f, -15.0f };
-	Vector3 initialRotation = { 0.25f, 0.0f, 0.0f };
+	Vector3 initialPosition = { 0.0f, 6.8f, -18.0f };
+	Vector3 initialRotation = { 0.4f, 0.0f, 0.0f };
 	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
 
@@ -63,20 +64,6 @@ void DemoScene::Initialize() {
 }
 
 void DemoScene::InitializeGameObjects() {
-	///*-----------------------------------------------------------------------*///
-	///									三角形									///
-	///*-----------------------------------------------------------------------*///
-	Vector3Transform transformTriangle{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 0.0f, 0.0f},
-		{2.0f, 1.5f, 0.0f}
-	};
-
-	for (int i = 0; i < kMaxTriangleIndex; i++) {
-		triangles_[i] = std::make_unique<Triangle>();
-		triangles_[i]->Initialize(directXCommon_, "triangle", "uvChecker");
-		triangles_[i]->SetTransform(transformTriangle);
-	}
 
 	///*-----------------------------------------------------------------------*///
 	///									球体										///
@@ -90,27 +77,14 @@ void DemoScene::InitializeGameObjects() {
 	sphere_ = std::make_unique<Sphere>();
 	sphere_->Initialize(directXCommon_, "sphere", "monsterBall");
 	sphere_->SetTransform(transformSphere);
-	///*-----------------------------------------------------------------------*///
-	///									平面									///
-	///*-----------------------------------------------------------------------*///
-	Vector3Transform transformPlane{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 0.0f, 0.0f},
-		{-3.0f, 1.0f, 0.0f}
-	};
-
-	plane_ = std::make_unique<Plane>();
-	plane_->Initialize(directXCommon_, "plane", "uvChecker");
-	plane_->SetTransform(transformPlane);
-
 
 	///*-----------------------------------------------------------------------*///
 	///									model									///
 	///*-----------------------------------------------------------------------*///
 	Vector3Transform transformModel{
 		{1.0f, 1.0f, 1.0f},
-		{0.0f, 3.0f, 0.0f},
-		{-2.2f, -1.2f, 0.0f}
+		{0.0f, 3.14f, 0.0f},
+		{0.0f, 1.0f, 2.0f}
 	};
 
 	model_ = std::make_unique<Model3D>();
@@ -122,8 +96,8 @@ void DemoScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	Vector3Transform transformTeapot{
 		{1.0f, 1.0f, 1.0f},
-		{0.0f, 3.0f, 0.0f},
-		{4.0f, -1.2f, 0.0f}
+		{0.0f, 0.0f, 0.0f},
+		{-3.7f, 0.75f, -5.5f}
 	};
 
 	modelTeapot_ = std::make_unique<Model3D>();
@@ -131,12 +105,25 @@ void DemoScene::InitializeGameObjects() {
 	modelTeapot_->SetTransform(transformTeapot);
 
 	///*-----------------------------------------------------------------------*///
-	///								MultiMaterial								///
+	///									Bunny									///
+	///*-----------------------------------------------------------------------*///
+	Vector3Transform transformBunny{
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 3.0f, 0.0f},
+		{3.7f, 0.0f, -5.5f}
+	};
+
+	modelBunny_ = std::make_unique<Model3D>();
+	modelBunny_->Initialize(directXCommon_, "model_Bunny");
+	modelBunny_->SetTransform(transformBunny);
+
+	///*-----------------------------------------------------------------------*///
+	///								MultiMesh									///
 	///*-----------------------------------------------------------------------*///
 	Vector3Transform transformMultiMesh{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 3.0f, 0.0f},
-		{4.0f, -1.2f, 10.0f}
+		{-5.31f, -0.3f, 3.7f}
 	};
 
 	modelMultiMesh_ = std::make_unique<Model3D>();
@@ -149,7 +136,7 @@ void DemoScene::InitializeGameObjects() {
 	Vector3Transform transformMultiMaterial{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 3.0f, 0.0f},
-		{-4.0f, -1.2f, 10.0f}
+		{2.23f, -0.3f, 3.7f}
 	};
 
 	modelMultiMaterial_ = std::make_unique<Model3D>();
@@ -197,8 +184,7 @@ void DemoScene::Update() {
 }
 
 void DemoScene::UpdateGameObjects() {
-	// 三角形を回転させる
-	triangles_[0]->AddRotation({ 0.0f, 0.02f, 0.0f });
+
 
 	// 球体を回転させる
 	sphere_->AddRotation({ 0.0f, 0.015f, 0.0f });
@@ -207,26 +193,21 @@ void DemoScene::UpdateGameObjects() {
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
 
-	// 三角形の更新
-	for (int i = 0; i < kMaxTriangleIndex; i++) {
-		triangles_[i]->Update(viewProjectionMatrix);
-	}
+
 
 	// 球体の更新
 	sphere_->Update(viewProjectionMatrix);
 	// スプライトの更新
 	sprite_->Update(viewProjectionMatrixSprite);
-
-	//平面の更新
-	plane_->Update(viewProjectionMatrix);
-
 	// モデルの更新
 	model_->Update(viewProjectionMatrix);
 	// ティーポットモデルの更新
 	modelTeapot_->Update(viewProjectionMatrix);
-
+	//バニーモデルの更新
+	modelBunny_->Update(viewProjectionMatrix);
+	//マルチメッシュモデルの更新
 	modelMultiMesh_->Update(viewProjectionMatrix);
-
+	//マルチマテリアルモデルの更新
 	modelMultiMaterial_->Update(viewProjectionMatrix);
 
 	// グリッド線更新
@@ -249,20 +230,15 @@ void DemoScene::DrawBackBuffer() {
 void DemoScene::DrawGameObjects() {
 	// 球体の描画
 	sphere_->Draw(directionalLight_);
-
-	// 三角形の描画
-	for (int i = 0; i < kMaxTriangleIndex; i++) {
-		triangles_[i]->Draw(directionalLight_);
-	}
-	//平面の描画
-	plane_->Draw(directionalLight_);
-
 	// モデルの描画
 	model_->Draw(directionalLight_);
 	//ティーポットモデルの描画
 	modelTeapot_->Draw(directionalLight_);
-
+	//バニーモデルの描画
+	modelBunny_->Draw(directionalLight_);
+	//マルチメッシュモデルの描画
 	modelMultiMesh_->Draw(directionalLight_);
+	//マルチマテリアルモデルの描画
 	modelMultiMaterial_->Draw(directionalLight_);
 }
 
@@ -277,55 +253,42 @@ void DemoScene::OnExit() {
 
 void DemoScene::ImGui() {
 #ifdef _DEBUG
-	// 三角形のImGui
-	ImGui::Text("Triangle");
-	for (int i = 0; i < kMaxTriangleIndex; i++) {
-		ImGui::PushID(i);
-		triangles_[i]->ImGui();
-		ImGui::PopID();
-	}
-
-	ImGui::Spacing();
 
 	// 球体のImGui
 	ImGui::Text("Sphere");
 	sphere_->ImGui();
 
 	ImGui::Spacing();
-
 	// スプライトのImGui
 	ImGui::Text("Sprite");
 	sprite_->ImGui();
 
 	ImGui::Spacing();
-
-	// 系mねのImGui
-	ImGui::Text("Plane");
-	plane_->ImGui();
-	ImGui::Spacing();
-
 	// モデルのImGui
 	ImGui::Text("Model");
 	model_->ImGui();
 
 	ImGui::Spacing();
-	// モデルのImGui
+	// ティーポットモデルのImGui
 	ImGui::Text("ModelTeapot");
 	modelTeapot_->ImGui();
 
 	ImGui::Spacing();
-	// モデルのImGui
+	// バニーモデルのImGui
+	ImGui::Text("ModelBunny");
+	modelBunny_->ImGui();
+
+	ImGui::Spacing();
+	// マルチメッシュモデルのImGui
 	ImGui::Text("ModelMultiMesh");
 	modelMultiMesh_->ImGui();
 
 	ImGui::Spacing();
-	// モデルのImGui
+	// マルチマテリアルモデルのImGui
 	ImGui::Text("ModelMultiMaterial");
 	modelMultiMaterial_->ImGui();
 
 	ImGui::Spacing();
-
-
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
