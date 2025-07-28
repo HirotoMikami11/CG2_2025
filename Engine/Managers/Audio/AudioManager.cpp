@@ -134,10 +134,7 @@ void AudioManager::StopAll() {
 	}
 }void AudioManager::ImGui()
 {
-	// =================================================================
-	// AudioManager用のImGuiデバッグインターフェース
-	// 音声ファイルの再生/停止/音量調整などを行うためのGUI
-	// =================================================================
+#ifdef _DEBUG
 
 	if (ImGui::CollapsingHeader("AudioManager")) {
 
@@ -345,4 +342,5 @@ void AudioManager::StopAll() {
 			}
 		}
 	}
+#endif
 }
