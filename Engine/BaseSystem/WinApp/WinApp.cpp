@@ -51,7 +51,7 @@ void WinApp::Initialize(const std::wstring& title) {
 	hwnd = CreateWindow(
 		wc.lpszClassName,		//利用するクラス名
 		title.c_str(),					//タイトルバーの文字
-		WS_OVERLAPPEDWINDOW,	//よく見るウィンドウスタイル
+		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, // サイズ固定
 		CW_USEDEFAULT,			//表示X座標
 		CW_USEDEFAULT,			//表示Y座標
 		wrc.right - wrc.left,	//ウィンドウの横幅

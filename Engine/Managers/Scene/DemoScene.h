@@ -60,9 +60,8 @@ private:
 
 	// ゲームオブジェクト
 	std::unique_ptr<Sphere> sphere_;
-	std::unique_ptr<Model3D> model_;
-	std::unique_ptr<Model3D> modelTeapot_;
-	std::unique_ptr<Model3D> modelBunny_;
+	std::unique_ptr<Plane> plane_;
+
 	std::unique_ptr<Model3D> modelMultiMesh_;
 	std::unique_ptr<Model3D> modelMultiMaterial_;
 

@@ -34,19 +34,37 @@ public:
 	/// </summary>
 	/// <param name="tagName"></param>
 	void Play(const std::string& tagName);
+
 	/// <summary>
 	/// 音声の再生(ループあり)
 	/// </summary>
 	/// <param name="tagName"></param>
 	void PlayLoop(const std::string& tagName);
 
+	/// <summary>
+	/// 音声の一時停止
+	/// </summary>
+	/// <param name="tagName"></param>
+	void Pause(const std::string& tagName);
 
 	/// <summary>
-	/// 音声停止
+	/// 音声の再開（一時停止位置から）
+	/// </summary>
+	/// <param name="tagName"></param>
+	void Resume(const std::string& tagName);
+
+	/// <summary>
+	/// 音声の完全停止
 	/// </summary>
 	/// <param name="tagName"></param>
 	void Stop(const std::string& tagName);
 
+	/// <summary>
+	/// ループ設定の変更
+	/// </summary>
+	/// <param name="tagName"></param>
+	/// <param name="loop"></param>
+	void SetLoop(const std::string& tagName, bool loop);
 
 	/// <summary>
 	/// 音量の設定
@@ -83,4 +101,3 @@ private:
 	std::map<std::string, Audio*> audios;
 
 };
-

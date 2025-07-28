@@ -1,12 +1,13 @@
 #include "Audio.h"
 
-Audio::Audio() : pSourceVoice(nullptr), isPlaying(false) {
+Audio::Audio() : pSourceVoice(nullptr), isPlaying(false), isPaused(false), isLooping(false), pausedSamplesPlayed(0) {
 	soundData = {};
 }
 
 Audio::~Audio() {
 	Unload();
 }
+
 void Audio::LoadAudio(const std::string& filename) {
 	HRESULT hr = S_OK;//S_OK入れるとなぜか1MBだけメモリ軽くなる??
 
@@ -113,8 +114,20 @@ void Audio::Play(IXAudio2* xAudio2) {
 	HRESULT result;
 
 	// 既に再生中なら何もしない
-	if (isPlaying) {
+	if (isPlaying && !isPaused) {
 		return;
+	}
+
+	// 一時停止中の場合は再開
+	if (isPaused) {
+		Resume();
+		return;
+	}
+
+	// 既存のSourceVoiceがある場合は削除
+	if (pSourceVoice) {
+		pSourceVoice->DestroyVoice();
+		pSourceVoice = nullptr;
 	}
 
 	// 波型フォーマットをもとにSourceVoiceを生成
@@ -135,14 +148,29 @@ void Audio::Play(IXAudio2* xAudio2) {
 	assert(SUCCEEDED(result));
 
 	isPlaying = true;
+	isPaused = false;
+	isLooping = false;
+	pausedSamplesPlayed = 0;
 }
 
 void Audio::PlayLoop(IXAudio2* xAudio2) {
 	HRESULT result;
 
 	// 既に再生中なら何もしない
-	if (isPlaying) {
+	if (isPlaying && !isPaused) {
 		return;
+	}
+
+	// 一時停止中の場合は再開
+	if (isPaused) {
+		Resume();
+		return;
+	}
+
+	// 既存のSourceVoiceがある場合は削除
+	if (pSourceVoice) {
+		pSourceVoice->DestroyVoice();
+		pSourceVoice = nullptr;
 	}
 
 	// 波型フォーマットをもとにSourceVoiceを生成
@@ -164,6 +192,9 @@ void Audio::PlayLoop(IXAudio2* xAudio2) {
 	assert(SUCCEEDED(result));
 
 	isPlaying = true;
+	isPaused = false;
+	isLooping = true;
+	pausedSamplesPlayed = 0;
 }
 
 
@@ -174,12 +205,84 @@ void Audio::SetVolume(float volume) {
 	}
 }
 
+void Audio::Pause() {
+	if (pSourceVoice && isPlaying && !isPaused) {
+		// 現在の再生位置を保存
+		XAUDIO2_VOICE_STATE state;
+		pSourceVoice->GetState(&state);
+		pausedSamplesPlayed = state.SamplesPlayed;
+
+		// 一時停止
+		pSourceVoice->Stop();
+		isPaused = true;
+	}
+}
+
+void Audio::Resume() {
+	if (pSourceVoice && isPlaying && isPaused) {
+		// 一時停止位置から再開
+		pSourceVoice->Start();
+		isPaused = false;
+	}
+}
+
 void Audio::Stop() {
 	///停止して削除
 	if (pSourceVoice) {
 		pSourceVoice->Stop();
 		pSourceVoice->FlushSourceBuffers();
 		isPlaying = false;
+		isPaused = false;
+		pausedSamplesPlayed = 0;
+	}
+}
+
+void Audio::SetLoop(bool loop) {
+	if (pSourceVoice && isPlaying) {
+		// 再生中の場合、一旦停止して再設定
+		XAUDIO2_VOICE_STATE state;
+		pSourceVoice->GetState(&state);
+		UINT64 currentSample = state.SamplesPlayed;
+
+		// 現在の音量を保存
+		float currentVolume = 1.0f;
+		pSourceVoice->GetVolume(&currentVolume);
+
+		// 一旦停止
+		pSourceVoice->Stop();
+		pSourceVoice->FlushSourceBuffers();
+
+		// 新しい設定でバッファを再設定
+		XAUDIO2_BUFFER buf{};
+		buf.pAudioData = soundData.pBuffer;
+		buf.AudioBytes = soundData.bufferSize;
+		buf.Flags = XAUDIO2_END_OF_STREAM;
+
+		if (loop) {
+			buf.LoopCount = XAUDIO2_LOOP_INFINITE;
+		}
+
+		// 再生位置を調整（可能な範囲で）
+		UINT32 bytesPerSample = soundData.wfex.wBitsPerSample / 8 * soundData.wfex.nChannels;
+		UINT32 playBegin = static_cast<UINT32>((currentSample % (soundData.bufferSize / bytesPerSample)) * bytesPerSample);
+
+		if (playBegin < soundData.bufferSize) {
+			buf.PlayBegin = playBegin / bytesPerSample;
+		}
+
+		// バッファを再送信
+		pSourceVoice->SubmitSourceBuffer(&buf);
+
+		// 音量を復元
+		pSourceVoice->SetVolume(currentVolume);
+
+		// 再生再開
+		pSourceVoice->Start();
+
+		isLooping = loop;
+	} else {
+		// 再生していない場合は単にフラグを設定
+		isLooping = loop;
 	}
 }
 
@@ -202,8 +305,32 @@ void Audio::Unload() {
 	soundData.bufferSize = 0;
 	soundData.wfex = {};
 	isPlaying = false;
+	isPaused = false;
+	isLooping = false;
+	pausedSamplesPlayed = 0;
 }
 
-bool Audio::IsPlaying() const {
+bool Audio::IsPlaying() {
+	UpdatePlayState();
 	return isPlaying;
+}
+
+bool Audio::IsPaused() const {
+	return isPaused;
+}
+
+bool Audio::IsLooping() const {
+	return isLooping;
+}
+
+void Audio::UpdatePlayState() {
+	if (pSourceVoice && isPlaying && !isPaused) {
+		XAUDIO2_VOICE_STATE state;
+		pSourceVoice->GetState(&state);
+
+		// バッファが空で、キューに何もない場合は再生終了
+		if (state.BuffersQueued == 0 && !isLooping) {
+			isPlaying = false;
+		}
+	}
 }

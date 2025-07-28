@@ -104,6 +104,25 @@ void AudioManager::PlayLoop(const std::string& tagName) {
 	audios[tagName]->PlayLoop(xAudio2.Get());
 }
 
+void AudioManager::Pause(const std::string& tagName) {
+	// 指定したタグ名の音声が見つからなければ何もしない
+	if (audios.find(tagName) == audios.end()) {
+		return;
+	}
+
+	// 音声の一時停止
+	audios[tagName]->Pause();
+}
+
+void AudioManager::Resume(const std::string& tagName) {
+	// 指定したタグ名の音声が見つからなければ何もしない
+	if (audios.find(tagName) == audios.end()) {
+		return;
+	}
+
+	// 音声の再開
+	audios[tagName]->Resume();
+}
 
 void AudioManager::Stop(const std::string& tagName) {
 	// 指定したタグ名の音声が見つからなければ何もしない
@@ -113,6 +132,16 @@ void AudioManager::Stop(const std::string& tagName) {
 
 	// 音声の停止
 	audios[tagName]->Stop();
+}
+
+void AudioManager::SetLoop(const std::string& tagName, bool loop) {
+	// 指定したタグ名の音声が見つからなければ何もしない
+	if (audios.find(tagName) == audios.end()) {
+		return;
+	}
+
+	// ループ設定の変更
+	audios[tagName]->SetLoop(loop);
 }
 
 void AudioManager::SetVolume(const std::string& tagName, float volume) {
@@ -132,7 +161,9 @@ void AudioManager::StopAll() {
 			pair.second->Stop();
 		}
 	}
-}void AudioManager::ImGui()
+}
+
+void AudioManager::ImGui()
 {
 #ifdef _DEBUG
 
@@ -167,10 +198,6 @@ void AudioManager::StopAll() {
 
 		// 音声ファイル名のリスト（コンボボックス用）
 		static std::vector<std::string> audioNames;
-
-		// ループ再生状態を追跡するためのマップ
-		// キー：音声タグ名、値：ループ再生中かどうか
-		static std::map<std::string, bool> loopingStatus;
 
 		// 音声名リストを毎フレーム更新
 		// （動的に音声が追加/削除される可能性があるため）
@@ -209,12 +236,15 @@ void AudioManager::StopAll() {
 				std::string displayText = audioNames[i];
 
 				// 再生状態に応じてステータステキストを追加
-				if (audio && audio->IsPlaying()) {
-					// ループ再生中かどうかを確認
-					if (loopingStatus[audioNames[i]]) {
-						displayText += " [Looping]";
-					} else {
-						displayText += " [Playing]";
+				if (audio) {
+					if (audio->IsPlaying()) {
+						if (audio->IsPaused()) {
+							displayText += " [Paused]";
+						} else if (audio->IsLooping()) {
+							displayText += " [Looping]";
+						} else {
+							displayText += " [Playing]";
+						}
 					}
 				}
 
@@ -251,11 +281,12 @@ void AudioManager::StopAll() {
 				ImGui::Spacing();
 
 				/// ステータス表示部分
-				
+
 				// 現在の再生状態を色付きテキストで表示
 				if (currentAudio->IsPlaying()) {
-					// ループ再生中かどうかで表示を分ける
-					if (loopingStatus[currentTag]) {
+					if (currentAudio->IsPaused()) {
+						ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Status: Paused");
+					} else if (currentAudio->IsLooping()) {
 						ImGui::TextColored(ImVec4(0.0f, 0.8f, 1.0f, 1.0f), "Status: Looping");
 					} else {
 						ImGui::TextColored(ImVec4(0.0f, 0.8f, 0.0f, 1.0f), "Status: Playing");
@@ -269,31 +300,60 @@ void AudioManager::StopAll() {
 				/// 再生ボタン群
 
 				// 通常再生ボタン
-				if (ImGui::Button("Play Audio", ImVec2(120, 0))) {
+				if (ImGui::Button("Play", ImVec2(80, 0))) {
 					Play(currentTag);
-					loopingStatus[currentTag] = false; // 通常再生フラグを設定
 				}
 
 				// 同じ行に配置するため SameLine() を使用
 				ImGui::SameLine();
 
 				// ループ再生ボタン
-				if (ImGui::Button("Loop Audio", ImVec2(120, 0))) {
+				if (ImGui::Button("Play Loop", ImVec2(80, 0))) {
 					PlayLoop(currentTag);
-					loopingStatus[currentTag] = true; // ループ再生フラグを設定
+				}
+
+				ImGui::SameLine();
+
+				// 一時停止/再開ボタン
+				if (currentAudio->IsPaused()) {
+					if (ImGui::Button("Resume", ImVec2(80, 0))) {
+						Resume(currentTag);
+					}
+				} else {
+					if (ImGui::Button("Pause", ImVec2(80, 0))) {
+						Pause(currentTag);
+					}
 				}
 
 				ImGui::SameLine();
 
 				// 停止ボタン
-				if (ImGui::Button("Stop Audio", ImVec2(120, 0))) {
+				if (ImGui::Button("Stop", ImVec2(80, 0))) {
 					Stop(currentTag);
-					loopingStatus[currentTag] = false; // 停止時はループフラグもリセット
+				}
+
+				/// ループ設定切り替え
+
+				ImGui::Spacing();
+
+				// 現在のループ状態を取得
+				bool isLooping = currentAudio->IsLooping();
+
+				// チェックボックスでループ設定を切り替え
+				if (ImGui::Checkbox("Loop Mode", &isLooping)) {
+					SetLoop(currentTag, isLooping);
+				}
+
+				// ループ設定の説明
+				if (isLooping) {
+					ImGui::SameLine();
+					ImGui::TextColored(ImVec4(0.0f, 0.8f, 1.0f, 1.0f), "(Infinite loop)");
 				}
 
 
 				/// 音量調整
 
+				ImGui::Spacing();
 
 				// 各音声の音量を保存するための静的マップ
 				// キー：音声タグ名、値：音量値（0.0〜1.0）
@@ -318,7 +378,7 @@ void AudioManager::StopAll() {
 				}
 				ImGui::PopItemWidth(); // 幅設定を元に戻す
 
-	
+
 				// 25%音量ボタン
 				ImGui::SameLine();
 				if (ImGui::SmallButton("25%")) {

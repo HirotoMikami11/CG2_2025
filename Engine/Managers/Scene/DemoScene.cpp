@@ -30,10 +30,10 @@ void DemoScene::LoadResources() {
 	//TODO:スザンヌ
 	//modelManager_->LoadModel("resources/Model/Suzanne", "suzanne.obj", "model_Suzanne");
 
-	//バニー
-	modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");
-	//ティーポット
-	modelManager_->LoadModel("resources/Model/Teapot", "teapot.obj", "model_Teapot");
+	////バニー
+	//modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");
+	////ティーポット
+	//modelManager_->LoadModel("resources/Model/Teapot", "teapot.obj", "model_Teapot");
 
 	//マルチメッシュ
 	modelManager_->LoadModel("resources/Model/MultiMesh", "multiMesh.obj", "model_MultiMesh");
@@ -79,43 +79,17 @@ void DemoScene::InitializeGameObjects() {
 	sphere_->SetTransform(transformSphere);
 
 	///*-----------------------------------------------------------------------*///
-	///									model									///
+	///									平面									///
 	///*-----------------------------------------------------------------------*///
-	Vector3Transform transformModel{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 3.14f, 0.0f},
-		{0.0f, 1.0f, 2.0f}
-	};
-
-	model_ = std::make_unique<Model3D>();
-	model_->Initialize(directXCommon_, "model_Plane");
-	model_->SetTransform(transformModel);
-
-	///*-----------------------------------------------------------------------*///
-	///									Teapot									///
-	///*-----------------------------------------------------------------------*///
-	Vector3Transform transformTeapot{
+	Vector3Transform transformPlane{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 0.0f, 0.0f},
-		{-3.7f, 0.75f, -5.5f}
+		{3.0f, 1.0f, -8.0f}
 	};
 
-	modelTeapot_ = std::make_unique<Model3D>();
-	modelTeapot_->Initialize(directXCommon_, "model_Teapot");
-	modelTeapot_->SetTransform(transformTeapot);
-
-	///*-----------------------------------------------------------------------*///
-	///									Bunny									///
-	///*-----------------------------------------------------------------------*///
-	Vector3Transform transformBunny{
-		{1.0f, 1.0f, 1.0f},
-		{0.0f, 3.0f, 0.0f},
-		{3.7f, 0.0f, -5.5f}
-	};
-
-	modelBunny_ = std::make_unique<Model3D>();
-	modelBunny_->Initialize(directXCommon_, "model_Bunny");
-	modelBunny_->SetTransform(transformBunny);
+	plane_ = std::make_unique<Plane>();
+	plane_->Initialize(directXCommon_, "plane", "uvChecker");
+	plane_->SetTransform(transformPlane);
 
 	///*-----------------------------------------------------------------------*///
 	///								MultiMesh									///
@@ -199,18 +173,14 @@ void DemoScene::UpdateGameObjects() {
 	sphere_->Update(viewProjectionMatrix);
 	// スプライトの更新
 	sprite_->Update(viewProjectionMatrixSprite);
-	// モデルの更新
-	model_->Update(viewProjectionMatrix);
-	// ティーポットモデルの更新
-	modelTeapot_->Update(viewProjectionMatrix);
-	//バニーモデルの更新
-	modelBunny_->Update(viewProjectionMatrix);
+	// 平面の更新
+	plane_->Update(viewProjectionMatrix);
+
 	//マルチメッシュモデルの更新
 	modelMultiMesh_->Update(viewProjectionMatrix);
 	//マルチマテリアルモデルの更新
 	modelMultiMaterial_->Update(viewProjectionMatrix);
-
-	// グリッド線更新
+		// グリッド線更新
 	gridLine_->Update(viewProjectionMatrix);
 }
 
@@ -230,12 +200,8 @@ void DemoScene::DrawBackBuffer() {
 void DemoScene::DrawGameObjects() {
 	// 球体の描画
 	sphere_->Draw(directionalLight_);
-	// モデルの描画
-	model_->Draw(directionalLight_);
-	//ティーポットモデルの描画
-	modelTeapot_->Draw(directionalLight_);
-	//バニーモデルの描画
-	modelBunny_->Draw(directionalLight_);
+	//平面の描画
+	plane_->Draw(directionalLight_);
 	//マルチメッシュモデルの描画
 	modelMultiMesh_->Draw(directionalLight_);
 	//マルチマテリアルモデルの描画
@@ -264,19 +230,9 @@ void DemoScene::ImGui() {
 	sprite_->ImGui();
 
 	ImGui::Spacing();
-	// モデルのImGui
-	ImGui::Text("Model");
-	model_->ImGui();
+	ImGui::Text("plane");
+	plane_ ->ImGui();
 
-	ImGui::Spacing();
-	// ティーポットモデルのImGui
-	ImGui::Text("ModelTeapot");
-	modelTeapot_->ImGui();
-
-	ImGui::Spacing();
-	// バニーモデルのImGui
-	ImGui::Text("ModelBunny");
-	modelBunny_->ImGui();
 
 	ImGui::Spacing();
 	// マルチメッシュモデルのImGui

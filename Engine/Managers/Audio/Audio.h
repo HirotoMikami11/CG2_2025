@@ -92,9 +92,25 @@ public:
 	void SetVolume(float volume);
 
 	/// <summary>
-	/// 音声の停止
+	/// 音声の一時停止
+	/// </summary>
+	void Pause();
+
+	/// <summary>
+	/// 音声の再開（一時停止位置から）
+	/// </summary>
+	void Resume();
+
+	/// <summary>
+	/// 音声の完全停止
 	/// </summary>
 	void Stop();
+
+	/// <summary>
+	/// ループ設定の変更（再生中でも変更可能）
+	/// </summary>
+	/// <param name="loop">true: ループ再生, false: 通常再生</param>
+	void SetLoop(bool loop);
 
 	/// <summary>
 	/// 音声データの解放
@@ -105,9 +121,25 @@ public:
 	/// 再生中かどうか
 	/// </summary>
 	/// <returns></returns>
-	bool IsPlaying() const;
+	bool IsPlaying();
+
+	/// <summary>
+	/// 一時停止中かどうか
+	/// </summary>
+	/// <returns></returns>
+	bool IsPaused() const;
+
+	/// <summary>
+	/// ループ再生中かどうか
+	/// </summary>
+	/// <returns></returns>
+	bool IsLooping() const;
 
 private:
+	/// <summary>
+	/// 再生状態の更新（内部使用）
+	/// </summary>
+	void UpdatePlayState();
 
 	// 音声データ
 	SoundData soundData;
@@ -115,4 +147,10 @@ private:
 	IXAudio2SourceVoice* pSourceVoice;
 	// 再生中フラグ
 	bool isPlaying;
+	// 一時停止中フラグ
+	bool isPaused;
+	// ループ再生フラグ
+	bool isLooping;
+	// 一時停止時のサンプル位置
+	UINT64 pausedSamplesPlayed;
 };
