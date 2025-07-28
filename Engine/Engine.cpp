@@ -76,10 +76,10 @@ void Engine::LoadDefaultResources() {
 	///								音声データの読み込み							///
 	///*-----------------------------------------------------------------------*///
 
-	////ゲーム開始前に読み込む音声データ
-	//audioManager_->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
-	//audioManager_->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
-	//audioManager_->LoadAudio("resources/Audio/Se01.mp3", "SE");
+	//ゲーム開始前に読み込む音声データ
+	audioManager_->LoadAudio("resources/Audio/Alarm01.wav", "Alarm");
+	audioManager_->LoadAudio("resources/Audio/Bgm01.mp3", "BGM");
+	audioManager_->LoadAudio("resources/Audio/Se01.mp3", "SE");
 
 	////tagを利用して再生
 	//audioManager_->Play("Alarm");
@@ -208,6 +208,7 @@ void Engine::Finalize() {
 
 void Engine::ImGui() {
 #ifdef _DEBUG
+
 	//開発用UIの処理
 	ImGui::Begin("Engine_data");
 
@@ -217,19 +218,25 @@ void Engine::ImGui() {
 	/// オフスクリーンレンダラー（グリッチエフェクト含む）のImGui
 	offscreenRenderer_->ImGui();
 
-	///inputManager
+	///入力のImGui
 	inputManager_->ImGui();
+
+	///音声関連のImGui
+	audioManager_->ImGui();
 
 	ImGui::End();
 
-	// カメラコントローラーのデバッグUI
+
+
+	///
+	/// カメラコントローラーのデバッグUI
+	///
+	
+	///個別のウィンドウに表示
 	if (cameraController_) {
 		//カメラコントローラーのアップデートがないとエラー
 		cameraController_->ImGui();
 	}
 
-
-
-	
 #endif
 }

@@ -60,6 +60,11 @@ public:
 	/// </summary>
 	void StopAll();
 
+	/// <summary>
+	/// ImGui
+	/// </summary>
+	void ImGui();
+
 private:
 	// コンストラクタ
 	AudioManager();

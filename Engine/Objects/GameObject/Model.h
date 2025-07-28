@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
 #include <vector>
+#include <map>
+#include <set>
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "MyMath/MyFunction.h"
@@ -62,7 +64,7 @@ public:
 		}
 		return meshes_[index];
 	}
-	
+
 	const Mesh& GetMesh(size_t index = 0) const {
 		if (index >= meshes_.size()) {
 			Logger::Log(Logger::GetStream(), std::format("Mesh index {} out of range (max: {})\n", index, meshes_.size() - 1));
@@ -75,14 +77,62 @@ public:
 	std::vector<Mesh>& GetMeshes() { return meshes_; }
 	const std::vector<Mesh>& GetMeshes() const { return meshes_; }
 
-	// マテリアル関連（最初のメッシュのマテリアルを返す）
-	Material& GetMaterial() { return material_; }
-	const Material& GetMaterial() const { return material_; }
+	// マテリアル関連（マルチマテリアル対応）
+	size_t GetMaterialCount() const { return materials_.size(); }
 
-	// テクスチャタグ名の設定と取得
-	void SetTextureTagName(const std::string& tagName) { textureTagName_ = tagName; }
-	const std::string& GetTextureTagName() const { return textureTagName_; }
-	bool HasTexture() const { return !textureTagName_.empty(); }
+	Material& GetMaterial(size_t index = 0) {
+		if (index >= materials_.size()) {
+			Logger::Log(Logger::GetStream(), std::format("Material index {} out of range (max: {})\n", index, materials_.size() - 1));
+			return materials_[0]; // フォールバック
+		}
+		return materials_[index];
+	}
+
+	const Material& GetMaterial(size_t index = 0) const {
+		if (index >= materials_.size()) {
+			Logger::Log(Logger::GetStream(), std::format("Material index {} out of range (max: {})\n", index, materials_.size() - 1));
+			return materials_[0]; // フォールバック
+		}
+		return materials_[index];
+	}
+
+	// 全マテリアルへのアクセス
+	std::vector<Material>& GetMaterials() { return materials_; }
+	const std::vector<Material>& GetMaterials() const { return materials_; }
+
+	// テクスチャタグ名の設定と取得（マルチテクスチャ対応）
+	void SetTextureTagName(const std::string& tagName, size_t index = 0) {
+		if (index < textureTagNames_.size()) {
+			textureTagNames_[index] = tagName;
+		}
+	}
+
+	const std::string& GetTextureTagName(size_t index = 0) const {
+		if (index < textureTagNames_.size()) {
+			return textureTagNames_[index];
+		}
+		static std::string empty;
+		return empty;
+	}
+
+	bool HasTexture(size_t index = 0) const {
+		return index < textureTagNames_.size() && !textureTagNames_[index].empty();
+	}
+
+	// 全テクスチャタグ名へのアクセス
+	const std::vector<std::string>& GetTextureTagNames() const { return textureTagNames_; }
+
+	/// <summary>
+	/// メッシュのマテリアルインデックスを取得
+	/// </summary>
+	/// <param name="meshIndex">メッシュインデックス</param>
+	/// <returns>マテリアルインデックス</returns>
+	size_t GetMeshMaterialIndex(size_t meshIndex) const {
+		if (meshIndex < meshMaterialIndices_.size()) {
+			return meshMaterialIndices_[meshIndex];
+		}
+		return 0; // デフォルトは最初のマテリアル
+	}
 
 	/// <summary>
 	/// モデルが有効かどうか
@@ -106,30 +156,32 @@ private:
 	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	// マテリアル（全メッシュで共有）
-	Material material_;
+	// マルチマテリアル対応
+	std::vector<Material> materials_;
 
 	// 複数メッシュ対応
 	std::vector<Mesh> meshes_;
 	std::vector<std::string> objectNames_; // 各メッシュのオブジェクト名
+	std::vector<size_t> meshMaterialIndices_; // 各メッシュが使用するマテリアルのインデックス
 
 	// ロードしたデータを保持しておく
 	std::vector<ModelData> modelDataList_;
-	// テクスチャのタグ名を保存
-	std::string textureTagName_;
+
+	// マルチテクスチャ対応
+	std::vector<std::string> textureTagNames_;
+
 	// ファイルパス（デバッグ用）
 	std::string filePath_;
 
 	/// <summary>
-	/// OBJファイルを読み込む
+	/// OBJファイルを読み込む（マルチマテリアル対応）
 	/// </summary>
-	std::vector<ModelData> LoadObjFile(const std::string& directoryPath, const std::string& filename);
-
+	std::vector<ModelData> LoadObjFileMulti(const std::string& directoryPath, const std::string& filename);
 
 	/// <summary>
-	/// マテリアルファイルを読み込む
+	/// マテリアルファイルを読み込む（複数マテリアル対応）
 	/// </summary>
-	MaterialDataModel LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
+	std::map<std::string, MaterialDataModel> LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 
 	/// <summary>
 	/// ファイル名から拡張子を除去

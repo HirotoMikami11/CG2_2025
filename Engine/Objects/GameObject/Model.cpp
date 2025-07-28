@@ -13,21 +13,63 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 	///モデルの場合は、ファイルパスなどを入れる
 	if (meshType == MeshType::MODEL_OBJ) {
 		//複数オブジェクト対応でデータを読み込む
-		modelDataList_ = LoadObjFile(directoryPath, filename);
+		modelDataList_ = LoadObjFileMulti(directoryPath, filename);
 
 		// 各ModelDataからMeshを作成
 		meshes_.clear();
+		meshMaterialIndices_.clear();
+
 		for (const auto& modelData : modelDataList_) {
 			Mesh mesh;
 			mesh.InitializeFromData(directXCommon_, modelData);
 			meshes_.push_back(std::move(mesh));
+			meshMaterialIndices_.push_back(modelData.materialIndex);
 		}
 
-		// テクスチャファイルパスから画像ファイル名を抽出してタグ名にする
-		// 最初のモデルデータのテクスチャを使用
-		if (!modelDataList_.empty() && !modelDataList_[0].material.textureFilePath.empty()) {
-			textureTagName_ = GetTextureFileNameFromPath(modelDataList_[0].material.textureFilePath);
-			TextureManager::GetInstance()->LoadTexture(modelDataList_[0].material.textureFilePath, textureTagName_);
+		// 全マテリアル情報を収集してマテリアルとテクスチャを作成
+		std::set<std::string> uniqueMaterials;
+		std::map<std::string, MaterialDataModel> materialMap;
+
+		for (const auto& modelData : modelDataList_) {
+			if (!modelData.materialName.empty()) {
+				uniqueMaterials.insert(modelData.materialName);
+				materialMap[modelData.materialName] = modelData.material;
+			}
+		}
+
+		// マテリアルを初期化
+		materials_.clear();
+		textureTagNames_.clear();
+
+		TextureManager* textureManager = TextureManager::GetInstance();
+
+		for (const auto& materialName : uniqueMaterials) {
+			Material material;
+			material.Initialize(directXCommon_);
+			materials_.push_back(material);
+
+			// テクスチャを読み込み
+			const auto& materialData = materialMap[materialName];
+			if (!materialData.textureFilePath.empty()) {
+				std::string textureTag = GetTextureFileNameFromPath(materialData.textureFilePath);
+				if (textureManager->LoadTexture(materialData.textureFilePath, textureTag)) {
+					textureTagNames_.push_back(textureTag);
+					Logger::Log(Logger::GetStream(), std::format("Loaded texture: {} as {}\n", materialData.textureFilePath, textureTag));
+				} else {
+					textureTagNames_.push_back("");
+					Logger::Log(Logger::GetStream(), std::format("Failed to load texture: {}\n", materialData.textureFilePath));
+				}
+			} else {
+				textureTagNames_.push_back("");
+			}
+		}
+
+		// デフォルトマテリアルが必要な場合
+		if (materials_.empty()) {
+			Material material;
+			material.Initialize(directXCommon_);
+			materials_.push_back(material);
+			textureTagNames_.push_back("");
 		}
 
 		filePath_ = directoryPath + "/" + filename;
@@ -41,15 +83,20 @@ void Model::Initialize(DirectXCommon* dxCommon, const MeshType meshType, const s
 		objectNames_.clear();
 		objectNames_.push_back("primitive_" + Mesh::MeshTypeToString(meshType));
 
+		// プリミティブ用のシングルマテリアル
+		materials_.clear();
+		Material material;
+		material.Initialize(directXCommon_);
+		materials_.push_back(material);
+
+		textureTagNames_.clear();
+		textureTagNames_.push_back("");
+
+		meshMaterialIndices_.clear();
+		meshMaterialIndices_.push_back(0); // 最初のマテリアルを使用
+
 		filePath_ = "primitive_" + Mesh::MeshTypeToString(meshType);
 	}
-
-	//																			//
-	//							Material用のResourceを作る						//
-	//																			//
-
-	// マテリアル用のリソースを作る
-	material_.Initialize(directXCommon_);
 }
 
 bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& filename, DirectXCommon* dxCommon) {
@@ -62,32 +109,72 @@ bool Model::LoadFromOBJ(const std::string& directoryPath, const std::string& fil
 	filePath_ = directoryPath + "/" + filename;
 
 	// 複数オブジェクト対応でOBJファイルを読み込み
-	modelDataList_ = LoadObjFile(directoryPath, filename);
+	modelDataList_ = LoadObjFileMulti(directoryPath, filename);
+
+	if (modelDataList_.empty()) {
+		Logger::Log(Logger::GetStream(), std::format("Failed to load model data from: {}\n", filename));
+		return false;
+	}
 
 	// 各ModelDataからMeshを作成
 	meshes_.clear();
-	for (const auto& modelData : modelDataList_) {
+	meshMaterialIndices_.clear();
+
+	for (size_t i = 0; i < modelDataList_.size(); ++i) {
 		Mesh mesh;
-		mesh.InitializeFromData(dxCommon, modelData);
+		mesh.InitializeFromData(dxCommon, modelDataList_[i]);
 		meshes_.push_back(std::move(mesh));
+		meshMaterialIndices_.push_back(modelDataList_[i].materialIndex);
 	}
 
-	// マテリアルを初期化
-	material_.Initialize(dxCommon);
+	// 全マテリアル情報を収集してマテリアルとテクスチャを作成
+	std::set<std::string> uniqueMaterials;
+	std::map<std::string, MaterialDataModel> materialMap;
 
-	// テクスチャファイルパスから画像ファイル名を抽出してタグ名にする
-	// 最初のモデルデータのテクスチャを使用
-	if (!modelDataList_.empty() && !modelDataList_[0].material.textureFilePath.empty()) {
-		textureTagName_ = GetTextureFileNameFromPath(modelDataList_[0].material.textureFilePath);
-
-		TextureManager* textureManager = TextureManager::GetInstance();
-		if (!textureManager->LoadTexture(modelDataList_[0].material.textureFilePath, textureTagName_)) {
-			Logger::Log(Logger::GetStream(), std::format("Failed to load texture for model: {}\n", filename));
-			textureTagName_.clear();
+	for (const auto& modelData : modelDataList_) {
+		if (!modelData.materialName.empty()) {
+			uniqueMaterials.insert(modelData.materialName);
+			materialMap[modelData.materialName] = modelData.material;
 		}
 	}
 
-	Logger::Log(Logger::GetStream(), std::format("Model loaded from OBJ: {} ({} meshes)\n", filename, meshes_.size()));
+	// マテリアルを初期化
+	materials_.clear();
+	textureTagNames_.clear();
+
+	TextureManager* textureManager = TextureManager::GetInstance();
+
+	for (const auto& materialName : uniqueMaterials) {
+		Material material;
+		material.Initialize(dxCommon);
+		materials_.push_back(material);
+
+		// テクスチャを読み込み
+		const auto& materialData = materialMap[materialName];
+		if (!materialData.textureFilePath.empty()) {
+			std::string textureTag = GetTextureFileNameFromPath(materialData.textureFilePath);
+			if (textureManager->LoadTexture(materialData.textureFilePath, textureTag)) {
+				textureTagNames_.push_back(textureTag);
+				Logger::Log(Logger::GetStream(), std::format("Loaded texture: {} as {}\n", materialData.textureFilePath, textureTag));
+			} else {
+				textureTagNames_.push_back("");
+				Logger::Log(Logger::GetStream(), std::format("Failed to load texture: {}\n", materialData.textureFilePath));
+			}
+		} else {
+			textureTagNames_.push_back("");
+		}
+	}
+
+	// デフォルトマテリアルが必要な場合
+	if (materials_.empty()) {
+		Material material;
+		material.Initialize(dxCommon);
+		materials_.push_back(material);
+		textureTagNames_.push_back("");
+	}
+
+	Logger::Log(Logger::GetStream(), std::format("Model loaded from OBJ: {} ({} meshes, {} materials)\n",
+		filename, meshes_.size(), materials_.size()));
 	return true;
 }
 
@@ -104,11 +191,19 @@ bool Model::LoadFromPrimitive(MeshType meshType, DirectXCommon* dxCommon) {
 	objectNames_.clear();
 	objectNames_.push_back("primitive_" + Mesh::MeshTypeToString(meshType));
 
-	// マテリアルを初期化
-	material_.Initialize(dxCommon);
+	// プリミティブ用のシングルマテリアル
+	materials_.clear();
+	Material material;
+	material.Initialize(dxCommon);
+	materials_.push_back(material);
+
+	textureTagNames_.clear();
+	textureTagNames_.push_back("");
+
+	meshMaterialIndices_.clear();
+	meshMaterialIndices_.push_back(0); // 最初のマテリアルを使用
 
 	// プリミティブにはテクスチャは無い
-	textureTagName_ = "";
 	filePath_ = "primitive_" + Mesh::MeshTypeToString(meshType);
 
 	Logger::Log(Logger::GetStream(), std::format("Model loaded from primitive: {}\n", Mesh::MeshTypeToString(meshType)));
@@ -118,8 +213,9 @@ bool Model::LoadFromPrimitive(MeshType meshType, DirectXCommon* dxCommon) {
 void Model::Unload() {
 	meshes_.clear(); // 全メッシュをクリア
 	objectNames_.clear();
-	material_ = Material(); // マテリアルをリセット
-	textureTagName_.clear();
+	materials_.clear(); // 全マテリアルをクリア
+	textureTagNames_.clear();
+	meshMaterialIndices_.clear();
 	filePath_.clear();
 	modelDataList_.clear(); // モデルデータリストをクリア
 }
@@ -152,35 +248,60 @@ std::string Model::GetTextureFileNameFromPath(const std::string& texturePath) {
 	// 拡張子を除去
 	return GetFileNameWithoutExtension(fileName);
 }
-MaterialDataModel Model::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
+
+std::map<std::string, MaterialDataModel> Model::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
 {
 	//1.中で必要となる変数の宣言
-	MaterialDataModel materialData;			//構築するMaterialData
+	std::map<std::string, MaterialDataModel> materials;	//構築するMaterialDataのマップ
 	std::string line;					//ファイルから読んだ1行を格納するもの
+	std::string currentMaterialName;	//現在処理中のマテリアル名
+	MaterialDataModel currentMaterial;	//現在処理中のマテリアルデータ
 
 	//2.ファイルを開く
 	std::ifstream file(directoryPath + "/" + filename);//ファイルを開く
 	assert(file.is_open());//開けなかった場合は停止する
 
-	//3.実際にファイルを読み、ModelDataを構築していく
+	//3.実際にファイルを読み、MaterialDataを構築していく
 	while (std::getline(file, line)) {
 		std::string identifier;
 		std::istringstream s(line);
 		s >> identifier;	//先頭の識別子を読む
 
 		//identifierに応じた処理
-		if (identifier == "map_Kd") {
+		if (identifier == "newmtl") {
+			// 前のマテリアルがあれば保存
+			if (!currentMaterialName.empty()) {
+				materials[currentMaterialName] = currentMaterial;
+			}
+
+			// 新しいマテリアルを開始
+			s >> currentMaterialName;
+			currentMaterial = MaterialDataModel(); // リセット
+
+		} else if (identifier == "map_Kd") {
 			std::string textureFilename;
 			s >> textureFilename;
 			//連結してファイルパスにする
-			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+			currentMaterial.textureFilePath = directoryPath + "/" + textureFilename;
 		}
 	}
-	//4.MaterialDataを返す
-	return materialData;
+
+	// 最後のマテリアルを保存
+	if (!currentMaterialName.empty()) {
+		materials[currentMaterialName] = currentMaterial;
+	}
+
+	Logger::Log(Logger::GetStream(), std::format("Loaded {} materials from {}\n", materials.size(), filename));
+	for (const auto& pair : materials) {
+		Logger::Log(Logger::GetStream(), std::format("  Material: {} -> texture: {}\n",
+			pair.first, pair.second.textureFilePath.empty() ? "none" : pair.second.textureFilePath));
+	}
+
+	//4.MaterialDataのマップを返す
+	return materials;
 }
 
-std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+std::vector<ModelData> Model::LoadObjFileMulti(const std::string& directoryPath, const std::string& filename) {
 	//1.中で必要となる変数の宣言
 	std::vector<ModelData> modelDataList;	//構築するModelDataのリスト
 	std::vector<Vector4> positions;			//位置（全オブジェクト共通）
@@ -189,7 +310,12 @@ std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, cons
 
 	std::string line;						//ファイルから読んだ1行を格納するもの
 
-	MaterialDataModel sharedMaterial;		//共有マテリアル情報
+	// マルチマテリアル対応
+	std::map<std::string, MaterialDataModel> materials; // マテリアル名 -> マテリアルデータ
+	std::map<std::string, size_t> materialIndexMap;     // マテリアル名 -> インデックス
+	std::string currentMaterialName = "";               // 現在使用中のマテリアル名
+	size_t materialIndexCounter = 0;                    // マテリアルインデックスカウンター
+
 	ModelData currentModel;					//現在処理中のモデル
 	std::string currentObjectName = "default"; // 現在のオブジェクト名
 	bool hasCurrentObject = false;			//現在処理中のオブジェクトがあるか
@@ -226,7 +352,12 @@ std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, cons
 
 			// 前のオブジェクトがあれば保存
 			if (hasCurrentObject && !currentModel.vertices.empty()) {
-				currentModel.material = sharedMaterial;
+				// 現在のマテリアル情報を設定
+				if (!currentMaterialName.empty() && materials.find(currentMaterialName) != materials.end()) {
+					currentModel.material = materials[currentMaterialName];
+					currentModel.materialName = currentMaterialName;
+					currentModel.materialIndex = materialIndexMap[currentMaterialName];
+				}
 				modelDataList.push_back(currentModel);
 				objectNames_.push_back(currentObjectName);
 			}
@@ -235,6 +366,16 @@ std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, cons
 			s >> currentObjectName;
 			currentModel = ModelData(); // リセット
 			hasCurrentObject = true;
+
+		} else if (identifier == "usemtl") { // マテリアル切り替え
+			s >> currentMaterialName;
+
+			// 新しいマテリアルの場合はインデックスを割り当て
+			if (materialIndexMap.find(currentMaterialName) == materialIndexMap.end()) {
+				materialIndexMap[currentMaterialName] = materialIndexCounter++;
+				Logger::Log(Logger::GetStream(), std::format("Material assigned: {} -> index {}\n",
+					currentMaterialName, materialIndexMap[currentMaterialName]));
+			}
 
 		} else if (identifier == "f") {	//識別子がfの場合	面
 			// オブジェクト名が指定されていない場合はデフォルトオブジェクトを作成
@@ -256,13 +397,17 @@ std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, cons
 				for (int32_t element = 0; element < 3; ++element) {
 					std::string index;
 					std::getline(v, index, '/');
-					elementIndices[element] = std::stoi(index);
+					if (!index.empty()) {
+						elementIndices[element] = std::stoi(index);
+					} else {
+						elementIndices[element] = 1; // デフォルト値
+					}
 				}
 
 				//要素へのindexから、実際の要素の値を取得して頂点を構成する
 				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
+				Vector2 texcoord = (elementIndices[1] <= texcoords.size()) ? texcoords[elementIndices[1] - 1] : Vector2{ 0.0f, 0.0f };
+				Vector3 normal = (elementIndices[2] <= normals.size()) ? normals[elementIndices[2] - 1] : Vector3{ 0.0f, 0.0f, -1.0f };
 
 				//右手座標系から左手座標系に変換する
 				position.x *= -1.0f;
@@ -278,21 +423,28 @@ std::vector<ModelData> Model::LoadObjFile(const std::string& directoryPath, cons
 			//materialTemplateLibraryファイルの名前を取得する
 			std::string materialFilename;
 			s >> materialFilename;
-			sharedMaterial = LoadMaterialTemplateFile(directoryPath, materialFilename);
+			materials = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
 	}
 
 	// 最後のオブジェクトを保存
 	if (hasCurrentObject && !currentModel.vertices.empty()) {
-		currentModel.material = sharedMaterial;
+		// 現在のマテリアル情報を設定
+		if (!currentMaterialName.empty() && materials.find(currentMaterialName) != materials.end()) {
+			currentModel.material = materials[currentMaterialName];
+			currentModel.materialName = currentMaterialName;
+			currentModel.materialIndex = materialIndexMap[currentMaterialName];
+		}
 		modelDataList.push_back(currentModel);
 		objectNames_.push_back(currentObjectName);
 	}
 
-	Logger::Log(Logger::GetStream(), std::format("Loaded {} objects from {}\n", modelDataList.size(), filename));
+	Logger::Log(Logger::GetStream(), std::format("Loaded {} objects from {} with {} materials\n",
+		modelDataList.size(), filename, materials.size()));
 	for (size_t i = 0; i < objectNames_.size(); ++i) {
-		Logger::Log(Logger::GetStream(), std::format("  Object {}: {} ({} vertices)\n",
-			i, objectNames_[i], modelDataList[i].vertices.size()));
+		Logger::Log(Logger::GetStream(), std::format("  Object {}: {} ({} vertices, material: {})\n",
+			i, objectNames_[i], modelDataList[i].vertices.size(),
+			modelDataList[i].materialName.empty() ? "none" : modelDataList[i].materialName));
 	}
 
 	return modelDataList;

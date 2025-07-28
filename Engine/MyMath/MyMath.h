@@ -337,14 +337,13 @@ struct MaterialDataModel {
 	std::string textureFilePath;	//テクスチャファイルのパス
 };
 
-/// <summary>
-/// モデル用の頂点データ
-/// </summary>
-struct ModelData {
-	std::vector<VertexData> vertices;	//頂点データ
-	MaterialDataModel material;	//マテリアルデータ
-};
 
+struct ModelData {
+	std::vector<VertexData> vertices;
+	MaterialDataModel material;
+	std::string materialName = "";    // マテリアル名
+	size_t materialIndex = 0;         // マテリアルインデックス
+};
 
 
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//

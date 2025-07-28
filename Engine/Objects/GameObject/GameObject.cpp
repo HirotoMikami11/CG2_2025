@@ -47,7 +47,6 @@ void GameObject::Update(const Matrix4x4& viewProjectionMatrix) {
 	// UVトランスフォームの更新（既存のMaterialクラスを使用）
 	material_.UpdateUVTransform();
 }
-
 void GameObject::Draw(const Light& directionalLight) {
 	// 非表示、アクティブでない場合、または共有モデルがない場合は描画しない
 	if (!isVisible_ || !isActive_ || !sharedModel_ || !sharedModel_->IsValid()) {
@@ -57,33 +56,65 @@ void GameObject::Draw(const Light& directionalLight) {
 	// 描画処理
 	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
 
-	// 個別のマテリアルとトランスフォームを設定
-	commandList->SetGraphicsRootConstantBufferView(0, material_.GetResource()->GetGPUVirtualAddress());
-	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
-
 	// ライトを設定
 	commandList->SetGraphicsRootConstantBufferView(3, directionalLight.GetResource()->GetGPUVirtualAddress());
 
-	// 全メッシュを描画
+	// 全メッシュを描画（マルチマテリアル対応）
 	const auto& meshes = sharedModel_->GetMeshes();
 	for (size_t i = 0; i < meshes.size(); ++i) {
 		const Mesh& mesh = meshes[i];
+
+		// このメッシュが使用するマテリアルインデックスを取得
+		size_t materialIndex = sharedModel_->GetMeshMaterialIndex(i);
+
+		// マテリアル設定の改善：常にGameObjectのマテリアル設定を優先
+		if (!textureName_.empty() || sharedModel_->GetMeshCount() == 1) {
+			// カスタムテクスチャが設定されている場合、または単一メッシュの場合は個別のマテリアルを使用
+			commandList->SetGraphicsRootConstantBufferView(0, material_.GetResource()->GetGPUVirtualAddress());
+		} else if (materialIndex < sharedModel_->GetMaterialCount()) {
+			// マルチメッシュの場合：GameObjectのマテリアル設定をモデルのマテリアルに同期
+			SyncMaterialSettings(materialIndex);
+			commandList->SetGraphicsRootConstantBufferView(0,
+				sharedModel_->GetMaterial(materialIndex).GetResource()->GetGPUVirtualAddress());
+		} else {
+			// フォールバック：個別のマテリアルを使用
+			commandList->SetGraphicsRootConstantBufferView(0, material_.GetResource()->GetGPUVirtualAddress());
+		}
+
+		// トランスフォームを設定（個別のトランスフォームを使用）
+		commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
 
 		// テクスチャの設定（優先順位：カスタムテクスチャ > モデル付属テクスチャ）
 		if (!textureName_.empty()) {
 			// プリミティブ等でカスタムテクスチャが設定されている場合
 			commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(textureName_));
-		} else if (sharedModel_->HasTexture()) {
-			// OBJファイル等でモデル付属のテクスチャがある場合
-			commandList->SetGraphicsRootDescriptorTable(2, textureManager_->GetTextureHandle(sharedModel_->GetTextureTagName()));
+		} else if (sharedModel_->HasTexture(materialIndex)) {
+			// OBJファイル等でモデル付属のテクスチャがある場合（マテリアルごと）
+			commandList->SetGraphicsRootDescriptorTable(2,
+				textureManager_->GetTextureHandle(sharedModel_->GetTextureTagName(materialIndex)));
 		}
 
 		// メッシュをバインドして描画
-		const_cast<Mesh&>(mesh).Bind(commandList); // const_castが必要（Bindがnon-constのため）
+		const_cast<Mesh&>(mesh).Bind(commandList);
 		const_cast<Mesh&>(mesh).Draw(commandList);
 	}
 }
 
+// 新しく追加するメソッド
+void GameObject::SyncMaterialSettings(size_t materialIndex) {
+	if (materialIndex < sharedModel_->GetMaterialCount()) {
+		Material& modelMaterial = sharedModel_->GetMaterial(materialIndex);
+
+		// GameObjectのマテリアル設定をモデルのマテリアルに同期
+		modelMaterial.SetColor(material_.GetColor());
+		modelMaterial.SetLightingMode(material_.GetLightingMode());
+
+		// UV変換も同期
+		modelMaterial.SetUVTransformScale(material_.GetUVTransformScale());
+		modelMaterial.SetUVTransformRotateZ(material_.GetUVTransformRotateZ());
+		modelMaterial.SetUVTransformTranslate(material_.GetUVTransformTranslate());
+	}
+}
 void GameObject::ImGui() {
 #ifdef _DEBUG
 	// 現在の名前を表示
@@ -98,9 +129,12 @@ void GameObject::ImGui() {
 			ImGui::Text("Shared Model Loaded: Yes");
 			ImGui::Text("Model Path: %s", sharedModel_->GetFilePath().c_str());
 			ImGui::Text("Mesh Count: %zu", sharedModel_->GetMeshCount());
-			ImGui::Text("Has Texture: %s", sharedModel_->HasTexture() ? "Yes" : "No");
-			if (sharedModel_->HasTexture()) {
-				ImGui::Text("Texture Tag: %s", sharedModel_->GetTextureTagName().c_str());
+			ImGui::Text("Material Count: %zu", sharedModel_->GetMaterialCount());
+			
+			// マルチテクスチャ情報表示
+			const auto& textureTagNames = sharedModel_->GetTextureTagNames();
+			for (size_t i = 0; i < textureTagNames.size(); ++i) {
+				ImGui::Text("Texture %zu: %s", i, textureTagNames[i].empty() ? "none" : textureTagNames[i].c_str());
 			}
 		} else {
 			ImGui::Text("Shared Model Loaded: No");
@@ -166,6 +200,7 @@ void GameObject::ImGui() {
 		// メッシュ情報（複数メッシュ対応）
 		if (ImGui::CollapsingHeader("Mesh Info") && sharedModel_) {
 			ImGui::Text("Total Meshes: %zu", sharedModel_->GetMeshCount());
+			ImGui::Text("Total Materials: %zu", sharedModel_->GetMaterialCount());
 			ImGui::Text("Shared: Yes (Memory Optimized)");
 
 			// 各メッシュの詳細情報
@@ -181,6 +216,16 @@ void GameObject::ImGui() {
 					ImGui::Text("Mesh Type: %s", Mesh::MeshTypeToString(mesh.GetMeshType()).c_str());
 					ImGui::Text("Vertex Count: %d", mesh.GetVertexCount());
 					ImGui::Text("Index Count: %d", mesh.GetIndexCount());
+					
+					// マテリアル情報
+					size_t materialIndex = sharedModel_->GetMeshMaterialIndex(i);
+					ImGui::Text("Material Index: %zu", materialIndex);
+					if (sharedModel_->HasTexture(materialIndex)) {
+						ImGui::Text("Texture: %s", sharedModel_->GetTextureTagName(materialIndex).c_str());
+					} else {
+						ImGui::Text("Texture: none");
+					}
+					
 					ImGui::TreePop();
 				}
 			}
@@ -188,9 +233,13 @@ void GameObject::ImGui() {
 
 		// テクスチャ設定（シンプル版）
 		if (ImGui::CollapsingHeader("Texture")) {
-			// 現在のテクスチャ状態表示
-			if (sharedModel_ && sharedModel_->HasTexture()) {
-				ImGui::Text("Model Texture: %s", sharedModel_->GetTextureTagName().c_str());
+			// モデルのテクスチャ状態表示
+			if (sharedModel_ && sharedModel_->GetMaterialCount() > 0) {
+				ImGui::Text("Model Textures:");
+				const auto& textureTagNames = sharedModel_->GetTextureTagNames();
+				for (size_t i = 0; i < textureTagNames.size(); ++i) {
+					ImGui::Text("  Material %zu: %s", i, textureTagNames[i].empty() ? "none" : textureTagNames[i].c_str());
+				}
 			}
 
 			// カスタムテクスチャ選択

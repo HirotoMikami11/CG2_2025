@@ -107,6 +107,12 @@ protected:
 	ModelManager* modelManager_ = ModelManager::GetInstance();
 
 private:
+	/// <summary>
+	/// GameObjectのマテリアル設定をモデルのマテリアルに同期
+	/// </summary>
+	/// <param name="materialIndex">同期するマテリアルのインデックス</param>
+	void SyncMaterialSettings(size_t materialIndex);
+
 	// ImGui用の内部状態
 	Vector3 imguiPosition_{ 0.0f, 0.0f, 0.0f };
 	Vector3 imguiRotation_{ 0.0f, 0.0f, 0.0f };
