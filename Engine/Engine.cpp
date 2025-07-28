@@ -19,7 +19,7 @@ void Engine::Initialize(const std::wstring& title) {
 void Engine::InitializeBase(const std::wstring& title) {
 	// ウィンドウ初期化
 	winApp_ = std::make_unique<WinApp>();
-	winApp_->Initialize(L"LE2A_15_ミカミ_ヒロト_CG2");
+	winApp_->Initialize(title);
 
 	// ログ初期化
 	Logger::Initalize();

@@ -136,7 +136,7 @@ void DemoScene::InitializeGameObjects() {
 	Vector3Transform transformMultiMesh{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 3.0f, 0.0f},
-		{4.0f, -1.2f, 0.0f}
+		{4.0f, -1.2f, 10.0f}
 	};
 
 	modelMultiMesh_ = std::make_unique<Model3D>();
@@ -149,7 +149,7 @@ void DemoScene::InitializeGameObjects() {
 	Vector3Transform transformMultiMaterial{
 		{1.0f, 1.0f, 1.0f},
 		{0.0f, 3.0f, 0.0f},
-		{4.0f, -1.2f, 0.0f}
+		{-4.0f, -1.2f, 10.0f}
 	};
 
 	modelMultiMaterial_ = std::make_unique<Model3D>();

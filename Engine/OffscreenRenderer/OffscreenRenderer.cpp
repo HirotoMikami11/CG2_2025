@@ -45,7 +45,7 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	depthFogEffect_->SetEnabled(true);
 	// 深度ぼかしエフェクトを追加
 	depthOfFieldEffect_ = postProcessChain_->AddEffect<DepthOfFieldPostEffect>();
-
+	depthOfFieldEffect_->SetEnabled(true);
 
 	// グリッチエフェクトを追加
 	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
