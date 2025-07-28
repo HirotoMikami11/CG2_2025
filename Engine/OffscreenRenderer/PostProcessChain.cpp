@@ -300,7 +300,7 @@ size_t PostProcessChain::GetDepthRequiredEffectCount() const {
 
 void PostProcessChain::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode("Post Process Chain (OffscreenTriangle)")) {
+	if (ImGui::TreeNode("Post Process Chain")) {
 		ImGui::Text("Effects Count: %zu", effects_.size());
 		ImGui::Text("Chain Size: %dx%d", width_, height_);
 
@@ -312,15 +312,10 @@ void PostProcessChain::ImGui() {
 
 		// OffscreenTriangle情報
 		ImGui::Separator();
-		ImGui::Text("Render Method: OffscreenTriangle (Large Triangle)");
+		ImGui::Text("Render Method: OffscreenTriangle");
 		ImGui::Text("Triangle Valid: %s", offscreenTriangle_ && offscreenTriangle_->IsValid() ? "YES" : "NO");
 
-		// 自動判定の説明
-		if (ImGui::CollapsingHeader("Auto Detection Info")) {
-			ImGui::TextWrapped("This PostProcessChain automatically detects which effects require depth texture.");
-			ImGui::TextWrapped("Effects marked with 'RequiresDepthTexture() = true' will automatically use depth data.");
-			ImGui::TextWrapped("Now using OffscreenTriangle instead of Sprite for better performance!");
-		}
+
 
 		ImGui::Separator();
 

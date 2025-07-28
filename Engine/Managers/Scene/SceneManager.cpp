@@ -245,26 +245,8 @@ void SceneManager::ProcessFadeTransition() {
 
 void SceneManager::ImGui() {
 #ifdef _DEBUG
-	ImGui::Begin("Scene Manager");
 
-	// リソース管理UI
-	if (ImGui::CollapsingHeader("Resource Management")) {
-		if (ImGui::Button("Reload All Scene Resources")) {
-			LoadAllSceneResources();
-		}
-
-		ImGui::Separator();
-		ImGui::Text("Scene Resource Status:");
-		for (const auto& [sceneName, scene] : scenes_) {
-			ImGui::Text("%s: Resources %s, Objects %s",
-				sceneName.c_str(),
-				scene->IsResourcesLoaded() ? "Loaded" : "Not Loaded",
-				scene->IsInitialized() ? "Initialized" : "Not Initialized"
-			);
-		}
-	}
-
-	ImGui::Separator();
+	ImGui::Begin("Scene");
 
 	// シーン管理UI
 	DrawScenesUI();
@@ -280,8 +262,7 @@ void SceneManager::ImGui() {
 
 void SceneManager::DrawScenesUI() {
 #ifdef _DEBUG
-	ImGui::Text("Scene Management");
-
+	ImGui::Text("All Scene Management");
 	// 現在のシーン情報表示
 	if (currentScene_) {
 		ImGui::Text("Current Scene: %s", currentSceneName_.c_str());
@@ -359,21 +340,22 @@ void SceneManager::DrawScenesUI() {
 	ImGui::Text("3D Objects -> Offscreen (with post-processing)");
 	ImGui::Text("UI Elements -> Direct to backbuffer");
 	ImGui::Text("Fade Effect -> Direct to backbuffer (front-most)");
+
 #endif
 }
 
 void SceneManager::DrawCurrentSceneUI() {
 #ifdef _DEBUG
-	ImGui::Text("Current Scene Debug");
+	if (ImGui::CollapsingHeader("Current Scene Debug")) {
+		if (currentScene_) {
+			ImGui::TextColored(ImVec4(0, 1, 0, 1), "Scene: %s", currentSceneName_.c_str());
+			ImGui::Separator();
 
-	if (currentScene_) {
-		ImGui::Text("Scene: %s", currentSceneName_.c_str());
-		ImGui::Separator();
-
-		// 現在のシーンのImGuiを呼び出し
-		currentScene_->ImGui();
-	} else {
-		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "No active scene");
+			// 現在のシーンのImGuiを呼び出し
+			currentScene_->ImGui();
+		} else {
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "No active scene");
+		}
 	}
 #endif
 }

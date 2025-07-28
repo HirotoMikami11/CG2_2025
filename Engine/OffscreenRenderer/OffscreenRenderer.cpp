@@ -561,12 +561,12 @@ void OffscreenRenderer::CreatePSO() {
 		IID_PPV_ARGS(&offscreenPipelineState_));
 	assert(SUCCEEDED(hr));
 
-	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState (OffscreenTriangle version)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState!!\n");
 }
 
 void OffscreenRenderer::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Offscreen Renderer (OffscreenTriangle)")) {
+	if (ImGui::CollapsingHeader("Offscreen Renderer ")) {
 
 		ImGui::Separator();
 		// オフスクリーンOffscreenTriangle情報

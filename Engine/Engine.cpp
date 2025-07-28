@@ -210,7 +210,7 @@ void Engine::ImGui() {
 #ifdef _DEBUG
 
 	//開発用UIの処理
-	ImGui::Begin("Engine_data");
+	ImGui::Begin("Engine");
 
 	//FPS関連
 	frameTimer_->ImGui();
