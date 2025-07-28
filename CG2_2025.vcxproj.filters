@@ -181,6 +181,18 @@
     <Filter Include="Engine\OffScreenRenderer\PostEffect\Vignette">
       <UniqueIdentifier>{37751160-5f38-46cc-ab72-c6d49befc1e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Objects\GameObject\Model">
+      <UniqueIdentifier>{d4820dc4-dcc1-4be1-849f-f0208786ebdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\GameObject\Model\Mesh">
+      <UniqueIdentifier>{91900867-8a51-438c-b7de-20725fb5688e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\GameObject\Model\Materials">
+      <UniqueIdentifier>{40928629-0c0b-4947-84cd-dd0afdcc9eb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Objects\GameObject\Transform">
+      <UniqueIdentifier>{9d8aa58d-61fe-4f78-807a-dc0514c208b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -259,18 +271,6 @@
       <Filter>Engine\Objects\Light</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Objects\GameObject\GameObject.cpp">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Objects\GameObject\Material.cpp">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Objects\GameObject\Mesh.cpp">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Objects\GameObject\Model.cpp">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Objects\GameObject\Transform.cpp">
       <Filter>Engine\Objects\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Texture\Texture.cpp">
@@ -365,6 +365,21 @@
     </ClCompile>
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Vignette\VignettePostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\Vignette</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Material.cpp">
+      <Filter>Engine\Objects\GameObject\Model\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\MaterialGroup.cpp">
+      <Filter>Engine\Objects\GameObject\Model\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Mesh.cpp">
+      <Filter>Engine\Objects\GameObject\Model\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Model.cpp">
+      <Filter>Engine\Objects\GameObject\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GameObject\Transform.cpp">
+      <Filter>Engine\Objects\GameObject\Transform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -502,18 +517,6 @@
     <ClInclude Include="Engine\Objects\GameObject\GameObject.h">
       <Filter>Engine\Objects\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Objects\GameObject\Material.h">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Objects\GameObject\Mesh.h">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Objects\GameObject\Model.h">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Objects\GameObject\Transform.h">
-      <Filter>Engine\Objects\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Managers\Texture\Texture.h">
       <Filter>Engine\Managers\Texture</Filter>
     </ClInclude>
@@ -612,6 +615,21 @@
     </ClInclude>
     <ClInclude Include="Engine\OffscreenRenderer\PostEffect\Vignette\VignettePostEffect.h">
       <Filter>Engine\OffScreenRenderer\PostEffect\Vignette</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Material.h">
+      <Filter>Engine\Objects\GameObject\Model\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\MaterialGroup.h">
+      <Filter>Engine\Objects\GameObject\Model\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Mesh.h">
+      <Filter>Engine\Objects\GameObject\Model\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Model.h">
+      <Filter>Engine\Objects\GameObject\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GameObject\Transform.h">
+      <Filter>Engine\Objects\GameObject\Transform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

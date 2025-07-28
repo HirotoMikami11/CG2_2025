@@ -2,7 +2,6 @@
 #include <string>
 #include <memory>
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
-#include "Objects/GameObject/Material.h"
 #include "Objects/GameObject/Transform.h"
 #include "Objects/Light/Light.h"
 #include "Managers/Texture/TextureManager.h"
@@ -10,7 +9,7 @@
 #include "Managers/ObjectID/ObjectIDManager.h"
 
 /// <summary>
-/// ゲームオブジェクト - 共有モデルと個別Material/Transformを使用
+/// ゲームオブジェクト - 共有モデルと個別Transformを使用
 /// </summary>
 class GameObject
 {
@@ -43,43 +42,78 @@ public:
 	/// </summary>
 	virtual void ImGui();
 
-	// Getter
+	// Transform関連のGetter/Setter
 	Vector3 GetPosition() const { return transform_.GetPosition(); }
 	Vector3 GetRotation() const { return transform_.GetRotation(); }
 	Vector3 GetScale() const { return transform_.GetScale(); }
-	Vector4 GetColor() const { return material_.GetColor(); }
 	Transform& GetTransform() { return transform_; }
 	const Transform& GetTransform() const { return transform_; }
-	Material& GetMaterial() { return material_; }
-	const Material& GetMaterial() const { return material_; }
-	bool IsVisible() const { return isVisible_; }
-	bool IsActive() const { return isActive_; }
-	const std::string& GetName() const { return name_; }
-	const std::string& GetModelTag() const { return modelTag_; }
 
-	// Setter
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
 	void SetPosition(const Vector3& position) { transform_.SetPosition(position); }
 	void SetRotation(const Vector3& rotation) { transform_.SetRotation(rotation); }
 	void SetScale(const Vector3& scale) { transform_.SetScale(scale); }
-	void SetColor(const Vector4& color) { material_.SetColor(color); }
-	void SetVisible(bool visible) { isVisible_ = visible; }
-	void SetActive(bool active) { isActive_ = active; }
-	void SetName(const std::string& name) { name_ = name; }
 
 	// Transform操作
 	void AddPosition(const Vector3& deltaPosition) { transform_.AddPosition(deltaPosition); }
 	void AddRotation(const Vector3& deltaRotation) { transform_.AddRotation(deltaRotation); }
 	void AddScale(const Vector3& deltaScale) { transform_.AddScale(deltaScale); }
 
-	// Material操作
-	void SetLightingMode(LightingMode mode) { material_.SetLightingMode(mode); }
-	LightingMode GetLightingMode() const { return material_.GetLightingMode(); }
+	// Model関連のGetter（Modelが直接マテリアルを管理）
+	Model* GetModel() { return sharedModel_; }
+	const Model* GetModel() const { return sharedModel_; }
 
-	// UV操作
-	void SetUVTransformScale(const Vector2& scale) { material_.SetUVTransformScale(scale); }
-	void SetUVTransformRotateZ(float rotate) { material_.SetUVTransformRotateZ(rotate); }
-	void SetUVTransformTranslate(const Vector2& translate) { material_.SetUVTransformTranslate(translate); }
+	// マテリアル操作のショートカット（直接Modelのマテリアルを操作）
+	Material& GetMaterial(size_t index = 0) {
+		return sharedModel_ ? sharedModel_->GetMaterial(index) : dummyMaterial_;
+	}
+	const Material& GetMaterial(size_t index = 0) const {
+		return sharedModel_ ? sharedModel_->GetMaterial(index) : dummyMaterial_;
+	}
+	size_t GetMaterialCount() const {
+		return sharedModel_ ? sharedModel_->GetMaterialCount() : 0;
+	}
+
+	// メインマテリアル（インデックス0）のショートカット
+	Vector4 GetColor() const {
+		return sharedModel_ ? sharedModel_->GetMaterial(0).GetColor() : Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	}
+	LightingMode GetLightingMode() const {
+		return sharedModel_ ? sharedModel_->GetMaterial(0).GetLightingMode() : LightingMode::None;
+	}
+
+	void SetColor(const Vector4& color) {
+		if (sharedModel_) sharedModel_->GetMaterial(0).SetColor(color);
+	}
+	void SetLightingMode(LightingMode mode) {
+		if (sharedModel_) sharedModel_->GetMaterial(0).SetLightingMode(mode);
+	}
+
+	// 全マテリアルに同じ設定を適用
+	void SetAllMaterialsColor(const Vector4& color, LightingMode mode = LightingMode::HalfLambert) {
+		if (sharedModel_) sharedModel_->SetAllMaterialsColor(color, mode);
+	}
+
+	// UV操作（メインマテリアル用）
+	void SetUVTransformScale(const Vector2& scale) {
+		if (sharedModel_) sharedModel_->GetMaterial(0).SetUVTransformScale(scale);
+	}
+	void SetUVTransformRotateZ(float rotate) {
+		if (sharedModel_) sharedModel_->GetMaterial(0).SetUVTransformRotateZ(rotate);
+	}
+	void SetUVTransformTranslate(const Vector2& translate) {
+		if (sharedModel_) sharedModel_->GetMaterial(0).SetUVTransformTranslate(translate);
+	}
+
+	// オブジェクト状態
+	bool IsVisible() const { return isVisible_; }
+	bool IsActive() const { return isActive_; }
+	const std::string& GetName() const { return name_; }
+	const std::string& GetModelTag() const { return modelTag_; }
+
+	void SetVisible(bool visible) { isVisible_ = visible; }
+	void SetActive(bool active) { isActive_ = active; }
+	void SetName(const std::string& name) { name_ = name; }
 
 	// テクスチャ操作（プリミティブ用）
 	void SetTexture(const std::string& textureName) { textureName_ = textureName; }
@@ -88,18 +122,17 @@ public:
 
 protected:
 	// 個別に持つコンポーネント
-	Material material_;                    // 個別のマテリアル（色、ライティング設定等）
-	Transform transform_;                  // 個別のトランスフォーム（位置、回転、スケール）
+	Transform transform_;					// 個別のトランスフォーム（位置、回転、スケール）
 
 	// 共有リソースへの参照
-	Model* sharedModel_ = nullptr;         // 共有モデルへのポインタ
+	Model* sharedModel_ = nullptr;			// 共有モデルへのポインタ（モデルがマテリアルも管理）
 
 	// オブジェクトの状態
 	bool isVisible_ = true;
 	bool isActive_ = true;
 	std::string name_ = "GameObject";
 	std::string modelTag_ = "";
-	std::string textureName_ = "";         // プリミティブ用のテクスチャ名
+	std::string textureName_ = "";			// プリミティブ用のテクスチャ名
 
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
@@ -107,20 +140,13 @@ protected:
 	ModelManager* modelManager_ = ModelManager::GetInstance();
 
 private:
-	/// <summary>
-	/// GameObjectのマテリアル設定をモデルのマテリアルに同期
-	/// </summary>
-	/// <param name="materialIndex">同期するマテリアルのインデックス</param>
-	void SyncMaterialSettings(size_t materialIndex);
+	// ダミーマテリアル（モデルがない場合の安全対策?一応設定）
+	static Material dummyMaterial_;
 
 	// ImGui用の内部状態
 	Vector3 imguiPosition_{ 0.0f, 0.0f, 0.0f };
 	Vector3 imguiRotation_{ 0.0f, 0.0f, 0.0f };
 	Vector3 imguiScale_{ 1.0f, 1.0f, 1.0f };
-	Vector4 imguiColor_{ 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector2 imguiUvPosition_{ 0.0f, 0.0f };
-	float imguiUvRotateZ_{ 0.0f };
-	Vector2 imguiUvScale_{ 1.0f, 1.0f };
 };
 
 /// <summary>
@@ -131,12 +157,9 @@ class Triangle : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "triangle", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = idManager->GenerateName("Triangle");
+		name_ = ObjectIDManager::GetInstance()->GenerateName("Triangle");
 		SetLightingMode(LightingMode::HalfLambert);
 	}
-
-private:
-	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };
 
 /// <summary>
@@ -147,12 +170,9 @@ class Sphere : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "sphere", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = idManager->GenerateName("Sphere");
+		name_ = ObjectIDManager::GetInstance()->GenerateName("Sphere");
 		SetLightingMode(LightingMode::HalfLambert);
 	}
-
-private:
-	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };
 
 /// <summary>
@@ -163,12 +183,9 @@ class Plane : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag = "plane", const std::string& textureName = "white") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = idManager->GenerateName("Plane");
+		name_ = ObjectIDManager::GetInstance()->GenerateName("Plane");
 		SetLightingMode(LightingMode::HalfLambert);
 	}
-
-private:
-	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };
 
 /// <summary>
@@ -179,11 +196,7 @@ class Model3D : public GameObject
 public:
 	void Initialize(DirectXCommon* dxCommon, const std::string& modelTag, const std::string& textureName = "") {
 		GameObject::Initialize(dxCommon, modelTag, textureName);
-		name_ = idManager->GenerateName(std::format("Model ({})", modelTag), "Model3D");
+		name_ = ObjectIDManager::GetInstance()->GenerateName(std::format("Model ({})", modelTag), "Model3D");
 		SetLightingMode(LightingMode::HalfLambert);
-
 	}
-
-private:
-	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 };

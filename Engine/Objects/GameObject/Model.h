@@ -9,12 +9,13 @@
 #include "BaseSystem/Logger/Logger.h"
 #include "Objects/GameObject/Mesh.h"
 #include "Objects/GameObject/Material.h"
+#include "Objects/GameObject/MaterialGroup.h"
 
 //マテリアルの情報をtextureManagerの送るため
 #include "Managers/Texture/TextureManager.h"
 
 /// <summary>
-/// 共有可能なモデルクラス
+/// モデルクラス（メッシュ、マテリアル、テクスチャを管理）
 /// </summary>
 class Model
 {
@@ -54,6 +55,11 @@ public:
 	/// </summary>
 	void Unload();
 
+	/// <summary>
+	/// 全マテリアルのUVTransformを更新
+	/// </summary>
+	void UpdateMaterials();
+
 	// メッシュ関連のアクセサ
 	size_t GetMeshCount() const { return meshes_.size(); }
 
@@ -77,28 +83,19 @@ public:
 	std::vector<Mesh>& GetMeshes() { return meshes_; }
 	const std::vector<Mesh>& GetMeshes() const { return meshes_; }
 
-	// マテリアル関連（マルチマテリアル対応）
-	size_t GetMaterialCount() const { return materials_.size(); }
+	// マテリアル関連
+	MaterialGroup& GetMaterialGroup() { return materialGroup_; }
+	const MaterialGroup& GetMaterialGroup() const { return materialGroup_; }
 
-	Material& GetMaterial(size_t index = 0) {
-		if (index >= materials_.size()) {
-			Logger::Log(Logger::GetStream(), std::format("Material index {} out of range (max: {})\n", index, materials_.size() - 1));
-			return materials_[0]; // フォールバック
-		}
-		return materials_[index];
+	size_t GetMaterialCount() const { return materialGroup_.GetMaterialCount(); }
+
+	Material& GetMaterial(size_t index = 0) { return materialGroup_.GetMaterial(index); }
+	const Material& GetMaterial(size_t index = 0) const { return materialGroup_.GetMaterial(index); }
+
+	// マテリアル一括操作
+	void SetAllMaterialsColor(const Vector4& color, LightingMode lightingMode = LightingMode::HalfLambert) {
+		materialGroup_.SetAllMaterials(color, lightingMode);
 	}
-
-	const Material& GetMaterial(size_t index = 0) const {
-		if (index >= materials_.size()) {
-			Logger::Log(Logger::GetStream(), std::format("Material index {} out of range (max: {})\n", index, materials_.size() - 1));
-			return materials_[0]; // フォールバック
-		}
-		return materials_[index];
-	}
-
-	// 全マテリアルへのアクセス
-	std::vector<Material>& GetMaterials() { return materials_; }
-	const std::vector<Material>& GetMaterials() const { return materials_; }
 
 	// テクスチャタグ名の設定と取得（マルチテクスチャ対応）
 	void SetTextureTagName(const std::string& tagName, size_t index = 0) {
@@ -156,8 +153,8 @@ private:
 	// DirectXCommon参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	// マルチマテリアル対応
-	std::vector<Material> materials_;
+	// マテリアルグループ（モデルのマテリアルを全て管理）
+	MaterialGroup materialGroup_;
 
 	// 複数メッシュ対応
 	std::vector<Mesh> meshes_;
@@ -174,12 +171,12 @@ private:
 	std::string filePath_;
 
 	/// <summary>
-	/// OBJファイルを読み込む（マルチマテリアル対応）
+	/// OBJファイルを読み込む
 	/// </summary>
 	std::vector<ModelData> LoadObjFileMulti(const std::string& directoryPath, const std::string& filename);
 
 	/// <summary>
-	/// マテリアルファイルを読み込む（複数マテリアル対応）
+	/// マテリアルファイルを読み込む
 	/// </summary>
 	std::map<std::string, MaterialDataModel> LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 

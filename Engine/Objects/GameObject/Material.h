@@ -2,21 +2,27 @@
 
 #include <d3d12.h>
 #include <wrl.h>
+#include <vector>
+#include <string>
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 #include <cassert>
 
-// ライティングモード定義
+/// <summary>
+/// ライティングモードの定義
+/// </summary>
 enum class LightingMode {
-	None = 0,       // ライティングなし
-	Lambert = 1,    // ランバート反射
-	HalfLambert = 2 // ハーフランバート反射
+	None = 0,		// ライティングなし
+	Lambert = 1,	// ランバート反射
+	HalfLambert = 2	// ハーフランバート反射
 };
 
-class Material
-{
+/// <summary>
+/// 一つのマテリアルデータクラス
+/// </summary>
+class Material {
 public:
 	Material() = default;
 	~Material() = default;
@@ -42,36 +48,29 @@ public:
 	/// </summary>
 	void UpdateUVTransform();
 
-	//Getter
+	/// <summary>
+	/// 他のマテリアルからの設定をコピー
+	/// </summary>
+	/// <param name="source">コピー元のマテリアル</param>
+	void CopyFrom(const Material& source);
 
-	//色
+	// Getter
 	Vector4 GetColor() const { return materialData_->color; }
-	//ライティングモード
 	LightingMode GetLightingMode() const { return lightingMode_; }
-	// UVトランスフォーム
-	Matrix4x4 GetUVTransform() const { return materialData_->uvTransform; };
-
-	Vector2 GetUVTransformScale()const { return uvScale_; };
-	float GetUVTransformRotateZ()const { return uvRotateZ_; };
-	Vector2 GetUVTransformTranslate()const { return uvTranslate_; };
-
-	//マテリアルリソース
+	Matrix4x4 GetUVTransform() const { return materialData_->uvTransform; }
+	Vector2 GetUVTransformScale() const { return uvScale_; }
+	float GetUVTransformRotateZ() const { return uvRotateZ_; }
+	Vector2 GetUVTransformTranslate() const { return uvTranslate_; }
 	ID3D12Resource* GetResource() const { return materialResource_.Get(); }
-	// マテリアルデータの直接取得（ImGui用）
 	MaterialData* GetMaterialDataPtr() const { return materialData_; }
 
-	//Setter
-
+	// Setter
 	void SetColor(const Vector4& color) { materialData_->color = color; }
-
-	// ライティングモード設定
 	void SetLightingMode(LightingMode mode);
-
-	// UVトランスフォーム
 	void SetUVTransform(const Matrix4x4& uvTransform) { materialData_->uvTransform = uvTransform; }
-	void SetUVTransformScale(const Vector2 uvScale) { uvScale_ = uvScale; UpdateUVTransform(); };
-	void SetUVTransformRotateZ(const float uvRotateZ) { uvRotateZ_ = uvRotateZ; UpdateUVTransform(); };
-	void SetUVTransformTranslate(const Vector2 uvTranslate) { uvTranslate_ = uvTranslate; UpdateUVTransform(); };
+	void SetUVTransformScale(const Vector2& uvScale) { uvScale_ = uvScale; UpdateUVTransform(); }
+	void SetUVTransformRotateZ(float uvRotateZ) { uvRotateZ_ = uvRotateZ; UpdateUVTransform(); }
+	void SetUVTransformTranslate(const Vector2& uvTranslate) { uvTranslate_ = uvTranslate; UpdateUVTransform(); }
 
 private:
 	// マテリアルリソース
@@ -83,7 +82,7 @@ private:
 	LightingMode lightingMode_ = LightingMode::None;
 
 	// UVTransformを変更するための変数
-	Vector2 uvTranslate_ = { 0.0f,0.0f };
-	Vector2 uvScale_ = { 1.0f,1.0f };
-	float uvRotateZ_ = { 0.0f };
+	Vector2 uvTranslate_ = { 0.0f, 0.0f };
+	Vector2 uvScale_ = { 1.0f, 1.0f };
+	float uvRotateZ_ = 0.0f;
 };
