@@ -199,6 +199,12 @@
     <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect">
       <UniqueIdentifier>{54b03d41-2b34-4715-aa3f-d60070531c94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect\Fade">
+      <UniqueIdentifier>{a000645f-c9f8-4748-9d16-15cacd102c37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect\Slide">
+      <UniqueIdentifier>{d1435d44-23bc-485c-b36f-37d4ef080def}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -391,10 +397,10 @@
       <Filter>Engine\Managers\Scene\TransitionManager</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.cpp">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Fade</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.cpp">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Slide</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -656,10 +662,10 @@
       <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.h">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Fade</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.h">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Slide</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

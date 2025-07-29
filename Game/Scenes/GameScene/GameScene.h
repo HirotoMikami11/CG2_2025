@@ -58,7 +58,6 @@ private:
 		kDeath, // デス演出
 	};
 
-
 	void InitializeGameObjects();
 	void DrawGameObjects();
 
