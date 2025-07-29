@@ -109,30 +109,6 @@
     <Filter Include="Engine\Managers\ImGui">
       <UniqueIdentifier>{24adf0e5-c0e5-49bc-b239-16c89b7788b2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Objects">
-      <UniqueIdentifier>{0126492a-2253-4b67-9cff-eedc8047fabb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\Player">
-      <UniqueIdentifier>{3a16bcdb-d50c-496d-8b75-a6d86459a64a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\Enemy">
-      <UniqueIdentifier>{72884eaa-fda0-45e6-999b-982d08e1e8a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\MapChipField">
-      <UniqueIdentifier>{32651caf-a83b-448e-a20f-28f9e170f45b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\Skydome">
-      <UniqueIdentifier>{f4539ff9-b533-43a6-992b-bd998b0a53c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\TitlePlayer">
-      <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\GameCamera">
-      <UniqueIdentifier>{1f0a3efa-dca2-447c-b994-cd9562ff2d7d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\DeathParticles">
-      <UniqueIdentifier>{4cae9bdc-8f4c-44bd-a3f7-d610a56e63e5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Managers\Model">
       <UniqueIdentifier>{511b34ed-608c-4f53-8cb6-30253fa7f735}</UniqueIdentifier>
     </Filter>
@@ -193,17 +169,38 @@
     <Filter Include="Engine\Objects\GameObject\Transform">
       <UniqueIdentifier>{9d8aa58d-61fe-4f78-807a-dc0514c208b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Managers\Scene\TransitionManager">
+    <Filter Include="Engine\Managers\Transition">
       <UniqueIdentifier>{670c0d40-ee1d-4544-95e2-e629903cd820}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect">
+    <Filter Include="Engine\Managers\Transition\TransitionEffect">
       <UniqueIdentifier>{54b03d41-2b34-4715-aa3f-d60070531c94}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect\Fade">
+    <Filter Include="Engine\Managers\Transition\TransitionEffect\Fade">
       <UniqueIdentifier>{a000645f-c9f8-4748-9d16-15cacd102c37}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect\Slide">
+    <Filter Include="Engine\Managers\Transition\TransitionEffect\Slide">
       <UniqueIdentifier>{d1435d44-23bc-485c-b36f-37d4ef080def}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects">
+      <UniqueIdentifier>{0126492a-2253-4b67-9cff-eedc8047fabb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\TitlePlayer">
+      <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Player">
+      <UniqueIdentifier>{48f28e37-02ea-469d-8085-0ef416add2ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Player\PlayerBullet">
+      <UniqueIdentifier>{61b3c35b-8a6a-4335-adf7-cd54b55024bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy">
+      <UniqueIdentifier>{56598550-c9c7-447a-b1ab-70c08f84cef9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\EnemyBullet">
+      <UniqueIdentifier>{91b12361-6ee4-4983-b31b-d87d1f43655e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy\State">
+      <UniqueIdentifier>{257d1e67-a471-42a9-b817-99e2a55e03da}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -303,32 +300,11 @@
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp">
       <Filter>Engine\Managers\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Managers\InputManager.cpp">
-      <Filter>Engine\Managers\Input</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Objects\Skydome.cpp">
-      <Filter>Game\Objects\Skydome</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Objects\TitlePlayer.cpp">
-      <Filter>Game\Objects\TitlePlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\Player.cpp">
-      <Filter>Game\Objects\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\MapChipField.cpp">
-      <Filter>Game\Objects\MapChipField</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\Enemy.cpp">
-      <Filter>Game\Objects\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\GameCamera.cpp">
-      <Filter>Game\Objects\GameCamera</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\DeathParticles.cpp">
-      <Filter>Game\Objects\DeathParticles</Filter>
+      <Filter>Game\GameObjects\TitlePlayer</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
       <Filter>Engine\Managers\Model</Filter>
@@ -387,17 +363,44 @@
     <ClCompile Include="Engine\Objects\GameObject\Model.cpp">
       <Filter>Engine\Objects\GameObject\Model</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Objects\GameObject\Transform.cpp">
+    <ClCompile Include="Engine\Objects\GameObject\Transform3D.cpp">
       <Filter>Engine\Objects\GameObject\Transform</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Transition\TransitionManager.cpp">
-      <Filter>Engine\Managers\Scene\TransitionManager</Filter>
+      <Filter>Engine\Managers\Transition</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.cpp">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Fade</Filter>
+      <Filter>Engine\Managers\Transition\TransitionEffect\Fade</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.cpp">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Slide</Filter>
+      <Filter>Engine\Managers\Transition\TransitionEffect\Slide</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp">
+      <Filter>Game\GameObjects\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\EnemyBullet\EnemyBullet.cpp">
+      <Filter>Game\GameObjects\EnemyBullet</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Player\Player.cpp">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerBullet.cpp">
+      <Filter>Game\GameObjects\Player\PlayerBullet</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Input\InputManager.cpp">
+      <Filter>Engine\Managers\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\MyMath\TimedCall.cpp">
+      <Filter>Engine\MyMath</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -556,32 +559,11 @@
     <ClInclude Include="Engine\Managers\Scene\SceneManager.h">
       <Filter>Engine\Managers\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Managers\InputManager.h">
-      <Filter>Engine\Managers\Input</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Objects\Skydome.h">
-      <Filter>Game\Objects\Skydome</Filter>
-    </ClInclude>
     <ClInclude Include="Game\Objects\TitlePlayer.h">
-      <Filter>Game\Objects\TitlePlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\Player.h">
-      <Filter>Game\Objects\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\MapChipField.h">
-      <Filter>Game\Objects\MapChipField</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\Enemy.h">
-      <Filter>Game\Objects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\GameCamera.h">
-      <Filter>Game\Objects\GameCamera</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\DeathParticles.h">
-      <Filter>Game\Objects\DeathParticles</Filter>
+      <Filter>Game\GameObjects\TitlePlayer</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Model\ModelManager.h">
       <Filter>Engine\Managers\Model</Filter>
@@ -643,23 +625,50 @@
     <ClInclude Include="Engine\Objects\GameObject\Model.h">
       <Filter>Engine\Objects\GameObject\Model</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Objects\GameObject\Transform.h">
+    <ClInclude Include="Engine\Objects\GameObject\Transform3D.h">
       <Filter>Engine\Objects\GameObject\Transform</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\SceneTransitionHelper.h">
-      <Filter>Engine\Managers\Scene\TransitionManager</Filter>
+      <Filter>Engine\Managers\Transition</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\TransitionManager.h">
-      <Filter>Engine\Managers\Scene\TransitionManager</Filter>
+      <Filter>Engine\Managers\Transition</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\BaseTransitionEffect.h">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+      <Filter>Engine\Managers\Transition\TransitionEffect</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.h">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Fade</Filter>
+      <Filter>Engine\Managers\Transition\TransitionEffect\Fade</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.h">
-      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect\Slide</Filter>
+      <Filter>Engine\Managers\Transition\TransitionEffect\Slide</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\Enemy.h">
+      <Filter>Game\GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\EnemyBullet\EnemyBullet.h">
+      <Filter>Game\GameObjects\EnemyBullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Player\Player.h">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerBullet.h">
+      <Filter>Game\GameObjects\Player\PlayerBullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Input\InputManager.h">
+      <Filter>Engine\Managers\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\MyMath\TimedCall.h">
+      <Filter>Engine\MyMath</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

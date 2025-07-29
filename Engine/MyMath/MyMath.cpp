@@ -386,6 +386,57 @@ Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
 	return Vector3(v1.x + (v2.x - v1.x) * t, v1.y + (v2.y - v1.y) * t, v1.z + (v2.z - v1.z) * t);
 }
 
+Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t)
+{
+
+	/// cosθ‘を求める
+
+	// v1の正規化ベクトルを求める
+	Vector3 v1Normal = Normalize(v1);
+	// v2の正規化ベクトルを求める
+	Vector3 v2Normal = Normalize(v2);
+
+	// 内積を求める(cosθになる)
+	float dot = Dot(v1Normal, v2Normal);
+
+	/// sinθを求める
+
+	// 誤差により1.0fを超えるのを防ぐ
+	dot = std::clamp(dot, 0.0f, 1.0f);
+
+	// アークコサインでシータの角度を求める
+	float theta = std::acos(dot);
+	// シータの角度からsinθを求める
+	float sinTheta = std::sin(theta);
+
+	// サイン(θ(1-t))を求める
+	float sinThetaFrom = std::sin(1 - t) * theta;
+
+	// サインθtを求める
+	float sinThetaTo = std::sin(t * theta);
+
+	// 球面線形補間したベクトルの単位ベクトル
+	Vector3 normalizeLarpVec;
+
+	// ゼロ除算を防ぐ
+	if (sinTheta < 1.0e-5) {
+		normalizeLarpVec = v1Normal;
+	} else {
+		normalizeLarpVec = (sinThetaFrom * v1Normal + sinThetaTo * v2Normal) / sinTheta;
+	}
+
+	//ベクトルの長さはv1v2の線形本館
+	float Length1 = Length(v1);
+	float Length2 = Length(v2);
+	//Lerp
+	float lenght = Lerp(Length1, Length2, t);
+
+	//長さかけて返す
+	return lenght * normalizeLarpVec;
+
+
+}
+
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
 ///																		///

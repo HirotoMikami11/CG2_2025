@@ -7,12 +7,12 @@
 #include "MyMath/MyFunction.h"
 #include "BaseSystem/Logger/Logger.h"
 
-class Transform final
+class Transform3D final
 {
 
 public:
-	Transform() = default;
-	~Transform() = default;
+	Transform3D() = default;
+	~Transform3D() = default;
 
 	/// <summary>
 	/// トランスフォームの初期化

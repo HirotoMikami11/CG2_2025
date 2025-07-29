@@ -1,18 +1,20 @@
 #pragma once
 #include <memory>
 #include <array>
-#include <list>
 
 #include "Engine.h"
-#include "Managers/Scene/BaseScene.h"		//シーン基底クラス
+#include "Managers/Scene/BaseScene.h"
 
-#include"Objects/Player.h"			//プレイヤー
-#include "Objects/Enemy.h"			//敵
-#include"Objects/Skydome.h"			//天球
-#include"Objects/MapChipField.h"	//ブロック
-#include"Objects/GameCamera.h"		//カメラをプレイヤー追従させる
-#include "Objects/DeathParticles.h"	//死亡演出のパーティクル
 
+#include "Objects/Line/GridLine.h"
+#include "GameObjects/Player/Player.h"
+#include "GameObjects/Enemy/Enemy.h"
+
+
+
+/// <summary>
+/// ゲームシーン
+/// </summary>
 class GameScene : public BaseScene {
 public:
 	GameScene();
@@ -34,6 +36,7 @@ public:
 	void Initialize() override;
 
 	void Update() override;
+
 	/// <summary>
 	/// 3D描画処理（オフスクリーン内）
 	/// </summary>
@@ -54,76 +57,30 @@ public:
 	void ImGui() override;
 
 private:
-
-	/// <summary>
-	/// ゲームのフェーズ型
-	/// </summary>
-	enum class Phase {
-		kPlay,  // ゲームプレイ
-		kDeath, // デス演出
-	};
-
 	void InitializeGameObjects();
+	void UpdateGameObjects();
 	void DrawGameObjects();
 
-	/// <summary>
-	/// 敵の初期化
-	/// </summary>
-	void InitializeEnemies();
-	/// <summary>
-	/// マップチップデータに合わせたブロックの生成
-	/// </summary>
-	void GenerateBlocks();
-	/// <summary>
-	/// 全ての当たり判定を行う
-	/// </summary>
-	void CheckAllCollision();
-
-	/// <summary>
-	/// フェーズの切り替え
-	/// </summary>
-	void ChangePhase();
-
-	// ゲームの現在フェーズ
-	Phase phase_ = Phase::kPlay;
-
 	// ゲームオブジェクト
-	//プレイヤー
-	std::unique_ptr<Player> player_ = nullptr;
-	//天球
-	std::unique_ptr<Skydome> skydome_ = nullptr;
-
-	// 敵
-	std::list<std::unique_ptr<Enemy>> enemies_;
-
-	// 敵の数
-	static inline const int kEnemyCount = 3;
-
-	// マップチップ
-	MapChipField* mapChipField_;
-
-	// ブロック（2次元配列でブロックを管理）
-	std::vector<std::vector<std::unique_ptr<Model3D>>> blocks_;
-
-	//死亡パーティクル
-	std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
+	std::unique_ptr<Player> player_;
+	std::unique_ptr<Enemy> enemy_;
 
 	// ライティング
 	Light directionalLight_;
 
 	// カメラ
 	CameraController* cameraController_;
-	GameCamera* gameCamera_ = nullptr;
 	Matrix4x4 viewProjectionMatrix;
 	Matrix4x4 viewProjectionMatrixSprite;
 
 	// システム参照
 	DirectXCommon* directXCommon_;
 	OffscreenRenderer* offscreenRenderer_;
-	
+
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
 
-
+	// デバッグカメラ制御
+	bool isDebugCameraActive_ = false;
 };

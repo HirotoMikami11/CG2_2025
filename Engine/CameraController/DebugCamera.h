@@ -6,7 +6,7 @@
 
 #include "BaseCamera.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
-#include "Managers/inputManager.h"
+#include "Managers/Input/inputManager.h"
 
 /// <summary>
 /// 球面座標系を表す構造体

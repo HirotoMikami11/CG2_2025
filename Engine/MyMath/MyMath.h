@@ -9,6 +9,8 @@
 #include<sstream>
 #include<numbers>
 
+#include <algorithm>
+
 ///ウィンドウサイズ
 #include"BaseSystem/GraphicsConfig.h"
 
@@ -234,6 +236,10 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2);
 float Distance(const Vector3& v1, const Vector3& v2);
 //線形補間
 Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
+//球面線形補間
+//min,max
+Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t);
 
 /*-----------------------------------------------------------------------*/
 //

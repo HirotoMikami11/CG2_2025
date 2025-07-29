@@ -1,6 +1,6 @@
-#include "Transform.h"
+#include "Transform3D.h"
 
-void Transform::Initialize(DirectXCommon* dxCommon)
+void Transform3D::Initialize(DirectXCommon* dxCommon)
 {
 	// トランスフォーム用のリソースを作成
 	transformResource_ = CreateBufferResource(dxCommon->GetDevice(), sizeof(TransformationMatrix));
@@ -12,7 +12,7 @@ void Transform::Initialize(DirectXCommon* dxCommon)
 	SetDefaultTransform();
 }
 
-void Transform::UpdateMatrix(const Matrix4x4& viewProjectionMatrix)
+void Transform3D::UpdateMatrix(const Matrix4x4& viewProjectionMatrix)
 {
 	// トランスフォームデータを更新
 	transformData_->World = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
@@ -20,7 +20,7 @@ void Transform::UpdateMatrix(const Matrix4x4& viewProjectionMatrix)
 	transformData_->WVP = Matrix4x4Multiply(transformData_->World, viewProjectionMatrix);
 }
 
-void Transform::SetDefaultTransform() {
+void Transform3D::SetDefaultTransform() {
 
 	// デフォルト値に設定
 	transform_.scale = { 1.0f, 1.0f, 1.0f };
@@ -32,14 +32,14 @@ void Transform::SetDefaultTransform() {
 	transformData_->WVP = MakeIdentity4x4();
 }
 
-void Transform::AddPosition(const Vector3& Position)
+void Transform3D::AddPosition(const Vector3& Position)
 {
 	transform_.translate.x += Position.x;
 	transform_.translate.y += Position.y;
 	transform_.translate.z += Position.z;
 }
 
-void Transform::AddRotation(const Vector3& rotation)
+void Transform3D::AddRotation(const Vector3& rotation)
 {
 	transform_.rotate.x += rotation.x;
 	transform_.rotate.y += rotation.y;
@@ -47,7 +47,7 @@ void Transform::AddRotation(const Vector3& rotation)
 
 }
 
-void Transform::AddScale(const Vector3& Scale)
+void Transform3D::AddScale(const Vector3& Scale)
 {
 	transform_.scale.x += Scale.x;
 	transform_.scale.y += Scale.y;

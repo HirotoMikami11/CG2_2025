@@ -2,7 +2,7 @@
 #include <string>
 #include <memory>
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
-#include "Objects/GameObject/Transform.h"
+#include "Objects/GameObject/Transform3D.h"
 #include "Objects/Light/Light.h"
 #include "Managers/Texture/TextureManager.h"
 #include "Managers/Model/ModelManager.h"
@@ -46,8 +46,8 @@ public:
 	Vector3 GetPosition() const { return transform_.GetPosition(); }
 	Vector3 GetRotation() const { return transform_.GetRotation(); }
 	Vector3 GetScale() const { return transform_.GetScale(); }
-	Transform& GetTransform() { return transform_; }
-	const Transform& GetTransform() const { return transform_; }
+	Transform3D& GetTransform() { return transform_; }
+	const Transform3D& GetTransform() const { return transform_; }
 
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
 	void SetPosition(const Vector3& position) { transform_.SetPosition(position); }
@@ -122,7 +122,7 @@ public:
 
 protected:
 	// 個別に持つコンポーネント
-	Transform transform_;					// 個別のトランスフォーム（位置、回転、スケール）
+	Transform3D transform_;					// 個別のトランスフォーム（位置、回転、スケール）
 
 	// 共有リソースへの参照
 	Model* sharedModel_ = nullptr;			// 共有モデルへのポインタ（モデルがマテリアルも管理）

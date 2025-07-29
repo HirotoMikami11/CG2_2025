@@ -4,7 +4,7 @@
 #include <wrl.h>
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
-#include "Objects/GameObject/Transform.h"
+#include "Objects/GameObject/Transform3D.h"
 #include "Objects/Line/Line.h"
 #include "MyMath/MyFunction.h"
 
@@ -109,8 +109,8 @@ public:
 	void SetName(const std::string& name) { name_ = name; }
 
 	// Transform関連
-	Transform& GetTransform() { return transform_; }
-	const Transform& GetTransform() const { return transform_; }
+	Transform3D& GetTransform() { return transform_; }
+	const Transform3D& GetTransform() const { return transform_; }
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
 
 private:
@@ -130,7 +130,7 @@ private:
 	std::string name_ = "GridLine";
 
 	// Transform（グリッド全体の変換）
-	Transform transform_;
+	Transform3D transform_;
 
 	// 線分データ
 	std::vector<std::unique_ptr<Line>> lines_;
