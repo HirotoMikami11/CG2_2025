@@ -33,6 +33,9 @@ void GameObject::Initialize(DirectXCommon* dxCommon, const std::string& modelTag
 	imguiRotation_ = transform_.GetRotation();
 	imguiScale_ = transform_.GetScale();
 
+	// 個別マテリアルフラグをリセット
+	hasIndividualMaterials_ = false;
+
 	Logger::Log(Logger::GetStream(), std::format("GameObject initialized with model '{}' ({} materials)\n",
 		modelTag, sharedModel_->GetMaterialCount()));
 }
@@ -46,8 +49,12 @@ void GameObject::Update(const Matrix4x4& viewProjectionMatrix) {
 	// トランスフォーム行列の更新
 	transform_.UpdateMatrix(viewProjectionMatrix);
 
-	// モデルのマテリアル更新
-	if (sharedModel_) {
+	// 個別マテリアルがある場合は更新
+	if (hasIndividualMaterials_) {
+		individualMaterials_.UpdateAllUVTransforms();
+	}
+	// 共有モデルのマテリアル更新
+	else if (sharedModel_) {
 		sharedModel_->UpdateMaterials();
 	}
 }
@@ -75,13 +82,20 @@ void GameObject::Draw(const Light& directionalLight) {
 		size_t materialIndex = sharedModel_->GetMeshMaterialIndex(i);
 
 		// 範囲チェック（安全のため）
-		if (materialIndex >= sharedModel_->GetMaterialCount()) {
+		size_t maxMaterialIndex = hasIndividualMaterials_ ?
+			individualMaterials_.GetMaterialCount() : sharedModel_->GetMaterialCount();
+		if (materialIndex >= maxMaterialIndex) {
 			materialIndex = 0; // フォールバック
 		}
 
-		// マテリアルを設定（直接Modelのマテリアルから取得）
-		commandList->SetGraphicsRootConstantBufferView(0,
-			sharedModel_->GetMaterial(materialIndex).GetResource()->GetGPUVirtualAddress());
+		// マテリアルを設定（個別マテリアルがあれば優先使用）
+		if (hasIndividualMaterials_) {
+			commandList->SetGraphicsRootConstantBufferView(0,
+				individualMaterials_.GetMaterial(materialIndex).GetResource()->GetGPUVirtualAddress());
+		} else {
+			commandList->SetGraphicsRootConstantBufferView(0,
+				sharedModel_->GetMaterial(materialIndex).GetResource()->GetGPUVirtualAddress());
+		}
 
 		// テクスチャの設定
 		if (!textureName_.empty()) {
@@ -107,13 +121,19 @@ void GameObject::ImGui() {
 		ImGui::Checkbox("Visible", &isVisible_);
 		ImGui::Checkbox("Active", &isActive_);
 
+		// 個別マテリアル情報
+		ImGui::Text("Individual Materials: %s", hasIndividualMaterials_ ? "Yes" : "No");
+		if (hasIndividualMaterials_) {
+			ImGui::Text("Individual Material Count: %zu", individualMaterials_.GetMaterialCount());
+		}
+
 		// モデル情報
 		ImGui::Text("Model Tag: %s", modelTag_.c_str());
 		if (sharedModel_) {
 			ImGui::Text("Shared Model Loaded: Yes");
 			ImGui::Text("Model Path: %s", sharedModel_->GetFilePath().c_str());
 			ImGui::Text("Mesh Count: %zu", sharedModel_->GetMeshCount());
-			ImGui::Text("Material Count: %zu", sharedModel_->GetMaterialCount());
+			ImGui::Text("Shared Material Count: %zu", sharedModel_->GetMaterialCount());
 		} else {
 			ImGui::Text("Shared Model Loaded: No");
 		}
@@ -135,11 +155,19 @@ void GameObject::ImGui() {
 			}
 		}
 
-		// マルチマテリアル対応のMaterial設定（直接モデルのマテリアルを操作）
-		if (ImGui::CollapsingHeader("Materials") && sharedModel_) {
-			size_t materialCount = sharedModel_->GetMaterialCount();
+		// マテリアル設定（個別マテリアル対応）
+		if (ImGui::CollapsingHeader("Materials")) {
+			// 個別マテリアル作成ボタン
+			if (!hasIndividualMaterials_) {
+				if (ImGui::Button("Create Individual Materials")) {
+					CreateIndividualMaterials();
+				}
+				ImGui::Text("Using shared materials");
+			} else {
+				ImGui::Text("Using individual materials");
+			}
 
-			// マテリアル数表示
+			size_t materialCount = GetMaterialCount();
 			ImGui::Text("Material Count: %zu", materialCount);
 			ImGui::Separator();
 
@@ -147,7 +175,7 @@ void GameObject::ImGui() {
 			if (materialCount > 1) {
 				if (ImGui::TreeNode("All Materials")) {
 					// 最初のマテリアルの値をベースとして使用
-					Material& baseMaterial = sharedModel_->GetMaterial(0);
+					Material& baseMaterial = GetMaterial(0);
 					Vector4 color = baseMaterial.GetColor();
 					LightingMode lightingMode = baseMaterial.GetLightingMode();
 					Vector2 uvPosition = baseMaterial.GetUVTransformTranslate();
@@ -155,9 +183,7 @@ void GameObject::ImGui() {
 					float uvRotateZ = baseMaterial.GetUVTransformRotateZ();
 
 					if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color.x))) {
-						for (size_t i = 0; i < materialCount; ++i) {
-							sharedModel_->GetMaterial(i).SetColor(color);
-						}
+						SetAllMaterialsColor(color, lightingMode);
 					}
 
 					// ライティング選択
@@ -165,26 +191,7 @@ void GameObject::ImGui() {
 					int currentModeIndex = static_cast<int>(lightingMode);
 					if (ImGui::Combo("Lighting", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
 						LightingMode newMode = static_cast<LightingMode>(currentModeIndex);
-						for (size_t i = 0; i < materialCount; ++i) {
-							sharedModel_->GetMaterial(i).SetLightingMode(newMode);
-						}
-					}
-
-					// UV設定（全マテリアルに適用）
-					if (ImGui::DragFloat2("UV Translate", &uvPosition.x, 0.01f, -10.0f, 10.0f)) {
-						for (size_t i = 0; i < materialCount; ++i) {
-							sharedModel_->GetMaterial(i).SetUVTransformTranslate(uvPosition);
-						}
-					}
-					if (ImGui::DragFloat2("UV Scale", &uvScale.x, 0.01f, -10.0f, 10.0f)) {
-						for (size_t i = 0; i < materialCount; ++i) {
-							sharedModel_->GetMaterial(i).SetUVTransformScale(uvScale);
-						}
-					}
-					if (ImGui::SliderAngle("UV Rotate", &uvRotateZ)) {
-						for (size_t i = 0; i < materialCount; ++i) {
-							sharedModel_->GetMaterial(i).SetUVTransformRotateZ(uvRotateZ);
-						}
+						SetAllMaterialsColor(color, newMode);
 					}
 
 					ImGui::TreePop();
@@ -197,12 +204,14 @@ void GameObject::ImGui() {
 				std::string materialName = std::format("Material {}", i);
 
 				if (ImGui::TreeNode(materialName.c_str())) {
-					Material& material = sharedModel_->GetMaterial(i);
+					Material& material = GetMaterial(i);
 
-					// 色設定（直接Modelのマテリアルを操作）
+					// 色設定
 					Vector4 color = material.GetColor();
 					if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color.x))) {
-						material.SetColor(color);
+						// 個別マテリアルを作成してから変更
+						CreateIndividualMaterials();
+						individualMaterials_.GetMaterial(i).SetColor(color);
 					}
 
 					// ライティング設定
@@ -210,22 +219,26 @@ void GameObject::ImGui() {
 					LightingMode currentMode = material.GetLightingMode();
 					int currentModeIndex = static_cast<int>(currentMode);
 					if (ImGui::Combo("Lighting", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
-						material.SetLightingMode(static_cast<LightingMode>(currentModeIndex));
+						CreateIndividualMaterials();
+						individualMaterials_.GetMaterial(i).SetLightingMode(static_cast<LightingMode>(currentModeIndex));
 					}
 
-					// UV設定（直接Modelのマテリアルを操作）
+					// UV設定
 					Vector2 uvPosition = material.GetUVTransformTranslate();
 					Vector2 uvScale = material.GetUVTransformScale();
 					float uvRotateZ = material.GetUVTransformRotateZ();
 
 					if (ImGui::DragFloat2("UV Translate", &uvPosition.x, 0.01f, -10.0f, 10.0f)) {
-						material.SetUVTransformTranslate(uvPosition);
+						CreateIndividualMaterials();
+						individualMaterials_.GetMaterial(i).SetUVTransformTranslate(uvPosition);
 					}
 					if (ImGui::DragFloat2("UV Scale", &uvScale.x, 0.01f, -10.0f, 10.0f)) {
-						material.SetUVTransformScale(uvScale);
+						CreateIndividualMaterials();
+						individualMaterials_.GetMaterial(i).SetUVTransformScale(uvScale);
 					}
 					if (ImGui::SliderAngle("UV Rotate", &uvRotateZ)) {
-						material.SetUVTransformRotateZ(uvRotateZ);
+						CreateIndividualMaterials();
+						individualMaterials_.GetMaterial(i).SetUVTransformRotateZ(uvRotateZ);
 					}
 
 					ImGui::TreePop();

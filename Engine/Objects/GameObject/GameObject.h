@@ -9,7 +9,7 @@
 #include "Managers/ObjectID/ObjectIDManager.h"
 
 /// <summary>
-/// ゲームオブジェクト - 共有モデルと個別Transformを使用
+/// ゲームオブジェクト - 共有モデルと個別Transform、個別マテリアルを使用
 /// </summary>
 class GameObject
 {
@@ -59,50 +59,69 @@ public:
 	void AddRotation(const Vector3& deltaRotation) { transform_.AddRotation(deltaRotation); }
 	void AddScale(const Vector3& deltaScale) { transform_.AddScale(deltaScale); }
 
-	// Model関連のGetter（Modelが直接マテリアルを管理）
+	// Model関連のGetter
 	Model* GetModel() { return sharedModel_; }
 	const Model* GetModel() const { return sharedModel_; }
 
-	// マテリアル操作のショートカット（直接Modelのマテリアルを操作）
+	// 個別マテリアル操作（NEW: 個別マテリアルシステム）
 	Material& GetMaterial(size_t index = 0) {
+		if (hasIndividualMaterials_ && index < individualMaterials_.GetMaterialCount()) {
+			return individualMaterials_.GetMaterial(index);
+		}
 		return sharedModel_ ? sharedModel_->GetMaterial(index) : dummyMaterial_;
 	}
+
 	const Material& GetMaterial(size_t index = 0) const {
+		if (hasIndividualMaterials_ && index < individualMaterials_.GetMaterialCount()) {
+			return individualMaterials_.GetMaterial(index);
+		}
 		return sharedModel_ ? sharedModel_->GetMaterial(index) : dummyMaterial_;
 	}
+
 	size_t GetMaterialCount() const {
+		if (hasIndividualMaterials_) {
+			return individualMaterials_.GetMaterialCount();
+		}
 		return sharedModel_ ? sharedModel_->GetMaterialCount() : 0;
 	}
 
 	// メインマテリアル（インデックス0）のショートカット
 	Vector4 GetColor() const {
-		return sharedModel_ ? sharedModel_->GetMaterial(0).GetColor() : Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+		return GetMaterial(0).GetColor();
 	}
 	LightingMode GetLightingMode() const {
-		return sharedModel_ ? sharedModel_->GetMaterial(0).GetLightingMode() : LightingMode::None;
+		return GetMaterial(0).GetLightingMode();
 	}
 
 	void SetColor(const Vector4& color) {
-		if (sharedModel_) sharedModel_->GetMaterial(0).SetColor(color);
+		// 個別マテリアルを作成してから色を設定
+		CreateIndividualMaterials();
+		individualMaterials_.GetMaterial(0).SetColor(color);
 	}
+
 	void SetLightingMode(LightingMode mode) {
-		if (sharedModel_) sharedModel_->GetMaterial(0).SetLightingMode(mode);
+		CreateIndividualMaterials();
+		individualMaterials_.GetMaterial(0).SetLightingMode(mode);
 	}
 
 	// 全マテリアルに同じ設定を適用
 	void SetAllMaterialsColor(const Vector4& color, LightingMode mode = LightingMode::HalfLambert) {
-		if (sharedModel_) sharedModel_->SetAllMaterialsColor(color, mode);
+		CreateIndividualMaterials();
+		individualMaterials_.SetAllMaterials(color, mode);
 	}
 
 	// UV操作（メインマテリアル用）
 	void SetUVTransformScale(const Vector2& scale) {
-		if (sharedModel_) sharedModel_->GetMaterial(0).SetUVTransformScale(scale);
+		CreateIndividualMaterials();
+		individualMaterials_.GetMaterial(0).SetUVTransformScale(scale);
 	}
 	void SetUVTransformRotateZ(float rotate) {
-		if (sharedModel_) sharedModel_->GetMaterial(0).SetUVTransformRotateZ(rotate);
+		CreateIndividualMaterials();
+		individualMaterials_.GetMaterial(0).SetUVTransformRotateZ(rotate);
 	}
 	void SetUVTransformTranslate(const Vector2& translate) {
-		if (sharedModel_) sharedModel_->GetMaterial(0).SetUVTransformTranslate(translate);
+		CreateIndividualMaterials();
+		individualMaterials_.GetMaterial(0).SetUVTransformTranslate(translate);
 	}
 
 	// オブジェクト状態
@@ -125,7 +144,11 @@ protected:
 	Transform3D transform_;					// 個別のトランスフォーム（位置、回転、スケール）
 
 	// 共有リソースへの参照
-	Model* sharedModel_ = nullptr;			// 共有モデルへのポインタ（モデルがマテリアルも管理）
+	Model* sharedModel_ = nullptr;			// 共有モデルへのポインタ
+
+	// NEW: 個別マテリアルシステム
+	MaterialGroup individualMaterials_;		// 個別のマテリアルグループ
+	bool hasIndividualMaterials_ = false;	// 個別マテリアルを持っているかのフラグ
 
 	// オブジェクトの状態
 	bool isVisible_ = true;
@@ -139,8 +162,28 @@ protected:
 	TextureManager* textureManager_ = TextureManager::GetInstance();
 	ModelManager* modelManager_ = ModelManager::GetInstance();
 
+	/// <summary>
+	/// 個別マテリアルを作成する（共有モデルからコピー）
+	/// </summary>
+	void CreateIndividualMaterials() {
+		if (hasIndividualMaterials_ || !sharedModel_) {
+			return; // 既に作成済みまたは共有モデルがない
+		}
+
+		// 共有モデルと同じ数のマテリアルを作成
+		size_t materialCount = sharedModel_->GetMaterialCount();
+		individualMaterials_.Initialize(directXCommon_, materialCount);
+
+		// 共有モデルのマテリアル設定をコピー
+		for (size_t i = 0; i < materialCount; ++i) {
+			individualMaterials_.GetMaterial(i).CopyFrom(sharedModel_->GetMaterial(i));
+		}
+
+		hasIndividualMaterials_ = true;
+	}
+
 private:
-	// ダミーマテリアル（モデルがない場合の安全対策?一応設定）
+	// ダミーマテリアル（モデルがない場合の安全対策）
 	static Material dummyMaterial_;
 
 	// ImGui用の内部状態
@@ -149,9 +192,7 @@ private:
 	Vector3 imguiScale_{ 1.0f, 1.0f, 1.0f };
 };
 
-/// <summary>
-/// 三角形オブジェクト
-/// </summary>
+// 以下、特化クラスは変更なし
 class Triangle : public GameObject
 {
 public:
@@ -162,9 +203,6 @@ public:
 	}
 };
 
-/// <summary>
-/// 球体オブジェクト
-/// </summary>
 class Sphere : public GameObject
 {
 public:
@@ -175,9 +213,6 @@ public:
 	}
 };
 
-/// <summary>
-/// 平面オブジェクト
-/// </summary>
 class Plane : public GameObject
 {
 public:
@@ -188,9 +223,6 @@ public:
 	}
 };
 
-/// <summary>
-/// 3Dモデルオブジェクト
-/// </summary>
 class Model3D : public GameObject
 {
 public:

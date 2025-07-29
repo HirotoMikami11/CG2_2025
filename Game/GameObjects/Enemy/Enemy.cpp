@@ -71,7 +71,7 @@ void Enemy::Draw(const Light& directionalLight) {
 
 void Enemy::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::Begin("Enemy")) {
+	if (ImGui::CollapsingHeader("Enemy")) {
 		if (gameObject_) {
 			// 座標調整
 			Vector3 pos = gameObject_->GetPosition();
@@ -97,7 +97,6 @@ void Enemy::ImGui() {
 			ChangeState(std::make_unique<EnemyStateApproach>(this));
 		}
 
-		ImGui::End();
 	}
 #endif
 }

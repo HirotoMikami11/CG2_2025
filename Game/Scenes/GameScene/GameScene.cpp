@@ -92,11 +92,6 @@ void GameScene::InitializeGameObjects() {
 }
 
 void GameScene::Update() {
-	// デバッグカメラの切り替え（ENTERキー）
-	InputManager* input = InputManager::GetInstance();
-	if (input->IsKeyTrigger(DIK_RETURN)) {
-		isDebugCameraActive_ = !isDebugCameraActive_;
-	}
 
 	// カメラ更新
 	cameraController_->Update();
@@ -154,27 +149,25 @@ void GameScene::OnExit() {
 void GameScene::ImGui() {
 #ifdef _DEBUG
 	// プレイヤーのImGui
-	if (player_) {
-		ImGui::Text("Player");
-		player_->ImGui();
-		ImGui::Spacing();
-	}
+
+	ImGui::Text("Player");
+	player_->ImGui();
+	ImGui::Spacing();
+
 
 	// 敵のImGui
-	if (enemy_) {
-		ImGui::Text("Enemy");
-		enemy_->ImGui();
-		ImGui::Spacing();
-	}
+
+	ImGui::Text("Enemy");
+	enemy_->ImGui();
+	ImGui::Spacing();
+
 
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
 	ImGui::Spacing();
 
-	// カメラ情報
-	ImGui::Text("Camera");
-	ImGui::Text("Debug Camera: %s", isDebugCameraActive_ ? "ON" : "OFF");
+
 #endif
 }
 

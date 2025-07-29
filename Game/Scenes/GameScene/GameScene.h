@@ -81,6 +81,4 @@ private:
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
 
-	// デバッグカメラ制御
-	bool isDebugCameraActive_ = false;
 };
