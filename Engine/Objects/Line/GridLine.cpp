@@ -5,18 +5,23 @@
 #include <algorithm>
 #include <cmath>
 
-void GridLine::Initialize(DirectXCommon* dxCommon, 
+void GridLine::Initialize(DirectXCommon* dxCommon,
 	const GridLineType& GridLineType,
-	float size ,
+	float size,
 	float interval,
 	float majorInterval,
 	const Vector4& normalColor,
 	const Vector4& majorColor
-	)
+)
 {
 	directXCommon_ = dxCommon;
+
 	// Transformを初期化
 	transform_.Initialize(dxCommon);
+
+	// LineRendererを初期化
+	lineRenderer_ = std::make_unique<LineRenderer>();
+	lineRenderer_->Initialize(dxCommon);
 
 	// デフォルトでグリッドを作成
 	CreateGrid(GridLineType,
@@ -26,7 +31,6 @@ void GridLine::Initialize(DirectXCommon* dxCommon,
 		normalColor,
 		majorColor);
 }
-
 
 void GridLine::CreateGrid(
 	const GridLineType& GridLineType,
@@ -61,22 +65,20 @@ void GridLine::CreateGrid(
 		Logger::Log(Logger::GetStream(), "GridLine: Unknown GridLineType specified.\n");
 		return;
 	}
-
 }
 
 void GridLine::AddLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
-	auto line = std::make_unique<Line>();
-	line->Initialize(directXCommon_);
-	line->SetPoints(start, end);
-	line->SetColor(color);
-	lines_.push_back(std::move(line));
+	if (lineRenderer_) {
+		lineRenderer_->AddLine(start, end, color);
+	}
 }
-
 
 void GridLine::Clear()
 {
-	lines_.clear();
+	if (lineRenderer_) {
+		lineRenderer_->Reset();
+	}
 }
 
 void GridLine::Update(const Matrix4x4& viewProjectionMatrix)
@@ -87,26 +89,17 @@ void GridLine::Update(const Matrix4x4& viewProjectionMatrix)
 
 	// Transform行列を更新
 	transform_.UpdateMatrix(viewProjectionMatrix);
-
-
-	for (auto& line : lines_) {
-		line->Update(viewProjectionMatrix);
-	}
-
-
 }
 
 void GridLine::Draw(const Matrix4x4& viewProjectionMatrix)
 {
-	if (!isVisible_ || !isActive_ || lines_.empty()) {
+	if (!isVisible_ || !isActive_) {
 		return;
 	}
 
-	// 各線分を個別に描画（色が正確に反映される）
-	for (auto& line : lines_) {
-		if (line->IsVisible()) {
-			line->Draw(viewProjectionMatrix);
-		}
+	// LineRendererで一括描画
+	if (lineRenderer_ && !lineRenderer_->IsEmpty()) {
+		lineRenderer_->Draw(viewProjectionMatrix);
 	}
 }
 
@@ -118,7 +111,7 @@ void GridLine::ImGui()
 		ImGui::Checkbox("Visible", &isVisible_);
 		ImGui::Checkbox("Active", &isActive_);
 
-		ImGui::Text("Line Count: %zu", lines_.size());
+		ImGui::Text("Line Count: %zu", GetLineCount());
 
 		// Transform
 		if (ImGui::CollapsingHeader("Transform")) {
@@ -166,6 +159,11 @@ void GridLine::ImGui()
 			}
 		}
 
+		// LineRendererの詳細情報
+		if (lineRenderer_) {
+			lineRenderer_->ImGui();
+		}
+
 		ImGui::TreePop();
 	}
 #endif
@@ -173,7 +171,6 @@ void GridLine::ImGui()
 
 void GridLine::CreateXZGrid(float halfSize)
 {
-
 	// X方向の線（Z軸に沿って）
 	for (float x = -halfSize; x <= halfSize; x += gridInterval_) {
 		Vector4 color;
@@ -208,12 +205,10 @@ void GridLine::CreateXZGrid(float halfSize)
 		Vector3 end = { halfSize, 0.0f, z };
 		AddLine(start, end, color);
 	}
-
 }
 
 void GridLine::CreateXYGrid(float halfSize)
 {
-
 	// X方向の線（Y軸に沿って）
 	for (float x = -halfSize; x <= halfSize; x += gridInterval_) {
 		Vector4 color;
@@ -231,27 +226,24 @@ void GridLine::CreateXYGrid(float halfSize)
 		AddLine(start, end, color);
 	}
 
-	// Z方向の線（Y軸に沿って）
-	for (float z = -halfSize; z <= halfSize; z += gridInterval_) {
+	// Y方向の線（X軸に沿って）
+	for (float y = -halfSize; y <= halfSize; y += gridInterval_) {
 		Vector4 color;
 
-		if (std::abs(z) < 0.001f) {//誤差で0にならない時のために0.001にしておく
-			//原点のY軸は緑色に変更する
-			color = Vector4{ 0.0f, 1.0f, 0.0f, 1.0f };
-		} else if (std::fmod(std::abs(z), gridMajorInterval_) < 0.001f) {
+		if (std::abs(y) < 0.001f) {//誤差で0にならない時のために0.001にしておく
+			//原点のX軸は赤色に変更する
+			color = Vector4{ 1.0f, 0.0f, 0.0f, 1.0f };
+		} else if (std::fmod(std::abs(y), gridMajorInterval_) < 0.001f) {
 			color = gridMajorColor_;
 		} else {
 			color = gridNormalColor_;
 		}
 
-		Vector3 start = { -halfSize, z,0.0f };
-		Vector3 end = { halfSize, z,0.0f };
+		Vector3 start = { -halfSize, y, 0.0f };
+		Vector3 end = { halfSize, y, 0.0f };
 		AddLine(start, end, color);
 	}
-
-
 }
-
 
 void GridLine::CreateYZGrid(float halfSize)
 {
@@ -286,5 +278,4 @@ void GridLine::CreateYZGrid(float halfSize)
 		Vector3 end = { 0.0f, halfSize, z };
 		AddLine(start, end, color);
 	}
-
 }

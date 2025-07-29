@@ -6,6 +6,9 @@ RailCamera::RailCamera()
 	, speed_(0.001f)
 	, isMoving_(true)
 	, lookAheadDistance_(0.01f)
+	, showRailTrack_(true)
+	, railTrackColor_({ 1.0f, 0.0f, 0.0f, 1.0f })  // 赤色
+	, railTrackSegments_(100)  // KamataEngineと同じ
 	, directXCommon_(nullptr) {
 }
 
@@ -13,6 +16,7 @@ RailCamera::~RailCamera() {
 	// デストラクタでも安全にリソースを解放
 	ReleaseResources();
 }
+
 void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	// 初期値を保存
 	initialPosition_ = position;
@@ -29,6 +33,10 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	cameraModel_ = std::make_unique<Model3D>();
 	cameraModel_->Initialize(directXCommon_, "camera");
 	cameraModel_->SetName("RailCamera");
+
+	// 線描画システムの初期化
+	lineRenderer_ = std::make_unique<LineRenderer>();
+	lineRenderer_->Initialize(directXCommon_);
 
 	// スプライン曲線の制御点を設定（KamataEngineと同じ）
 	controlPoints_ = {
@@ -51,6 +59,9 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	speed_ = 0.001f;            // 移動速度（1フレームあたりのtの増分）
 	isMoving_ = true;           // 初期状態で移動開始
 	lookAheadDistance_ = 0.01f; // 注視点の先読み距離
+
+	// 軌道の線分を生成
+	GenerateRailTrackLines();
 }
 
 void RailCamera::Update() {
@@ -76,6 +87,31 @@ void RailCamera::UpdateCameraModel() {
 		CameraController* cameraController = CameraController::GetInstance();
 		Matrix4x4 viewProjectionMatrix = cameraController->GetViewProjectionMatrix();
 		cameraModel_->Update(viewProjectionMatrix);
+	}
+}
+
+void RailCamera::GenerateRailTrackLines() {
+	if (!lineRenderer_) {
+		return;
+	}
+
+	// 線分リストをクリア
+	lineRenderer_->Reset();
+
+	// KamataEngineと同じように線分を生成
+	std::vector<Vector3> pointsDrawing;
+
+	// 線分の数+1個分の頂点座標を計算
+	for (int i = 0; i < railTrackSegments_ + 1; i++) {
+		float t = 1.0f / railTrackSegments_ * i;
+		Vector3 point = CatmullRomPosition(controlPoints_, t);
+		// 描画用にリストに保存する
+		pointsDrawing.push_back(point);
+	}
+
+	// 配列の範囲内でループして隣接する2点を結ぶ線分を追加
+	for (size_t i = 0; i < pointsDrawing.size() - 1; ++i) {
+		lineRenderer_->AddLine(pointsDrawing[i], pointsDrawing[i + 1], railTrackColor_);
 	}
 }
 
@@ -116,6 +152,34 @@ void RailCamera::ImGui() {
 
 	ImGui::Separator();
 
+	// 軌道描画設定
+	ImGui::Text("Rail Track Display:");
+	bool trackSettingsChanged = false;
+
+	if (ImGui::Checkbox("Show Rail Track", &showRailTrack_)) {
+		trackSettingsChanged = true;
+	}
+
+	if (ImGui::ColorEdit4("Track Color", &railTrackColor_.x)) {
+		trackSettingsChanged = true;
+	}
+
+	if (ImGui::DragInt("Track Segments", &railTrackSegments_, 1, 10, 500)) {
+		trackSettingsChanged = true;
+	}
+
+	// 軌道設定が変更された場合は再生成
+	if (trackSettingsChanged) {
+		GenerateRailTrackLines();
+	}
+
+	// 線描画システムのImGui
+	if (lineRenderer_) {
+		lineRenderer_->ImGui();
+	}
+
+	ImGui::Separator();
+
 	// リセットボタン
 	if (ImGui::Button("Reset Camera")) {
 		SetDefaultCamera(initialPosition_, initialRotation_);
@@ -144,17 +208,24 @@ void RailCamera::DrawRailTrack(const Matrix4x4& viewProjectionMatrix, const Ligh
 		cameraModel_->Draw(directionalLight);
 	}
 
-	// 軌道の描画は線描画システムが完成してから実装
-	// TODO: 線描画システムでスプライン曲線の軌道を描画
+	// 軌道の一括描画
+	if (lineRenderer_ && showRailTrack_) {
+		lineRenderer_->Draw(viewProjectionMatrix);
+	}
 }
 
 void RailCamera::ReleaseResources() {
-	// 1. カメラモデルを先に解放
+	// 1. 線描画システムを先に解放
+	if (lineRenderer_) {
+		lineRenderer_.reset();
+	}
+
+	// 2. カメラモデルを解放
 	if (cameraModel_) {
 		cameraModel_.reset();
 	}
 
-	// 2. システム参照をクリア
+	// 3. システム参照をクリア
 	directXCommon_ = nullptr;
 
 	Logger::Log(Logger::GetStream(), "RailCamera: Resources released\n");

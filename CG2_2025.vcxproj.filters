@@ -330,9 +330,6 @@
     <ClCompile Include="Engine\Objects\Line\GridLine.cpp">
       <Filter>Engine\Objects\Line</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Objects\Line\Line.cpp">
-      <Filter>Engine\Objects\Line</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Managers\ImGui\ImGuiManager.cpp">
       <Filter>Engine\Managers\ImGui</Filter>
     </ClCompile>
@@ -425,6 +422,9 @@
     </ClCompile>
     <ClCompile Include="Game\Camera\RailCamera.cpp">
       <Filter>Game\RailCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Line\LineRenderer.cpp">
+      <Filter>Engine\Objects\Line</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -604,9 +604,6 @@
     <ClInclude Include="Engine\Objects\Line\GridLine.h">
       <Filter>Engine\Objects\Line</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Objects\Line\Line.h">
-      <Filter>Engine\Objects\Line</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Managers\ImGui\ImGuiManager.h">
       <Filter>Engine\Managers\ImGui</Filter>
     </ClInclude>
@@ -711,6 +708,9 @@
     </ClInclude>
     <ClInclude Include="Game\Camera\RailCamera.h">
       <Filter>Game\RailCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Line\LineRenderer.h">
+      <Filter>Engine\Objects\Line</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

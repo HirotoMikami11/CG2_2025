@@ -5,15 +5,8 @@
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "Objects/GameObject/Transform3D.h"
-#include "Objects/Line/Line.h"
+#include "Objects/Line/LineRenderer.h"  
 #include "MyMath/MyFunction.h"
-
-/// <summary>
-/// グリッド線専用のマテリアル構造体
-/// </summary>
-struct GridLineMaterial {
-	Vector4 color;  // 基本色のみ（16バイト）
-};
 
 /// <summary>
 /// グリッド平面の種類
@@ -26,8 +19,7 @@ enum class GridLineType {
 
 /// <summary>
 /// グリッド描画専用クラス
-/// 責務：グリッド線の生成・管理・描画
-/// 個別描画と一括描画の両方に対応
+///　グリッド線の生成・管理・描画
 /// </summary>
 class GridLine
 {
@@ -90,7 +82,6 @@ public:
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	void Draw(const Matrix4x4& viewProjectionMatrix);
 
-
 	/// <summary>
 	/// ImGui用デバッグ表示
 	/// </summary>
@@ -100,8 +91,7 @@ public:
 	bool IsVisible() const { return isVisible_; }
 	bool IsActive() const { return isActive_; }
 	const std::string& GetName() const { return name_; }
-	size_t GetLineCount() const { return lines_.size(); }
-
+	size_t GetLineCount() const { return lineRenderer_ ? lineRenderer_->GetLineCount() : 0; }
 
 	// Setter
 	void SetVisible(bool visible) { isVisible_ = visible; }
@@ -114,11 +104,9 @@ public:
 	void SetTransform(const Vector3Transform& newTransform) { transform_.SetTransform(newTransform); }
 
 private:
-
 	/// <summary>
 	/// 各軸の線を生成
 	/// </summary>
-
 	void CreateXZGrid(float halfSize);
 	void CreateXYGrid(float halfSize);
 	void CreateYZGrid(float halfSize);
@@ -129,11 +117,11 @@ private:
 	bool isActive_ = true;
 	std::string name_ = "GridLine";
 
-	// Transform（グリッド全体の変換）
+	// Transform
 	Transform3D transform_;
 
-	// 線分データ
-	std::vector<std::unique_ptr<Line>> lines_;
+	// 線描画システム
+	std::unique_ptr<LineRenderer> lineRenderer_;
 
 	// グリッド設定（ImGui用）
 	float gridSize_ = 50.0f;

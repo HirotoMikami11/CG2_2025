@@ -124,7 +124,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\GameObject\Transform3D.cpp" />
     <ClCompile Include="Engine\Objects\Light\Light.cpp" />
     <ClCompile Include="Engine\Objects\Line\GridLine.cpp" />
-    <ClCompile Include="Engine\Objects\Line\Line.cpp" />
+    <ClCompile Include="Engine\Objects\Line\LineRenderer.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Sprite.cpp" />
     <ClCompile Include="Engine\Objects\Sprite\Transform2D.cpp" />
     <ClCompile Include="Engine\OffscreenRenderer\OffscreenRenderer.cpp" />
@@ -259,7 +259,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\GameObject\Transform3D.h" />
     <ClInclude Include="Engine\Objects\Light\Light.h" />
     <ClInclude Include="Engine\Objects\Line\GridLine.h" />
-    <ClInclude Include="Engine\Objects\Line\Line.h" />
+    <ClInclude Include="Engine\Objects\Line\LineRenderer.h" />
     <ClInclude Include="Engine\Objects\Sprite\Sprite.h" />
     <ClInclude Include="Engine\Objects\Sprite\Transform2D.h" />
     <ClInclude Include="Engine\OffscreenRenderer\OffscreenRenderer.h" />

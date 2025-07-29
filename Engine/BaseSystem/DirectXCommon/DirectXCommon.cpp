@@ -787,10 +787,8 @@ void DirectXCommon::MakeSpritePSO()
 	Logger::Log(Logger::GetStream(), "Complete create spritePSO!!\n");//PSO生成完了のログを出す
 
 }
-
 void DirectXCommon::MakeLinePSO()
 {
-
 	//																			//
 	//								RootSignature作成							//
 	//																			//
@@ -799,16 +797,12 @@ void DirectXCommon::MakeLinePSO()
 	D3D12_ROOT_SIGNATURE_DESC lineRootSignatureDesc{};
 	lineRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	// RootParameter（線分用：マテリアルとトランスフォームのみ）
-	D3D12_ROOT_PARAMETER lineRootParameters[2] = {};
-	// Material (PS)
+	// RootParameter（線分用：トランスフォームのみ）
+	D3D12_ROOT_PARAMETER lineRootParameters[1] = {};
+	// Transform (VS) - Root Parameter [0]
 	lineRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	lineRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	lineRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	lineRootParameters[0].Descriptor.ShaderRegister = 0;
-	// Transform (VS)
-	lineRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	lineRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	lineRootParameters[1].Descriptor.ShaderRegister = 0;
 
 	lineRootSignatureDesc.pParameters = lineRootParameters;
 	lineRootSignatureDesc.NumParameters = _countof(lineRootParameters);
@@ -835,21 +829,31 @@ void DirectXCommon::MakeLinePSO()
 	//							InputLayoutの設定								//
 	//																			//
 
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[4] = {};
+
+	// 座標
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
-	inputElementDescs[1].SemanticName = "TEXCOORD";
+	// 色（追加）
+	inputElementDescs[1].SemanticName = "COLOR";
 	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
-	inputElementDescs[2].SemanticName = "NORMAL";
+	// texcoord（互換性のため）
+	inputElementDescs[2].SemanticName = "TEXCOORD";
 	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[2].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
+	// 法線（互換性のため）
+	inputElementDescs[3].SemanticName = "NORMAL";
+	inputElementDescs[3].SemanticIndex = 0;
+	inputElementDescs[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -881,7 +885,6 @@ void DirectXCommon::MakeLinePSO()
 	//						シェーダーのコンパイル									//
 	//																			//
 
-	// 3D用のシェーダーを使用（線分でも同じで問題ない）
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"resources/Shader/Line/Line.VS.hlsl",
 		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
@@ -927,7 +930,6 @@ void DirectXCommon::MakeLinePSO()
 
 	Logger::Log(Logger::GetStream(), "Complete create Line PSO!!\n");
 }
-
 
 Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
 	const std::wstring& filePath,
