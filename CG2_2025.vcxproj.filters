@@ -193,6 +193,12 @@
     <Filter Include="Engine\Objects\GameObject\Transform">
       <UniqueIdentifier>{9d8aa58d-61fe-4f78-807a-dc0514c208b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Managers\Scene\TransitionManager">
+      <UniqueIdentifier>{670c0d40-ee1d-4544-95e2-e629903cd820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Managers\Scene\TransitionManager\TransitionEffect">
+      <UniqueIdentifier>{54b03d41-2b34-4715-aa3f-d60070531c94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -380,6 +386,15 @@
     </ClCompile>
     <ClCompile Include="Engine\Objects\GameObject\Transform.cpp">
       <Filter>Engine\Objects\GameObject\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Transition\TransitionManager.cpp">
+      <Filter>Engine\Managers\Scene\TransitionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.cpp">
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.cpp">
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -630,6 +645,21 @@
     </ClInclude>
     <ClInclude Include="Engine\Objects\GameObject\Transform.h">
       <Filter>Engine\Objects\GameObject\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Transition\SceneTransitionHelper.h">
+      <Filter>Engine\Managers\Scene\TransitionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Transition\TransitionManager.h">
+      <Filter>Engine\Managers\Scene\TransitionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Transition\TransitionEffect\BaseTransitionEffect.h">
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.h">
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.h">
+      <Filter>Engine\Managers\Scene\TransitionManager\TransitionEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

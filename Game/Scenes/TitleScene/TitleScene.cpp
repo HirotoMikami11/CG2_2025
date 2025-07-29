@@ -1,6 +1,7 @@
 #include "TitleScene.h"
 #include "Managers/ImGui/ImGuiManager.h" 
 #include "Managers/Scene/SceneManager.h" 
+#include "Managers/Transition/SceneTransitionHelper.h"
 
 TitleScene::TitleScene()
 	: BaseScene("TitleScene") // シーン名を設定
@@ -84,10 +85,16 @@ void TitleScene::Update() {
 void TitleScene::UpdateGameObjects() {
 
 	// タイトルシーンに戻る
+	// スペースキーでゲームシーンへ遷移
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)) {
-		// SceneManagerを取得してタイトルシーンに切り替え
-		//SceneManager::GetInstance()->SetNextScene("GameScene");
-		SceneManager::GetInstance()->FadeOutToScene("GameScene", 1.0f);
+		// フェードを使った遷移（ヘルパークラスを使用）
+		SceneTransitionHelper::FadeToScene("GameScene", 1.0f);
+
+		// スライドエフェクトを使った遷移
+		// SceneTransitionHelper::TransitionToScene("GameScene", "slide_left", 0.5f, 0.5f);
+
+		// エフェクトなしの即座の遷移
+		// SceneTransitionHelper::ChangeSceneImmediate("GameScene");
 	}
 
 	// 行列更新

@@ -111,6 +111,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
     <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
     <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp" />
+    <ClCompile Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.cpp" />
+    <ClCompile Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.cpp" />
+    <ClCompile Include="Engine\Managers\Transition\TransitionManager.cpp" />
     <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
     <ClCompile Include="Engine\MyMath\MyMath.cpp" />
     <ClCompile Include="Engine\Objects\GameObject\GameObject.cpp" />
@@ -236,6 +239,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Managers\Scene\SceneManager.h" />
     <ClInclude Include="Engine\Managers\Texture\Texture.h" />
     <ClInclude Include="Engine\Managers\Texture\TextureManager.h" />
+    <ClInclude Include="Engine\Managers\Transition\SceneTransitionHelper.h" />
+    <ClInclude Include="Engine\Managers\Transition\TransitionEffect\BaseTransitionEffect.h" />
+    <ClInclude Include="Engine\Managers\Transition\TransitionEffect\FadeEffect.h" />
+    <ClInclude Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.h" />
+    <ClInclude Include="Engine\Managers\Transition\TransitionManager.h" />
     <ClInclude Include="Engine\MyMath\MyFunction.h" />
     <ClInclude Include="Engine\MyMath\MyMath.h" />
     <ClInclude Include="Engine\Objects\GameObject\GameObject.h" />

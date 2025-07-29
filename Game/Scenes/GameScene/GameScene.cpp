@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "Managers/ImGui/ImGuiManager.h" 
 #include "Managers/Scene/SceneManager.h"
+#include "Managers/Transition/SceneTransitionHelper.h"
 
 GameScene::GameScene()
 	: BaseScene("GameScene") // シーン名を設定
@@ -347,9 +348,8 @@ void GameScene::ChangePhase() {
 	case Phase::kDeath:
 		// パーティクルの演出が終了したらタイトルシーンに戻る
 		if (deathParticles_ && deathParticles_->IsFinished()) {
-			// SceneManagerを取得してタイトルシーンに切り替え
-			SceneManager::GetInstance()->FadeOutToScene("TitleScene", 1.0f);
-
+			// スライドエフェクトで戻る
+			SceneTransitionHelper::TransitionToScene("TitleScene", "slide_right", 0.7f, 0.7f);
 		}
 		break;
 
@@ -361,12 +361,7 @@ void GameScene::ChangePhase() {
 
 
 void GameScene::OnEnter() {
-	//// ゲームシーンに入る時の処理
-	//cameraController_->Initialize({ 0.0f, 0.0f, -50.0f });
-	//// ゲームカメラもリセット
-	//if (gameCamera_) {
-	//	gameCamera_->Reset();
-	//}
+
 
 }
 

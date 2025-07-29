@@ -1,5 +1,7 @@
 #include "Game.h"
 
+
+
 Game::Game() :
 	textureManager_(nullptr),
 	modelManager_(nullptr),
@@ -13,12 +15,21 @@ void Game::Initialize() {
 	sceneManager_ = SceneManager::GetInstance();
 	sceneManager_->Initialize();
 
+	// トランジションマネージャーの初期化（エフェクト管理）
+	transitionManager_ = TransitionManager::GetInstance();
+	transitionManager_->Initialize();
+
 	// リソースマネージャーの初期化
 	modelManager_ = ModelManager::GetInstance();
 	textureManager_ = TextureManager::GetInstance();
 
+	// カスタムトランジションエフェクトを登録
+	RegisterTransitionEffects();
+
 	// シーンの初期化
 	InitializeScenes();
+
+
 }
 
 void Game::InitializeScenes() {
@@ -42,15 +53,42 @@ void Game::InitializeScenes() {
 	sceneManager_->ChangeScene("DemoScene");
 }
 
+void Game::RegisterTransitionEffects()
+{
+	// スライドエフェクト(左から)を登録
+	auto slideLeft = std::make_unique<SlideEffect>(SlideEffect::Direction::Left);
+	slideLeft->Initialize(Engine::GetInstance()->GetDirectXCommon());
+	transitionManager_->RegisterEffect("slide_left", std::move(slideLeft));
+
+	// スライドエフェクト(右から)を登録
+	auto slideRight = std::make_unique<SlideEffect>(SlideEffect::Direction::Right);
+	slideRight->Initialize(Engine::GetInstance()->GetDirectXCommon());
+	transitionManager_->RegisterEffect("slide_right", std::move(slideRight));
+
+}
+
 void Game::Update() {
+
+	// トランジションマネージャーの更新（エフェクトの更新）
+	if (transitionManager_) {
+		transitionManager_->Update(1.0f / 60.0f); //時間
+	}
+
 	// シーンマネージャーの更新
 	if (sceneManager_) {
 		sceneManager_->Update();
 	}
 
+
+
 	// シーンマネージャーのImGui更新
 	if (sceneManager_) {
 		sceneManager_->ImGui();
+	}
+	// トランジションマネージャーのImGui
+	if (transitionManager_) {
+	//　TODO:imgui必要に応じて作成
+	// 	transitionManager_->ImGui();
 	}
 }
 
@@ -66,9 +104,19 @@ void Game::DrawBackBuffer() {
 	if (sceneManager_) {
 		sceneManager_->DrawBackBuffer();
 	}
+
+	// トランジションエフェクトの描画（最前面）
+	if (transitionManager_) {
+		transitionManager_->Draw();
+	}
 }
 
 void Game::Finalize() {
+	// トランジションマネージャーの終了処理
+	if (transitionManager_) {
+		transitionManager_->Finalize();
+	}
+
 	// シーンマネージャーの終了処理
 	if (sceneManager_) {
 		sceneManager_->Finalize();

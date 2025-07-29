@@ -1,15 +1,20 @@
+// SceneManager.h
 #pragma once
 #include <memory>
 #include <unordered_map>
 #include <string>
+#include <functional>
 #include "Managers/Scene/BaseScene.h"
-#include "Managers/Scene/FadeManager.h"
 
 /// <summary>
-/// シーンを管理するクラス
+/// 純粋なシーン管理クラス
+/// トランジション処理は含まない
 /// </summary>
 class SceneManager {
 public:
+	// シーン変更時のコールバック
+	using SceneChangeCallback = std::function<void(const std::string& prevScene, const std::string& nextScene)>;
+
 	// シングルトン
 	static SceneManager* GetInstance();
 
@@ -38,37 +43,51 @@ public:
 	/// </summary>
 	void Finalize();
 
-	// ImGui描画
+	/// <summary>
+	/// ImGui描画
+	/// </summary>
 	void ImGui();
 
 	// シーンの管理
 	void RegisterScene(const std::string& sceneName, std::unique_ptr<BaseScene> scene);
 	void UnregisterScene(const std::string& sceneName);
 
-	// シーンの切り替え
+	/// <summary>
+	/// シーンの即時切り替え
+	/// </summary>
 	bool ChangeScene(const std::string& sceneName);
+
+	/// <summary>
+	/// 次フレームでのシーン切り替え予約
+	/// </summary>
 	void SetNextScene(const std::string& sceneName);
 
-	// フェードシーン遷移
-	void FadeToScene(const std::string& sceneName, FadeManager::Status fadeOutStatus = FadeManager::Status::FadeOut, float fadeOutDuration = 1.0f, FadeManager::Status fadeInStatus = FadeManager::Status::FadeIn, float fadeInDuration = 1.0f);
-	void FadeOutToScene(const std::string& sceneName, float duration = 1.0f);
-	void FadeInToScene(const std::string& sceneName, float duration = 1.0f);
-
-	// リセット機能（明示的にリセットしたい場合のみ）
+	/// <summary>
+	/// シーンをリセット
+	/// </summary>
 	void ResetScene(const std::string& sceneName);
 	void ResetCurrentScene();
 
-	// シーンの存在確認
+	/// <summary>
+	/// シーンの存在確認
+	/// </summary>
 	bool HasScene(const std::string& sceneName) const;
 
-	// 現在のシーン情報
+	/// <summary>
+	/// 現在のシーン情報
+	/// </summary>
 	BaseScene* GetCurrentScene() const { return currentScene_; }
-	const std::string& GetCurrentSceneName() const;
+	const std::string& GetCurrentSceneName() const { return currentSceneName_; }
 
 	/// <summary>
 	/// 登録済みの全シーンのリソースを読み込み
 	/// </summary>
 	void LoadAllSceneResources();
+
+	/// <summary>
+	/// シーン変更時のコールバックを設定
+	/// </summary>
+	void SetSceneChangeCallback(SceneChangeCallback callback) { sceneChangeCallback_ = callback; }
 
 private:
 	// シングルトンパターン
@@ -77,34 +96,17 @@ private:
 	SceneManager(const SceneManager&) = delete;
 	SceneManager& operator=(const SceneManager&) = delete;
 
-	void ProcessSceneChange();	// シーン切り替えの実処理
-	void DrawScenesUI();		// シーン一覧・操作UI
-	void DrawCurrentSceneUI();	// 現在のシーンのUI
+	void ProcessSceneChange();
+	void DrawScenesUI();
+	void DrawCurrentSceneUI();
 
-	// フェード遷移用の内部処理
-	void ProcessFadeTransition();
-
+	// シーン管理
 	std::unordered_map<std::string, std::unique_ptr<BaseScene>> scenes_;
 	BaseScene* currentScene_ = nullptr;
 	std::string currentSceneName_;
 	std::string nextSceneName_;
 	bool sceneChangeRequested_ = false;
 
-	// フェード管理
-	std::unique_ptr<FadeManager> fadeManager_;
-
-	// フェード遷移用の状態管理
-	enum class FadeTransitionState {
-		None,
-		FadeOut,
-		ChangeScene,
-		FadeIn
-	};
-
-	FadeTransitionState fadeTransitionState_ = FadeTransitionState::None;
-
-	// フェード遷移用(一時的に持つデータ)
-	std::string pendingSceneName_;
-	FadeManager::Status pendingFadeInStatus_;
-	float pendingFadeInDuration_;
+	// コールバック
+	SceneChangeCallback sceneChangeCallback_;
 };

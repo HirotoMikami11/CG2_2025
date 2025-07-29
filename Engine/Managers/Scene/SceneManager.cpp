@@ -1,6 +1,8 @@
 #include "SceneManager.h"
 #include <cassert>
-#include "Managers/ImGui/ImGuiManager.h" 
+#include "Managers/ImGui/ImGuiManager.h"
+#include "BaseSystem/Logger/Logger.h"
+#include "Managers/ObjectID/ObjectIDManager.h"
 
 SceneManager* SceneManager::GetInstance() {
 	static SceneManager instance;
@@ -8,8 +10,7 @@ SceneManager* SceneManager::GetInstance() {
 }
 
 void SceneManager::Initialize() {
-	fadeManager_ = std::make_unique<FadeManager>();
-	fadeManager_->Initialize();
+	Logger::Log(Logger::GetStream(), "SceneManager initialized\n");
 }
 
 void SceneManager::LoadAllSceneResources() {
@@ -25,15 +26,9 @@ void SceneManager::LoadAllSceneResources() {
 }
 
 void SceneManager::Update() {
-	// FadeManagerの更新
-	if (fadeManager_) {
-		fadeManager_->Update();
-	}
-	// フェード遷移の処理
-	ProcessFadeTransition();
-
 	// シーン切り替えの処理
 	ProcessSceneChange();
+
 	// 現在のシーンの更新
 	if (currentScene_) {
 		currentScene_->Update();
@@ -52,11 +47,6 @@ void SceneManager::DrawBackBuffer() {
 	if (currentScene_) {
 		currentScene_->DrawBackBuffer();
 	}
-
-	// フェードの描画（最前面、オフスクリーン外）
-	if (fadeManager_) {
-		fadeManager_->Draw();
-	}
 }
 
 void SceneManager::Finalize() {
@@ -65,12 +55,6 @@ void SceneManager::Finalize() {
 		currentScene_->OnExit();
 		currentScene_->Finalize();
 		currentScene_ = nullptr;
-	}
-
-	// FadeManagerの終了処理
-	if (fadeManager_) {
-		fadeManager_->Finalize();
-		fadeManager_.reset();
 	}
 
 	// 全シーンのクリア
@@ -112,18 +96,17 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 		return false;
 	}
 
+	std::string previousSceneName = currentSceneName_;
+
 	// 現在のシーンの処理（オブジェクトのみ解放）
 	if (currentScene_) {
 		currentScene_->OnExit();
 		currentScene_->Finalize();
 		// オブジェクト初期化フラグのみリセット（リソースフラグは保持）
 		currentScene_->SetInitialized(false);
-		// リソース読み込みフラグは保持: resourcesLoaded_ = true のまま
 	}
 
-	//シーンを変えるときにIDを全てリセットする
-	//オフスクリーンなどで使用されるIDなどもここでリセットされる
-	//シーン中に存在するものしかIDは付与されない
+	// シーンを変えるときにIDを全てリセット
 	ObjectIDManager::GetInstance()->ResetAllCounters();
 
 	// 新しいシーンの設定
@@ -133,35 +116,19 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 	// リソースは既に読み込み済みなので、オブジェクト初期化のみ実行
 	if (!currentScene_->IsInitialized()) {
 		Logger::Log(Logger::GetStream(), std::format("Initializing objects for scene: {}\n", sceneName));
-		currentScene_->Initialize();  // 軽量なオブジェクト作成のみ
+		currentScene_->Initialize();
 		currentScene_->SetInitialized(true);
 		Logger::Log(Logger::GetStream(), std::format("Objects initialized for scene: {}\n", sceneName));
 	}
 
 	currentScene_->OnEnter();
-	return true;
-}
 
-void SceneManager::FadeToScene(const std::string& sceneName, FadeManager::Status fadeOutStatus, float fadeOutDuration, FadeManager::Status fadeInStatus, float fadeInDuration) {
-	if (!HasScene(sceneName) || fadeTransitionState_ != FadeTransitionState::None) {
-		return;
+	// コールバック実行
+	if (sceneChangeCallback_) {
+		sceneChangeCallback_(previousSceneName, currentSceneName_);
 	}
 
-	// フェード遷移の開始
-	pendingSceneName_ = sceneName;
-	pendingFadeInStatus_ = fadeInStatus;
-	pendingFadeInDuration_ = fadeInDuration;
-
-	fadeTransitionState_ = FadeTransitionState::FadeOut;
-	fadeManager_->Start(fadeOutStatus, fadeOutDuration);
-}
-
-void SceneManager::FadeOutToScene(const std::string& sceneName, float duration) {
-	FadeToScene(sceneName, FadeManager::Status::FadeOut, duration, FadeManager::Status::FadeIn, duration);
-}
-
-void SceneManager::FadeInToScene(const std::string& sceneName, float duration) {
-	FadeToScene(sceneName, FadeManager::Status::FadeOut, duration, FadeManager::Status::FadeIn, duration);
+	return true;
 }
 
 void SceneManager::SetNextScene(const std::string& sceneName) {
@@ -199,10 +166,6 @@ bool SceneManager::HasScene(const std::string& sceneName) const {
 	return scenes_.find(sceneName) != scenes_.end();
 }
 
-const std::string& SceneManager::GetCurrentSceneName() const {
-	return currentSceneName_;
-}
-
 void SceneManager::ProcessSceneChange() {
 	if (sceneChangeRequested_) {
 		ChangeScene(nextSceneName_);
@@ -211,41 +174,8 @@ void SceneManager::ProcessSceneChange() {
 	}
 }
 
-void SceneManager::ProcessFadeTransition() {
-	switch (fadeTransitionState_) {
-	case FadeTransitionState::None:
-		// 何もしない
-		break;
-
-	case FadeTransitionState::FadeOut:
-		// フェードアウト完了でシーン切り替え
-		if (fadeManager_->IsFinished()) {
-			fadeTransitionState_ = FadeTransitionState::ChangeScene;
-		}
-		break;
-
-	case FadeTransitionState::ChangeScene:
-		// シーン切り替え実行
-		ChangeScene(pendingSceneName_);
-
-		// フェードイン開始
-		fadeTransitionState_ = FadeTransitionState::FadeIn;
-		fadeManager_->Start(pendingFadeInStatus_, pendingFadeInDuration_);
-		break;
-
-	case FadeTransitionState::FadeIn:
-		// フェードイン完了で遷移終了
-		if (fadeManager_->IsFinished()) {
-			fadeTransitionState_ = FadeTransitionState::None;
-			pendingSceneName_.clear();
-		}
-		break;
-	}
-}
-
 void SceneManager::ImGui() {
 #ifdef _DEBUG
-
 	ImGui::Begin("Scene");
 
 	// シーン管理UI
@@ -262,7 +192,8 @@ void SceneManager::ImGui() {
 
 void SceneManager::DrawScenesUI() {
 #ifdef _DEBUG
-	ImGui::Text("All Scene Management");
+	ImGui::Text("Scene Management");
+
 	// 現在のシーン情報表示
 	if (currentScene_) {
 		ImGui::Text("Current Scene: %s", currentSceneName_.c_str());
@@ -323,8 +254,6 @@ void SceneManager::DrawScenesUI() {
 		if (ImGui::Button("Reset Current Scene", ImVec2(200, 0))) {
 			ResetCurrentScene();
 		}
-		ImGui::SameLine();
-		ImGui::TextColored(ImVec4(1, 1, 0, 1), "reset objects only");
 	}
 
 	// シーン切り替え要求があるかの表示
@@ -333,14 +262,6 @@ void SceneManager::DrawScenesUI() {
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Next Scene: %s", nextSceneName_.c_str());
 		ImGui::Text("(Will change next frame)");
 	}
-
-	// 描画レイヤー情報の表示
-	ImGui::Separator();
-	ImGui::Text("Rendering Layers:");
-	ImGui::Text("3D Objects -> Offscreen (with post-processing)");
-	ImGui::Text("UI Elements -> Direct to backbuffer");
-	ImGui::Text("Fade Effect -> Direct to backbuffer (front-most)");
-
 #endif
 }
 
