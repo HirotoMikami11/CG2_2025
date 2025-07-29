@@ -15,9 +15,16 @@ public:
 	virtual void LoadResources() {}
 
 	/// <summary>
+	/// シーンに入った時のオフスクリーン設定
+	/// </summary>
+	virtual void ConfigureOffscreenEffects() {}
+
+	/// <summary>
 	/// オブジェクト初期化
 	/// </summary>
 	virtual void Initialize() = 0;
+
+
 
 	/// <summary>
 	/// 更新処理

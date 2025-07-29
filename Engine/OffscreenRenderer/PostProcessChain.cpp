@@ -192,6 +192,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffectsWithDepth(D3D12_GPU_DE
 	return currentInput;
 }
 
+
+void PostProcessChain::SetAllEffectsEnabled(bool enabled){
+	for (size_t i = 0; i < effects_.size(); ++i) {
+		effects_[i]->SetEnabled(enabled);
+	}
+}
+
+
 void PostProcessChain::CreateIntermediateBuffers() {
 	// 中間バッファのリソース設定
 	D3D12_RESOURCE_DESC resourceDesc{};

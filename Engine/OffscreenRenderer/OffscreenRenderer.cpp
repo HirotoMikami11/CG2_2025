@@ -42,10 +42,9 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 
 	// 深度フォグエフェクトを追加
 	depthFogEffect_ = postProcessChain_->AddEffect<DepthFogPostEffect>();
-	depthFogEffect_->SetEnabled(true);
 	// 深度ぼかしエフェクトを追加
 	depthOfFieldEffect_ = postProcessChain_->AddEffect<DepthOfFieldPostEffect>();
-	depthOfFieldEffect_->SetEnabled(true);
+
 
 	// グリッチエフェクトを追加
 	RGBShiftEffect_ = postProcessChain_->AddEffect<RGBShiftPostEffect>();
@@ -55,7 +54,7 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 	// ビネットエフェクトを追加
 	vignetteEffect_ = postProcessChain_->AddEffect<VignettePostEffect>();
-	vignetteEffect_->SetEnabled(true);
+
 
 
 
@@ -196,6 +195,22 @@ void OffscreenRenderer::PostDraw() {
 	D3D12_RESOURCE_BARRIER barriers[] = { postDrawBarrier, depthPostDrawBarrier };
 	commandList->ResourceBarrier(2, barriers);
 }
+
+
+
+void OffscreenRenderer::DisableAllEffects() {
+	SetAllEffectsEnabled(false);
+}
+
+void OffscreenRenderer::EnableAllEffects() {
+	SetAllEffectsEnabled(true);
+}
+
+void OffscreenRenderer::SetAllEffectsEnabled(bool enabled) {
+	//ポストプロセスチェーンのエフェクトをまとめて有効/無効にする
+	postProcessChain_->SetAllEffectsEnabled(enabled);
+}
+
 
 void OffscreenRenderer::DrawOffscreenTexture() {
 	if (!offscreenTriangle_) {

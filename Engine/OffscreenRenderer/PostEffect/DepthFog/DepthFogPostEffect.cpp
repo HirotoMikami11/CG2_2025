@@ -258,18 +258,20 @@ void DepthFogPostEffect::ApplyPreset(EffectPreset preset) {
 		break;
 
 	case EffectPreset::HEAVY:
-		parameters_.fogColor = { 0.4f, 0.4f, 0.4f, 1.0f };
-		parameters_.fogNear = 1.0f;		// 非線形変換対応：1.0f距離からフォグ開始
-		parameters_.fogFar = 15.0f;		// 非線形変換対応：15.0f距離で完全にフォグ
-		parameters_.fogDensity = 1.0f;
+		parameters_.fogColor = { 0.02f, 0.08f, 0.25f, 1.00f };
+		parameters_.fogNear = 0.2f;
+		parameters_.fogFar = 40.0f;
+		parameters_.fogDensity = 5.0f;
+		parameters_.time = 0.0f;
 		SetEnabled(true);
 		break;
 
 	case EffectPreset::UNDERWATER:
-		parameters_.fogColor = { 0.2f, 0.4f, 0.8f, 1.0f }; // 青い色
-		parameters_.fogNear = 0.5f;		// 非線形変換対応：0.5f距離からフォグ開始
-		parameters_.fogFar = 8.0f;		// 非線形変換対応：8.0f距離で完全にフォグ
-		parameters_.fogDensity = 0.8f;
+		parameters_.fogColor = { 0.02f, 0.08f, 0.25f, 1.00f };
+		parameters_.fogNear = 0.2f;
+		parameters_.fogFar = 40.0f;
+		parameters_.fogDensity = 1.0f;
+		parameters_.time = 0.0f;
 		SetEnabled(true);
 		break;
 	}

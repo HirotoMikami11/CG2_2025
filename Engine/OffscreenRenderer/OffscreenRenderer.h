@@ -65,6 +65,24 @@ public:
 	/// ポストプロセスチェーンを通して複数エフェクトを適用
 	void DrawOffscreenTexture();
 
+
+	/// <summary>
+	/// すべてのエフェクトを無効化
+	/// </summary>
+	void DisableAllEffects();
+
+	/// <summary>
+	/// すべてのエフェクトを有効化
+	/// </summary>
+	void EnableAllEffects();
+
+	/// <summary>
+	/// エフェクトの有効/無効状態をまとめて設定
+	/// </summary>
+	/// <param name="enabled">true=有効, false=無効</param>
+	void SetAllEffectsEnabled(bool enabled);
+
+
 	/// <summary>
 	/// オフスクリーンテクスチャのハンドルを取得
 	/// </summary>
@@ -87,7 +105,6 @@ public:
 	/// ImGui表示
 	/// </summary>
 	void ImGui();
-
 
 	/// <summary>
 	/// RGBShiftを取得
@@ -137,6 +154,8 @@ public:
 	/// </summary>
 	/// <returns>オフスクリーン用OffscreenTriangleのポインタ</returns>
 	OffscreenTriangle* GetOffscreenTriangle() { return offscreenTriangle_.get(); }
+
+	
 
 private:
 	/// <summary>

@@ -32,6 +32,29 @@ void TitleScene::LoadResources() {
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
 }
 
+void TitleScene::ConfigureOffscreenEffects()
+{
+	/// オフスクリーンレンダラーのエフェクト設定
+
+	// 全てのエフェクトを無効化
+	offscreenRenderer_->DisableAllEffects();
+
+
+	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
+	if (depthFogEffect) {
+		depthFogEffect->SetEnabled(true); // 深度フォグを有効化
+	}
+	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
+	if (depthOfFieldEffect) {
+		depthOfFieldEffect->SetEnabled(true);
+	}
+	auto* vignetteEffect = offscreenRenderer_->GetVignetteEffect();
+	if (vignetteEffect) {
+		vignetteEffect->SetEnabled(true);
+	}
+
+}
+
 void TitleScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
@@ -47,6 +70,8 @@ void TitleScene::Initialize() {
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
+	//ポストエフェクトの初期設定
+	ConfigureOffscreenEffects();
 }
 
 void TitleScene::InitializeGameObjects() {

@@ -330,9 +330,6 @@
     <ClCompile Include="Game\Objects\DeathParticles.cpp">
       <Filter>Game\Objects\DeathParticles</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp">
-      <Filter>Engine\Managers\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
       <Filter>Engine\Managers\Model</Filter>
     </ClCompile>
@@ -585,9 +582,6 @@
     </ClInclude>
     <ClInclude Include="Game\Objects\DeathParticles.h">
       <Filter>Game\Objects\DeathParticles</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Managers\Scene\FadeManager.h">
-      <Filter>Engine\Managers\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Model\ModelManager.h">
       <Filter>Engine\Managers\Model</Filter>

@@ -24,6 +24,11 @@ public:
 	void LoadResources() override;
 
 	/// <summary>
+	/// シーンに入った時のオフスクリーン設定
+	/// </summary>
+	void ConfigureOffscreenEffects() override;
+
+	/// <summary>
 	/// オブジェクト初期化（シーン切り替え毎に実行）
 	/// </summary>
 	void Initialize() override;

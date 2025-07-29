@@ -55,6 +55,13 @@ public:
 	/// <returns>最終結果のテクスチャハンドル</returns>
 	D3D12_GPU_DESCRIPTOR_HANDLE ApplyEffectsWithDepth(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_GPU_DESCRIPTOR_HANDLE depthSRV);
 
+
+	/// <summary>
+	/// 登録されているすべてのエフェクトの有効化/無効化
+	/// </summary>
+	void SetAllEffectsEnabled(bool enabled);
+
+
 	/// <summary>
 	/// エフェクトを追加（自動初期化付き）
 	/// </summary>

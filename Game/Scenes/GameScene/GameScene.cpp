@@ -52,7 +52,28 @@ void GameScene::LoadResources() {
 
 }
 
+void GameScene::ConfigureOffscreenEffects()
+{
+	/// オフスクリーンレンダラーのエフェクト設定
 
+	// 全てのエフェクトを無効化
+	offscreenRenderer_->DisableAllEffects();
+
+	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
+	if (depthFogEffect) {
+		depthFogEffect->SetEnabled(true); 
+		depthFogEffect->SetFogDistance(0.2f, 40); // 深度フォグの距離を設定
+	}
+	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
+	if (depthOfFieldEffect) {
+		depthOfFieldEffect->SetEnabled(true);
+	}
+	auto* vignetteEffect = offscreenRenderer_->GetVignetteEffect();
+	if (vignetteEffect) {
+		vignetteEffect->SetEnabled(true);
+	}
+
+}
 void GameScene::Initialize() {
 	// ゲームプレイフェーズから開始
 	phase_ = Phase::kPlay;
@@ -64,6 +85,10 @@ void GameScene::Initialize() {
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
+
+
+	//ポストエフェクトの初期設定
+	ConfigureOffscreenEffects();
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///

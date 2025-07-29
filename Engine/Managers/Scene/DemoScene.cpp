@@ -1,6 +1,7 @@
 #include "DemoScene.h"
 #include "Managers/ImGui/ImGuiManager.h" 
 
+
 DemoScene::DemoScene()
 	: BaseScene("DemoScene") // シーン名を設定
 	, cameraController_(nullptr)
@@ -44,6 +45,29 @@ void DemoScene::LoadResources() {
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
 }
 
+void DemoScene::ConfigureOffscreenEffects()
+{
+	/// オフスクリーンレンダラーのエフェクト設定
+
+	// 全てのエフェクトを無効化
+	offscreenRenderer_->DisableAllEffects();
+
+
+	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
+	if (depthFogEffect) {
+		depthFogEffect->SetEnabled(true); 
+		depthFogEffect->SetFogDistance(0.2f,40); // 深度フォグの距離を設定
+	}
+	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
+	if (depthOfFieldEffect) {
+		depthOfFieldEffect->SetEnabled(true);
+	}
+	auto* vignetteEffect = offscreenRenderer_->GetVignetteEffect();
+	if (vignetteEffect) {
+		vignetteEffect->SetEnabled(true);
+	}
+
+}
 
 void DemoScene::Initialize() {
 	// システム参照の取得
@@ -180,7 +204,7 @@ void DemoScene::UpdateGameObjects() {
 	modelMultiMesh_->Update(viewProjectionMatrix);
 	//マルチマテリアルモデルの更新
 	modelMultiMaterial_->Update(viewProjectionMatrix);
-		// グリッド線更新
+	// グリッド線更新
 	gridLine_->Update(viewProjectionMatrix);
 }
 
@@ -231,7 +255,7 @@ void DemoScene::ImGui() {
 
 	ImGui::Spacing();
 	ImGui::Text("plane");
-	plane_ ->ImGui();
+	plane_->ImGui();
 
 
 	ImGui::Spacing();
