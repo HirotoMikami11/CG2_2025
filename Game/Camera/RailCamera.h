@@ -60,7 +60,11 @@ public:
 	void StopMovement() { isMoving_ = false; }
 	void ResetPosition() { t_ = 0.0f; isMoving_ = false; }
 	bool IsMoving() const { return isMoving_; }
-
+	/// <summary>
+	/// リソースの明示的解放
+	/// GameSceneのFinalize時に呼び出す
+	/// </summary>
+	void ReleaseResources();
 private:
 	// トランスフォーム
 	Transform3D transform_;

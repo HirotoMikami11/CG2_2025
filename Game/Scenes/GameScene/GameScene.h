@@ -65,16 +65,6 @@ private:
 	void UpdateGameObjects();
 	void DrawGameObjects();
 
-	/// <summary>
-	/// 親子関係を設定
-	/// </summary>
-	void SetupParentChildRelationship();
-
-	/// <summary>
-	/// 親子関係をクリア（メモリリーク防止）
-	/// </summary>
-	void ClearParentChildRelationships();
-
 	// ゲームオブジェクト
 	std::unique_ptr<Player> player_;
 	std::unique_ptr<Enemy> enemy_;

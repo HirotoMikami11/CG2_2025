@@ -266,4 +266,29 @@ void GameScene::ImGui() {
 
 void GameScene::Finalize() {
 	// unique_ptrで自動的に解放される
+
+	////
+	///悩まされたので備忘録TODO:カメラを後図家するときも簡単に消せるような仕組みにする
+	////
+
+	//CameraControllerがシングルトンのため、他のオブジェクトより後に破棄される
+	//RailCameraがModel3D → MaterialGroup → Material → DirectX12リソースという深い階層でリソースを保持
+	//アプリケーション終了時にDirectXCommonが先に破棄され、その後でDirectX12リソースを解放しようとしてエラーが発生
+
+	// レールカメラのリソースを明示的に解放
+	if (railCamera_) {
+		railCamera_->ReleaseResources();
+		railCamera_ = nullptr;
+	}
+
+	// CameraControllerからRailCameraを明示的に削除
+	if (cameraController_) {
+		// デバッグカメラでない場合は通常カメラに切り替えてからRailCameraを削除
+		if (cameraController_->GetActiveCameraId() == "rail") {
+			cameraController_->SetActiveCamera("normal");
+		}
+		cameraController_->UnregisterCamera("rail");
+	}
+
+
 }

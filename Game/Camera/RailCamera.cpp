@@ -10,8 +10,9 @@ RailCamera::RailCamera()
 }
 
 RailCamera::~RailCamera() {
+	// デストラクタでも安全にリソースを解放
+	ReleaseResources();
 }
-
 void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	// 初期値を保存
 	initialPosition_ = position;
@@ -145,6 +146,18 @@ void RailCamera::DrawRailTrack(const Matrix4x4& viewProjectionMatrix, const Ligh
 
 	// 軌道の描画は線描画システムが完成してから実装
 	// TODO: 線描画システムでスプライン曲線の軌道を描画
+}
+
+void RailCamera::ReleaseResources() {
+	// 1. カメラモデルを先に解放
+	if (cameraModel_) {
+		cameraModel_.reset();
+	}
+
+	// 2. システム参照をクリア
+	directXCommon_ = nullptr;
+
+	Logger::Log(Logger::GetStream(), "RailCamera: Resources released\n");
 }
 
 void RailCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotation) {
