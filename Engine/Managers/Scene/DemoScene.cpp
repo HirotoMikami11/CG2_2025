@@ -26,10 +26,7 @@ void DemoScene::LoadResources() {
 	textureManager_ = TextureManager::GetInstance();
 
 	// モデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_Plane");
-
-	//TODO:スザンヌ
-	//modelManager_->LoadModel("resources/Model/Suzanne", "suzanne.obj", "model_Suzanne");
+	//modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_Plane");
 
 	////バニー
 	//modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");

@@ -8,22 +8,22 @@ Player::~Player() {
 	// unique_ptrで自動的に解放される
 }
 
-void Player::Initialize(DirectXCommon* dxCommon) {
+void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	directXCommon_ = dxCommon;
 
 	// 入力のシングルトンを取得
 	input_ = InputManager::GetInstance();
 
 	// ゲームオブジェクト（球体）の初期化
-	gameObject_ = std::make_unique<Sphere>();
-	gameObject_->Initialize(dxCommon, "sphere", "uvChecker");
+	gameObject_ = std::make_unique<Model3D>();
+	gameObject_->Initialize(dxCommon, "player");
 	gameObject_->SetName("Player");
 
 	// 初期位置設定
 	Vector3Transform defaultTransform{
 		{1.0f, 1.0f, 1.0f},  // scale
 		{0.0f, 0.0f, 0.0f},  // rotate
-		{0.0f, 0.0f, 0.0f}   // translate
+		position             // translate（引数で指定された位置）
 	};
 	gameObject_->SetTransform(defaultTransform);
 
@@ -74,12 +74,19 @@ void Player::ImGui() {
 	}
 
 	ImGui::Text("Bullets Count: %zu", bullets_.size());
+
+	// KamataEngineのデバッグ表示と同様の情報を表示
+	Vector3 worldPos = GetWorldPosition();
+	ImGui::Text("World Position: (%.2f, %.2f, %.2f)", worldPos.x, worldPos.y, worldPos.z);
+
+	Vector3 localPos = gameObject_->GetPosition();
+	ImGui::Text("Local Position: (%.2f, %.2f, %.2f)", localPos.x, localPos.y, localPos.z);
 #endif
 }
 
 Vector3 Player::GetWorldPosition() {
 	if (gameObject_) {
-		// Transform3DのWorld行列から移動成分を取得
+		// Transform3Dが親子関係を考慮したワールド行列を返してくれる（KamataEngineと同じ）
 		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
 		return Vector3{
 			worldMatrix.m[3][0],
@@ -115,7 +122,7 @@ void Player::Move() {
 	Vector3 currentPos = gameObject_->GetPosition();
 	currentPos += move;
 
-	// 移動制限の適用
+	// 移動制限の適用（KamataEngineと同じ値）
 	currentPos.x = std::clamp(currentPos.x, -kMoveLimitX, kMoveLimitX);
 	currentPos.y = std::clamp(currentPos.y, -kMoveLimitY, kMoveLimitY);
 
@@ -127,7 +134,7 @@ void Player::Rotate() {
 	// 現在の回転を取得
 	Vector3 currentRotation = gameObject_->GetRotation();
 
-	// 押した方向で回転
+	// 押した方向で回転（KamataEngineと同じキー割り当て）
 	if (input_->IsKeyDown(DIK_A)) {
 		currentRotation.y += kRotSpeed;
 	} else if (input_->IsKeyDown(DIK_D)) {
@@ -145,13 +152,15 @@ void Player::Attack() {
 		Vector3 bulletVelocity(0, 0, kBulletSpeed);
 
 		// プレイヤーの回転を考慮して弾の方向を計算
-		Vector3 rotation = gameObject_->GetRotation();
-		Matrix4x4 rotationMatrix = MakeRotateYMatrix(rotation.y);
-		bulletVelocity = Matrix4x4Transform(bulletVelocity, rotationMatrix);
+		// Transform3Dが親子関係を考慮したワールド行列を返してくれる
+		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
+
+		// 弾の方向をワールド変換（回転のみ適用、移動成分は無視）
+		bulletVelocity = Matrix4x4TransformNormal(bulletVelocity, worldMatrix);
 
 		// 弾丸を生成・初期化する
 		auto newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(directXCommon_, gameObject_->GetPosition(), bulletVelocity);
+		newBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity);
 
 		// 弾丸を登録する
 		bullets_.push_back(std::move(newBullet));

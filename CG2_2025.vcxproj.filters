@@ -205,6 +205,15 @@
     <Filter Include="Game\CollisionManager">
       <UniqueIdentifier>{b30ed82a-661a-440c-b89b-0eb2dc0de461}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObjects\Ground">
+      <UniqueIdentifier>{870c0878-97d5-4239-8ee3-2ad5f21793c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Skydome">
+      <UniqueIdentifier>{e391d72a-ce5f-49ea-a8dd-1bc2fa8655f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\RailCamera">
+      <UniqueIdentifier>{08e0c1ad-2fbd-425a-97db-968da7068377}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -407,6 +416,15 @@
     </ClCompile>
     <ClCompile Include="Game\CollisionManager\CollisionManager.cpp">
       <Filter>Game\CollisionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Skydome\Skydome.cpp">
+      <Filter>Game\GameObjects\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Ground\Ground.cpp">
+      <Filter>Game\GameObjects\Ground</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Camera\RailCamera.cpp">
+      <Filter>Game\RailCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -684,6 +702,15 @@
     </ClInclude>
     <ClInclude Include="Game\CollisionManager\CollisionConfig.h">
       <Filter>Game\CollisionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Skydome\Skydome.h">
+      <Filter>Game\GameObjects\Skydome</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Ground\Ground.h">
+      <Filter>Game\GameObjects\Ground</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera\RailCamera.h">
+      <Filter>Game\RailCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

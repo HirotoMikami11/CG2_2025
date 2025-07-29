@@ -7,6 +7,7 @@
 #include "Objects/GameObject/GameObject.h"
 #include "GameObjects/PlayerBullet/PlayerBullet.h"
 #include "GameObjects/Collider.h"	//衝突判定
+#include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
 
 /// <summary>
 /// プレイヤークラス
@@ -27,7 +28,8 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
-	void Initialize(DirectXCommon* dxCommon);
+	/// <param name="position">初期位置</param>
+	void Initialize(DirectXCommon* dxCommon, const Vector3& position);
 
 	/// <summary>
 	/// 更新
@@ -74,9 +76,20 @@ public:
 	/// </summary>
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
 
+	/// <summary>
+	/// 親オブジェクトを設定（Transform3Dの親子関係）
+	/// KamataEngineと同様の親子関係実装
+	/// </summary>
+	/// <param name="parent">親のTransform3D</param>
+	void SetParent(const Transform3D* parent) {
+		if (gameObject_) {
+			gameObject_->GetTransform().SetParent(parent);
+		}
+	}
+
 private:
 	// ゲームオブジェクト
-	std::unique_ptr<Sphere> gameObject_;
+	std::unique_ptr<Model3D> gameObject_;
 
 	// プレイヤーの弾リスト
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
@@ -87,7 +100,7 @@ private:
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	// 移動制限
+	// 移動制限（KamataEngineと同じ値）
 	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
 	static constexpr float kMoveLimitY = 18.0f; // Y軸の移動制限
 	static constexpr float kCharacterSpeed = 0.2f; // 移動速度

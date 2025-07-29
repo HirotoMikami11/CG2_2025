@@ -14,8 +14,14 @@ void Transform3D::Initialize(DirectXCommon* dxCommon)
 
 void Transform3D::UpdateMatrix(const Matrix4x4& viewProjectionMatrix)
 {
-	// トランスフォームデータを更新
+	// トランスフォームデータを更新（ローカル→ワールド変換行列）
 	transformData_->World = MakeAffineMatrix(transform_.scale, transform_.rotate, transform_.translate);
+
+	// 親があれば親のワールド行列を掛ける
+	if (parent_) {
+		transformData_->World = Matrix4x4Multiply(transformData_->World, parent_->GetWorldMatrix());
+	}
+
 	// ビュープロジェクション行列を掛け算してWVP行列を計算
 	transformData_->WVP = Matrix4x4Multiply(transformData_->World, viewProjectionMatrix);
 }
@@ -53,5 +59,3 @@ void Transform3D::AddScale(const Vector3& Scale)
 	transform_.scale.y += Scale.y;
 	transform_.scale.z += Scale.z;
 }
-
-

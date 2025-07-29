@@ -63,6 +63,67 @@ void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProje
 
 }
 
+Vector3 CatmullRomPosition(const std::vector< Vector3>& points, float t) {
+
+	// Catmull-Romスプラインには少なくとも4つの点が必要
+	assert(points.size() >= 4 && "制禦点は4点以上必要です");
+
+	// 区間数は制御店の飾宇-1
+	size_t division = points.size() - 1;
+	// 1区間の長さ(全体を1.0賭した時の割合)
+	float areaWidth = 1.0f / division;
+
+	// 区間番号
+	size_t index = static_cast<size_t>(t / areaWidth);
+	// 区間番号が上限を超えないようにする
+	index = std::clamp(index, static_cast<size_t>(0), division - 1);
+
+	// 区間内の支店を0.0f、終点を1.0fとする時の現在位置
+	float t_2 = (t - areaWidth * index) / areaWidth;
+	t_2 = std::clamp(t_2, 0.0f, 1.0f);
+
+
+	// ４店分のインデックス
+	size_t index0 = index - 1;
+	size_t index1 = index;
+	size_t index2 = index + 1;
+	size_t index3 = index + 2;
+
+	// 最初と最後
+	if (index == 0) {
+		index0 = index1;
+	}
+
+	// 最後
+	if (index3 >= points.size()) {
+		index3 = index2;
+	}
+
+	// 4点の座標
+	const Vector3 p0 = points[index0];
+	const Vector3 p1 = points[index1];
+	const Vector3 p2 = points[index2];
+	const Vector3 p3 = points[index3];
+
+	// Catmull-Romスプライン曲線の補間を行う
+	return CatmullRomInterpolation(p0, p1, p2, p3, t_2);
+}
+
+/// CatmullRomスプライン曲線の補間
+Vector3 CatmullRomInterpolation(const  Vector3& p0, const  Vector3& p1, const  Vector3& p2, const  Vector3& p3, float t) {
+
+	const float s = 0.5f; // 1/2
+	float t2 = t * t;     // tの二乗
+	float t3 = t2 * t;    // tの三乗
+
+	Vector3 e3 = -p0 + 3 * p1 - 3 * p2 + p3;
+	Vector3 e2 = 2 * p0 - 5 * p1 + 4 * p2 - p3;
+	Vector3 e1 = -p0 + p2;
+	Vector3 e0 = 2 * p1;
+
+	return s * (e3 * t3 + e2 * t2 + e1 * t + e0);
+}
+
 /*-----------------------------------------------------------------------*/
 //
 //								当たり判定
@@ -137,7 +198,7 @@ Vector3 MakeCollisionPoint(const Segment& segment, const PlaneMath& PlaneMath) {
 
 	//衝突点を求める
 	//p=origin+tb
-	CollsionPoint = Add(segment.origin, Multiply(segment.diff,t));
+	CollsionPoint = Add(segment.origin, Multiply(segment.diff, t));
 	return CollsionPoint;
 }
 

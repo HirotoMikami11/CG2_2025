@@ -2,7 +2,7 @@
 #include "Objects/GameObject/GameObject.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "GameObjects/Collider.h"	//衝突判定
-
+#include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
 
 /// <summary>
 /// プレイヤーの弾クラス
@@ -70,4 +70,9 @@ private:
 
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
+
+	/// <summary>
+	/// 速度の方向を向く
+	/// </summary>
+	void SetToVelocityDirection();
 };

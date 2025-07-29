@@ -25,9 +25,10 @@ void GameScene::LoadResources() {
 	modelManager_ = ModelManager::GetInstance();
 	textureManager_ = TextureManager::GetInstance();
 
-
-	// 必要に応じて独自のモデルファイルを読み込み
-	// modelManager_->LoadModel("resources/Model/Enemy", "enemy.obj", "model_Enemy");
+	// モデルファイルを読み込み
+	modelManager_->LoadModel("resources/Model/Ground", "ground.obj", "ground");
+	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
+	modelManager_->LoadModel("resources/Model/Camera", "camera.obj", "camera");
 
 	Logger::Log(Logger::GetStream(), "GameScene: Resources loaded successfully\n");
 }
@@ -61,7 +62,15 @@ void GameScene::Initialize() {
 	Vector3 initialPosition = { 0.0f, 0.0f, -50.0f };
 	Vector3 initialRotation = { 0.0f, 0.0f, 0.0f };
 	cameraController_->Initialize(initialPosition, initialRotation);
-	cameraController_->SetActiveCamera("normal");
+
+	// レールカメラを作成してカメラコントローラーに登録
+	auto railCamera = std::make_unique<RailCamera>();
+	railCamera->Initialize(Vector3{ 0.0f, 0.0f, 0.0f }, Vector3{ 0.0f, 0.0f, 0.0f });
+	railCamera_ = railCamera.get(); // 参照を保存
+	cameraController_->RegisterCamera("rail", std::move(railCamera));
+
+	// デフォルトでレールカメラをアクティブに設定
+	cameraController_->SetActiveCamera("rail");
 
 	///*-----------------------------------------------------------------------*///
 	///								衝突マネージャー								///
@@ -88,7 +97,13 @@ void GameScene::InitializeGameObjects() {
 	///								プレイヤー									///
 	///*-----------------------------------------------------------------------*///
 	player_ = std::make_unique<Player>();
-	player_->Initialize(directXCommon_);
+	Vector3 playerPosition(0.0f, 0.0f, 30.0f); // 前にずらす
+	player_->Initialize(directXCommon_, playerPosition);
+
+	// プレイヤーの親をレールカメラのTransformに設定
+	if (railCamera_) {
+		player_->SetParent(&railCamera_->GetTransform());
+	}
 
 	///*-----------------------------------------------------------------------*///
 	///								敵キャラ									///
@@ -97,18 +112,40 @@ void GameScene::InitializeGameObjects() {
 	enemy_->Initialize(directXCommon_, Vector3{ 50.0f, 10.0f, 200.0f });
 	// 敵キャラにプレイヤーのアドレスを渡す
 	enemy_->SetPlayer(player_.get());
+
+	///*-----------------------------------------------------------------------*///
+	///								天球									///
+	///*-----------------------------------------------------------------------*///
+	// 天球の生成
+	skydome_ = std::make_unique<Skydome>();
+	skydome_->Initialize(directXCommon_);
+
+	///*-----------------------------------------------------------------------*///
+	///								地面									///
+	///*-----------------------------------------------------------------------*///
+	// 地面の生成
+	ground_ = std::make_unique<Ground>();
+	ground_->Initialize(directXCommon_, { 0.0f, -70.0f, 0.0f });
 }
 
 void GameScene::Update() {
-
-	// カメラ更新
+	// カメラ更新（CameraControllerが全てのカメラを管理）
 	cameraController_->Update();
+
+	// レールカメラを常に更新（デバッグカメラ時でも動き続けるように）
+	if (railCamera_) {
+		railCamera_->Update();
+	}
+
+	// ビュープロジェクション行列を取得
+	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
+	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
 
 	// ゲームオブジェクト更新
 	UpdateGameObjects();
 
 	///*-----------------------------------------------------------------------*///
-	///								衝突判定										///
+	///								衝突判定									///
 	///*-----------------------------------------------------------------------*///
 	// 衝突マネージャーの更新
 	// プレイヤー・敵弾のリストを取得
@@ -135,10 +172,6 @@ void GameScene::Update() {
 }
 
 void GameScene::UpdateGameObjects() {
-	// 行列更新
-	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
-	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
-
 	// プレイヤーの更新
 	if (player_) {
 		player_->Update(viewProjectionMatrix);
@@ -147,6 +180,14 @@ void GameScene::UpdateGameObjects() {
 	// 敵の更新
 	if (enemy_) {
 		enemy_->Update(viewProjectionMatrix);
+	}
+
+	// 背景オブジェクトの更新
+	if (skydome_) {
+		skydome_->Update(viewProjectionMatrix);
+	}
+	if (ground_) {
+		ground_->Update(viewProjectionMatrix);
 	}
 }
 
@@ -161,6 +202,14 @@ void GameScene::DrawBackBuffer() {
 }
 
 void GameScene::DrawGameObjects() {
+	// 背景オブジェクトの描画（先に描画）
+	if (skydome_) {
+		skydome_->Draw(directionalLight_);
+	}
+	if (ground_) {
+		ground_->Draw(directionalLight_);
+	}
+
 	// プレイヤーの描画
 	if (player_) {
 		player_->Draw(directionalLight_);
@@ -169,6 +218,12 @@ void GameScene::DrawGameObjects() {
 	// 敵の描画
 	if (enemy_) {
 		enemy_->Draw(directionalLight_);
+	}
+
+	// レールカメラの軌道描画（デバッグ用）
+	// デバッグカメラ時でも常に描画されるように修正
+	if (railCamera_) {
+		railCamera_->DrawRailTrack(viewProjectionMatrix, directionalLight_);
 	}
 }
 
@@ -182,25 +237,29 @@ void GameScene::OnExit() {
 
 void GameScene::ImGui() {
 #ifdef _DEBUG
-	// プレイヤーのImGui
+	// カメラコントローラーのImGui（Camera.cppから移動）
+	cameraController_->ImGui();
+	ImGui::Spacing();
 
+	// プレイヤーのImGui
 	ImGui::Text("Player");
 	player_->ImGui();
 	ImGui::Spacing();
 
-
 	// 敵のImGui
-
 	ImGui::Text("Enemy");
 	enemy_->ImGui();
 	ImGui::Spacing();
 
+	// 地面のImGui
+	ImGui::Text("Ground");
+	ground_->ImGui();
+	ImGui::Spacing();
 
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
 	ImGui::Spacing();
-
 
 #endif
 }

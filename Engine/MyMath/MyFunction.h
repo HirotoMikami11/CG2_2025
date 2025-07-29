@@ -90,6 +90,27 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 //	行列の更新
 void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProjectionMatrix, TransformationMatrix* matrixData);
 
+
+/// <summary>
+/// CatmullRomスプライン曲線上の座標を得る関数
+/// </summary>
+/// <param name="points"></param>
+/// <param name="t"></param>
+/// <returns></returns>
+Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t);
+
+/// <summary>
+/// CatMullRom補間
+/// </summary>
+/// <param name="p0"></param>
+/// <param name="p1"></param>
+/// <param name="p2"></param>
+/// <param name="p3"></param>
+/// <param name="t"></param>
+/// <returns></returns>
+Vector3 CatmullRomInterpolation(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+
+
 /*-----------------------------------------------------------------------*/
 //
 //								当たり判定

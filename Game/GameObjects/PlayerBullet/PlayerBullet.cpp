@@ -29,6 +29,9 @@ void PlayerBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, 
 	// 弾の色を設定（白色）
 	gameObject_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
+	// 速度の方向を向くように回転
+	SetToVelocityDirection();
+
 	// 衝突判定設定
 	SetRadius(1.0f); // Colliderの半径をセット
 	/// 衝突属性の設定
@@ -73,4 +76,22 @@ Vector3 PlayerBullet::GetWorldPosition() {
 
 void PlayerBullet::OnCollision() {
 	isDead_ = true; // デスフラグを立てる
+}
+
+void PlayerBullet::SetToVelocityDirection() {
+	if (gameObject_) {
+		// 速度の方向を向くように回転
+		Vector3 rotation = gameObject_->GetRotation();
+
+		// Y軸周り角度（水平回転）
+		rotation.y = std::atan2(velocity_.x, velocity_.z);
+
+		// 横軸方向の長さを求める
+		float XZLength = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+
+		// X軸周り角度（垂直回転）
+		rotation.x = std::atan2(-velocity_.y, XZLength);
+
+		gameObject_->SetRotation(rotation);
+	}
 }

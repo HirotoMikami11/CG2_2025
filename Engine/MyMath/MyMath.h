@@ -230,6 +230,7 @@ float Dot(const Vector3& v1, const Vector3& v2);
 float Length(const Vector3& v);
 //正規化
 Vector3 Normalize(const Vector3& v);
+
 //クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 //距離
@@ -461,6 +462,8 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 Matrix4x4 MakeScaleMatrix(const Vector3& Scale);
 //4x4行列の座標変換
 Vector3 Matrix4x4Transform(const Vector3& vector, const Matrix4x4& matrix);
+// 4x4行列方向ベクトル変換
+Vector3 Matrix4x4TransformNormal(const Vector3& vector, const Matrix4x4& matrix);
 
 
 //X軸回転行列

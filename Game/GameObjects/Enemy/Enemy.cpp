@@ -62,6 +62,9 @@ void Enemy::Update(const Matrix4x4& viewProjectionMatrix) {
 		bullet->Update(viewProjectionMatrix);
 	}
 
+	// 向きの更新
+	SetToVelocityDirection();
+
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
 }
@@ -206,4 +209,22 @@ Vector3 Enemy::GetWorldPosition() {
 
 void Enemy::OnCollision() {
 	// 何もしない（必要に応じて実装）
+}
+
+void Enemy::SetToVelocityDirection() {
+	if (gameObject_) {
+		// 速度の方向を向くように回転
+		Vector3 rotation = gameObject_->GetRotation();
+
+		// Y軸周り角度（水平回転）
+		rotation.y = std::atan2(velocity_.x, velocity_.z);
+
+		// 横軸方向の長さを求める
+		float XZLength = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+
+		// X軸周り角度（垂直回転）
+		rotation.x = std::atan2(-velocity_.y, XZLength);
+
+		gameObject_->SetRotation(rotation);
+	}
 }

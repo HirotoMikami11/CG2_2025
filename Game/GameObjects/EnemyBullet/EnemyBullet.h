@@ -3,6 +3,7 @@
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "Objects/Light/Light.h"
 #include "GameObjects/Collider.h"	//衝突判定
+#include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
 
 // プレイヤークラスの前方宣言
 class Player;

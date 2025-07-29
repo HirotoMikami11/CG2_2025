@@ -896,6 +896,20 @@ Vector3 Matrix4x4Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	return result;
 }
 
+// ベクトル変換
+// 平行移動を無視してスケーリングと回転のみを適用する
+Vector3  Matrix4x4TransformNormal(const Vector3& vector, const Matrix4x4& matrix)
+{
+	Vector3 result{
+		vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0],
+		vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1],
+		vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2]
+	};
+
+	return result;
+
+}
+
 
 //1.X軸回転行列
 Matrix4x4 MakeRotateXMatrix(float radian) {

@@ -9,6 +9,10 @@
 #include "GameObjects/Player/Player.h"
 #include "GameObjects/Enemy/Enemy.h"
 #include "CollisionManager/CollisionManager.h"	//衝突判定マネージャー
+#include "GameObjects/Ground/Ground.h"			//地面
+#include "GameObjects/Skydome/Skydome.h"		//天球
+#include "CameraController/CameraController.h"	//カメラコントローラー
+#include "Camera/RailCamera.h"		//レールカメラ
 
 
 
@@ -61,15 +65,30 @@ private:
 	void UpdateGameObjects();
 	void DrawGameObjects();
 
+	/// <summary>
+	/// 親子関係を設定
+	/// </summary>
+	void SetupParentChildRelationship();
+
+	/// <summary>
+	/// 親子関係をクリア（メモリリーク防止）
+	/// </summary>
+	void ClearParentChildRelationships();
+
 	// ゲームオブジェクト
 	std::unique_ptr<Player> player_;
 	std::unique_ptr<Enemy> enemy_;
+
+	// 背景オブジェクト
+	std::unique_ptr<Ground> ground_;
+	std::unique_ptr<Skydome> skydome_;
 
 	// ライティング
 	Light directionalLight_;
 
 	// カメラ
 	CameraController* cameraController_;
+	RailCamera* railCamera_ = nullptr;  // レールカメラへの参照
 	Matrix4x4 viewProjectionMatrix;
 	Matrix4x4 viewProjectionMatrixSprite;
 

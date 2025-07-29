@@ -14,6 +14,7 @@
 #include "GameObjects/EnemyBullet/EnemyBullet.h"
 #include "MyMath/TimedCall.h"
 #include "GameObjects/Collider.h"	//衝突判定
+#include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
 
 
 // プレイヤークラスの前方宣言
@@ -146,4 +147,9 @@ private:
 
 	// 弾の速度
 	static constexpr float kBulletSpeed = 2.0f;
+
+	/// <summary>
+	/// 速度の方向を向く
+	/// </summary>
+	void SetToVelocityDirection();
 };

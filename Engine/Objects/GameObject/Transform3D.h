@@ -44,18 +44,28 @@ public:
 	///トランスフォームデータの直接取得（ImGui用）
 	TransformationMatrix* GetTransformDataPtr() const { return transformData_; }
 
-
 	//Setter
 	void SetTransform(const Vector3Transform& newTransform) { transform_ = newTransform; }
 	void SetScale(const Vector3& scale) { transform_.scale = scale; }
 	void SetRotation(const Vector3& rotate) { transform_.rotate = rotate; }
 	void SetPosition(const Vector3& translate) { transform_.translate = translate; }
 
+	/// <summary>
+	/// 親オブジェクトを設定
+	/// </summary>
+	/// <param name="parent">親のTransform3Dへのポインタ</param>
+	void SetParent(const Transform3D* parent) { parent_ = parent; }
+
+	/// <summary>
+	/// 親オブジェクトを取得
+	/// </summary>
+	/// <returns>親のTransform3Dへのポインタ</returns>
+	const Transform3D* GetParent() const { return parent_; }
+
 	///指定した値で回転
 	void AddPosition(const Vector3& Position);
 	void AddRotation(const Vector3& rotation);
 	void AddScale(const Vector3& Scale);
-
 
 private:
 	// GPU用トランスフォームリソース
@@ -70,6 +80,6 @@ private:
 		.translate{0.0f, 0.0f, 0.0f}
 	};
 
-
+	// 親となるTransform3Dへのポインタ
+	const Transform3D* parent_ = nullptr;
 };
-
