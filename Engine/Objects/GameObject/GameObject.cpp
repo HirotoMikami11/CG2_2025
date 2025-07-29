@@ -192,42 +192,44 @@ void GameObject::ImGui() {
 				ImGui::Separator();
 			}
 
-			// 個別マテリアル設定（TreeNodeで表示）
+			// 個別マテリアル設定
 			for (size_t i = 0; i < materialCount; ++i) {
 				std::string materialName = std::format("Material {}", i);
 
+				if (ImGui::TreeNode(materialName.c_str())) {
+					Material& material = sharedModel_->GetMaterial(i);
 
-				Material& material = sharedModel_->GetMaterial(i);
+					// 色設定（直接Modelのマテリアルを操作）
+					Vector4 color = material.GetColor();
+					if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color.x))) {
+						material.SetColor(color);
+					}
 
-				// 色設定（直接Modelのマテリアルを操作）
-				Vector4 color = material.GetColor();
-				if (ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color.x))) {
-					material.SetColor(color);
-				}
+					// ライティング設定
+					const char* lightingModeNames[] = { "None", "Lambert", "Half-Lambert" };
+					LightingMode currentMode = material.GetLightingMode();
+					int currentModeIndex = static_cast<int>(currentMode);
+					if (ImGui::Combo("Lighting", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
+						material.SetLightingMode(static_cast<LightingMode>(currentModeIndex));
+					}
 
-				// ライティング設定
-				const char* lightingModeNames[] = { "None", "Lambert", "Half-Lambert" };
-				LightingMode currentMode = material.GetLightingMode();
-				int currentModeIndex = static_cast<int>(currentMode);
-				if (ImGui::Combo("Lighting", &currentModeIndex, lightingModeNames, IM_ARRAYSIZE(lightingModeNames))) {
-					material.SetLightingMode(static_cast<LightingMode>(currentModeIndex));
-				}
+					// UV設定（直接Modelのマテリアルを操作）
+					Vector2 uvPosition = material.GetUVTransformTranslate();
+					Vector2 uvScale = material.GetUVTransformScale();
+					float uvRotateZ = material.GetUVTransformRotateZ();
 
-				// UV設定（直接Modelのマテリアルを操作）
-				Vector2 uvPosition = material.GetUVTransformTranslate();
-				Vector2 uvScale = material.GetUVTransformScale();
-				float uvRotateZ = material.GetUVTransformRotateZ();
+					if (ImGui::DragFloat2("UV Translate", &uvPosition.x, 0.01f, -10.0f, 10.0f)) {
+						material.SetUVTransformTranslate(uvPosition);
+					}
+					if (ImGui::DragFloat2("UV Scale", &uvScale.x, 0.01f, -10.0f, 10.0f)) {
+						material.SetUVTransformScale(uvScale);
+					}
+					if (ImGui::SliderAngle("UV Rotate", &uvRotateZ)) {
+						material.SetUVTransformRotateZ(uvRotateZ);
+					}
 
-				if (ImGui::DragFloat2("UV Translate", &uvPosition.x, 0.01f, -10.0f, 10.0f)) {
-					material.SetUVTransformTranslate(uvPosition);
+					ImGui::TreePop();
 				}
-				if (ImGui::DragFloat2("UV Scale", &uvScale.x, 0.01f, -10.0f, 10.0f)) {
-					material.SetUVTransformScale(uvScale);
-				}
-				if (ImGui::SliderAngle("UV Rotate", &uvRotateZ)) {
-					material.SetUVTransformRotateZ(uvRotateZ);
-				}
-				ImGui::Separator();
 			}
 		}
 
