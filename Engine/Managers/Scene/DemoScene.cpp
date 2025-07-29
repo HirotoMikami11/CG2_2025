@@ -56,7 +56,7 @@ void DemoScene::ConfigureOffscreenEffects()
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
 		depthFogEffect->SetEnabled(true); 
-		depthFogEffect->SetFogDistance(0.2f,40); // 深度フォグの距離を設定
+		depthFogEffect->SetFogDistance(0.2f,40.0f); // 深度フォグの距離を設定
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
@@ -85,6 +85,8 @@ void DemoScene::Initialize() {
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
+	//ポストエフェクトの初期設定
+	ConfigureOffscreenEffects();
 }
 
 void DemoScene::InitializeGameObjects() {
