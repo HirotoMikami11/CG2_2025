@@ -32,6 +32,13 @@ void EnemyBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, c
 	// 弾の色を設定（赤色で敵の弾とわかりやすく）
 	gameObject_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });
 
+	// 衝突判定設定
+	SetRadius(1.0f); // Colliderの半径をセット
+	/// 衝突属性の設定
+	SetCollisionAttribute(kCollisionAttributeEnemy);
+	/// 衝突対象は自分の属性以外に設定(ビット反転)
+	SetCollisionMask(~kCollisionAttributeEnemy);
+
 	// プレイヤーの方向を向くように回転
 	SetToPlayerDirection();
 }
@@ -63,11 +70,21 @@ void EnemyBullet::Draw(const Light& directionalLight) {
 	}
 }
 
-Vector3 EnemyBullet::GetWorldPosition() const {
+Vector3 EnemyBullet::GetWorldPosition() {
 	if (gameObject_) {
-		return gameObject_->GetPosition();
+		// Transform3DのWorld行列から移動成分を取得
+		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
+		return Vector3{
+			worldMatrix.m[3][0],
+			worldMatrix.m[3][1],
+			worldMatrix.m[3][2]
+		};
 	}
 	return Vector3{ 0.0f, 0.0f, 0.0f };
+}
+
+void EnemyBullet::OnCollision() {
+	isDead_ = true; // デスフラグを立てる
 }
 
 Vector3 EnemyBullet::IsHoming() {

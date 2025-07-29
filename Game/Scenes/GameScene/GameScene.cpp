@@ -63,6 +63,14 @@ void GameScene::Initialize() {
 	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
 
+	///*-----------------------------------------------------------------------*///
+	///								衝突マネージャー								///
+	///*-----------------------------------------------------------------------*///
+	// 衝突マネージャーの生成
+	collisionManager_ = std::make_unique<CollisionManager>();
+	// 衝突マネージャーの初期化
+	collisionManager_->Initialize();
+
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
 
@@ -98,6 +106,32 @@ void GameScene::Update() {
 
 	// ゲームオブジェクト更新
 	UpdateGameObjects();
+
+	///*-----------------------------------------------------------------------*///
+	///								衝突判定										///
+	///*-----------------------------------------------------------------------*///
+	// 衝突マネージャーの更新
+	// プレイヤー・敵弾のリストを取得
+	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
+	const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = enemy_->GetBullets();
+
+	// 衝突マネージャーのリストをクリアする
+	collisionManager_->ClearColliderList();
+
+	// Player, Enemyのコライダーを追加する
+	collisionManager_->AddCollider(player_.get());
+	collisionManager_->AddCollider(enemy_.get());
+
+	// Bulletのコライダーを追加する
+	for (const auto& bullet : playerBullets) {
+		collisionManager_->AddCollider(bullet.get());
+	}
+	for (const auto& bullet : enemyBullets) {
+		collisionManager_->AddCollider(bullet.get());
+	}
+
+	// 衝突判定と応答
+	collisionManager_->Update();
 }
 
 void GameScene::UpdateGameObjects() {

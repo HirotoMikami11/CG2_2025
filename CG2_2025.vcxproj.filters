@@ -202,6 +202,9 @@
     <Filter Include="Game\GameObjects\Enemy\State">
       <UniqueIdentifier>{257d1e67-a471-42a9-b817-99e2a55e03da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\CollisionManager">
+      <UniqueIdentifier>{b30ed82a-661a-440c-b89b-0eb2dc0de461}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -401,6 +404,9 @@
     </ClCompile>
     <ClCompile Include="Engine\MyMath\TimedCall.cpp">
       <Filter>Engine\MyMath</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CollisionManager\CollisionManager.cpp">
+      <Filter>Game\CollisionManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -669,6 +675,15 @@
     </ClInclude>
     <ClInclude Include="Engine\MyMath\TimedCall.h">
       <Filter>Engine\MyMath</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Collider.h">
+      <Filter>Game\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CollisionManager\CollisionManager.h">
+      <Filter>Game\CollisionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CollisionManager\CollisionConfig.h">
+      <Filter>Game\CollisionManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

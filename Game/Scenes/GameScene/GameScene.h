@@ -5,10 +5,10 @@
 #include "Engine.h"
 #include "Managers/Scene/BaseScene.h"
 
-
 #include "Objects/Line/GridLine.h"
 #include "GameObjects/Player/Player.h"
 #include "GameObjects/Enemy/Enemy.h"
+#include "CollisionManager/CollisionManager.h"	//衝突判定マネージャー
 
 
 
@@ -80,5 +80,8 @@ private:
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
+
+	//					衝突マネージャー					//
+	std::unique_ptr<CollisionManager> collisionManager_;
 
 };

@@ -34,6 +34,13 @@ void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	// 速度をセット
 	velocity_ = { 0, 0, 1 };
 
+	// 衝突判定設定
+	SetRadius(3.0f); // Colliderの半径をセット
+	/// 衝突属性の設定
+	SetCollisionAttribute(kCollisionAttributeEnemy);
+	/// 衝突対象は自分の属性以外に設定(ビット反転)
+	SetCollisionMask(~kCollisionAttributeEnemy);
+
 	// 初期状態をセットする
 	ChangeState(std::make_unique<EnemyStateApproach>(this));
 }
@@ -184,9 +191,19 @@ void Enemy::ClearTimeCalls() {
 	shouldClearTimedCalls_ = true;
 }
 
-Vector3 Enemy::GetWorldPosition() const {
+Vector3 Enemy::GetWorldPosition() {
 	if (gameObject_) {
-		return gameObject_->GetPosition();
+		// Transform3DのWorld行列から移動成分を取得
+		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
+		return Vector3{
+			worldMatrix.m[3][0],
+			worldMatrix.m[3][1],
+			worldMatrix.m[3][2]
+		};
 	}
 	return Vector3{ 0.0f, 0.0f, 0.0f };
+}
+
+void Enemy::OnCollision() {
+	// 何もしない（必要に応じて実装）
 }

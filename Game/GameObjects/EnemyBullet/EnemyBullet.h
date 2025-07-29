@@ -2,6 +2,7 @@
 #include "Objects/GameObject/GameObject.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "Objects/Light/Light.h"
+#include "GameObjects/Collider.h"	//衝突判定
 
 // プレイヤークラスの前方宣言
 class Player;
@@ -9,7 +10,7 @@ class Player;
 /// <summary>
 /// 敵の弾クラス
 /// </summary>
-class EnemyBullet {
+class EnemyBullet : public Collider {
 public:
 	/// <summary>
 	/// コンストラクタ
@@ -49,10 +50,15 @@ public:
 	bool IsDead() const { return isDead_; }
 
 	/// <summary>
-	/// ワールド座標を取得
+	/// ワールド座標を取得（オーバーライド）
 	/// </summary>
 	/// <returns>ワールド座標</returns>
-	Vector3 GetWorldPosition() const;
+	Vector3 GetWorldPosition() override;
+
+	/// <summary>
+	/// 衝突時に呼ばれる関数（オーバーライド）
+	/// </summary>
+	void OnCollision() override;
 
 	/// <summary>
 	/// プレイヤーを設定

@@ -26,6 +26,13 @@ void Player::Initialize(DirectXCommon* dxCommon) {
 		{0.0f, 0.0f, 0.0f}   // translate
 	};
 	gameObject_->SetTransform(defaultTransform);
+
+	// 衝突判定設定
+	SetRadius(1.0f); // Colliderの半径をセット
+	/// 衝突属性の設定
+	SetCollisionAttribute(kCollisionAttributePlayer);
+	/// 衝突対象は自分の属性以外に設定(ビット反転)
+	SetCollisionMask(~kCollisionAttributePlayer);
 }
 
 void Player::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -70,11 +77,21 @@ void Player::ImGui() {
 #endif
 }
 
-Vector3 Player::GetWorldPosition() const {
+Vector3 Player::GetWorldPosition() {
 	if (gameObject_) {
-		return gameObject_->GetPosition();
+		// Transform3DのWorld行列から移動成分を取得
+		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
+		return Vector3{
+			worldMatrix.m[3][0],
+			worldMatrix.m[3][1],
+			worldMatrix.m[3][2]
+		};
 	}
 	return Vector3{ 0.0f, 0.0f, 0.0f };
+}
+
+void Player::OnCollision() {
+	// 何もしない（必要に応じて実装）
 }
 
 void Player::Move() {

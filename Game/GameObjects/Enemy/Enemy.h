@@ -13,6 +13,7 @@
 
 #include "GameObjects/EnemyBullet/EnemyBullet.h"
 #include "MyMath/TimedCall.h"
+#include "GameObjects/Collider.h"	//衝突判定
 
 
 // プレイヤークラスの前方宣言
@@ -21,7 +22,7 @@ class Player;
 /// <summary>
 /// 敵クラス
 /// </summary>
-class Enemy {
+class Enemy : public Collider {
 public:
 	/// <summary>
 	/// コンストラクタ
@@ -96,11 +97,21 @@ public:
 	// Getter
 	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
 	Vector3 GetVelocity() const { return velocity_; }
-	Vector3 GetWorldPosition() const;
+	Vector3 GetWorldPosition() override;
+
+	/// <summary>
+	/// 衝突時に呼ばれる関数（オーバーライド）
+	/// </summary>
+	void OnCollision() override;
 
 	// Setter
 	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
 	void SetPlayer(Player* player) { player_ = player; }
+
+	/// <summary>
+	/// 弾リストを取得
+	/// </summary>
+	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() const { return bullets_; }
 
 	// 発射間隔
 	static const int kFireInterval_ = 60; // 発射間隔(フレーム数)

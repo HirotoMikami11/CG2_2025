@@ -6,11 +6,12 @@
 
 #include "Objects/GameObject/GameObject.h"
 #include "GameObjects/PlayerBullet/PlayerBullet.h"
+#include "GameObjects/Collider.h"	//衝突判定
 
 /// <summary>
 /// プレイヤークラス
 /// </summary>
-class Player {
+class Player : public Collider {
 public:
 	/// <summary>
 	/// コンストラクタ
@@ -46,10 +47,15 @@ public:
 	void ImGui();
 
 	/// <summary>
-	/// ワールド座標を取得
+	/// ワールド座標を取得（オーバーライド）
 	/// </summary>
 	/// <returns>ワールド座標</returns>
-	Vector3 GetWorldPosition() const;
+	Vector3 GetWorldPosition() override;
+
+	/// <summary>
+	/// 衝突時に呼ばれる関数（オーバーライド）
+	/// </summary>
+	void OnCollision() override;
 
 	/// <summary>
 	/// 位置を取得
@@ -62,6 +68,11 @@ public:
 	/// </summary>
 	/// <param name="position">位置</param>
 	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
+
+	/// <summary>
+	/// 弾リストを取得
+	/// </summary>
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
 
 private:
 	// ゲームオブジェクト
