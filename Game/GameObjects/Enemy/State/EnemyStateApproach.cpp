@@ -2,10 +2,11 @@
 #include "GameObjects/Enemy/Enemy.h"
 
 
-
 EnemyStateApproach::EnemyStateApproach(Enemy* enemy) : BaseEnemyState("State Approach", enemy) {
 	// 自動発射を開始する
 	enemy->StartAutoFire();
+	// 敵の速度を設定
+	enemy_->SetVelocity(velocity_);
 }
 
 EnemyStateApproach::~EnemyStateApproach() {
@@ -15,8 +16,6 @@ EnemyStateApproach::~EnemyStateApproach() {
 }
 
 void EnemyStateApproach::Update() {
-	// デバッグログ出力
-	DebugLog();
 
 	//									移動処理									//
 
@@ -29,7 +28,22 @@ void EnemyStateApproach::Update() {
 	//									状態遷移									//
 	// 状態遷移の条件
 	if (enemyPos.z <= ChangeLeavePosZ_) {
-		// 離脱フェーズに移行
-		enemy_->ChangeState(std::make_unique<EnemyStateLeave>(enemy_));
+		// パターンに応じて離脱フェーズに移行
+		EnemyPattern pattern = enemy_->GetPattern();
+		switch (pattern) {
+
+			//まっすぐ進んでくる
+		case EnemyPattern::Straight:
+			enemy_->ChangeState(std::make_unique<EnemyStateStraight>(enemy_));
+			break;
+		case EnemyPattern::LeaveLeft:
+		case EnemyPattern::LeaveRight:
+			// 離脱フェーズに移行（パターンは離脱状態内で判定）
+			enemy_->ChangeState(std::make_unique<EnemyStateLeave>(enemy_));
+			break;
+		default:
+			// その他のパターンには現状遷移しないので設定しない
+			break;
+		}
 	}
 }

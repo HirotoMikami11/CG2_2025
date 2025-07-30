@@ -5,6 +5,7 @@
 #include "Engine.h"
 
 #include "Objects/GameObject/GameObject.h"
+#include "Objects/Sprite/Sprite.h"
 #include "GameObjects/PlayerBullet/PlayerBullet.h"
 #include "GameObjects/Collider.h"	//衝突判定
 #include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
@@ -44,6 +45,11 @@ public:
 	void Draw(const Light& directionalLight);
 
 	/// <summary>
+	/// UI用描画
+	/// </summary>
+	void DrawUI();
+
+	/// <summary>
 	/// ImGui
 	/// </summary>
 	void ImGui();
@@ -53,6 +59,12 @@ public:
 	/// </summary>
 	/// <returns>ワールド座標</returns>
 	Vector3 GetWorldPosition() override;
+
+	/// <summary>
+	/// レティクルのワールド座標を取得
+	/// </summary>
+	/// <returns>レティクルのワールド座標</returns>
+	Vector3 GetWorldPosition3DReticle();
 
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
@@ -100,9 +112,20 @@ private:
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
 
-	// 移動制限（KamataEngineと同じ値）
-	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
-	static constexpr float kMoveLimitY = 18.0f; // Y軸の移動制限
+	// レティクル関連
+	// 3Dレティクル用のTransform3D
+	Transform3D transform3DReticle_;
+	// 2Dレティクル用のスプライト
+	std::unique_ptr<Sprite> sprite2DReticle_;
+	// ビューポート行列
+	Matrix4x4 matViewport_;
+	Vector3 spritePosition_;
+	Vector3 posNear_;
+	Vector3 posFar_;
+
+	// 移動制限
+	static constexpr float kMoveLimitX = 18.0f; // X軸の移動制限
+	static constexpr float kMoveLimitY = 10.0f; // Y軸の移動制限
 	static constexpr float kCharacterSpeed = 0.2f; // 移動速度
 	static constexpr float kRotSpeed = 0.02f; // 回転速度
 	static constexpr float kBulletSpeed = 1.0f; // 弾の速度
@@ -126,4 +149,24 @@ private:
 	/// 寿命の尽きた弾を削除する
 	/// </summary>
 	void DeleteBullets();
+
+	/// <summary>
+	/// 3Dレティクルの更新
+	/// </summary>
+	void UpdateReticle();
+
+	/// <summary>
+	/// 3Dレティクルのワールド座標を2Dレティクルのスクリーン座標に変換
+	/// </summary>
+	void ConvertWorldToScreenReticle();
+
+	/// <summary>
+	/// マウスカーソルのスクリーン座標を3Dレティクルのワールド座標に変換
+	/// </summary>
+	void ConvertMouseToWorldReticle();
+
+	/// <summary>
+	/// ゲームパッドでスクリーン座標を3Dレティクルのワールド座標に変換
+	/// </summary>
+	void ConvertGamepadToWorldReticle();
 };

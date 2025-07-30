@@ -11,8 +11,8 @@ void PlayerBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, 
 	velocity_ = velocity;
 
 	// ゲームオブジェクト（球体）の初期化
-	gameObject_ = std::make_unique<Sphere>();
-	gameObject_->Initialize(dxCommon, "sphere", "white");
+	gameObject_ = std::make_unique<Model3D>();
+	gameObject_->Initialize(dxCommon, "playerBullet", "white");
 	gameObject_->SetName("PlayerBullet");
 
 	// 初期位置設定

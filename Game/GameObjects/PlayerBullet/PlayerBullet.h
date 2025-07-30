@@ -58,7 +58,7 @@ public:
 
 private:
 	// ゲームオブジェクト
-	std::unique_ptr<Sphere> gameObject_;
+	std::unique_ptr<Model3D> gameObject_;
 
 	// 速度
 	Vector3 velocity_;

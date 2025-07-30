@@ -12,6 +12,8 @@ GameScene::GameScene()
 	, textureManager_(nullptr)
 	, viewProjectionMatrix{ MakeIdentity4x4() }
 	, viewProjectionMatrixSprite{ MakeIdentity4x4() }
+	, isWait_(false)
+	, waitTimer_(0)
 {
 }
 
@@ -30,6 +32,16 @@ void GameScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
 	modelManager_->LoadModel("resources/Model/Camera", "camera.obj", "camera");
 
+	// プレイヤー関連
+	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+	modelManager_->LoadModel("resources/Model/PlayerBullet", "playerBullet.obj", "playerBullet");
+
+	// 敵関連
+	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
+
+	// テクスチャ読み込み
+	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
+
 	Logger::Log(Logger::GetStream(), "GameScene: Resources loaded successfully\n");
 }
 
@@ -40,13 +52,13 @@ void GameScene::ConfigureOffscreenEffects() {
 	offscreenRenderer_->DisableAllEffects();
 
 	// 必要に応じてエフェクトを有効化
-	/*
+
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
 		depthFogEffect->SetEnabled(true);
-		depthFogEffect->SetFogDistance(0.2f, 40.0f);
+		depthFogEffect->SetFogDistance(0.2f, 1200.0f);
 	}
-	*/
+
 }
 
 void GameScene::Initialize() {
@@ -70,7 +82,8 @@ void GameScene::Initialize() {
 	cameraController_->RegisterCamera("rail", std::move(railCamera));
 
 	// デフォルトでレールカメラをアクティブに設定
-	cameraController_->SetActiveCamera("rail");
+	//cameraController_->SetActiveCamera("rail");
+	railCamera_->StopMovement(); // レールカメラの動きを停止
 
 	///*-----------------------------------------------------------------------*///
 	///								衝突マネージャー								///
@@ -82,6 +95,9 @@ void GameScene::Initialize() {
 
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
+
+	// 敵発生データの読み込み
+	LoadEnemyPopData();
 
 	// ポストエフェクトの初期設定
 	ConfigureOffscreenEffects();
@@ -97,21 +113,13 @@ void GameScene::InitializeGameObjects() {
 	///								プレイヤー									///
 	///*-----------------------------------------------------------------------*///
 	player_ = std::make_unique<Player>();
-	Vector3 playerPosition(0.0f, 0.0f, 30.0f); // 前にずらす
+	Vector3 playerPosition(0.0f, 0.0f, 50.0f); // 前にずらす
 	player_->Initialize(directXCommon_, playerPosition);
 
 	// プレイヤーの親をレールカメラのTransformに設定
 	if (railCamera_) {
 		player_->SetParent(&railCamera_->GetTransform());
 	}
-
-	///*-----------------------------------------------------------------------*///
-	///								敵キャラ									///
-	///*-----------------------------------------------------------------------*///
-	enemy_ = std::make_unique<Enemy>();
-	enemy_->Initialize(directXCommon_, Vector3{ 50.0f, 10.0f, 200.0f });
-	// 敵キャラにプレイヤーのアドレスを渡す
-	enemy_->SetPlayer(player_.get());
 
 	///*-----------------------------------------------------------------------*///
 	///								天球									///
@@ -129,13 +137,17 @@ void GameScene::InitializeGameObjects() {
 }
 
 void GameScene::Update() {
+	// 敵出現コマンドの更新
+	UpdateEnemyPopCommands();
+
 	// カメラ更新（CameraControllerが全てのカメラを管理）
 	cameraController_->Update();
 
-	// レールカメラを常に更新（デバッグカメラ時でも動き続けるように）
-	if (railCamera_) {
+	// レールカメラをデバッグ時にも更新
+	if (cameraController_->GetActiveCameraId() != "rail") {
 		railCamera_->Update();
 	}
+
 
 	// ビュープロジェクション行列を取得
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
@@ -144,26 +156,31 @@ void GameScene::Update() {
 	// ゲームオブジェクト更新
 	UpdateGameObjects();
 
+	// 敵と敵弾の削除
+	DeleteEnemies();
+	DeleteEnemyBullets();
+
 	///*-----------------------------------------------------------------------*///
 	///								衝突判定									///
 	///*-----------------------------------------------------------------------*///
 	// 衝突マネージャーの更新
 	// プレイヤー・敵弾のリストを取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
-	const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = enemy_->GetBullets();
 
 	// 衝突マネージャーのリストをクリアする
 	collisionManager_->ClearColliderList();
 
 	// Player, Enemyのコライダーを追加する
 	collisionManager_->AddCollider(player_.get());
-	collisionManager_->AddCollider(enemy_.get());
+	for (const auto& enemy : enemies_) {
+		collisionManager_->AddCollider(enemy.get());
+	}
 
 	// Bulletのコライダーを追加する
 	for (const auto& bullet : playerBullets) {
 		collisionManager_->AddCollider(bullet.get());
 	}
-	for (const auto& bullet : enemyBullets) {
+	for (const auto& bullet : enemyBullets_) {
 		collisionManager_->AddCollider(bullet.get());
 	}
 
@@ -178,8 +195,15 @@ void GameScene::UpdateGameObjects() {
 	}
 
 	// 敵の更新
-	if (enemy_) {
-		enemy_->Update(viewProjectionMatrix);
+	for (auto& enemy : enemies_) {
+		if (enemy) {
+			enemy->Update(viewProjectionMatrix);
+		}
+	}
+
+	// 敵弾の更新
+	for (auto& bullet : enemyBullets_) {
+		bullet->Update(viewProjectionMatrix);
 	}
 
 	// 背景オブジェクトの更新
@@ -198,7 +222,9 @@ void GameScene::DrawOffscreen() {
 
 void GameScene::DrawBackBuffer() {
 	// UI(スプライトなど)の描画（オフスクリーン外に描画）
-	// 現在はUI要素なし
+	if (player_) {
+		player_->DrawUI();
+	}
 }
 
 void GameScene::DrawGameObjects() {
@@ -216,8 +242,15 @@ void GameScene::DrawGameObjects() {
 	}
 
 	// 敵の描画
-	if (enemy_) {
-		enemy_->Draw(directionalLight_);
+	for (auto& enemy : enemies_) {
+		if (enemy) {
+			enemy->Draw(directionalLight_);
+		}
+	}
+
+	// 敵弾の描画
+	for (auto& bullet : enemyBullets_) {
+		bullet->Draw(directionalLight_);
 	}
 
 	// レールカメラの軌道描画（デバッグ用）
@@ -237,18 +270,27 @@ void GameScene::OnExit() {
 
 void GameScene::ImGui() {
 #ifdef _DEBUG
-	// カメラコントローラーのImGui（Camera.cppから移動）
-	cameraController_->ImGui();
-	ImGui::Spacing();
-
 	// プレイヤーのImGui
 	ImGui::Text("Player");
 	player_->ImGui();
 	ImGui::Spacing();
 
 	// 敵のImGui
-	ImGui::Text("Enemy");
-	enemy_->ImGui();
+	ImGui::Text("Enemies Count: %zu", enemies_.size());
+	for (size_t i = 0; i < enemies_.size() && i < 3; ++i) { // 最初の3体のみ表示
+		if (enemies_.size() > i) {
+			auto it = enemies_.begin();
+			std::advance(it, i);
+			if (*it) {
+				ImGui::Text("Enemy %zu", i);
+				(*it)->ImGui();
+			}
+		}
+	}
+	ImGui::Spacing();
+
+	// 敵弾のImGui
+	ImGui::Text("Enemy Bullets Count: %zu", enemyBullets_.size());
 	ImGui::Spacing();
 
 	// 地面のImGui
@@ -261,7 +303,161 @@ void GameScene::ImGui() {
 	directionalLight_.ImGui("DirectionalLight");
 	ImGui::Spacing();
 
+	// 敵生成関連のImGui
+	ImGui::Text("Enemy Spawn System");
+	ImGui::Text("Is Wait: %s", isWait_ ? "YES" : "NO");
+	ImGui::Text("Wait Timer: %d", waitTimer_);
+	if (ImGui::Button("Create Test Enemy")) {
+		CreateEnemy(Vector3{ 50.0f, 10.0f, 200.0f }, EnemyPattern::Straight);
+	}
+
+	ImGui::SameLine();
+	//タイマーの初期化
+	if (ImGui::Button("Reset Enemy Pop Commands")) {
+		// 敵発生コマンドのストリームをリセット
+		enemyPopCommands.clear();
+		enemyPopCommands.seekg(0);
+		LoadEnemyPopData(); // 再読み込み
+		// 待機中フラグ
+		isWait_ = false;
+		// 待機タイマー
+		waitTimer_ = 0;
+	}
+
+	ImGui::Spacing();
+
 #endif
+}
+
+void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) {
+	enemyBullets_.push_back(std::move(enemyBullet));
+}
+
+void GameScene::LoadEnemyPopData() {
+	// ファイルを開く
+	std::ifstream file;
+	file.open("resources/CSV_Data/Enemy_Pop/enemyPop.csv");
+
+	if (!file.is_open()) {
+		Logger::Log(Logger::GetStream(), "GameScene: Failed to open enemyPop.csv\n");
+		return;
+	}
+
+	// ファイルの内容を丸ごと文字列ストリームにコピー
+	enemyPopCommands << file.rdbuf();
+
+	// ファイルを閉じる
+	file.close();
+}
+
+void GameScene::UpdateEnemyPopCommands() {
+	/// 待機処理
+	if (isWait_) {
+		// 待機時間を減らす
+		waitTimer_--;
+		if (waitTimer_ <= 0) {
+			// 待機完了
+			isWait_ = false;
+		}
+		return;
+	}
+
+	// 一行分の文字列を入れる変数
+	std::string line;
+
+	// コマンド実行ループ(コマンドは一行単位なので一行づつ取り出す)
+	while (std::getline(enemyPopCommands, line)) {
+		// 一行分の文字列をストリームに変換して解析しやすくする。
+		std::istringstream line_stream(line);
+
+		// 一行の中から[,]が現れるまでwordに入れる
+		std::string word;
+		// カンマ区切りで行の先頭文字列を取得
+		std::getline(line_stream, word, ',');
+
+		//"//"から始まる行はコメントなのでスキップ
+		if (word.find("//") == 0) {
+			// スキップする
+			continue;
+		}
+
+		// POPコマンド
+		if (word.find("POP") == 0) {
+			// x座標
+			std::getline(line_stream, word, ',');
+			float x = (float)std::atof(word.c_str());
+
+			// y座標
+			std::getline(line_stream, word, ',');
+			float y = (float)std::atof(word.c_str());
+
+			// z座標
+			std::getline(line_stream, word, ',');
+			float z = (float)std::atof(word.c_str());
+
+			// Patternの指定
+			std::getline(line_stream, word, ',');
+			int patternValue = atoi(word.c_str());
+			// 値をPatternに変更
+			//   パターン値を列挙型に変換
+			EnemyPattern pattern = EnemyPattern::Straight; // デフォルト
+			switch (patternValue) {
+			case 0:
+				pattern = EnemyPattern::Straight;
+				break;
+			case 1:
+				pattern = EnemyPattern::LeaveLeft;
+				break;
+			case 2:
+				pattern = EnemyPattern::LeaveRight;
+				break;
+			default:
+				pattern = EnemyPattern::Straight; // 不正な値の場合はデフォルト
+				break;
+			}
+
+			// 敵を発生させる
+			CreateEnemy(Vector3(x, y, z), pattern);
+
+			// WAITコマンド
+		} else if (word.find("WAIT") == 0) {
+			std::getline(line_stream, word, ',');
+			// 待ち時間
+			int32_t waitTime = atoi(word.c_str());
+			// 待機開始
+			isWait_ = true;
+			waitTimer_ = waitTime;
+
+			// コマンドループを抜ける
+			break;
+		}
+	}
+}
+
+void GameScene::CreateEnemy(const Vector3& position, EnemyPattern pattern) {
+	// 敵キャラの生成
+	auto enemy = std::make_unique<Enemy>();
+	// 敵キャラの初期化
+	enemy->Initialize(directXCommon_, position, pattern);
+	// 敵キャラにプレイヤーのアドレスを渡す
+	enemy->SetPlayer(player_.get());
+	// 敵キャラにGameSceneのアドレスを渡す
+	enemy->SetGameScene(this);
+	enemies_.push_back(std::move(enemy));
+}
+
+void GameScene::DeleteEnemies() {
+	// デスフラグが立っている敵を削除する
+	enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
+		return enemy->IsDead();
+		});
+}
+
+void GameScene::DeleteEnemyBullets() {
+	// デスフラグが立っている弾を削除する
+	enemyBullets_.remove_if([](const std::unique_ptr<EnemyBullet>& bullet) {
+		return bullet->IsDead();
+		});
 }
 
 void GameScene::Finalize() {
@@ -289,6 +485,4 @@ void GameScene::Finalize() {
 		}
 		cameraController_->UnregisterCamera("rail");
 	}
-
-
 }

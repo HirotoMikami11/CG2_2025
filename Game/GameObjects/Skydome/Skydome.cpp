@@ -21,6 +21,7 @@ void Skydome::Initialize(DirectXCommon* dxCommon) {
 		{0.0f, 0.0f, 0.0f}   // translate
 	};
 	gameObject_->SetTransform(defaultTransform);
+	gameObject_->GetMaterial().SetLightingMode(LightingMode::None);
 }
 
 void Skydome::Update(const Matrix4x4& viewProjectionMatrix) {

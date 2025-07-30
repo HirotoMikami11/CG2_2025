@@ -426,6 +426,9 @@
     <ClCompile Include="Engine\Objects\Line\LineRenderer.cpp">
       <Filter>Engine\Objects\Line</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -711,6 +714,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Objects\Line\LineRenderer.h">
       <Filter>Engine\Objects\Line</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

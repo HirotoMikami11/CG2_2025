@@ -10,15 +10,26 @@
 #include "State/BaseEnemyState.h"
 #include "State/EnemyStateApproach.h"
 #include "State/EnemyStateLeave.h"
+#include "State/EnemyStateStraight.h"
 
 #include "GameObjects/EnemyBullet/EnemyBullet.h"
 #include "MyMath/TimedCall.h"
 #include "GameObjects/Collider.h"	//衝突判定
 #include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
 
-
 // プレイヤークラスの前方宣言
 class Player;
+// ゲームシーンの前方宣言
+class GameScene;
+
+/// <summary>
+/// 敵の行動パターン
+/// </summary>
+enum class EnemyPattern {
+	Straight = 0,   // まっすぐ進み続ける
+	LeaveLeft = 1,  // 離脱フェーズで左上に移動
+	LeaveRight = 2, // 離脱フェーズで右上に移動
+};
 
 /// <summary>
 /// 敵クラス
@@ -40,7 +51,8 @@ public:
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	/// <param name="position">初期位置</param>
-	void Initialize(DirectXCommon* dxCommon, const Vector3& position);
+	/// <param name="pattern">敵のパターン</param>
+	void Initialize(DirectXCommon* dxCommon, const Vector3& position, EnemyPattern pattern = EnemyPattern::Straight);
 
 	/// <summary>
 	/// 更新
@@ -99,6 +111,8 @@ public:
 	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
 	Vector3 GetVelocity() const { return velocity_; }
 	Vector3 GetWorldPosition() override;
+	EnemyPattern GetPattern() const { return pattern_; }
+	bool IsDead() const { return isDead_; }
 
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
@@ -107,7 +121,9 @@ public:
 
 	// Setter
 	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
+	void SetVelocity(const Vector3& velocity) { velocity_ = velocity; }
 	void SetPlayer(Player* player) { player_ = player; }
+	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 
 	/// <summary>
 	/// 弾リストを取得
@@ -127,6 +143,9 @@ private:
 	// 状態
 	std::unique_ptr<BaseEnemyState> state_;
 
+	// 敵の行動パターン(デフォルトは直進)
+	EnemyPattern pattern_ = EnemyPattern::Straight;
+
 	// 敵の弾丸
 	std::list<std::unique_ptr<EnemyBullet>> bullets_;
 
@@ -136,11 +155,17 @@ private:
 	// 遅延クリア用フラグ
 	bool shouldClearTimedCalls_ = false;
 
+	// 死亡フラグ
+	bool isDead_ = false;
+
 	// 時限発動クラス
 	std::list<std::unique_ptr<TimedCall>> timedCalls_;
 
 	// プレイヤーの情報
 	Player* player_ = nullptr;
+
+	// ゲームシーンの情報
+	GameScene* gameScene_ = nullptr;
 
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
@@ -152,4 +177,9 @@ private:
 	/// 速度の方向を向く
 	/// </summary>
 	void SetToVelocityDirection();
+
+	/// <summary>
+	/// 設定されたパターンに応じた初期Stateを設定
+	/// </summary>
+	void SetInitializeState();
 };

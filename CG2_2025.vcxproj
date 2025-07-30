@@ -151,6 +151,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp" />
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp" />
     <ClCompile Include="Game\GameObjects\Ground\Ground.cpp" />
     <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerBullet.cpp" />
     <ClCompile Include="Game\GameObjects\Player\Player.cpp" />
@@ -290,6 +291,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h" />
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h" />
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h" />
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h" />
     <ClInclude Include="Game\GameObjects\Ground\Ground.h" />
     <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerBullet.h" />
     <ClInclude Include="Game\GameObjects\Player\Player.h" />

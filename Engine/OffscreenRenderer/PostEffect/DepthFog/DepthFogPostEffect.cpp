@@ -326,10 +326,10 @@ void DepthFogPostEffect::ImGui() {
 
 				float fogNear = parameters_.fogNear;
 				float fogFar = parameters_.fogFar;
-				if (ImGui::DragFloat("Fog Near", &fogNear, 0.1f, 0.1f, 200.0f)) {
+				if (ImGui::DragFloat("Fog Near", &fogNear, 0.1f, 0.1f, 3000.0f)) {
 					SetFogDistance(fogNear, parameters_.fogFar);
 				}
-				if (ImGui::DragFloat("Fog Far", &fogFar, 0.1f, 0.1f, 200.0f)) {
+				if (ImGui::DragFloat("Fog Far", &fogFar, 0.1f, 0.1f, 3000.0f)) {
 					SetFogDistance(parameters_.fogNear, fogFar);
 				}
 

@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "GameObjects/Player/Player.h"
 #include "Managers/ImGui/ImGuiManager.h"
+#include "Scenes/GameScene/GameScene.h"
 
 Enemy::Enemy() {
 }
@@ -12,7 +13,7 @@ Enemy::~Enemy() {
 	isAutoFire_ = false;
 }
 
-void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
+void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position, EnemyPattern pattern) {
 	directXCommon_ = dxCommon;
 
 	// ゲームオブジェクト（球体）の初期化
@@ -34,6 +35,9 @@ void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	// 速度をセット
 	velocity_ = { 0, 0, 1 };
 
+	// パターンの設定
+	pattern_ = pattern;
+
 	// 衝突判定設定
 	SetRadius(3.0f); // Colliderの半径をセット
 	/// 衝突属性の設定
@@ -41,8 +45,8 @@ void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	/// 衝突対象は自分の属性以外に設定(ビット反転)
 	SetCollisionMask(~kCollisionAttributeEnemy);
 
-	// 初期状態をセットする
-	ChangeState(std::make_unique<EnemyStateApproach>(this));
+	// 設定したパターンによって初期状態を設定する
+	SetInitializeState();
 }
 
 void Enemy::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -96,6 +100,8 @@ void Enemy::ImGui() {
 		ImGui::Text("Auto Fire: %s", isAutoFire_ ? "ON" : "OFF");
 		ImGui::Text("Timed Calls Count: %zu", timedCalls_.size());
 		ImGui::Text("Bullets Count: %zu", bullets_.size());
+		ImGui::Text("Pattern: %d", static_cast<int>(pattern_));
+		ImGui::Text("Is Dead: %s", isDead_ ? "YES" : "NO");
 
 		ImGui::Separator();
 
@@ -106,7 +112,6 @@ void Enemy::ImGui() {
 		if (ImGui::Button("Change State Approach")) {
 			ChangeState(std::make_unique<EnemyStateApproach>(this));
 		}
-
 	}
 #endif
 }
@@ -133,8 +138,13 @@ void Enemy::Fire() {
 	newBullet->Initialize(directXCommon_, gameObject_->GetPosition(), bulletVelocity, kBulletSpeed);
 	newBullet->SetPlayer(player_);
 
-	// 弾丸を登録する
-	bullets_.push_back(std::move(newBullet));
+	// GameSceneがセットされている場合はGameSceneに弾丸を追加
+	if (gameScene_) {
+		gameScene_->AddEnemyBullet(std::move(newBullet));
+	} else {
+		// 弾丸を登録する（ローカルで管理）
+		bullets_.push_back(std::move(newBullet));
+	}
 }
 
 void Enemy::DeleteBullets() {
@@ -208,7 +218,7 @@ Vector3 Enemy::GetWorldPosition() {
 }
 
 void Enemy::OnCollision() {
-	// 何もしない（必要に応じて実装）
+	isDead_ = true; // デスフラグを立てる
 }
 
 void Enemy::SetToVelocityDirection() {
@@ -226,5 +236,17 @@ void Enemy::SetToVelocityDirection() {
 		rotation.x = std::atan2(-velocity_.y, XZLength);
 
 		gameObject_->SetRotation(rotation);
+	}
+}
+
+void Enemy::SetInitializeState() {
+	// パターンに応じた初期状態をセットする
+	switch (pattern_) {
+	case EnemyPattern::Straight:
+	case EnemyPattern::LeaveLeft:
+	case EnemyPattern::LeaveRight:
+		// 接近→離脱パターン
+		ChangeState(std::make_unique<EnemyStateApproach>(this));
+		break;
 	}
 }
