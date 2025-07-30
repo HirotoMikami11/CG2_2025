@@ -52,7 +52,6 @@ void SceneManager::DrawBackBuffer() {
 void SceneManager::Finalize() {
 	// 現在のシーンの終了処理
 	if (currentScene_) {
-		currentScene_->OnExit();
 		currentScene_->Finalize();
 		currentScene_ = nullptr;
 	}
@@ -81,7 +80,6 @@ void SceneManager::UnregisterScene(const std::string& sceneName) {
 		// 現在のシーンを削除する場合は現在のシーンをクリア
 		if (currentSceneName_ == sceneName) {
 			if (currentScene_) {
-				currentScene_->OnExit();
 				currentScene_->Finalize();
 			}
 			currentScene_ = nullptr;
@@ -100,7 +98,7 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 
 	// 現在のシーンの処理（オブジェクトのみ解放）
 	if (currentScene_) {
-		currentScene_->OnExit();
+
 		currentScene_->Finalize();
 		// オブジェクト初期化フラグのみリセット（リソースフラグは保持）
 		currentScene_->SetInitialized(false);
@@ -121,7 +119,6 @@ bool SceneManager::ChangeScene(const std::string& sceneName) {
 		Logger::Log(Logger::GetStream(), std::format("Objects initialized for scene: {}\n", sceneName));
 	}
 
-	currentScene_->OnEnter();
 
 	// コールバック実行
 	if (sceneChangeCallback_) {
@@ -143,11 +140,9 @@ void SceneManager::ResetScene(const std::string& sceneName) {
 	if (it != scenes_.end()) {
 		// 現在のシーンをリセットする場合
 		if (currentSceneName_ == sceneName && currentScene_) {
-			currentScene_->OnExit();
 			currentScene_->Finalize();
 			currentScene_->Initialize();
 			currentScene_->SetInitialized(true);
-			currentScene_->OnEnter();
 		} else {
 			// 非アクティブなシーンをリセット
 			it->second->Finalize();

@@ -88,9 +88,11 @@ void EnemyBullet::OnCollision() {
 }
 
 Vector3 EnemyBullet::IsHoming() {
-	if (!player_) {
+	// プレイヤーが無効な場合は現在の速度をそのまま返す
+	if (!player_ || player_ == nullptr) {
 		return velocity_;
 	}
+
 
 	// ホーミングの計算
 	Vector3 toPlayer = player_->GetWorldPosition() - GetWorldPosition();
@@ -106,7 +108,7 @@ Vector3 EnemyBullet::IsHoming() {
 }
 
 void EnemyBullet::SetToPlayerDirection() {
-	if (!player_) {
+	if (!player_|| player_ == nullptr) {
 		return;
 	}
 

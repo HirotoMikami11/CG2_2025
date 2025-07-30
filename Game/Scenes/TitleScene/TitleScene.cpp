@@ -151,16 +151,6 @@ void TitleScene::DrawGameObjects() {
 	TitlePlayer_->Draw(directionalLight_);
 }
 
-void TitleScene::OnEnter() {
-	// ゲームシーンに入る時の処理
-	Logger::Log(Logger::GetStream(), "TitleScene: OnEnter\n");
-}
-
-void TitleScene::OnExit() {
-	// ゲームシーンから出る時の処理
-	Logger::Log(Logger::GetStream(), "TitleScene: OnExit\n");
-}
-
 void TitleScene::ImGui() {
 #ifdef _DEBUG
 	ImGui::Text("TitleFont");

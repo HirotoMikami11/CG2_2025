@@ -162,8 +162,8 @@ void GameScene::Update() {
 	UpdateGameObjects();
 
 	// 敵と敵弾の削除
-	DeleteEnemies();
-	DeleteEnemyBullets();
+	DeleteDeadEnemies();
+	DeleteDeadEnemyBullets();
 
 	///*-----------------------------------------------------------------------*///
 	///								衝突判定									///
@@ -268,16 +268,26 @@ void GameScene::DrawGameObjects() {
 	}
 }
 
-void GameScene::OnEnter() {
-	// ゲームシーンに入る時の処理
+void GameScene::ClearAllEnemyBullets() {
+	// 弾が持っているプレイヤーポインタを無効化してから削除
+	for (auto& bullet : enemyBullets_) {
+		if (bullet) {
+			bullet->SetPlayer(nullptr); // プレイヤーポインタを無効化
+		}
+	}
+	enemyBullets_.clear(); // すべて削除
 }
 
-void GameScene::OnExit() {
-	// ゲームシーンから出る時の処理
-	// 
-	// 敵と敵弾の削除
-	DeleteEnemies();
-	DeleteEnemyBullets();
+void GameScene::ClearAllEnemies() {
+	// 敵が持っているプレイヤーポインタを無効化してから削除
+	for (auto& enemy : enemies_) {
+		if (enemy) {
+			enemy->SetPlayer(nullptr);   // プレイヤーポインタを無効化
+			enemy->SetGameScene(nullptr); // ゲームシーンポインタも無効化
+			enemy->ClearTimeCalls();      // 時限発動をクリア
+		}
+	}
+	enemies_.clear(); // すべて削除
 }
 
 void GameScene::ImGui() {
@@ -458,14 +468,14 @@ void GameScene::CreateEnemy(const Vector3& position, EnemyPattern pattern) {
 	enemies_.push_back(std::move(enemy));
 }
 
-void GameScene::DeleteEnemies() {
+void GameScene::DeleteDeadEnemies() {
 	// デスフラグが立っている敵を削除する
 	enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
 		return enemy->IsDead();
 		});
 }
 
-void GameScene::DeleteEnemyBullets() {
+void GameScene::DeleteDeadEnemyBullets() {
 	// デスフラグが立っている弾を削除する
 	enemyBullets_.remove_if([](const std::unique_ptr<EnemyBullet>& bullet) {
 		return bullet->IsDead();
@@ -473,7 +483,18 @@ void GameScene::DeleteEnemyBullets() {
 }
 
 void GameScene::Finalize() {
-	// unique_ptrで自動的に解放される
+	// 安全のため、再度削除処理を実行
+	ClearAllEnemyBullets();
+	ClearAllEnemies();
+
+	// 敵発生コマンドを停止
+	isWait_ = false;
+	waitTimer_ = 0;
+
+	// プレイヤーを明示的にリセット
+	if (player_) {
+		player_.reset();
+	}
 
 	////
 	///悩まされたので備忘録TODO:カメラを後図家するときも簡単に消せるような仕組みにする
@@ -498,3 +519,4 @@ void GameScene::Finalize() {
 		cameraController_->UnregisterCamera("rail");
 	}
 }
+

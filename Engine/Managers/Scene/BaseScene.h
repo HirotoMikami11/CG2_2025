@@ -49,16 +49,6 @@ public:
 	virtual void Finalize() = 0;
 
 	/// <summary>
-	/// シーンに入る時の処理
-	/// </summary>
-	virtual void OnEnter() {}
-
-	/// <summary>
-	/// シーンから出る時の処理
-	/// </summary>
-	virtual void OnExit() {}
-
-	/// <summary>
 	/// ImGui描画
 	/// </summary>
 	virtual void ImGui() {}

@@ -230,15 +230,6 @@ void DemoScene::DrawGameObjects() {
 	modelMultiMaterial_->Draw(directionalLight_);
 }
 
-void DemoScene::OnEnter() {
-	// デモシーンに入る時の処理
-	//TODO: 現状シーン移動時、シーンを解放するので、初期化と同等の処理になっている。
-}
-
-void DemoScene::OnExit() {
-	// デモシーンから出る時の処理
-}
-
 void DemoScene::ImGui() {
 #ifdef _DEBUG
 

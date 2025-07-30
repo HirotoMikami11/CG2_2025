@@ -35,9 +35,6 @@ void GameObject::Initialize(DirectXCommon* dxCommon, const std::string& modelTag
 
 	// 個別マテリアルフラグをリセット
 	hasIndividualMaterials_ = false;
-
-	Logger::Log(Logger::GetStream(), std::format("GameObject initialized with model '{}' ({} materials)\n",
-		modelTag, sharedModel_->GetMaterialCount()));
 }
 
 void GameObject::Update(const Matrix4x4& viewProjectionMatrix) {

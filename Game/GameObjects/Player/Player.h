@@ -132,6 +132,11 @@ private:
 	// ビューポート行列（座標変換用）
 	Matrix4x4 matViewport_;
 
+	///ゲームパッド用のNearFar座標
+	Vector3 posNear_;
+	Vector3 posFar_;
+	Vector3 spritePosition_;
+
 	// 移動制限（KamataEngineと同じ値）
 	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
 	static constexpr float kMoveLimitY = 18.0f; // Y軸の移動制限
@@ -163,11 +168,24 @@ private:
 	/// <summary>
 	/// 3Dレティクルの更新処理
 	/// </summary>
-	void ReticleUpdate();
+	void UpdateReticle(const Matrix4x4& viewProjectionMatrix);
 
+	/// <summary>
+	/// ゲームパッドでスクリーン座標を3Dレティクルのワールド座標に変換
+	/// </summary>
+	/// <param name="camera"></param>
+	void ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix);
+	
+	/// <summary>
+	/// キーボードでワールド座標に変換されたレティクルを2Dスクリーン座標に変換
+	/// </summary>
+	/// <param name="camera"></param>
+	void ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix);
+	
 	/// <summary>
 	/// 3Dレティクルのワールド座標を2Dレティクルのスクリーン座標に変換
 	/// </summary>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	void ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix);
+
 };

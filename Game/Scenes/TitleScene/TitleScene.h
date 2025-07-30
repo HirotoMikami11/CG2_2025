@@ -42,10 +42,6 @@ public:
 	void DrawBackBuffer() override;
 	void Finalize() override;
 
-	// シーンの出入り時の処理
-	void OnEnter() override;
-	void OnExit() override;
-
 	// ImGui描画
 	void ImGui() override;
 

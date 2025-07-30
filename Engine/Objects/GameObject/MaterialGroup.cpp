@@ -18,8 +18,6 @@ void MaterialGroup::ResizeMaterials(size_t count) {
 		material.Initialize(directXCommon_);
 		material.SetLitObjectSettings(); // デフォルトでライティング有効
 	}
-
-	Logger::Log(Logger::GetStream(), std::format("MaterialGroup: Resized to {} materials\n", count));
 }
 
 Material& MaterialGroup::GetMaterial(size_t index) {
@@ -40,7 +38,6 @@ const Material& MaterialGroup::GetMaterial(size_t index) const {
 	if (index >= materials_.size()) {
 		Logger::Log(Logger::GetStream(), std::format("MaterialGroup: Index {} out of range (max: {}), using material 0\n",
 			index, materials_.size() - 1));
-
 		// 安全にマテリアル0を返す
 		return materials_[0];
 	}
@@ -62,7 +59,7 @@ void MaterialGroup::SetAllMaterials(const Vector4& color, LightingMode lightingM
 		material.SetColor(color);
 		material.SetLightingMode(lightingMode);
 	}
-	Logger::Log(Logger::GetStream(), "MaterialGroup: Applied settings to all materials\n");
+
 }
 
 void MaterialGroup::InitializeFromTemplates(const std::vector<Material>& templateMaterials) {
@@ -79,6 +76,4 @@ void MaterialGroup::InitializeFromTemplates(const std::vector<Material>& templat
 	for (size_t i = 0; i < templateMaterials.size() && i < materials_.size(); ++i) {
 		materials_[i].CopyFrom(templateMaterials[i]);
 	}
-
-	Logger::Log(Logger::GetStream(), std::format("MaterialGroup: Initialized from {} template materials\n", templateMaterials.size()));
 }

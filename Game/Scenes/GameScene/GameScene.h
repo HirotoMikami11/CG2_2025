@@ -56,9 +56,6 @@ public:
 
 	void Finalize() override;
 
-	// シーンの出入り時の処理
-	void OnEnter() override;
-	void OnExit() override;
 
 	// ImGui描画
 	void ImGui() override;
@@ -131,13 +128,23 @@ private:
 	void CreateEnemy(const Vector3& position, EnemyPattern pattern);
 
 	/// <summary>
-	/// 敵を削除する
+	/// 死んでいる敵を削除する
 	/// </summary>
-	void DeleteEnemies();
+	void DeleteDeadEnemies();
 
 	/// <summary>
-	/// 敵弾を削除する
+	/// 死んでいる敵弾を削除する
 	/// </summary>
-	void DeleteEnemyBullets();
+	void DeleteDeadEnemyBullets();
+
+	/// <summary>
+	/// 全ての敵弾を削除する
+	/// </summary>
+	void ClearAllEnemyBullets();
+
+	/// <summary>
+	/// 全ての敵を削除する
+	/// </summary>
+	void ClearAllEnemies();
 
 };

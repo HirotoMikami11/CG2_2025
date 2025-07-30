@@ -48,8 +48,7 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 		{ 64.0f, 64.0f }                // サイズ
 	);
 
-	// ビューポート行列の計算（画面サイズに基づく）
-	// TODO: 実際の画面サイズを取得する仕組みが必要
+	// ビューポート行列の計算(画面サイズが変わったら変更)
 	matViewport_ = MakeViewportMatrix(0, 0, 1280, 720, 0, 1);
 
 	// スプライト用ビュープロジェクション行列を単位行列で初期化
@@ -79,11 +78,9 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 攻撃処理
 	Attack();
 
-	// レティクルの更新
-	ReticleUpdate();
 
-	// 3Dレティクルから2Dレティクルへの座標変換
-	ConvertWorldToScreenReticle(viewProjectionMatrix);
+	// レティクルの更新
+	UpdateReticle(viewProjectionMatrix);
 
 	// 弾の更新
 	for (auto& bullet : bullets_) {
@@ -100,7 +97,7 @@ void Player::Draw(const Light& directionalLight) {
 	gameObject_->Draw(directionalLight);
 
 	// 3Dレティクルの描画
-	// reticle3D_->Draw(directionalLight);
+	reticle3D_->Draw(directionalLight);
 
 	// 弾の描画
 	for (auto& bullet : bullets_) {
@@ -249,13 +246,58 @@ void Player::DeleteBullets() {
 		});
 }
 
-void Player::ReticleUpdate() {
-	// プレイヤーのワールド座標から3Dレティクルのワールド座標を計算
+void Player::UpdateReticle(const Matrix4x4& viewProjectionMatrix) {
+	// KamataEngineと同じように、入力デバイスによって処理を分ける
+	if (input_->IsGamePadConnected()) {
+		// ゲームパッドが接続されている場合：ゲームパッドでレティクル操作
+		ConvertGamePadToWorldReticle(viewProjectionMatrix);
+	} else {
+		// キーボードの場合：プレイヤーの向きに基づいてレティクル操作
+		ConvertKeyboardToWorldReticle(viewProjectionMatrix);
+	}
+}
+
+void Player::ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix) {
+	// 現在のスプライト位置を取得
+	Vector2 spritePos = sprite2DReticle_->GetPosition();
+
+	// 右スティックでレティクル移動
+	float stickX = input_->GetAnalogStick(InputManager::AnalogStick::RIGHT_X);
+	float stickY = input_->GetAnalogStick(InputManager::AnalogStick::RIGHT_Y);
+
+	// スティック入力をスプライト移動量に変換
+	spritePos.x += stickX * 10.0f; // 感度調整
+	spritePos.y -= stickY * 10.0f; // Y軸反転
+
+	// 画面外に出ないように制限
+	spritePos.x = std::clamp(spritePos.x, 0.0f, 1280.0f);
+	spritePos.y = std::clamp(spritePos.y, 0.0f, 720.0f);
+
+	// スプライト位置を更新
+	sprite2DReticle_->SetPosition(spritePos);
+
+	// 3D座標に変換
+	Matrix4x4 matVPV = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
+	Matrix4x4 matInverseVPV = Matrix4x4Inverse(matVPV);
+
+	// スクリーンからワールドに変換
+	posNear_ = Vector3(spritePos.x, spritePos.y, 0.0f);
+	posFar_ = Vector3(spritePos.x, spritePos.y, 1.0f);
+
+	posNear_ = Matrix4x4Transform(posNear_, matInverseVPV);
+	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
+
+	Vector3 direction = Normalize(posFar_ - posNear_);
+	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticle);
+	reticle3D_->SetPosition(spritePosition_);
+}
+
+void Player::ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix) {
+	// キーボード操作：プレイヤーの向きに基づいて3Dレティクルを配置
 	// 自機から3Dレティクルへのオフセット（Z+方向）
 	Vector3 offset = { 0.0f, 0.0f, 1.0f };
 
 	// 自機のワールド行列の回転を反映
-	// プレイヤーの向きに基づいてオフセットを変換
 	Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
 	offset = Matrix4x4TransformNormal(offset, worldMatrix);
 
@@ -265,6 +307,9 @@ void Player::ReticleUpdate() {
 	// 3Dレティクルの座標を設定
 	Vector3 reticlePosition = GetWorldPosition() + offset;
 	reticle3D_->SetPosition(reticlePosition);
+
+	// 3Dレティクルの位置を2Dスプライトに反映
+	ConvertWorldToScreenReticle(viewProjectionMatrix);
 }
 
 void Player::ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix) {
