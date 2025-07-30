@@ -16,6 +16,8 @@
 #include "CollisionManager/CollisionManager.h"	//衝突判定マネージャー
 #include "GameObjects/Ground/Ground.h"			//地面
 #include "GameObjects/Skydome/Skydome.h"		//天球
+#include "GameObjects/LockOn/LockOn.h"
+
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCamera.h"		//レールカメラ
 
@@ -73,6 +75,9 @@ private:
 
 	// ゲームオブジェクト
 	std::unique_ptr<Player> player_;
+	// ロックオンシステム
+	std::unique_ptr<LockOn> lockOn_;
+
 	std::list<std::unique_ptr<Enemy>> enemies_;
 
 	// 敵の弾丸

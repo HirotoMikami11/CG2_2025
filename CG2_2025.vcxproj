@@ -153,7 +153,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp" />
     <ClCompile Include="Game\GameObjects\Ground\Ground.cpp" />
+    <ClCompile Include="Game\GameObjects\LockOn\LockOn.cpp" />
     <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerBullet.cpp" />
+    <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.cpp" />
     <ClCompile Include="Game\GameObjects\Player\Player.cpp" />
     <ClCompile Include="Game\GameObjects\Skydome\Skydome.cpp" />
     <ClCompile Include="Game\Objects\TitlePlayer.cpp" />
@@ -293,7 +295,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h" />
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h" />
     <ClInclude Include="Game\GameObjects\Ground\Ground.h" />
+    <ClInclude Include="Game\GameObjects\LockOn\LockOn.h" />
     <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerBullet.h" />
+    <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.h" />
     <ClInclude Include="Game\GameObjects\Player\Player.h" />
     <ClInclude Include="Game\GameObjects\Skydome\Skydome.h" />
     <ClInclude Include="Game\Objects\TitlePlayer.h" />

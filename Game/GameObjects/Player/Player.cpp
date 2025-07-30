@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Managers/ImGui/ImGuiManager.h"
+#include "GameObjects/LockOn/LockOn.h"
 
 Player::Player() {
 }
@@ -33,7 +34,7 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	reticle3D_->SetName("Reticle3D");
 
 	Vector3Transform reticleTransform{
-		{0.3f, 0.3f, 0.3f},           // scale（小さめに）
+		{2.0f, 2.0f, 2.0f},           // scale（わかりやすくデカく）
 		{0.0f, 0.0f, 0.0f},           // rotate
 		{0.0f, 0.0f, 50.0f}           // translate（プレイヤーの前方）
 	};
@@ -68,6 +69,7 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 弾の削除
 	DeleteBullets();
+	DeleteHomingBullets(); 
 
 	// 移動処理
 	Move();
@@ -78,7 +80,6 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 攻撃処理
 	Attack();
 
-
 	// レティクルの更新
 	UpdateReticle(viewProjectionMatrix);
 
@@ -87,9 +88,15 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 		bullet->Update(viewProjectionMatrix);
 	}
 
+	// ホーミング弾の更新
+	for (auto& homingBullet : homingBullets_) {
+		homingBullet->Update(viewProjectionMatrix);
+	}
+
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
 	reticle3D_->Update(viewProjectionMatrix);
+
 }
 
 void Player::Draw(const Light& directionalLight) {
@@ -103,9 +110,19 @@ void Player::Draw(const Light& directionalLight) {
 	for (auto& bullet : bullets_) {
 		bullet->Draw(directionalLight);
 	}
+
+	// ホーミング弾の描画
+	for (auto& homingBullet : homingBullets_) {
+		homingBullet->Draw(directionalLight);
+	}
 }
 
 void Player::DrawUI() {
+	// ロックオン対象がいる場合は2Dレティクルを描画しない
+	if (lockOn_ && lockOn_->GetTarget() != nullptr) {
+		return; // ロックオン対象がいる場合は描画しない
+	}
+
 	// 2Dレティクルスプライトの更新と描画
 	sprite2DReticle_->Update(viewProjectionMatrixSprite_);
 	sprite2DReticle_->Draw();
@@ -215,27 +232,47 @@ void Player::Rotate() {
 	// 回転を設定
 	gameObject_->SetRotation(currentRotation);
 }
-
 void Player::Attack() {
 	// SPACEキーまたはゲームパッドRBボタンで発射
 	bool shouldFire = input_->IsKeyTrigger(DIK_SPACE) ||
 		(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::RB));
 
 	if (shouldFire) {
-		// 自機からレティクルへのベクトルを計算
-		Vector3 playerPos = GetWorldPosition();
-		Vector3 reticlePos = GetWorldPosition3DReticle();
-		Vector3 bulletVelocity = reticlePos - playerPos;
+		// ロックオン対象が存在する場合は、ホーミング弾を発射
+		if (lockOn_ && lockOn_->GetTarget() != nullptr && !lockOn_->GetTarget()->IsDead()) {
+			// ロックオン対象の敵を取得
+			Enemy* target = lockOn_->GetTarget();
+			// ターゲットのワールド座標を取得
+			Vector3 targetPosition = target->GetWorldPosition();
+			// プレイヤーからターゲットへのベクトル
+			Vector3 bulletVelocity = targetPosition - GetWorldPosition();
+			// ベクトルの長さを整える
+			bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
 
-		// 正規化して速度を設定
-		bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
+			// ホーミング弾を生成・初期化する
+			auto newHomingBullet = std::make_unique<PlayerHomingBullet>();
+			newHomingBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity, target);
 
-		// 弾丸を生成・初期化する
-		auto newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(directXCommon_, playerPos, bulletVelocity);
+			// ホーミング弾を登録する
+			homingBullets_.push_back(std::move(newHomingBullet));
 
-		// 弾丸を登録する
-		bullets_.push_back(std::move(newBullet));
+		} else {
+			// ターゲットが存在しない場合は、通常弾を発射（レティクル狙い弾）
+			// 自機からレティクルへのベクトルを計算
+			Vector3 playerPos = GetWorldPosition();
+			Vector3 reticlePos = GetWorldPosition3DReticle();
+			Vector3 bulletVelocity = reticlePos - playerPos;
+
+			// 正規化して速度を設定
+			bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
+
+			// 弾丸を生成・初期化する
+			auto newBullet = std::make_unique<PlayerBullet>();
+			newBullet->Initialize(directXCommon_, playerPos, bulletVelocity);
+
+			// 弾丸を登録する
+			bullets_.push_back(std::move(newBullet));
+		}
 	}
 }
 
@@ -325,3 +362,12 @@ void Player::ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix) 
 	// 2Dレティクルスプライトに座標設定
 	sprite2DReticle_->SetPosition(Vector2(positionReticle.x, positionReticle.y));
 }
+
+void Player::DeleteHomingBullets()
+{
+	// デスフラグが立っているホーミング弾を削除する
+	homingBullets_.remove_if([](const std::unique_ptr<PlayerHomingBullet>& homingBullet) {
+		return homingBullet->IsDead();
+		});
+}
+

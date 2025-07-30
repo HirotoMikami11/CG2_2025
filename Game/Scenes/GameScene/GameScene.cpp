@@ -34,6 +34,7 @@ void GameScene::LoadResources() {
 	// プレイヤー関連
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
 	modelManager_->LoadModel("resources/Model/PlayerBullet", "playerBullet.obj", "playerBullet");
+	modelManager_->LoadModel("resources/Model/PlayerHomingBullet", "playerHomingBullet.obj", "playerHomingBullet");
 	// 敵関連
 	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
 
@@ -113,6 +114,10 @@ void GameScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	///								プレイヤー									///
 	///*-----------------------------------------------------------------------*///
+	// ロックオンシステムの初期化
+	lockOn_ = std::make_unique<LockOn>();
+	lockOn_->Initialize(directXCommon_);
+
 	player_ = std::make_unique<Player>();
 	Vector3 playerPosition(0.0f, 0.0f, 30.0f); // 前にずらす
 	player_->Initialize(directXCommon_, playerPosition);
@@ -122,6 +127,8 @@ void GameScene::InitializeGameObjects() {
 		player_->SetParent(&railCamera_->GetTransform());
 	}
 
+	// プレイヤーにロックオンシステムを設定
+	player_->SetLockOn(lockOn_.get());
 	///*-----------------------------------------------------------------------*///
 	///								天球									///
 	///*-----------------------------------------------------------------------*///
@@ -155,6 +162,9 @@ void GameScene::Update() {
 	// ゲームオブジェクト更新
 	UpdateGameObjects();
 
+	// ロックオンシステムの更新
+	lockOn_->Update(player_.get(), enemies_, viewProjectionMatrix);
+
 	// 敵と敵弾の削除
 	DeleteDeadEnemies();
 	DeleteDeadEnemyBullets();
@@ -166,6 +176,8 @@ void GameScene::Update() {
 	// 衝突マネージャーの更新
 	// プレイヤー・敵弾のリストを取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
+	const std::list<std::unique_ptr<PlayerHomingBullet>>& playerHomingBullets = player_->GetHomingBullets(); 
+
 
 	// 衝突マネージャーのリストをクリアする
 	collisionManager_->ClearColliderList();
@@ -179,6 +191,9 @@ void GameScene::Update() {
 	// Bulletのコライダーを追加する
 	for (const auto& bullet : playerBullets) {
 		collisionManager_->AddCollider(bullet.get());
+	}
+	for (const auto& homingBullet : playerHomingBullets) {
+		collisionManager_->AddCollider(homingBullet.get());
 	}
 	for (const auto& bullet : enemyBullets_) {
 		collisionManager_->AddCollider(bullet.get());
@@ -229,6 +244,10 @@ void GameScene::DrawBackBuffer() {
 	// プレイヤーのUI描画（レティクル）
 	if (player_) {
 		player_->DrawUI();
+	}
+
+	if (lockOn_) {
+		lockOn_->DrawUI(viewProjectionMatrixSprite);
 	}
 }
 void GameScene::DrawGameObjects() {

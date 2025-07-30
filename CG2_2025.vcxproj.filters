@@ -214,6 +214,12 @@
     <Filter Include="Game\RailCamera">
       <UniqueIdentifier>{08e0c1ad-2fbd-425a-97db-968da7068377}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObjects\Player\PlayerHomingBullet">
+      <UniqueIdentifier>{6ca5a977-7048-49d4-844a-e0795499f9e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\LockOn">
+      <UniqueIdentifier>{00f4bbcc-8f21-414e-985c-095e21211fa1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -428,6 +434,12 @@
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
       <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.cpp">
+      <Filter>Game\GameObjects\Player\PlayerHomingBullet</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\LockOn\LockOn.cpp">
+      <Filter>Game\GameObjects\LockOn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -717,6 +729,12 @@
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
       <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.h">
+      <Filter>Game\GameObjects\Player\PlayerHomingBullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\LockOn\LockOn.h">
+      <Filter>Game\GameObjects\LockOn</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

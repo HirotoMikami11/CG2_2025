@@ -7,8 +7,13 @@
 #include "Objects/GameObject/GameObject.h"
 #include "Objects/Sprite/Sprite.h" // レティクル用スプライト
 #include "GameObjects/PlayerBullet/PlayerBullet.h"
+#include "GameObjects/PlayerBullet/PlayerHomingBullet.h"
+#include "GameObjects/Enemy/Enemy.h"
 #include "GameObjects/Collider.h"	//衝突判定
 #include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
+
+// 前方宣言
+class LockOn;
 
 /// <summary>
 /// プレイヤークラス
@@ -87,6 +92,21 @@ public:
 	/// 弾リストを取得
 	/// </summary>
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
+	/// <summary>
+	/// ホーミング弾リストを取得
+	/// </summary>
+	const std::list<std::unique_ptr<PlayerHomingBullet>>& GetHomingBullets() const { return homingBullets_; }
+
+	/// <summary>
+	/// 2Dレティクルの位置を取得
+	/// </summary>
+	/// <returns>2Dレティクルのスクリーン座標</returns>
+	Vector2 GetPosition2DReticle() const {
+		if (sprite2DReticle_) {
+			return sprite2DReticle_->GetPosition();
+		}
+		return Vector2{ 640.0f, 360.0f }; // デフォルト位置
+	}
 
 	/// <summary>
 	/// 親オブジェクトを設定（Transform3Dの親子関係）
@@ -106,7 +126,11 @@ public:
 	void SetViewProjectionMatrixSprite(const Matrix4x4& viewProjectionMatrixSprite) {
 		viewProjectionMatrixSprite_ = viewProjectionMatrixSprite;
 	}
-
+	/// <summary>
+	/// ロックオンシステムを設定
+	/// </summary>
+	/// <param name="lockOn">ロックオンシステム</param>
+	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }
 private:
 	// ゲームオブジェクト
 	std::unique_ptr<Model3D> gameObject_;
@@ -119,6 +143,8 @@ private:
 
 	// プレイヤーの弾リスト
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
+	// プレイヤーのホーミング弾リスト
+	std::list<std::unique_ptr<PlayerHomingBullet>> homingBullets_;
 
 	// 入力
 	InputManager* input_ = nullptr;
@@ -136,6 +162,9 @@ private:
 	Vector3 posNear_;
 	Vector3 posFar_;
 	Vector3 spritePosition_;
+
+	// ロックオンシステム
+	LockOn* lockOn_ = nullptr;
 
 	// 移動制限
 	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
@@ -179,17 +208,21 @@ private:
 	/// </summary>
 	/// <param name="camera"></param>
 	void ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix);
-	
+
 	/// <summary>
 	/// キーボードでワールド座標に変換されたレティクルを2Dスクリーン座標に変換
 	/// </summary>
 	/// <param name="camera"></param>
 	void ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix);
-	
+
 	/// <summary>
 	/// 3Dレティクルのワールド座標を2Dレティクルのスクリーン座標に変換
 	/// </summary>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	void ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix);
 
+	/// <summary>
+	/// 寿命の尽きたホーミング弾を削除する
+	/// </summary>
+	void DeleteHomingBullets();
 };
