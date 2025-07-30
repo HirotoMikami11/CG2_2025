@@ -247,7 +247,7 @@ void Player::DeleteBullets() {
 }
 
 void Player::UpdateReticle(const Matrix4x4& viewProjectionMatrix) {
-	// KamataEngineと同じように、入力デバイスによって処理を分ける
+
 	if (input_->IsGamePadConnected()) {
 		// ゲームパッドが接続されている場合：ゲームパッドでレティクル操作
 		ConvertGamePadToWorldReticle(viewProjectionMatrix);
@@ -288,7 +288,7 @@ void Player::ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix)
 	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
 
 	Vector3 direction = Normalize(posFar_ - posNear_);
-	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticle);
+	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticleGamepad);
 	reticle3D_->SetPosition(spritePosition_);
 }
 
@@ -302,7 +302,7 @@ void Player::ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix
 	offset = Matrix4x4TransformNormal(offset, worldMatrix);
 
 	// ベクトルの長さを整える
-	offset = Normalize(offset) * kDistancePlayerTo3DReticle;
+	offset = Normalize(offset) * kDistancePlayerTo3DReticleKeyborad;
 
 	// 3Dレティクルの座標を設定
 	Vector3 reticlePosition = GetWorldPosition() + offset;

@@ -31,11 +31,9 @@ void GameScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/Ground", "ground.obj", "ground");
 	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
 	modelManager_->LoadModel("resources/Model/Camera", "camera.obj", "camera");
-
 	// プレイヤー関連
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
 	modelManager_->LoadModel("resources/Model/PlayerBullet", "playerBullet.obj", "playerBullet");
-
 	// 敵関連
 	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
 
@@ -116,15 +114,13 @@ void GameScene::InitializeGameObjects() {
 	///								プレイヤー									///
 	///*-----------------------------------------------------------------------*///
 	player_ = std::make_unique<Player>();
-	Vector3 playerPosition(0.0f, 0.0f, 50.0f); // 前にずらす
+	Vector3 playerPosition(0.0f, 0.0f, 30.0f); // 前にずらす
 	player_->Initialize(directXCommon_, playerPosition);
 
 	// プレイヤーの親をレールカメラのTransformに設定
 	if (railCamera_) {
 		player_->SetParent(&railCamera_->GetTransform());
 	}
-
-
 
 	///*-----------------------------------------------------------------------*///
 	///								天球									///
@@ -152,8 +148,6 @@ void GameScene::Update() {
 	if (cameraController_->GetActiveCameraId() != "rail") {
 		railCamera_->Update();
 	}
-
-
 	// ビュープロジェクション行列を取得
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
@@ -168,6 +162,7 @@ void GameScene::Update() {
 	///*-----------------------------------------------------------------------*///
 	///								衝突判定									///
 	///*-----------------------------------------------------------------------*///
+	
 	// 衝突マネージャーの更新
 	// プレイヤー・敵弾のリストを取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
@@ -191,6 +186,7 @@ void GameScene::Update() {
 
 	// 衝突判定と応答
 	collisionManager_->Update();
+
 }
 
 void GameScene::UpdateGameObjects() {
@@ -490,7 +486,7 @@ void GameScene::Finalize() {
 	// 敵発生コマンドを停止
 	isWait_ = false;
 	waitTimer_ = 0;
-
+	
 	// プレイヤーを明示的にリセット
 	if (player_) {
 		player_.reset();

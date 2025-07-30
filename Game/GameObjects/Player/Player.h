@@ -137,13 +137,17 @@ private:
 	Vector3 posFar_;
 	Vector3 spritePosition_;
 
-	// 移動制限（KamataEngineと同じ値）
+	// 移動制限
 	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
 	static constexpr float kMoveLimitY = 18.0f; // Y軸の移動制限
 	static constexpr float kCharacterSpeed = 0.2f; // 移動速度
 	static constexpr float kRotSpeed = 0.02f; // 回転速度
 	static constexpr float kBulletSpeed = 1.0f; // 弾の速度
-	static constexpr float kDistancePlayerTo3DReticle = 50.0f; // プレイヤーから3Dレティクルまでの距離
+	//キーボードの時は自キャラからの距離
+	static constexpr float kDistancePlayerTo3DReticleKeyborad = 20.0f; // プレイヤーから3Dレティクルまでの距離(キーボードの時)
+	// ゲームパッドの時の距離は、カメラからの距離なので、カメラと自キャラの距離を加算した値
+	static constexpr float kDistancePlayerTo3DReticleGamepad = 50.0f; // プレイヤーから3Dレティクルまでの距離(ゲームパッドの時)
+
 
 	/// <summary>
 	/// 移動処理
