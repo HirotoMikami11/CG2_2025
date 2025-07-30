@@ -56,7 +56,7 @@ void GameScene::ConfigureOffscreenEffects() {
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
 		depthFogEffect->SetEnabled(true);
-		depthFogEffect->SetFogDistance(0.2f, 1200.0f);
+		depthFogEffect->SetFogDistance(0.2f, 200.0f);
 	}
 
 }
@@ -266,6 +266,10 @@ void GameScene::OnEnter() {
 
 void GameScene::OnExit() {
 	// ゲームシーンから出る時の処理
+	// 
+	// 敵と敵弾の削除
+	DeleteEnemies();
+	DeleteEnemyBullets();
 }
 
 void GameScene::ImGui() {
