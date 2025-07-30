@@ -96,6 +96,9 @@ void GameScene::Initialize() {
 	// ゲームオブジェクト初期化
 	InitializeGameObjects();
 
+	///*-----------------------------------------------------------------------*///	
+	///							敵のコマンド読込									///
+	///*-----------------------------------------------------------------------*///
 	// 敵発生データの読み込み
 	LoadEnemyPopData();
 
@@ -120,6 +123,8 @@ void GameScene::InitializeGameObjects() {
 	if (railCamera_) {
 		player_->SetParent(&railCamera_->GetTransform());
 	}
+
+
 
 	///*-----------------------------------------------------------------------*///
 	///								天球									///
@@ -189,8 +194,9 @@ void GameScene::Update() {
 }
 
 void GameScene::UpdateGameObjects() {
-	// プレイヤーの更新
+	// プレイヤーにスプライト用ビュープロジェクション行列を設定
 	if (player_) {
+		player_->SetViewProjectionMatrixSprite(viewProjectionMatrixSprite);
 		player_->Update(viewProjectionMatrix);
 	}
 
@@ -215,6 +221,7 @@ void GameScene::UpdateGameObjects() {
 	}
 }
 
+
 void GameScene::DrawOffscreen() {
 	// 3Dゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
@@ -222,11 +229,12 @@ void GameScene::DrawOffscreen() {
 
 void GameScene::DrawBackBuffer() {
 	// UI(スプライトなど)の描画（オフスクリーン外に描画）
+
+	// プレイヤーのUI描画（レティクル）
 	if (player_) {
 		player_->DrawUI();
 	}
 }
-
 void GameScene::DrawGameObjects() {
 	// 背景オブジェクトの描画（先に描画）
 	if (skydome_) {

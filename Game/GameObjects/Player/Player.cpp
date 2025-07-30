@@ -14,7 +14,7 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	// 入力のシングルトンを取得
 	input_ = InputManager::GetInstance();
 
-	// ゲームオブジェクト（モデル）の初期化
+	// ゲームオブジェクト（球体）の初期化
 	gameObject_ = std::make_unique<Model3D>();
 	gameObject_->Initialize(dxCommon, "player");
 	gameObject_->SetName("Player");
@@ -27,23 +27,43 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	};
 	gameObject_->SetTransform(defaultTransform);
 
+	// 3Dレティクルの初期化
+	reticle3D_ = std::make_unique<Model3D>();
+	reticle3D_->Initialize(dxCommon, "player"); // 仮でplayerモデルを使用
+	reticle3D_->SetName("Reticle3D");
+
+	Vector3Transform reticleTransform{
+		{0.3f, 0.3f, 0.3f},           // scale（小さめに）
+		{0.0f, 0.0f, 0.0f},           // rotate
+		{0.0f, 0.0f, 50.0f}           // translate（プレイヤーの前方）
+	};
+	reticle3D_->SetTransform(reticleTransform);
+
+	// 2Dレティクル用のスプライト初期化
+	sprite2DReticle_ = std::make_unique<Sprite>();
+	sprite2DReticle_->Initialize(
+		dxCommon,
+		"reticle",                    // テクスチャ名
+		{ 640.0f, 360.0f },             // 画面中央
+		{ 64.0f, 64.0f }                // サイズ
+	);
+
+	// ビューポート行列の計算（画面サイズに基づく）
+	// TODO: 実際の画面サイズを取得する仕組みが必要
+	matViewport_ = MakeViewportMatrix(0, 0, 1280, 720, 0, 1);
+
+	// スプライト用ビュープロジェクション行列を単位行列で初期化
+	viewProjectionMatrixSprite_ = MakeIdentity4x4();
+
 	// 衝突判定設定
 	SetRadius(1.0f); // Colliderの半径をセット
+	// スケールをコライダーの半径に合わせる
+	gameObject_->SetScale(Vector3(GetRadius(), GetRadius(), GetRadius()));
+
 	/// 衝突属性の設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	/// 衝突対象は自分の属性以外に設定(ビット反転)
 	SetCollisionMask(~kCollisionAttributePlayer);
-
-	// レティクル関連の初期化
-	// 3Dレティクル用のTransform3Dの初期化
-	transform3DReticle_.Initialize(directXCommon_);
-
-	// 2Dレティクル用のスプライト
-	sprite2DReticle_ = std::make_unique<Sprite>();
-	sprite2DReticle_->Initialize(directXCommon_, "reticle", { 640, 360 }, { 64, 64 });
-
-	// ビューポート行列の設定
-	matViewport_ = MakeViewportMatrix(0, 0, 1280, 720, 0, 1); // 画面サイズに合わせて調整
 }
 
 void Player::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -59,8 +79,11 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 攻撃処理
 	Attack();
 
-	// レティクル更新
-	UpdateReticle();
+	// レティクルの更新
+	ReticleUpdate();
+
+	// 3Dレティクルから2Dレティクルへの座標変換
+	ConvertWorldToScreenReticle(viewProjectionMatrix);
 
 	// 弾の更新
 	for (auto& bullet : bullets_) {
@@ -69,20 +92,15 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
-
-	// 3Dレティクルの更新
-	transform3DReticle_.UpdateMatrix(MakeIdentity4x4());
-
-	// スプライトの更新
-	if (sprite2DReticle_) {
-		Matrix4x4 spriteViewProjection = MakeIdentity4x4(); // スプライト用の行列
-		sprite2DReticle_->Update(spriteViewProjection);
-	}
+	reticle3D_->Update(viewProjectionMatrix);
 }
 
 void Player::Draw(const Light& directionalLight) {
 	// プレイヤー本体の描画
 	gameObject_->Draw(directionalLight);
+
+	// 3Dレティクルの描画
+	// reticle3D_->Draw(directionalLight);
 
 	// 弾の描画
 	for (auto& bullet : bullets_) {
@@ -91,10 +109,9 @@ void Player::Draw(const Light& directionalLight) {
 }
 
 void Player::DrawUI() {
-	// 2Dレティクルの描画
-	if (sprite2DReticle_) {
-		sprite2DReticle_->Draw();
-	}
+	// 2Dレティクルスプライトの更新と描画
+	sprite2DReticle_->Update(viewProjectionMatrixSprite_);
+	sprite2DReticle_->Draw();
 }
 
 void Player::ImGui() {
@@ -105,16 +122,21 @@ void Player::ImGui() {
 
 	ImGui::Text("Bullets Count: %zu", bullets_.size());
 
+	// レティクル情報
+	ImGui::Separator();
+	ImGui::Text("Reticle Info:");
+	Vector3 reticlePos = GetWorldPosition3DReticle();
+	ImGui::Text("3D Reticle Position: (%.2f, %.2f, %.2f)", reticlePos.x, reticlePos.y, reticlePos.z);
+
+	Vector2 spritePos = sprite2DReticle_->GetPosition();
+	ImGui::Text("2D Reticle Position: (%.2f, %.2f)", spritePos.x, spritePos.y);
+
 	// KamataEngineのデバッグ表示と同様の情報を表示
 	Vector3 worldPos = GetWorldPosition();
 	ImGui::Text("World Position: (%.2f, %.2f, %.2f)", worldPos.x, worldPos.y, worldPos.z);
 
 	Vector3 localPos = gameObject_->GetPosition();
 	ImGui::Text("Local Position: (%.2f, %.2f, %.2f)", localPos.x, localPos.y, localPos.z);
-
-	// レティクルの情報
-	Vector3 reticlePos = GetWorldPosition3DReticle();
-	ImGui::Text("Reticle Position: (%.2f, %.2f, %.2f)", reticlePos.x, reticlePos.y, reticlePos.z);
 #endif
 }
 
@@ -132,13 +154,15 @@ Vector3 Player::GetWorldPosition() {
 }
 
 Vector3 Player::GetWorldPosition3DReticle() {
-	// 3Dレティクルのワールド行列から移動成分を取得
-	Matrix4x4 worldMatrix = transform3DReticle_.GetWorldMatrix();
-	return Vector3{
-		worldMatrix.m[3][0],
-		worldMatrix.m[3][1],
-		worldMatrix.m[3][2]
-	};
+	if (reticle3D_) {
+		Matrix4x4 worldMatrix = reticle3D_->GetTransform().GetWorldMatrix();
+		return Vector3{
+			worldMatrix.m[3][0],
+			worldMatrix.m[3][1],
+			worldMatrix.m[3][2]
+		};
+	}
+	return Vector3{ 0.0f, 0.0f, 0.0f };
 }
 
 void Player::OnCollision() {
@@ -149,7 +173,13 @@ void Player::Move() {
 	// 移動ベクトル
 	Vector3 move = { 0.0f, 0.0f, 0.0f };
 
-	// 押した方向で移動ベクトルを変更
+	// ゲームパッド入力の処理
+	if (input_->IsGamePadConnected()) {
+		move.x += input_->GetAnalogStick(InputManager::AnalogStick::LEFT_X) * kCharacterSpeed;
+		move.y += input_->GetAnalogStick(InputManager::AnalogStick::LEFT_Y) * kCharacterSpeed;
+	}
+
+	// キーボード入力の処理
 	if (input_->IsKeyDown(DIK_LEFT)) {
 		move.x -= kCharacterSpeed; // 左
 	} else if (input_->IsKeyDown(DIK_RIGHT)) {
@@ -190,16 +220,22 @@ void Player::Rotate() {
 }
 
 void Player::Attack() {
-	// SPACEキーで発射
-	if (input_->IsKeyTrigger(DIK_SPACE)) {
-		// 弾の速度
-		// 自機からレティクルへのベクトル
-		Vector3 bulletVelocity = GetWorldPosition3DReticle() - GetWorldPosition();
+	// SPACEキーまたはゲームパッドRBボタンで発射
+	bool shouldFire = input_->IsKeyTrigger(DIK_SPACE) ||
+		(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::RB));
+
+	if (shouldFire) {
+		// 自機からレティクルへのベクトルを計算
+		Vector3 playerPos = GetWorldPosition();
+		Vector3 reticlePos = GetWorldPosition3DReticle();
+		Vector3 bulletVelocity = reticlePos - playerPos;
+
+		// 正規化して速度を設定
 		bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
 
 		// 弾丸を生成・初期化する
 		auto newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity);
+		newBullet->Initialize(directXCommon_, playerPos, bulletVelocity);
 
 		// 弾丸を登録する
 		bullets_.push_back(std::move(newBullet));
@@ -213,30 +249,34 @@ void Player::DeleteBullets() {
 		});
 }
 
-void Player::UpdateReticle() {
-	// 簡易実装：固定距離にレティクルを配置
-	ConvertMouseToWorldReticle();
-}
+void Player::ReticleUpdate() {
+	// プレイヤーのワールド座標から3Dレティクルのワールド座標を計算
+	// 自機から3Dレティクルへのオフセット（Z+方向）
+	Vector3 offset = { 0.0f, 0.0f, 1.0f };
 
-void Player::ConvertWorldToScreenReticle() {
-	// 実装が必要な場合は後で追加
-}
-
-void Player::ConvertMouseToWorldReticle() {
-	// 簡易実装：プレイヤーの前方固定距離にレティクルを配置
-	const float kDistancePlayerTo3DReticle = 50.0f;
-	Vector3 offset = { 0, 0, 1.0f };
-
-	// プレイヤーのワールド行列の回転を反映
+	// 自機のワールド行列の回転を反映
+	// プレイヤーの向きに基づいてオフセットを変換
 	Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
 	offset = Matrix4x4TransformNormal(offset, worldMatrix);
+
+	// ベクトルの長さを整える
 	offset = Normalize(offset) * kDistancePlayerTo3DReticle;
 
 	// 3Dレティクルの座標を設定
 	Vector3 reticlePosition = GetWorldPosition() + offset;
-	transform3DReticle_.SetPosition(reticlePosition);
+	reticle3D_->SetPosition(reticlePosition);
 }
 
-void Player::ConvertGamepadToWorldReticle() {
-	// ゲームパッド対応は後で実装
+void Player::ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix) {
+	// 3Dレティクルの位置を取得
+	Vector3 positionReticle = GetWorldPosition3DReticle();
+
+	// ビュープロジェクション行列とビューポート行列を合成
+	Matrix4x4 matViewProjectionViewport = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
+
+	// ワールド座標からスクリーン座標に変換（3Dから2Dになる）
+	positionReticle = Matrix4x4Transform(positionReticle, matViewProjectionViewport);
+
+	// 2Dレティクルスプライトに座標設定
+	sprite2DReticle_->SetPosition(Vector2(positionReticle.x, positionReticle.y));
 }
