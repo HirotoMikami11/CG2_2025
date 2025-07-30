@@ -483,7 +483,9 @@ void GameScene::Finalize() {
 	ClearAllEnemyBullets();
 	ClearAllEnemies();
 
-	// 敵発生コマンドを停止
+	// 敵発生コマンドのストリームをリセット
+	enemyPopCommands.clear();
+	enemyPopCommands.seekg(0);
 	isWait_ = false;
 	waitTimer_ = 0;
 	
