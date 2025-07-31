@@ -441,142 +441,28 @@ void OffscreenRenderer::CreateDepthSRV() {
 
 	Logger::Log(Logger::GetStream(), std::format("Complete create offscreen depth SRV (Index: {})!!\n", depthSrvHandle_.index));
 }
-
 void OffscreenRenderer::CreatePSO() {
-	////																			//
-	////								RootSignature作成							//
-	////																			//
+	// RootSignatureを構築
+	RootSignatureBuilder rsBuilder;
+	rsBuilder.AddSRV(0, 1, D3D12_SHADER_VISIBILITY_PIXEL)		// Texture (t0)
+		.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
 
-	// RootSignature作成（OffscreenTriangle用に簡略化）
-	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	// PSO設定を構築
+	auto psoDesc = PSODescriptor::CreatePostEffectColorOnly()
+		.SetPixelShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.PS.hlsl")
+		.SetBlendMode(BlendMode::AlphaBlend);// アルファブレンドを有効化
 
-	// DescriptorRange作成
-	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-	descriptorRange[0].BaseShaderRegister = 0;
-	descriptorRange[0].NumDescriptors = 1;
-	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	// RootParameter作成（OffscreenTriangle用に簡略化：テクスチャのみ）
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
-
-	// DescriptorTable
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-
-	// Sampler設定
-	D3D12_STATIC_SAMPLER_DESC samplers[1] = {};
-	samplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-	samplers[0].ShaderRegister = 0;
-	samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	rootSignatureDesc.pStaticSamplers = samplers;
-	rootSignatureDesc.NumStaticSamplers = _countof(samplers);
-	rootSignatureDesc.pParameters = rootParameters;
-	rootSignatureDesc.NumParameters = _countof(rootParameters);
-
-	// シリアライズしてバイナリにする
-	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
-	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-
-	HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc,
-		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+	// PSOFactory経由で生成
+	auto psoInfo = dxCommon_->GetPSOFactory()->CreatePSO(psoDesc, rsBuilder);
+	if (!psoInfo.IsValid()) {
+		Logger::Log(Logger::GetStream(), "OffscreenRenderer: Failed to create PSO\n");
 		assert(false);
 	}
 
-	// バイナリを元に生成
-	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&offscreenRootSignature_));
-	assert(SUCCEEDED(hr));
+	offscreenRootSignature_ = psoInfo.rootSignature;
+	offscreenPipelineState_ = psoInfo.pipelineState;
 
-	////																			//
-	////							InputLayoutの設定								//
-	////																			//
-	// InputLayout設定（OffscreenTriangle用：位置とUV座標のみ）
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
-
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
-	// BlendState設定
-	D3D12_BLEND_DESC blendDesc{};
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-	// RasterizerState設定
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-	// シェーダーコンパイル（OffscreenTriangle用シェーダーを使用）
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = DirectXCommon::CompileShader(
-		L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl",
-		L"vs_6_0",
-		dxCommon_->GetDxcUtils(),
-		dxCommon_->GetDxcCompiler(),
-		dxCommon_->GetIncludeHandler());
-	assert(vertexShaderBlob != nullptr);
-
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = DirectXCommon::CompileShader(
-		L"resources/Shader/FullscreenTriangle/FullscreenTriangle.PS.hlsl",
-		L"ps_6_0",
-		dxCommon_->GetDxcUtils(),
-		dxCommon_->GetDxcCompiler(),
-		dxCommon_->GetIncludeHandler());
-	assert(pixelShaderBlob != nullptr);
-
-	// DepthStencilState設定
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	depthStencilDesc.DepthEnable = false;
-
-	// PSO作成
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc{};
-	pipelineStateDesc.pRootSignature = offscreenRootSignature_.Get();
-	pipelineStateDesc.InputLayout = inputLayoutDesc;
-	pipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-	pipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
-	pipelineStateDesc.BlendState = blendDesc;
-	pipelineStateDesc.RasterizerState = rasterizerDesc;
-	pipelineStateDesc.NumRenderTargets = 1;
-	pipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	pipelineStateDesc.SampleDesc.Count = 1;
-	pipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	pipelineStateDesc.DepthStencilState = depthStencilDesc;
-	pipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&pipelineStateDesc,
-		IID_PPV_ARGS(&offscreenPipelineState_));
-	assert(SUCCEEDED(hr));
-
-	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create offscreen PipelineState (PSOFactory version)!!\n");
 }
 
 void OffscreenRenderer::ImGui() {

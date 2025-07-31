@@ -87,16 +87,23 @@ void DirectXCommon::Initialize(WinApp* winApp) {
 
 	///*-----------------------------------------------------------------------*///
 	//																			//
+	///							PSOFactoryの初期化								///
+	//																			//
+	///*-----------------------------------------------------------------------*///
+	InitializePSOFactory();
+
+	///*-----------------------------------------------------------------------*///
+	//																			//
 	///								PSOを生成する									///
 	//																			//
 	///*-----------------------------------------------------------------------*///
-	//３D用のPSO
+	// 3D用のPSO
 	MakePSO();
 
-	//スプライト用のPSO
+	// スプライト用のPSO
 	MakeSpritePSO();
 
-	//線分用のPSO
+	// 線分用のPSO
 	MakeLinePSO();
 
 	///*-----------------------------------------------------------------------*///
@@ -402,533 +409,88 @@ void DirectXCommon::InitalizeDXC()
 
 }
 
-void DirectXCommon::MakePSO()
+void DirectXCommon::InitializePSOFactory()
 {
-
-	//																			//
-	//								RootSignature作成							//
-	//																			//
-
-	//rootSignature=具体的にshaderがどこでデータを読めばいいのかという情報をまとめたもの
-	//RootSignatureの作成
-	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-	descriptionRootSignature.Flags =
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-	//DescriptorRange=shaderがアクセスするリソース(テクスチャ、バッファなど)をまとめて定義する
-	//DescriptorRangeを作る
-	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-	descriptorRange[0].BaseShaderRegister = 0;//0から始まる
-	descriptorRange[0].NumDescriptors = 1;//数は一つだけ
-	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
-	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
-
-	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
-	//PixelShader
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
-	rootParameters[0].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(PSのgMaterial(b0)と結びつける)
-	//VertexShader
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //PixelShaderで使う
-	rootParameters[1].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(VSのgTransformationMatrix(b0)と結びつける)
-
-	//DescriptorTableを作成する
-	//DescriptorTableはDescriptorRangeをまとめたもの
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;	//DescriptorTableを使う
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;				//PixelShaderで使う
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;			//Tableの中身の配列を指定
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する数
-
-	//DirectionalLight
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
-	rootParameters[3].Descriptor.ShaderRegister = 1;					//レジスタ番号0とバインド(PSのgDirecinallLight(b1)と結びつける)
-
-	//Samplerの設定
-	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;			//バイリニアフィルタ
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;		//0~1の範囲外をリピート
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;		//比較しない
-	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;						//あるだけmipmapを使用する
-	staticSamplers[0].ShaderRegister = 0;									//レジスタ番号を使う
-	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//pixelShaderを使う
-	descriptionRootSignature.pStaticSamplers = staticSamplers;
-	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-
-
-	descriptionRootSignature.pParameters = rootParameters;				//ルートパラメータ配列へのポインタ
-	descriptionRootSignature.NumParameters = _countof(rootParameters);	//配列の長さ
-
-	//シリアライズしてバイナリにする
-	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
-	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-
-	hr = D3D12SerializeRootSignature(&descriptionRootSignature,
-		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-		assert(false);
-	}
-	//バイナリを元に生成
-	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-	assert(SUCCEEDED(hr));
-
-	//																			//
-	//							InputLayoutの設定								//
-	//																			//
-
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-
-	//座標
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	//texcoord
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	//法線
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
-	//																			//
-	//							BlendStateの設定									//
-	//																			//
-
-	D3D12_BLEND_DESC blendDesc{};
-	// アルファブレンドを有効化
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	// RGB成分のブレンド設定
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;			// ソースのアルファ値
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;	// 1 - ソースのアルファ値
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;				// 加算ブレンド
-	// アルファ成分のブレンド設定
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;			// ソースのアルファをそのまま使用
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;		// 対象のアルファは使用しない
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;		// アルファも加算
-	// 全ての色要素を書き込む
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-
-
-	//																			//
-	//						RasterizerStateの設定								//
-	//																			//
-	//RasterizerStateの設定  
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	//裏面（時計回り）を表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	//三角形の中を塗りつぶす
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-
-	//																			//
-	//						シェーダーのコンパイル								//
-	//																			//
-
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"resources/Shader/Object3d/Object3d.VS.hlsl",
-		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(vertexShaderBlob != nullptr);
-
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"resources/Shader/Object3d/Object3d.PS.hlsl",
-		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(pixelShaderBlob != nullptr);
-
-
-
-	//																			//
-	//						DepthStencilStateの設定								//
-	//																			//
-
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	//Depthの機能を有効化する
-	depthStencilDesc.DepthEnable = true;
-	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	//比較関数はLessEqual（近ければ描画する）
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-
-	///PSOの作成
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();					// RootSignature
-	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;					// InputLayout 
-	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
-		vertexShaderBlob->GetBufferSize() };									// VertexShader
-	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
-		pixelShaderBlob->GetBufferSize() };										// PixelShader
-	graphicsPipelineStateDesc.BlendState = blendDesc;							// BlendState
-	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;				// RasterizerState
-
-	// 書き込むRTVの情報
-	graphicsPipelineStateDesc.NumRenderTargets = 1;
-	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	// 利用するトポロジ (形状)のタイプ。三角形 
-	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	// どのように画面に色を打ち込むかの設定(気にしなくて良い)
-	graphicsPipelineStateDesc.SampleDesc.Count = 1;
-	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-
-	//depthStencilの設定
-	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-
-	// 実際に生成
-	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState));
-	assert(SUCCEEDED(hr));
-	//生成できなかったら起動できない
-	Logger::Log(Logger::GetStream(), "Complete create PSO!!\n");//PSO生成完了のログを出す
-
-
+	psoFactory_ = std::make_unique<PSOFactory>();
+	psoFactory_->Initialize(device.Get(), dxcUtils.Get(), dxcCompiler.Get(), includeHandler.Get());
+	Logger::Log(Logger::GetStream(), "DirectXCommon: PSOFactory initialized\n");
 }
 
-void DirectXCommon::MakeSpritePSO()
-{
+void DirectXCommon::MakePSO() {
+	// RootSignatureを構築
+	RootSignatureBuilder rsBuilder;
+	rsBuilder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL)		// Material (b0)
+		.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX)			// Transform (b0)
+		.AddSRV(0, 1, D3D12_SHADER_VISIBILITY_PIXEL)		// Texture (t0)
+		.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL)			// DirectionalLight (b1)
+		.AddStaticSampler(0);								// Sampler (s0)
 
-	//																			//
-	//								RootSignature作成							//
-	//																			//
+	// PSO設定を構築（プリセット使用）
+	auto psoDesc = PSODescriptor::Create3D()
+		.SetVertexShader(L"resources/Shader/Object3d/Object3d.VS.hlsl")
+		.SetPixelShader(L"resources/Shader/Object3d/Object3d.PS.hlsl");
 
-	//rootSignature=具体的にshaderがどこでデータを読めばいいのかという情報をまとめたもの
-	//RootSignatureの作成
-	D3D12_ROOT_SIGNATURE_DESC spriteRootSignatureDesc{};
-	spriteRootSignatureDesc.Flags =
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-	//DescriptorRange=shaderがアクセスするリソース(テクスチャ、バッファなど)をまとめて定義する
-	//DescriptorRangeを作る
-	D3D12_DESCRIPTOR_RANGE spriteDescriptorRange[1] = {};
-	spriteDescriptorRange[0].BaseShaderRegister = 0;//0から始まる
-	spriteDescriptorRange[0].NumDescriptors = 1;//数は一つだけ
-	spriteDescriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;//SRVを使う
-	spriteDescriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetは自動計算
-
-	//RootParameter作成。(pixelShaderのMaterialとVertexShaderのTransformの2つ)
-	D3D12_ROOT_PARAMETER spriteRootParameters[4] = {};
-	//PixelShader
-	spriteRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
-	spriteRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
-	spriteRootParameters[0].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(PSのgMaterial(b0)と結びつける)
-	//VertexShader
-	spriteRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
-	spriteRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //PixelShaderで使う
-	spriteRootParameters[1].Descriptor.ShaderRegister = 0;					//レジスタ番号0とバインド(VSのgTransformationMatrix(b0)と結びつける)
-
-	//DescriptorTableを作成する
-	//DescriptorTableはDescriptorRangeをまとめたもの
-	spriteRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;	//DescriptorTableを使う
-	spriteRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;				//PixelShaderで使う
-	spriteRootParameters[2].DescriptorTable.pDescriptorRanges = spriteDescriptorRange;			//Tableの中身の配列を指定
-	spriteRootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(spriteDescriptorRange);//Tableで利用する数
-
-	//DirectionalLight
-	spriteRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//ConstantBufferViewを使う
-	spriteRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; //PixelShaderで使う
-	spriteRootParameters[3].Descriptor.ShaderRegister = 1;					//レジスタ番号0とバインド(PSのgDirecinallLight(b1)と結びつける)
-
-	//Samplerの設定
-	D3D12_STATIC_SAMPLER_DESC spriteSamplers[1] = {};
-	spriteSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;			//バイリニアフィルタ
-	spriteSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;		//0~1の範囲外をリピート
-	spriteSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	spriteSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	spriteSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;		//比較しない
-	spriteSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;						//あるだけmipmapを使用する
-	spriteSamplers[0].ShaderRegister = 0;									//レジスタ番号を使う
-	spriteSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//pixelShaderを使う
-
-	spriteRootSignatureDesc.pStaticSamplers = spriteSamplers;
-	spriteRootSignatureDesc.NumStaticSamplers = _countof(spriteSamplers);
-
-
-	spriteRootSignatureDesc.pParameters = spriteRootParameters;				//ルートパラメータ配列へのポインタ
-	spriteRootSignatureDesc.NumParameters = _countof(spriteRootParameters);	//配列の長さ
-
-	//シリアライズしてバイナリにする
-	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
-	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-
-	hr = D3D12SerializeRootSignature(&spriteRootSignatureDesc,
-		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+	// PSO生成
+	auto psoInfo = psoFactory_->CreatePSO(psoDesc, rsBuilder);
+	if (!psoInfo.IsValid()) {
+		Logger::Log(Logger::GetStream(), "DirectXCommon: Failed to create 3D PSO\n");
 		assert(false);
 	}
-	//バイナリを元に生成
-	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&spriteRootSignature));
-	assert(SUCCEEDED(hr));
 
-	//																			//
-	//							InputLayoutの設定								//
-	//																			//
+	rootSignature = psoInfo.rootSignature;
+	graphicsPipelineState = psoInfo.pipelineState;
 
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-
-	//座標
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	//texcoord
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	//法線
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
-	//																			//
-	//							BlendStateの設定									//
-	//																			//
-
-	D3D12_BLEND_DESC blendDesc{};
-	// アルファブレンドを有効化
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	// RGB成分のブレンド設定
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;			// ソースのアルファ値
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;	// 1 - ソースのアルファ値
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;				// 加算ブレンド
-	// アルファ成分のブレンド設定
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;			// ソースのアルファをそのまま使用
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;		// 対象のアルファは使用しない
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;		// アルファも加算
-	// 全ての色要素を書き込む
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-
-	//																			//
-	//						RasterizerStateの設定								//
-	//																			//
-	//RasterizerStateの設定  
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	//裏面（時計回り）を表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	//三角形の中を塗りつぶす
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-
-	//																			//
-	//						シェーダーのコンパイル								//
-	//																			//
-
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"resources/Shader/Sprite/Sprite.VS.hlsl",
-		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(vertexShaderBlob != nullptr);
-
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"resources/Shader/Sprite/Sprite.PS.hlsl",
-		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(pixelShaderBlob != nullptr);
-
-
-
-	//																			//
-	//						DepthStencilStateの設定								//
-	//																			//
-
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	//Depthの機能を有効化する
-	depthStencilDesc.DepthEnable = false;
-
-	///PSOの作成
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC spritePipelineStateDesc{};
-	spritePipelineStateDesc.pRootSignature = spriteRootSignature.Get();
-	spritePipelineStateDesc.InputLayout = inputLayoutDesc;
-	spritePipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-	spritePipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
-	spritePipelineStateDesc.BlendState = blendDesc;
-	spritePipelineStateDesc.RasterizerState = rasterizerDesc;
-	// 書き込むRTVの情報
-	spritePipelineStateDesc.NumRenderTargets = 1;
-	spritePipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	// 利用するトポロジ (形状)のタイプ。三角形 
-	spritePipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	// どのように画面に色を打ち込むかの設定(気にしなくて良い)
-	spritePipelineStateDesc.SampleDesc.Count = 1;
-	spritePipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-
-	//depthStencilの設定
-	spritePipelineStateDesc.DepthStencilState = depthStencilDesc;
-	spritePipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	// 実際に生成
-	hr = device->CreateGraphicsPipelineState(&spritePipelineStateDesc,
-		IID_PPV_ARGS(&spritePipelineState));
-	assert(SUCCEEDED(hr));
-	//生成できなかったら起動できない
-	Logger::Log(Logger::GetStream(), "Complete create spritePSO!!\n");//PSO生成完了のログを出す
-
+	Logger::Log(Logger::GetStream(), "Complete create 3D PSO using PSOFactory!!\n");
 }
-void DirectXCommon::MakeLinePSO()
-{
-	//																			//
-	//								RootSignature作成							//
-	//																			//
 
-	// 線分用のルートシグネチャ
-	D3D12_ROOT_SIGNATURE_DESC lineRootSignatureDesc{};
-	lineRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+void DirectXCommon::MakeSpritePSO() {
+	// RootSignatureを構築
+	RootSignatureBuilder rsBuilder;
+	rsBuilder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL)		// Material (b0)
+		.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX)			// Transform (b0)  
+		.AddSRV(0, 1, D3D12_SHADER_VISIBILITY_PIXEL)		// Texture (t0)
+		.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL)			// DirectionalLight (b1)
+		.AddStaticSampler(0);								// Sampler (s0)
 
-	// RootParameter（線分用：トランスフォームのみ）
-	D3D12_ROOT_PARAMETER lineRootParameters[1] = {};
-	// Transform (VS) - Root Parameter [0]
-	lineRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	lineRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	lineRootParameters[0].Descriptor.ShaderRegister = 0;
+	// PSO設定を構築（プリセット使用）
+	auto psoDesc = PSODescriptor::CreateSprite()
+		.SetVertexShader(L"resources/Shader/Sprite/Sprite.VS.hlsl")
+		.SetPixelShader(L"resources/Shader/Sprite/Sprite.PS.hlsl");
 
-	lineRootSignatureDesc.pParameters = lineRootParameters;
-	lineRootSignatureDesc.NumParameters = _countof(lineRootParameters);
-	lineRootSignatureDesc.pStaticSamplers = nullptr;  // サンプラする必要ない
-	lineRootSignatureDesc.NumStaticSamplers = 0;
-
-	// シリアライズしてバイナリにする
-	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
-	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-
-	hr = D3D12SerializeRootSignature(&lineRootSignatureDesc,
-		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+	// PSO生成
+	auto psoInfo = psoFactory_->CreatePSO(psoDesc, rsBuilder);
+	if (!psoInfo.IsValid()) {
+		Logger::Log(Logger::GetStream(), "DirectXCommon: Failed to create Sprite PSO\n");
 		assert(false);
 	}
 
-	// バイナリを元に生成
-	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&lineRootSignature));
-	assert(SUCCEEDED(hr));
+	spriteRootSignature = psoInfo.rootSignature;
+	spritePipelineState = psoInfo.pipelineState;
 
-	//																			//
-	//							InputLayoutの設定								//
-	//																			//
+	Logger::Log(Logger::GetStream(), "Complete create Sprite PSO using PSOFactory!!\n");
+}
 
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[4] = {};
+void DirectXCommon::MakeLinePSO() {
+	// RootSignatureを構築（線分は変換行列のみ）
+	RootSignatureBuilder rsBuilder;
+	rsBuilder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);// Transform (b0)
 
-	// 座標
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	// PSO設定を構築（プリセット使用）
+	auto psoDesc = PSODescriptor::CreateLine()
+		.SetVertexShader(L"resources/Shader/Line/Line.VS.hlsl")
+		.SetPixelShader(L"resources/Shader/Line/Line.PS.hlsl");
 
-	// 色（追加）
-	inputElementDescs[1].SemanticName = "COLOR";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	// PSO生成
+	auto psoInfo = psoFactory_->CreatePSO(psoDesc, rsBuilder);
+	if (!psoInfo.IsValid()) {
+		Logger::Log(Logger::GetStream(), "DirectXCommon: Failed to create Line PSO\n");
+		assert(false);
+	}
 
-	// texcoord（互換性のため）
-	inputElementDescs[2].SemanticName = "TEXCOORD";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	lineRootSignature = psoInfo.rootSignature;
+	linePipelineState = psoInfo.pipelineState;
 
-	// 法線（互換性のため）
-	inputElementDescs[3].SemanticName = "NORMAL";
-	inputElementDescs[3].SemanticIndex = 0;
-	inputElementDescs[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
-	//																			//
-	//							BlendStateの設定									//
-	//																			//
-
-	D3D12_BLEND_DESC blendDesc{};
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-	//																			//
-	//						RasterizerStateの設定								//
-	//																			//
-
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE; // 線分では両面描画
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-	//																			//
-	//						シェーダーのコンパイル									//
-	//																			//
-
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = CompileShader(L"resources/Shader/Line/Line.VS.hlsl",
-		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(vertexShaderBlob != nullptr);
-
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = CompileShader(L"resources/Shader/Line/Line.PS.hlsl",
-		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
-	assert(pixelShaderBlob != nullptr);
-
-	//																			//
-	//						DepthStencilStateの設定								//
-	//																			//
-
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	depthStencilDesc.DepthEnable = true;
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-	//																			//
-	//									PSO作成									//
-	//																			//
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC linePipelineStateDesc{};
-	linePipelineStateDesc.pRootSignature = lineRootSignature.Get();
-	linePipelineStateDesc.InputLayout = inputLayoutDesc;
-	linePipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-	linePipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
-	linePipelineStateDesc.BlendState = blendDesc;
-	linePipelineStateDesc.RasterizerState = rasterizerDesc;
-	linePipelineStateDesc.NumRenderTargets = 1;
-	linePipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-
-	// 利用するトポロジを線分に設定する
-	linePipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-	linePipelineStateDesc.SampleDesc.Count = 1;
-	linePipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	linePipelineStateDesc.DepthStencilState = depthStencilDesc;
-	linePipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	// 実際に生成
-	hr = device->CreateGraphicsPipelineState(&linePipelineStateDesc,
-		IID_PPV_ARGS(&linePipelineState));
-	assert(SUCCEEDED(hr));
-
-	Logger::Log(Logger::GetStream(), "Complete create Line PSO!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create Line PSO using PSOFactory!!\n");
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
@@ -1061,8 +623,8 @@ void DirectXCommon::PreDraw()
 	//																			//
 	///*-----------------------------------------------------------------------*///
 
-	commandList->RSSetViewports(1, &viewport);					//Viewportを設定	
-	commandList->RSSetScissorRects(1, &scissorRect);			//Scissorを設定
+	commandList->RSSetViewports(1, &viewport);						//Viewportを設定	
+	commandList->RSSetScissorRects(1, &scissorRect);				//Scissorを設定
 	// RootSignatureを設定。PSOに設定しているけど別途設定（PSOと同じもの）が必要
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
 	commandList->SetPipelineState(graphicsPipelineState.Get());		//PSOを設定

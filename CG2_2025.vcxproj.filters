@@ -220,6 +220,9 @@
     <Filter Include="Game\GameObjects\LockOn">
       <UniqueIdentifier>{00f4bbcc-8f21-414e-985c-095e21211fa1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\BaseSystem\DirectXCommon\PSOFactory">
+      <UniqueIdentifier>{e4ebb2ec-6440-411d-a771-08b37296965c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -446,6 +449,15 @@
     </ClCompile>
     <ClCompile Include="Game\Camera\RailPoint.cpp">
       <Filter>Game\RailCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\PSOFactory\RootSignatureBuilder.cpp">
+      <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\PSOFactory\PSODescriptor.cpp">
+      <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\BaseSystem\DirectXCommon\PSOFactory\PSOFactory.cpp">
+      <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -747,6 +759,15 @@
     </ClInclude>
     <ClInclude Include="Game\Camera\RailPoint.h">
       <Filter>Game\RailCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\PSOFactory\RootSignatureBuilder.h">
+      <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\PSOFactory\PSODescriptor.h">
+      <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BaseSystem\DirectXCommon\PSOFactory\PSOFactory.h">
+      <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
