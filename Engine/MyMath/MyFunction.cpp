@@ -125,6 +125,22 @@ Vector3 CatmullRomInterpolation(const  Vector3& p0, const  Vector3& p1, const  V
 }
 
 /*-----------------------------------------------------------------------*/
+///								座標関数
+/*-----------------------------------------------------------------------*/
+
+
+Vector3 ConvertWorldToScreenPosition(const Vector3& worldPosition, const Matrix4x4& viewProjectionMatrix) {
+	// ビューポート行列を作成
+	Matrix4x4 matViewport = MakeViewportMatrix(0, 0, GraphicsConfig::kClientWidth, GraphicsConfig::kClientHeight, 0, 1);
+	// ビュープロジェクション行列を作成
+	Matrix4x4 matViewProjectionViewport = Matrix4x4Multiply(viewProjectionMatrix, matViewport);
+
+	// ワールドからスクリーンに座標変換(ここから3Dから2Dになる)
+	Vector3 screenPosition = Matrix4x4Transform(worldPosition, matViewProjectionViewport);
+	return { screenPosition.x, screenPosition.y, screenPosition.z }; // 2D座標に変換して返す
+}
+
+/*-----------------------------------------------------------------------*/
 //
 //								当たり判定
 //

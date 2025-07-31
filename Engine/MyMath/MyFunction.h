@@ -110,6 +110,20 @@ Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t);
 /// <returns></returns>
 Vector3 CatmullRomInterpolation(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
 
+/*-----------------------------------------------------------------------*/
+///								座標関数
+/*-----------------------------------------------------------------------*/
+
+/// <summary>
+/// ワールドからスクリーン座標に変換する関数
+/// </summary>
+/// <param name="worldPosition">ワールド座標</param>
+/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
+/// <returns>スクリーン座標</returns>
+Vector3 ConvertWorldToScreenPosition(const Vector3& worldPosition, const Matrix4x4& viewProjectionMatrix);
+
+
+
 
 /*-----------------------------------------------------------------------*/
 //

@@ -112,12 +112,3 @@ void LockOn::DrawUI(const Matrix4x4& viewProjectionMatrixSprite) {
 	lockOnMark_->Draw();
 }
 
-Vector3 LockOn::ConvertWorldToScreenPosition(const Vector3& worldPosition, const Matrix4x4& viewProjectionMatrix) {
-	// ビュープロジェクション行列とビューポート行列を合成
-	Matrix4x4 matViewProjectionViewport = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
-
-	// ワールドからスクリーンに座標変換（3Dから2Dになる）
-	Vector3 screenPosition = Matrix4x4Transform(worldPosition, matViewProjectionViewport);
-
-	return screenPosition;
-}

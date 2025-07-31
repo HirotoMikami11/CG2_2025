@@ -50,7 +50,7 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	);
 
 	// ビューポート行列の計算(画面サイズが変わったら変更)
-	matViewport_ = MakeViewportMatrix(0, 0, 1280, 720, 0, 1);
+	matViewport_ = MakeViewportMatrix(0, 0, GraphicsConfig::kClientWidth, GraphicsConfig::kClientHeight, 0, 1);
 
 	// スプライト用ビュープロジェクション行列を単位行列で初期化
 	viewProjectionMatrixSprite_ = MakeIdentity4x4();

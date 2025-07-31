@@ -65,11 +65,4 @@ private:
 	// ロックオン距離の限界値（スクリーン座標ベース）
 	static constexpr float kDistanceLockOn = 400.0f;
 
-	/// <summary>
-	/// ワールド座標をスクリーン座標に変換
-	/// </summary>
-	/// <param name="worldPosition">ワールド座標</param>
-	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
-	/// <returns>スクリーン座標</returns>
-	Vector3 ConvertWorldToScreenPosition(const Vector3& worldPosition, const Matrix4x4& viewProjectionMatrix);
 };
