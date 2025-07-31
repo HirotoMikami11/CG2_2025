@@ -1,6 +1,7 @@
 #include "PSOFactory.h"
 #include <format>
 #include <cassert>
+#include "BaseSystem/DirectXCommon/DirectXCommon.h"
 
 void PSOFactory::Initialize(ID3D12Device* device,
 	IDxcUtils* dxcUtils,
@@ -31,7 +32,6 @@ PSOFactory::PSOInfo PSOFactory::CreatePSO(const PSODescriptor& descriptor,
 	}
 
 	// RootSignatureを作成
-	//constのrootSignatureBuilderをコピーしようとするとエラー出るので仕方なくconst外した。
 	result.rootSignature = rootSignatureBuilder.Build(device_);
 	if (!result.rootSignature) {
 		Logger::Log(Logger::GetStream(), "PSOFactory: Failed to create RootSignature\n");
@@ -58,9 +58,21 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOFactory::CreatePSO(
 		return nullptr;
 	}
 
-	// シェーダーをコンパイル（キャッシュ使用）
-	auto vertexShaderBlob = CompileShader(descriptor.GetVertexShader());
-	auto pixelShaderBlob = CompileShader(descriptor.GetPixelShader());
+	// シェーダーをコンパイル
+	auto vertexShaderBlob = DirectXCommon::CompileShader(
+		descriptor.GetVertexShader().filePath,
+		descriptor.GetVertexShader().target.c_str(),
+		dxcUtils_,
+		dxcCompiler_,
+		includeHandler_);
+
+	auto pixelShaderBlob = DirectXCommon::CompileShader(
+		descriptor.GetPixelShader().filePath,
+		descriptor.GetPixelShader().target.c_str(),
+		dxcUtils_,
+		dxcCompiler_,
+		includeHandler_);
+
 
 	if (!vertexShaderBlob || !pixelShaderBlob) {
 		Logger::Log(Logger::GetStream(), "PSOFactory: Failed to compile shaders\n");
@@ -128,110 +140,4 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOFactory::CreatePSO(
 
 	Logger::Log(Logger::GetStream(), "PSOFactory: Successfully created PipelineState\n");
 	return pipelineState;
-}
-
-Microsoft::WRL::ComPtr<IDxcBlob> PSOFactory::CompileShader(const PSODescriptor::ShaderInfo& shaderInfo) {
-	// キャッシュキーを生成
-	std::wstring cacheKey = CreateShaderCacheKey(shaderInfo);
-
-	// キャッシュをチェック
-	{
-		std::lock_guard<std::mutex> lock(cacheMutex_);
-		auto it = shaderCache_.find(cacheKey);
-		if (it != shaderCache_.end()) {
-			Logger::Log(Logger::GetStream(),
-				Logger::ConvertString(std::format(L"PSOFactory: Using cached shader - {}\n", cacheKey)));
-			return it->second;
-		}
-	}
-
-	// キャッシュにない場合はコンパイル
-	Logger::Log(Logger::GetStream(),
-		Logger::ConvertString(std::format(L"PSOFactory: Compiling shader - {}\n", shaderInfo.filePath)));
-
-	// ファイルを読み込み
-	Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource;
-	HRESULT hr = dxcUtils_->LoadFile(shaderInfo.filePath.c_str(), nullptr, &shaderSource);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(),
-			Logger::ConvertString(std::format(L"PSOFactory: Failed to load shader file - {}\n", shaderInfo.filePath)));
-		return nullptr;
-	}
-
-	// コンパイル設定
-	DxcBuffer shaderSourceBuffer;
-	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-	shaderSourceBuffer.Encoding = DXC_CP_UTF8;
-
-	// コンパイル引数
-	LPCWSTR arguments[] = {
-		shaderInfo.filePath.c_str(),     // ファイル名
-		L"-E", shaderInfo.entryPoint.c_str(),  // エントリーポイント
-		L"-T", shaderInfo.target.c_str(),      // ターゲット
-		L"-Zi", L"-Qembed_debug",         // デバッグ情報
-		L"-Od",                           // 最適化なし（デバッグ時）
-		L"-Zpr",                          // 行優先行列
-	};
-
-	// コンパイル実行
-	Microsoft::WRL::ComPtr<IDxcResult> shaderResult;
-	hr = dxcCompiler_->Compile(
-		&shaderSourceBuffer,
-		arguments,
-		_countof(arguments),
-		includeHandler_,
-		IID_PPV_ARGS(&shaderResult));
-
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), "PSOFactory: DXC compile call failed\n");
-		return nullptr;
-	}
-
-	// コンパイル結果をチェック
-	Microsoft::WRL::ComPtr<IDxcBlobUtf8> errors;
-	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
-	if (errors && errors->GetStringLength() > 0) {
-		Logger::Log(Logger::GetStream(),
-			std::format("PSOFactory: Shader compile error - {}\n", errors->GetStringPointer()));
-		return nullptr;
-	}
-
-	// コンパイル済みシェーダーを取得
-	Microsoft::WRL::ComPtr<IDxcBlob> compiledShader;
-	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&compiledShader), nullptr);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), "PSOFactory: Failed to get compiled shader\n");
-		return nullptr;
-	}
-
-	// キャッシュに保存
-	{
-		std::lock_guard<std::mutex> lock(cacheMutex_);
-		///ComPtrをstd::moveで移動してキャッシュに保存
-		///じゃないとxmemoryでエラーが出る、そもそものキャッシュに保存をやめるべき？
-		shaderCache_.emplace(cacheKey, std::move(compiledShader));
-	}
-
-	Logger::Log(Logger::GetStream(),
-		Logger::ConvertString(std::format(L"PSOFactory: Successfully compiled shader - {}\n", shaderInfo.filePath)));
-
-	return compiledShader;
-}
-
-std::wstring PSOFactory::CreateShaderCacheKey(const PSODescriptor::ShaderInfo& shaderInfo) const {
-	// ファイルパス、エントリーポイント、ターゲットを組み合わせてキーを作成
-	return std::format(L"{}|{}|{}",
-		shaderInfo.filePath,
-		shaderInfo.entryPoint,
-		shaderInfo.target);
-}
-
-void PSOFactory::ClearShaderCache() {
-	std::lock_guard<std::mutex> lock(cacheMutex_);
-	size_t cacheSize = shaderCache_.size();
-	shaderCache_.clear();
-
-	Logger::Log(Logger::GetStream(),
-		std::format("PSOFactory: Cleared shader cache ({} shaders)\n", cacheSize));
 }

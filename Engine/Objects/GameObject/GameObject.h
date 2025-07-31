@@ -146,7 +146,7 @@ protected:
 	// 共有リソースへの参照
 	Model* sharedModel_ = nullptr;			// 共有モデルへのポインタ
 
-	// NEW: 個別マテリアルシステム
+	// 個別マテリアルシステム
 	MaterialGroup individualMaterials_;		// 個別のマテリアルグループ
 	bool hasIndividualMaterials_ = false;	// 個別マテリアルを持っているかのフラグ
 
@@ -192,7 +192,6 @@ private:
 	Vector3 imguiScale_{ 1.0f, 1.0f, 1.0f };
 };
 
-// 以下、特化クラスは変更なし
 class Triangle : public GameObject
 {
 public:

@@ -55,7 +55,7 @@ void GameScene::ConfigureOffscreenEffects() {
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
 		depthFogEffect->SetEnabled(true);
-		depthFogEffect->SetFogDistance(0.2f, 200.0f);
+		depthFogEffect->SetFogDistance(0.2f, 260.0f);
 	}
 
 }

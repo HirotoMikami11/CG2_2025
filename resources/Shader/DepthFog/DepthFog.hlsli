@@ -16,7 +16,7 @@ float32_t DepthToWorldDistanceLinearized(float32_t depth)
      // 深度バッファは通常非線形分布のため線形化が必要
     // 簡易的な線形化: near=0.1, far=100.0 として計算
     float32_t nearPlane = 0.1f;
-    float32_t farPlane = 100.0f;
+    float32_t farPlane = 1000.0f;
     
     // 深度値が1.0の場合は明示的にfarPlane距離とする
     if (depth >= 0.999999f)
@@ -40,7 +40,7 @@ float32_t DepthToWorldDistanceSimple(float32_t depth)
      // 深度バッファは通常非線形分布のため線形化が必要
     // 簡易的な線形化: near=0.1, far=100.0 として計算
     float32_t nearPlane = 0.1f;
-    float32_t farPlane = 100.0f;
+    float32_t farPlane = 1000.0f;
     // 深度値が1.0に非常に近い場合はfarPlaneとして扱う
     if (depth >= 0.9999f)
     {

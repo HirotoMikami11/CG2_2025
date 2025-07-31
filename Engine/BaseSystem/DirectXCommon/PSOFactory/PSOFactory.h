@@ -3,22 +3,19 @@
 #include <dxcapi.h>
 #include <wrl.h>
 #include <memory>
-#include <unordered_map>
 #include <string>
-#include <mutex>
 
 #include "PSODescriptor.h"
 #include "RootSignatureBuilder.h"
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// PipelineStateObjectを生成するファクトリクラス
-/// シェーダーのキャッシュ機能付き
+/// PipelineStateObjectを生成するファクトリークラス？
 /// </summary>
 class PSOFactory {
 public:
 	/// <summary>
-	/// PSO情報（RootSignatureとPipelineStateのペア）
+	/// PSO情報（RootSignatureとPipelineState）
 	/// </summary>
 	struct PSOInfo {
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
@@ -52,7 +49,7 @@ public:
 	/// <param name="rootSignatureBuilder">RootSignature設定</param>
 	/// <returns>作成されたPSO情報</returns>
 	PSOInfo CreatePSO(const PSODescriptor& descriptor,
-	 RootSignatureBuilder& rootSignatureBuilder);
+		RootSignatureBuilder& rootSignatureBuilder);
 
 	/// <summary>
 	/// 既存のRootSignatureを使用してPSOを作成
@@ -64,34 +61,6 @@ public:
 		const PSODescriptor& descriptor,
 		ID3D12RootSignature* existingRootSignature);
 
-	/// <summary>
-	/// キャッシュされたシェーダーをクリア
-	/// </summary>
-	void ClearShaderCache();
-
-	/// <summary>
-	/// キャッシュ情報を取得
-	/// </summary>
-	size_t GetCachedShaderCount() const {
-		std::lock_guard<std::mutex> lock(cacheMutex_);
-		return shaderCache_.size();
-	}
-
-private:
-	/// <summary>
-	/// シェーダーをコンパイル（キャッシュ機能付き）
-	/// </summary>
-	/// <param name="shaderInfo">シェーダー情報</param>
-	/// <returns>コンパイル済みシェーダー</returns>
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const PSODescriptor::ShaderInfo& shaderInfo);
-
-	/// <summary>
-	/// シェーダーキャッシュのキーを生成
-	/// </summary>
-	/// <param name="shaderInfo">シェーダー情報</param>
-	/// <returns>キャッシュキー</returns>
-	std::wstring CreateShaderCacheKey(const PSODescriptor::ShaderInfo& shaderInfo) const;
-
 private:
 	// D3D12関連
 	ID3D12Device* device_ = nullptr;
@@ -100,12 +69,6 @@ private:
 	IDxcUtils* dxcUtils_ = nullptr;
 	IDxcCompiler3* dxcCompiler_ = nullptr;
 	IDxcIncludeHandler* includeHandler_ = nullptr;
-
-	// コンパイル済みシェーダーのキャッシュ
-	std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
-
-	// キャッシュアクセス用のミューテックス（スレッドセーフ）
-	mutable std::mutex cacheMutex_;
 
 	// 初期化フラグ
 	bool isInitialized_ = false;

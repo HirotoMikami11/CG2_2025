@@ -86,7 +86,41 @@ PSODescriptor PSODescriptor::CreatePostEffect() {
 	return desc;
 }
 
+PSODescriptor PSODescriptor::CreatePostEffectWithDepth() {
+	PSODescriptor desc;
 
+	// 深度テクスチャを使うポストエフェクト用設定
+	desc.SetVertexShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"main")
+		.SetPixelShader(L"", L"main")  // 個別に設定する必要がある
+		.SetBlendMode(BlendMode::None)
+		.SetCullMode(CullMode::Back)
+		.EnableDepth(false)  // ポストエフェクトでは深度テストなし
+		.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+	// ポストエフェクト用頂点レイアウト（位置とUV座標のみ）
+	desc.AddInputElement({ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT })
+		.AddInputElement({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT });
+
+	return desc;
+}
+
+PSODescriptor PSODescriptor::CreatePostEffectColorOnly() {
+	PSODescriptor desc;
+
+	// カラーテクスチャのみのポストエフェクト用設定
+	desc.SetVertexShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"main")
+		.SetPixelShader(L"", L"main")  // 個別に設定する必要がある
+		.SetBlendMode(BlendMode::None)
+		.SetCullMode(CullMode::Back)
+		.EnableDepth(false)
+		.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+	// ポストエフェクト用頂点レイアウト
+	desc.AddInputElement({ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT })
+		.AddInputElement({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT });
+
+	return desc;
+}
 ///*-----------------------------------------------------------------------*///
 //																			//
 ///								各メソッドの実装							   ///

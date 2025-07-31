@@ -37,7 +37,7 @@ void NormalCamera::SetDefaultCamera(const Vector3& position, const Vector3& rota
 	// カメラパラメータのデフォルト値
 	fov_ = 0.45f;
 	nearClip_ = 0.1f;
-	farClip_ = 100.0f;
+	farClip_ = 1000.0f;
 	aspectRatio_ = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
 
 	// 初期行列計算
@@ -50,7 +50,7 @@ void NormalCamera::SetDefaultCamera(const Vector3& position, const Vector3& rota
 		0.0f, 0.0f,
 		float(GraphicsConfig::kClientWidth),
 		float(GraphicsConfig::kClientHeight),
-		0.0f, 100.0f
+		0.0f, 1000.0f
 	);
 
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);

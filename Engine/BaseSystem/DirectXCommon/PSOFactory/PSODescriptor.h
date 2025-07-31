@@ -9,20 +9,20 @@
 /// ブレンドモードの定義
 /// </summary>
 enum class BlendMode {
-	None,           // ブレンドなし
-	AlphaBlend,     // アルファブレンド
-	Add,            // 加算合成
-	Subtract,       // 減算合成
-	Multiply        // 乗算合成
+	None,			// ブレンドなし
+	AlphaBlend,		// アルファブレンド
+	Add,			// 加算合成
+	Subtract,		// 減算合成
+	Multiply		// 乗算合成
 };
 
 /// <summary>
 /// カリングモードの定義
 /// </summary>
 enum class CullMode {
-	None,           // カリングなし（両面描画）
-	Back,           // 背面カリング（通常）
-	Front           // 前面カリング
+	None,			// カリングなし（両面描画）
+	Back,			// 背面カリング（通常）
+	Front			// 前面カリング
 };
 
 /// <summary>
@@ -35,31 +35,27 @@ public:
 	/// シェーダー情報
 	/// </summary>
 	struct ShaderInfo {
-		std::wstring filePath;                  // シェーダーファイルパス
-		std::wstring entryPoint = L"main";      // エントリーポイント名
-		std::wstring target;                    // シェーダーターゲット（"vs_6_0", "ps_6_0"など）
+		std::wstring filePath;					// シェーダーファイルパス
+		std::wstring entryPoint = L"main";		// エントリーポイント名
+		std::wstring target;					// シェーダーターゲット（"vs_6_0", "ps_6_0"など）
 	};
 
 	/// <summary>
 	/// InputLayout要素（頂点レイアウト定義）
 	/// </summary>
 	struct InputElement {
-		std::string semanticName;               // セマンティック名（POSITION, TEXCOORD等）
-		uint32_t semanticIndex = 0;             // セマンティックインデックス
-		DXGI_FORMAT format;                     // データフォーマット
-		uint32_t inputSlot = 0;                 // 入力スロット
+		std::string semanticName;				// セマンティック名（POSITION, TEXCOORD等）
+		uint32_t semanticIndex = 0;				// セマンティックインデックス
+		DXGI_FORMAT format;						// データフォーマット
+		uint32_t inputSlot = 0;					// 入力スロット
 		uint32_t alignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT; // バイトオフセット
-		/// <summary>
-		/// TODO:D3D12_INPUT_PER_VERTEX_DATAになっていた原因を探す。
-		/// </summary>
 		D3D12_INPUT_CLASSIFICATION inputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA; // 頂点データかインスタンスデータか
-
-
-		uint32_t instanceDataStepRate = 0;      // インスタンスデータのステップレート
+		uint32_t instanceDataStepRate = 0;		// インスタンスデータのステップレート
 	};
 
 public:
-	// ===== ファクトリメソッド（よく使う設定のプリセット） =====
+
+	///		 ファクトリメソッド（よく使う設定のプリセット）			///
 
 	/// <summary>
 	/// 3Dオブジェクト用のデフォルト設定を作成
@@ -81,7 +77,21 @@ public:
 	/// </summary>
 	static PSODescriptor CreatePostEffect();
 
-	// ===== ビルダーパターンによる設定メソッド =====
+	/// <summary>
+	/// 深度ありのポストエフェクト用のデフォルト設定を作成
+	/// </summary>
+	/// <returns></returns>
+	static PSODescriptor CreatePostEffectWithDepth();
+
+	/// <summary>
+	/// カラーテクスチャのみのポストエフェクト用のデフォルト設定を作成
+	/// </summary>
+	/// <returns></returns>
+	static PSODescriptor CreatePostEffectColorOnly();
+
+
+
+	///			ビルダーパターンによる設定メソッド		///
 
 	/// <summary>
 	/// 頂点シェーダーを設定
@@ -138,7 +148,7 @@ public:
 	/// </summary>
 	PSODescriptor& SetDepthStencilFormat(DXGI_FORMAT format);
 
-	// ===== 設定取得メソッド =====
+	///						設定取得メソッド						///
 
 	const ShaderInfo& GetVertexShader() const { return vertexShader_; }
 	const ShaderInfo& GetPixelShader() const { return pixelShader_; }

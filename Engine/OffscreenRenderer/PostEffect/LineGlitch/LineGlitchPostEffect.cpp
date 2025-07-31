@@ -68,121 +68,29 @@ void LineGlitchPostEffect::Apply(D3D12_GPU_DESCRIPTOR_HANDLE inputSRV, D3D12_CPU
 }
 
 void LineGlitchPostEffect::CreatePSO() {
-	// ライングリッチエフェクト用のルートシグネチャ作成（OffscreenTriangle版）
-	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	// RootSignatureを構築
+	RootSignatureBuilder rsBuilder;
+	rsBuilder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL)		// LineGlitchParameters (b0)
+		.AddSRV(0, 1, D3D12_SHADER_VISIBILITY_PIXEL)		// Texture (t0)
+		.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
 
-	// DescriptorRange（テクスチャ用）
-	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-	descriptorRange[0].BaseShaderRegister = 0;
-	descriptorRange[0].NumDescriptors = 1;
-	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	// PSO設定を構築
+	auto psoDesc = PSODescriptor::CreatePostEffectColorOnly()
+		.SetPixelShader(L"resources/Shader/LineGlitch/LineGlitch.PS.hlsl");
 
-	// RootParameter（2つ：Parameters、Texture）
-	D3D12_ROOT_PARAMETER rootParameters[2] = {};
-
-	// LineGlitchParameters (b0)
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[0].Descriptor.ShaderRegister = 0;
-
-	// Texture (t0)
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-
-	// Sampler
-	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-	staticSamplers[0].ShaderRegister = 0;
-	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	descriptionRootSignature.pParameters = rootParameters;
-	descriptionRootSignature.NumParameters = _countof(rootParameters);
-	descriptionRootSignature.pStaticSamplers = staticSamplers;
-	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-
-	// シリアライズ
-	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob, errorBlob;
-	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
-		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(Logger::GetStream(), reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+	// PSOFactory経由で生成
+	auto psoInfo = dxCommon_->GetPSOFactory()->CreatePSO(psoDesc, rsBuilder);
+	if (!psoInfo.IsValid()) {
+		Logger::Log(Logger::GetStream(), "LineGlitchPostEffect: Failed to create PSO\n");
 		assert(false);
 	}
 
-	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
-		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature_));
-	assert(SUCCEEDED(hr));
+	rootSignature_ = psoInfo.rootSignature;
+	pipelineState_ = psoInfo.pipelineState;
 
-	// InputLayout設定（位置とUV座標のみ）
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-
-	// BlendState設定
-	D3D12_BLEND_DESC blendDesc{};
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-	// RasterizerState設定
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-	// ライングリッチ用シェーダーをコンパイル
-	vertexShaderBlob_ = CompileShader(L"resources/Shader/FullscreenTriangle/FullscreenTriangle.VS.hlsl", L"vs_6_0");
-	assert(vertexShaderBlob_ != nullptr);
-
-	pixelShaderBlob_ = CompileShader(L"resources/Shader/LineGlitch/LineGlitch.PS.hlsl", L"ps_6_0");
-	assert(pixelShaderBlob_ != nullptr);
-
-	// DepthStencilState設定（深度テストなし）
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	depthStencilDesc.DepthEnable = false;
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-
-	// PSO作成
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature_.Get();
-	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
-	graphicsPipelineStateDesc.VS = { vertexShaderBlob_->GetBufferPointer(), vertexShaderBlob_->GetBufferSize() };
-	graphicsPipelineStateDesc.PS = { pixelShaderBlob_->GetBufferPointer(), pixelShaderBlob_->GetBufferSize() };
-	graphicsPipelineStateDesc.BlendState = blendDesc;
-	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-	graphicsPipelineStateDesc.NumRenderTargets = 1;
-	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	graphicsPipelineStateDesc.SampleDesc.Count = 1;
-	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	// PSO生成
-	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&pipelineState_));
-	assert(SUCCEEDED(hr));
-
-	Logger::Log(Logger::GetStream(), "Complete create Line Glitch PSO (OffscreenTriangle version)!!\n");
+	Logger::Log(Logger::GetStream(), "Complete create LineGlitch PSO (PSOFactory version)!!\n");
 }
+
 
 void LineGlitchPostEffect::CreateParameterBuffer() {
 	// 構造体サイズをデバッグ出力

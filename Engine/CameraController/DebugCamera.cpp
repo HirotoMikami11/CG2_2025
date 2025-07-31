@@ -277,7 +277,7 @@ void DebugCamera::UpdateMatrix() {
 		0.45f,
 		(float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight)),
 		0.1f,
-		100.0f
+		1000.0f
 	);
 
 	// ビュープロジェクション行列

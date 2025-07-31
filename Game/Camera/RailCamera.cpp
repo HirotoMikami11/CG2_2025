@@ -480,7 +480,7 @@ void RailCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotati
 
 	float fov = 0.45f;
 	float nearClip = 0.1f;
-	float farClip = 100.0f;
+	float farClip = 1000.0f;
 	float aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
 
 	projectionMatrix_ = MakePerspectiveFovMatrix(fov, aspectRatio, nearClip, farClip);
@@ -488,6 +488,6 @@ void RailCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotati
 		0.0f, 0.0f,
 		float(GraphicsConfig::kClientWidth),
 		float(GraphicsConfig::kClientHeight),
-		0.0f, 100.0f
+		0.0f, 1000.0f
 	);
 }
