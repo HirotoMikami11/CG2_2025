@@ -84,6 +84,10 @@ void GameScene::Initialize() {
 	//cameraController_->SetActiveCamera("rail");
 	railCamera_->StopMovement(); // レールカメラの動きを停止
 
+	// レールカメラエディタの初期化
+	railCameraEditor_ = std::make_unique<RailCameraEditor>();
+	railCameraEditor_->Initialize(railCamera_);
+
 	///*-----------------------------------------------------------------------*///
 	///								衝突マネージャー								///
 	///*-----------------------------------------------------------------------*///
@@ -209,6 +213,11 @@ void GameScene::Update() {
 	collisionManager_->Update();
 #pragma endregion
 
+	// レールカメラエディタの更新
+	if (railCameraEditor_) {
+		railCameraEditor_->Update();
+	}
+
 }
 
 void GameScene::UpdateGameObjects() {
@@ -320,6 +329,12 @@ void GameScene::ClearAllEnemies() {
 
 void GameScene::ImGui() {
 #ifdef _DEBUG
+
+	// レールカメラエディタのImGui
+	if (railCameraEditor_) {
+		railCameraEditor_->ImGui();
+	}
+
 	// プレイヤーのImGui
 	ImGui::Text("Player");
 	player_->ImGui();
@@ -520,6 +535,12 @@ void GameScene::Finalize() {
 	enemyPopCommands.seekg(0);
 	isWait_ = false;
 	waitTimer_ = 0;
+
+	// レールカメラエディタのリソース解放
+	if (railCameraEditor_) {
+		railCameraEditor_.reset();
+	}
+
 
 	// プレイヤーを明示的にリセット
 	if (player_) {

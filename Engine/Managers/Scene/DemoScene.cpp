@@ -262,6 +262,7 @@ void DemoScene::ImGui() {
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
 
+
 #endif
 }
 

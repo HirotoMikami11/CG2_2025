@@ -189,17 +189,6 @@ void SceneManager::DrawScenesUI() {
 #ifdef _DEBUG
 	ImGui::Text("Scene Management");
 
-	// 現在のシーン情報表示
-	if (currentScene_) {
-		ImGui::Text("Current Scene: %s", currentSceneName_.c_str());
-		ImGui::TextColored(ImVec4(0, 1, 0, 1), "Status: Active");
-		ImGui::Text("Resources Loaded: %s", currentScene_->IsResourcesLoaded() ? "Yes" : "No");
-		ImGui::Text("Objects Initialized: %s", currentScene_->IsInitialized() ? "Yes" : "No");
-	} else {
-		ImGui::Text("Current Scene: None");
-		ImGui::TextColored(ImVec4(1, 0, 0, 1), "Status: No Scene");
-	}
-
 	ImGui::Spacing();
 
 	// 登録されているシーン一覧とボタン

@@ -20,6 +20,7 @@
 
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCamera.h"		//レールカメラ
+#include "Camera/RailCameraEditor.h" 
 
 /// <summary>
 /// ゲームシーン
@@ -106,6 +107,9 @@ private:
 
 	//					衝突マネージャー					//
 	std::unique_ptr<CollisionManager> collisionManager_;
+
+	//					レールカメラエディタ						//
+	std::unique_ptr<RailCameraEditor> railCameraEditor_;
 
 	//					敵発生関連					//
 	// 敵発生コマンド

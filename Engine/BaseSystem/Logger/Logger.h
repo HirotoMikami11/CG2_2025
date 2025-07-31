@@ -34,6 +34,6 @@ private:
 	//ログの出力先
 	static std::ofstream logFileStream_;
 
-	// 追加：ログ有効フラグ
+	// ログ有効フラグ
 	static bool isEnabled_;
 };

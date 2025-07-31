@@ -441,6 +441,12 @@
     <ClCompile Include="Game\GameObjects\LockOn\LockOn.cpp">
       <Filter>Game\GameObjects\LockOn</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Camera\RailCameraEditor.cpp">
+      <Filter>Game\RailCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Camera\RailPoint.cpp">
+      <Filter>Game\RailCamera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -735,6 +741,12 @@
     </ClInclude>
     <ClInclude Include="Game\GameObjects\LockOn\LockOn.h">
       <Filter>Game\GameObjects\LockOn</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera\RailCameraEditor.h">
+      <Filter>Game\RailCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera\RailPoint.h">
+      <Filter>Game\RailCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

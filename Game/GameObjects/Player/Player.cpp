@@ -133,6 +133,8 @@ void Player::DrawUI() {
 
 void Player::ImGui() {
 #ifdef _DEBUG
+	// 現在の名前を表示
+	if (ImGui::TreeNode("Player")) {
 	if (gameObject_) {
 		gameObject_->ImGui();
 	}
@@ -169,6 +171,8 @@ void Player::ImGui() {
 
 	Vector3 localPos = gameObject_->GetPosition();
 	ImGui::Text("Local Position: (%.2f, %.2f, %.2f)", localPos.x, localPos.y, localPos.z);
+	ImGui::TreePop();
+}
 #endif
 }
 
