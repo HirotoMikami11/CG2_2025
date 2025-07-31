@@ -118,23 +118,6 @@ void GameObject::ImGui() {
 		ImGui::Checkbox("Visible", &isVisible_);
 		ImGui::Checkbox("Active", &isActive_);
 
-		// 個別マテリアル情報
-		ImGui::Text("Individual Materials: %s", hasIndividualMaterials_ ? "Yes" : "No");
-		if (hasIndividualMaterials_) {
-			ImGui::Text("Individual Material Count: %zu", individualMaterials_.GetMaterialCount());
-		}
-
-		// モデル情報
-		ImGui::Text("Model Tag: %s", modelTag_.c_str());
-		if (sharedModel_) {
-			ImGui::Text("Shared Model Loaded: Yes");
-			ImGui::Text("Model Path: %s", sharedModel_->GetFilePath().c_str());
-			ImGui::Text("Mesh Count: %zu", sharedModel_->GetMeshCount());
-			ImGui::Text("Shared Material Count: %zu", sharedModel_->GetMaterialCount());
-		} else {
-			ImGui::Text("Shared Model Loaded: No");
-		}
-
 		// Transform
 		if (ImGui::CollapsingHeader("Transform")) {
 			imguiPosition_ = transform_.GetPosition();
@@ -152,17 +135,8 @@ void GameObject::ImGui() {
 			}
 		}
 
-		// マテリアル設定（個別マテリアル対応）
+		// マテリアル設定
 		if (ImGui::CollapsingHeader("Materials")) {
-			// 個別マテリアル作成ボタン
-			if (!hasIndividualMaterials_) {
-				if (ImGui::Button("Create Individual Materials")) {
-					CreateIndividualMaterials();
-				}
-				ImGui::Text("Using shared materials");
-			} else {
-				ImGui::Text("Using individual materials");
-			}
 
 			size_t materialCount = GetMaterialCount();
 			ImGui::Text("Material Count: %zu", materialCount);
@@ -246,7 +220,6 @@ void GameObject::ImGui() {
 		// メッシュ情報
 		if (ImGui::CollapsingHeader("Mesh Info") && sharedModel_) {
 			ImGui::Text("Total Meshes: %zu", sharedModel_->GetMeshCount());
-			ImGui::Text("Shared: Yes (Memory Optimized)");
 
 			const auto& meshes = sharedModel_->GetMeshes();
 			const auto& objectNames = sharedModel_->GetObjectNames();

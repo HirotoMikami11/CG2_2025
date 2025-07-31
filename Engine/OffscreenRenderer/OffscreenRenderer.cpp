@@ -583,37 +583,8 @@ void OffscreenRenderer::ImGui() {
 #ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Offscreen Renderer ")) {
 
-		ImGui::Separator();
-		// オフスクリーンOffscreenTriangle情報
-		if (ImGui::TreeNode("Offscreen Triangle Info")) {
-#pragma region OffscreenTriangleInfo
-
-			// オフスクリーンのサイズ
-			ImGui::Text("Render Target Size: %dx%d", width_, height_);
-			ImGui::Text("Is Valid: %s", IsValid() ? "Yes" : "No");
-
-			// レンダーターゲットのハンドル情報
-			if (srvHandle_.isValid) {
-				ImGui::Text("Color SRV Index: %d", srvHandle_.index);
-			}
-			if (depthSrvHandle_.isValid) {
-				ImGui::Text("Depth SRV Index: %d", depthSrvHandle_.index);
-			}
-
-			if (offscreenTriangle_) {
-				ImGui::Separator();
-				ImGui::Text("Triangle Valid: %s", offscreenTriangle_->IsValid() ? "Yes" : "No");
-				ImGui::Text("Render Method: Large Triangle (3 vertices)");
-				ImGui::Text("Coverage: Fullscreen + border area");
-			}
-
-#pragma endregion
-			ImGui::TreePop();
-		}
-
 		// ポストプロセスチェーンのImGui
 		if (postProcessChain_) {
-			ImGui::Separator();
 			postProcessChain_->ImGui();
 		}
 	}
