@@ -52,7 +52,7 @@ Matrix4x4 DebugCamera::GetSpriteViewProjectionMatrix() const {
 		0.0f, 0.0f,
 		float(GraphicsConfig::kClientWidth),
 		float(GraphicsConfig::kClientHeight),
-		0.0f, 100.0f
+		0.0f, 1000.0f
 	);
 	return Matrix4x4Multiply(spriteViewMatrix, spriteProjectionMatrix);
 }
@@ -75,6 +75,13 @@ void DebugCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotat
 
 	// 回転を反映して10m先にターゲットを配置
 	target_ = CalculateTargetFromRotation(position, rotation);
+	// プロジェクション行列
+	projectionMatrix_ = MakePerspectiveFovMatrix(
+		0.45f,
+		(float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight)),
+		0.1f,
+		1000.0f
+	);
 
 	// 球面座標を現在の位置から計算
 	UpdateSphericalFromPosition();
@@ -279,15 +286,6 @@ void DebugCamera::UpdateMatrix() {
 		cameraTransform_.translate
 	);
 	viewMatrix_ = Matrix4x4Inverse(cameraMatrix);
-
-	// プロジェクション行列
-	projectionMatrix_ = MakePerspectiveFovMatrix(
-		0.45f,
-		(float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight)),
-		0.1f,
-		1000.0f
-	);
-
 	// ビュープロジェクション行列
 	viewProjectionMatrix_ = Matrix4x4Multiply(viewMatrix_, projectionMatrix_);
 }
