@@ -5,6 +5,7 @@ RailCamera::RailCamera()
 	: t_(0.0f)
 	, speed_(0.001f)
 	, isMoving_(true)
+	, loopEnabled_(true)
 	, lookAheadDistance_(0.01f)
 	, uniformSpeedEnabled_(true)
 	, totalLength_(0.0f)
@@ -58,6 +59,7 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	t_ = 0.0f;
 	speed_ = 0.001f;
 	isMoving_ = true;
+	loopEnabled_ = true;
 	lookAheadDistance_ = 0.01f;
 	uniformSpeedEnabled_ = true;
 
@@ -83,26 +85,37 @@ void RailCamera::UpdateCameraPosition() {
 	}
 
 	if (uniformSpeedEnabled_ && !lengthTable_.empty()) {
+
 		// 等間隔移動：距離ベースでの移動
 		float currentLength = t_ * totalLength_;
 		currentLength += speed_ * totalLength_; // 速度を距離に変換
 
 		// ループ処理
 		if (currentLength >= totalLength_) {
-			currentLength = 0.0f;
+			if (loopEnabled_) {
+				currentLength = 0.0f;  // ループ有効時のみリセット
+			} else {
+				currentLength = totalLength_;  // ループ無効時は終端で停止
+				isMoving_ = false;  // 移動を停止
+			}
 		}
-
-		// 距離からtパラメータを取得
+		
+		//距離からtパラメータを取得
 		float newT = GetTFromLength(currentLength);
 		t_ = newT;
 
-		// 進行度を更新（次回の計算用）
+		// 進行度を更新
 		t_ = currentLength / totalLength_;
 	} else {
+
 		// 従来の移動：tパラメータベース
-		t_ += speed_;
 		if (t_ >= 1.0f) {
-			t_ = 0.0f;
+			if (loopEnabled_) {
+				t_ = 0.0f;  // ループ有効時のみリセット
+			} else {
+				t_ = 1.0f;  // ループ無効時は終端で停止
+				isMoving_ = false;  // 移動を停止
+			}
 		}
 	}
 
@@ -224,7 +237,6 @@ void RailCamera::SetControlPoints(const std::vector<Vector3>& controlPoints) {
 	// 軌道の線分を再生成
 	GenerateRailTrackLines();
 
-
 }
 
 void RailCamera::GenerateRailTrackLines() {
@@ -339,6 +351,7 @@ void RailCamera::ImGui() {
 		ResetPosition();
 	}
 
+	ImGui::Checkbox("Loop Movement", &loopEnabled_);
 	ImGui::DragFloat("Speed", &speed_, 0.0001f, 0.0001f, 0.01f);
 	ImGui::DragFloat("Look Ahead Distance", &lookAheadDistance_, 0.001f);
 

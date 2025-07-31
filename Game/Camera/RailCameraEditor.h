@@ -6,8 +6,7 @@
 #include <memory>
 
 /// <summary>
-/// レールカメラの軌道エディタ（再設計版）
-/// 安全性と使いやすさを重視した設計
+/// レールカメラの軌道エディタ
 /// </summary>
 class RailCameraEditor {
 public:
@@ -51,11 +50,14 @@ public:
 	/// <returns>成功したかどうか</returns>
 	bool SaveToCSV(const std::string& filename);
 
-	// Getter
-	bool IsEnabled() const { return isEnabled_; }
+	/// <summary>
+	/// 選択したポイントにカメラを移動
+	/// </summary>
+	/// <param name="pointIndex">ポイントのインデックス</param>
+	void MoveToPoint(int pointIndex);
 
-	// Setter
-	void SetEnabled(bool enabled) { isEnabled_ = enabled; }
+	// Getter
+	int GetSelectedPointIndex() const { return selectedPointIndex_; }
 
 private:
 	/// <summary>
@@ -74,16 +76,6 @@ private:
 	int selectedPointIndex_;
 
 	/// <summary>
-	/// エディタが有効かどうか
-	/// </summary>
-	bool isEnabled_;
-
-	/// <summary>
-	/// 自動適用フラグ
-	/// </summary>
-	bool autoApply_;
-
-	/// <summary>
 	/// CSVファイルパス
 	/// </summary>
 	std::string csvFilePath_;
@@ -94,14 +86,9 @@ private:
 	Vector3 newPointPosition_;
 
 	/// <summary>
-	/// 最後に適用した時刻（ログ制御用）
+	/// データが変更されたかどうかのフラグ
 	/// </summary>
-	float lastApplyTime_;
-
-	/// <summary>
-	/// ログ間隔（秒）
-	/// </summary>
-	static constexpr float kLogInterval_ = 2.0f;
+	bool isDirty_;
 
 	/// <summary>
 	/// RailCameraに制御点を適用
@@ -133,8 +120,7 @@ private:
 	bool IsValidIndex(int index) const;
 
 	/// <summary>
-	/// 時刻取得（ログ制御用）
+	/// データ変更フラグを設定
 	/// </summary>
-	/// <returns>現在時刻（秒）</returns>
-	float GetCurrentTimes() const;
+	void MarkDirty();
 };

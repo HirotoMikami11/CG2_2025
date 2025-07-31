@@ -47,7 +47,7 @@ public:
 	/// </summary>
 	void ImGui() override;
 
-
+	// BaseCamera interface
 	Matrix4x4 GetViewProjectionMatrix() const override;
 	Matrix4x4 GetSpriteViewProjectionMatrix() const override;
 	Vector3 GetPosition() const override { return transform_.GetPosition(); }
@@ -70,6 +70,30 @@ public:
 	void StopMovement() { isMoving_ = false; }
 	void ResetPosition() { t_ = 0.0f; isMoving_ = false; }
 	bool IsMoving() const { return isMoving_; }
+
+	/// <summary>
+	/// ループ移動を有効/無効にする
+	/// </summary>
+	/// <param name="enabled">有効フラグ</param>
+	void SetLoopEnabled(bool enabled) { loopEnabled_ = enabled; }
+
+	/// <summary>
+	/// ループ移動が有効かどうか
+	/// </summary>
+	/// <returns>有効フラグ</returns>
+	bool IsLoopEnabled() const { return loopEnabled_; }
+
+	/// <summary>
+	/// 移動速度を設定
+	/// </summary>
+	/// <param name="speed">移動速度</param>
+	void SetSpeed(float speed) { speed_ = speed; }
+
+	/// <summary>
+	/// 移動速度を取得
+	/// </summary>
+	/// <returns>移動速度</returns>
+	float GetSpeed() const { return speed_; }
 
 	/// <summary>
 	/// 制御点を設定（エディタ用）
@@ -138,6 +162,7 @@ private:
 	float t_;                 // スプライン曲線上の位置パラメータ (0.0 - 1.0)
 	float speed_;             // 移動速度
 	bool isMoving_;           // 移動中フラグ
+	bool loopEnabled_;        // ループ移動フラグ
 	float lookAheadDistance_; // 注視点の先読み距離
 
 	// 等間隔移動用
