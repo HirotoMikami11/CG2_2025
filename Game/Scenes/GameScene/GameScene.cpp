@@ -255,6 +255,7 @@ void GameScene::DrawOffscreen() {
 }
 
 void GameScene::DrawBackBuffer() {
+
 	// UI(スプライトなど)の描画（オフスクリーン外に描画）
 
 	// プレイヤーのUI描画（レティクル）

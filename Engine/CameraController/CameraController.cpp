@@ -88,13 +88,13 @@ void CameraController::Update() {
 
 void CameraController::HandleDebugInput() {
 #ifdef _DEBUG
+	// Shift + TAB でデバッグカメラの切り替え
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_TAB) &&
 		InputManager::GetInstance()->IsKeyDown(DIK_LSHIFT)) {
 		ToggleDebugCamera();
 	}
 #endif
 }
-
 void CameraController::ToggleDebugCamera() {
 	if (activeCameraId_ == "debug") {
 		SetActiveCamera(lastActiveCameraId_);
@@ -233,6 +233,7 @@ void CameraController::ImGui() {
 	ImGui::Text("Controls:");
 	ImGui::Text("Shift + TAB: Toggle Debug Camera");
 
+	// Shift + Enter でデバッグカメラの切り替え
 	ImGui::End();
 #endif
 }

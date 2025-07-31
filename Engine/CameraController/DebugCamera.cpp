@@ -28,10 +28,7 @@ void DebugCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 }
 
 void DebugCamera::Update() {
-	// TABキーでカメラ操作の切り替え
-	if (input_->IsKeyTrigger(DIK_TAB) && !input_->IsKeyDown(DIK_LSHIFT)) {
-		enableCameraControl_ = !enableCameraControl_;
-	}
+	HandleDebugInput();
 
 	if (enableCameraControl_) {
 		HandlePivotRotation();      // 中クリックでピボット回転
@@ -139,6 +136,18 @@ void DebugCamera::UpdatePositionFromSpherical() {
 	cameraTransform_.translate = SphericalToCartesian(spherical_, target_);
 }
 
+void DebugCamera::HandleDebugInput() {
+	// TABキーでカメラ操作の切り替え
+	if (input_->IsKeyTrigger(DIK_TAB) && !input_->IsKeyDown(DIK_LSHIFT)) {
+		enableCameraControl_ = !enableCameraControl_;
+	}
+
+	// Shift+Enterでカメラコントロールの切り替え
+	if (input_->IsKeyTrigger(DIK_RETURN) && input_->IsKeyDown(DIK_LSHIFT)) {
+		enableCameraControl_ = !enableCameraControl_;
+	}
+}
+
 void DebugCamera::HandlePivotRotation() {
 	// 中クリック（マウスボタン2）でピボット回転
 	if (input_->IsMouseButtonDown(2) && !input_->IsKeyDown(DIK_LSHIFT)) {
@@ -182,10 +191,10 @@ void DebugCamera::HandleCameraMovement() {
 		Vector3 right = GetCameraRight();
 		Vector3 up = GetCameraUp();
 
-		// 移動ベクトルを計算
+		// 移動ベクトルを計算（速度を可変に）
 		Vector3 moveVector = Add(
-			Multiply(right, -mouseDelta.x * movementSensitivity_),
-			Multiply(up, mouseDelta.y * movementSensitivity_)
+			Multiply(right, -mouseDelta.x * mousePanSpeed_),
+			Multiply(up, mouseDelta.y * mousePanSpeed_)
 		);
 
 		// ターゲットとカメラ位置を同時に移動
@@ -211,7 +220,6 @@ void DebugCamera::HandleZoom() {
 
 void DebugCamera::HandleKeyboardMovement() {
 	Vector3 moveVector = { 0.0f, 0.0f, 0.0f };
-	float keyboardSpeed = 0.1f;
 
 	// カメラのローカル軸を取得
 	Vector3 forward = GetCameraForward();
@@ -243,7 +251,7 @@ void DebugCamera::HandleKeyboardMovement() {
 	// 移動ベクトルを正規化してスピードを適用
 	if (Length(moveVector) > 0.0f) {
 		moveVector = Normalize(moveVector);
-		moveVector = Multiply(moveVector, keyboardSpeed);
+		moveVector = Multiply(moveVector, keyboardSpeed_);
 
 		// ターゲットとカメラ位置を同時に移動
 		target_ = Add(target_, moveVector);
@@ -336,64 +344,63 @@ void DebugCamera::ImGui() {
 
 	ImGui::Separator();
 
-
-	///*-----------------------------------------------------------------------*///
-	///								デカルト座標									///
-	///*-----------------------------------------------------------------------*///
-	ImGui::Text("Cartesian Coordinates:");
-
-	bool positionChanged = false;
-	bool rotationChanged = false;
-
-	if (ImGui::SliderFloat3("Position", &cartesianPosition_.x, -50.0f, 50.0f)) {
-		cameraTransform_.translate = cartesianPosition_;
-		positionChanged = true;
-	}
-
-	if (ImGui::SliderFloat3("Rotation", &cartesianRotation_.x, -3.14159f, 3.14159f)) {
-		cameraTransform_.rotate = cartesianRotation_;
-		rotationChanged = true;
-	}
-
-	// 位置または回転が変更された場合、ターゲットを再計算
-	if (positionChanged || rotationChanged) {
-		target_ = CalculateTargetFromRotation(cartesianPosition_, cartesianRotation_);
-		UpdateSphericalFromPosition();
-	}
-
-	ImGui::Separator();
-
 	// ターゲット座標
 	ImGui::Text("Target Position: (%.2f, %.2f, %.2f)",
 		target_.x, target_.y, target_.z);
 
-	if (ImGui::SliderFloat3("Target", &target_.x, -20.0f, 20.0f)) {
+	if (ImGui::DragFloat3("Target", &target_.x, 0.1f, -100.0f, 100.0f)) {
 		UpdateSphericalFromPosition();
 	}
 
 	ImGui::Separator();
 
-	///*-----------------------------------------------------------------------*///
-	///									球面座標									///
-	///*-----------------------------------------------------------------------*///
-	ImGui::Text("Spherical Coordinates:");
-	ImGui::Text("  Radius: %.2f", spherical_.radius);
-	ImGui::Text("  Theta: %.2f rad (%.1f deg)", spherical_.theta, spherical_.theta * 180.0f / 3.14159f);
-	ImGui::Text("  Phi: %.2f rad (%.1f deg)", spherical_.phi, spherical_.phi * 180.0f / 3.14159f);
+	// デカルト座標系の設定（折りたたみ可能）
+	if (ImGui::CollapsingHeader("Cartesian Coordinates", ImGuiTreeNodeFlags_DefaultOpen)) {
+		bool positionChanged = false;
+		bool rotationChanged = false;
 
-	ImGui::SliderFloat("Distance", &spherical_.radius, minDistance_, maxDistance_);
+		if (ImGui::DragFloat3("Position", &cartesianPosition_.x, 0.1f, -100.0f, 100.0f)) {
+			cameraTransform_.translate = cartesianPosition_;
+			positionChanged = true;
+		}
 
-	if (ImGui::SliderFloat("Theta", &spherical_.theta, -3.14159f, 3.14159f) ||
-		ImGui::SliderFloat("Phi", &spherical_.phi, minPhi_, maxPhi_)) {
-		UpdatePositionFromSpherical();
+		if (ImGui::DragFloat3("Rotation", &cartesianRotation_.x, 0.01f, -3.14159f, 3.14159f)) {
+			cameraTransform_.rotate = cartesianRotation_;
+			rotationChanged = true;
+		}
+
+		// 位置または回転が変更された場合、ターゲットを再計算
+		if (positionChanged || rotationChanged) {
+			target_ = CalculateTargetFromRotation(cartesianPosition_, cartesianRotation_);
+			UpdateSphericalFromPosition();
+		}
 	}
 
 	ImGui::Separator();
 
-	// 感度設定
-	ImGui::SliderFloat("Rotation Sensitivity", &rotationSensitivity_, 0.001f, 0.01f);
-	ImGui::SliderFloat("Movement Sensitivity", &movementSensitivity_, 0.001f, 0.1f);
-	ImGui::SliderFloat("Zoom Sensitivity", &zoomSensitivity_, 0.01f, 1.0f);
+	// 球面座標系の設定（折りたたみ可能）
+	if (ImGui::CollapsingHeader("Spherical Coordinates")) {
+		ImGui::Text("  Radius: %.2f", spherical_.radius);
+		ImGui::Text("  Theta: %.2f rad (%.1f deg)", spherical_.theta, spherical_.theta * 180.0f / 3.14159f);
+		ImGui::Text("  Phi: %.2f rad (%.1f deg)", spherical_.phi, spherical_.phi * 180.0f / 3.14159f);
+
+		ImGui::DragFloat("Distance", &spherical_.radius, 0.1f, minDistance_, maxDistance_);
+
+		if (ImGui::DragFloat("Theta", &spherical_.theta, 0.01f, -3.14159f, 3.14159f) ||
+			ImGui::DragFloat("Phi", &spherical_.phi, 0.01f, minPhi_, maxPhi_)) {
+			UpdatePositionFromSpherical();
+		}
+	}
+
+	ImGui::Separator();
+
+	// 移動・操作設定（折りたたみ可能）
+	if (ImGui::CollapsingHeader("Movement & Control Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat("Keyboard Speed", &keyboardSpeed_, 0.01f, 0.01f, 2.0f);
+		ImGui::DragFloat("Mouse Pan Speed", &mousePanSpeed_, 0.001f, 0.001f, 0.1f);
+		ImGui::DragFloat("Rotation Sensitivity", &rotationSensitivity_, 0.0001f, 0.001f, 0.01f);
+		ImGui::DragFloat("Zoom Sensitivity", &zoomSensitivity_, 0.001f, 0.01f, 1.0f);
+	}
 
 	ImGui::Separator();
 
@@ -405,11 +412,15 @@ void DebugCamera::ImGui() {
 	ImGui::Separator();
 
 	// 操作説明
-	ImGui::Text("TAB: Toggle camera control");
-	ImGui::Text("Middle Mouse: Orbit around target");
-	ImGui::Text("Shift + Middle Mouse: Pan camera");
-	ImGui::Text("Mouse Wheel: Zoom in/out");
-	ImGui::Text("WASD: Move camera and target");
-	ImGui::Text("QE: Move up/down");
+	if (ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Text("TAB: Toggle camera control");
+		ImGui::Text("Shift + Enter: Toggle camera control");
+		ImGui::Text("Middle Mouse: Orbit around target");
+		ImGui::Text("Shift + Middle Mouse: Pan camera");
+		ImGui::Text("Mouse Wheel: Zoom in/out");
+		ImGui::Text("WASD: Move camera and target");
+		ImGui::Text("QE: Move up/down");
+	}
+
 #endif
 }

@@ -128,6 +128,11 @@ private:
 	void HandleKeyboardMovement();
 
 	/// <summary>
+	/// デバッグ入力処理
+	/// </summary>
+	void HandleDebugInput();
+
+	/// <summary>
 	/// 行列の更新
 	/// </summary>
 	void UpdateMatrix();
@@ -157,12 +162,12 @@ private:
 	Vector3 cartesianRotation_;						// デカルト座標での回転
 
 	// 操作設定
-
-	// 操作設定
 	bool enableCameraControl_ = true;				// カメラ操作を使うかどうか
 	float rotationSensitivity_ = 0.005f;			// 回転の感度
-	float movementSensitivity_ = 0.01f;				// 移動の感度
+	float movementSensitivity_ = 0.01f;				// マウス移動の感度
 	float zoomSensitivity_ = 0.05f;					// ズームの感度
+	float keyboardSpeed_ = 0.1f;					// キーボード移動速度
+	float mousePanSpeed_ = 0.01f;					// マウスパン移動速度
 
 	// 制限
 	float minDistance_ = 0.1f;						// 最小距離
