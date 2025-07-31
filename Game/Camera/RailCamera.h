@@ -6,7 +6,7 @@
 #include "Engine.h"
 
 /// <summary>
-/// レールカメラコントローラー（エディタ対応版）
+/// レールカメラコントローラー
 /// スプライン曲線に沿って等間隔で移動するカメラ
 /// </summary>
 class RailCamera : public BaseCamera {
