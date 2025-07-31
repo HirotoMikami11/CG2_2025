@@ -83,9 +83,9 @@ private:
 	Matrix4x4 matViewport_;
 
 	// ロックオン距離の限界値（スクリーン座標ベース）
-	static constexpr float kDistanceLockOn = 400.0f;
+	static constexpr float kDistanceLockOn = 200.0f;
 	// マルチロックオン距離の限界値（スクリーン座標ベース）
-	static constexpr float kMultiLockOnDistance = 80.0f; // 通常のロックオンより近い距離
+	static constexpr float kMultiLockOnDistance = 32.0f; // 通常のロックオンより近い距離
 
 	/// <summary>
 	/// マルチロックオン用のスプライトを作成
