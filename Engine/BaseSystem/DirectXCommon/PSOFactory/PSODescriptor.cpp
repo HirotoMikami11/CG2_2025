@@ -278,13 +278,13 @@ D3D12_RASTERIZER_DESC PSODescriptor::GetRasterizerDesc() const {
 	}
 
 	// その他の設定
-	rasterizerDesc.FillMode = fillMode_;
-	rasterizerDesc.FrontCounterClockwise = FALSE;  // 時計回りを表面とする
+	rasterizerDesc.FillMode = fillMode_;											// ポリゴンの塗りつぶしモード
+	rasterizerDesc.FrontCounterClockwise = FALSE;									// 時計回りを表面とする
 	rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
 	rasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-	rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-	rasterizerDesc.DepthClipEnable = TRUE;
-	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;	// スロープスケールされた深度バイアスのデフォルト値
+	rasterizerDesc.DepthClipEnable = TRUE;											// 深度クリップを有効にする(これがないとカメラのfarは死んだも同然)
+	rasterizerDesc.MultisampleEnable = FALSE;										//アンチエイリアシング無効
 	rasterizerDesc.AntialiasedLineEnable = FALSE;
 	rasterizerDesc.ForcedSampleCount = 0;
 	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
