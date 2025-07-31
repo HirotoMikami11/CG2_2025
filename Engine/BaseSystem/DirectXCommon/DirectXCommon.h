@@ -23,6 +23,11 @@
 #include"BaseSystem/GraphicsConfig.h"	//ウィンドウサイズなど
 #include"BaseSystem/DirectXCommon/DescriptorHeapManager.h"		//ディスクリプタヒープ管理
 
+///PSO作成しやすいように作ったやつら
+#include "BaseSystem/DirectXCommon/PSOFactory/PSOFactory.h"
+#include "BaseSystem/DirectXCommon/PSOFactory/PSODescriptor.h"
+#include "BaseSystem/DirectXCommon/PSOFactory/RootSignatureBuilder.h"
+
 /// <summary>
 /// DirectX
 /// </summary>
@@ -97,7 +102,8 @@ public:
 	D3D12_RENDER_TARGET_VIEW_DESC GetRTVDesc() { return rtvDesc; }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle(int index) const { return rtvHandles[index]; }
 
-
+	// PSOFactory関連
+	PSOFactory* GetPSOFactory() const { return psoFactory_.get(); }
 
 private:
 
@@ -145,6 +151,11 @@ private:
 	/// DXC
 	/// </summary>
 	void InitalizeDXC();
+
+	/// <summary>
+	/// PSOFactoryを初期化する
+	/// </summary>
+	void InitializePSOFactory();
 
 	/// <summary>
 	/// PSOを作成する
@@ -206,6 +217,8 @@ private:
 	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
 	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
+	// PSOFactory
+	std::unique_ptr<PSOFactory> psoFactory_;
 	//3D用PSO
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;
