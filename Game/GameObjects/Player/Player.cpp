@@ -69,13 +69,16 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 弾の削除
 	DeleteBullets();
-	DeleteHomingBullets(); 
+	DeleteHomingBullets();
 
 	// 移動処理
 	Move();
 
 	// 回転処理
 	Rotate();
+
+	//攻撃方法の変更
+	SwitchAttackMode();
 
 	// 攻撃処理
 	Attack();
@@ -116,16 +119,16 @@ void Player::Draw(const Light& directionalLight) {
 		homingBullet->Draw(directionalLight);
 	}
 }
-
 void Player::DrawUI() {
-	// ロックオン対象がいる場合は2Dレティクルを描画しない
-	if (lockOn_ && lockOn_->GetTarget() != nullptr) {
-		return; // ロックオン対象がいる場合は描画しない
+	// マルチロックオンモードか
+	// 通常モードで、ロックオン対象がいなければ2Dレティクルの描画
+	if (
+		attackMode_ == AttackMode::MultiLockOn ||
+		(lockOn_ == nullptr || lockOn_->GetTarget() == nullptr)) {
+		// 通常モードでロックオン対象がいない場合は2Dレティクルを描画
+		sprite2DReticle_->Update(viewProjectionMatrixSprite_);
+		sprite2DReticle_->Draw();
 	}
-
-	// 2Dレティクルスプライトの更新と描画
-	sprite2DReticle_->Update(viewProjectionMatrixSprite_);
-	sprite2DReticle_->Draw();
 }
 
 void Player::ImGui() {
@@ -134,6 +137,21 @@ void Player::ImGui() {
 		gameObject_->ImGui();
 	}
 
+	/// 攻撃モード情報
+	ImGui::Separator();
+	ImGui::Text("Attack Mode");
+	const char* modeText = "";
+	switch (attackMode_) {
+	case AttackMode::Normal:
+		modeText = "Normal";
+		break;
+	case AttackMode::MultiLockOn:
+		modeText = "Multi Lock-On";
+		break;
+	}
+	ImGui::Text("Current Mode: %s", modeText);
+	ImGui::Text("Multi Lock-On Targets: %zu", multiLockOnTargets_.size());
+	ImGui::Separator();
 	ImGui::Text("Bullets Count: %zu", bullets_.size());
 
 	// レティクル情報
@@ -232,19 +250,99 @@ void Player::Rotate() {
 	// 回転を設定
 	gameObject_->SetRotation(currentRotation);
 }
+
+void Player::SwitchAttackMode() {
+	// モード切り替え (MキーまたはXボタン)
+	if (input_->IsKeyTrigger(DIK_M) ||                                      // Mキー
+		(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::X))) { // Xボタン
+
+		// モード切り替え
+		switch (attackMode_) {
+		case AttackMode::Normal:
+			attackMode_ = AttackMode::MultiLockOn;
+			break;
+		case AttackMode::MultiLockOn:
+			attackMode_ = AttackMode::Normal;
+			// 通常モードに戻る時はマルチロックオンリストをクリア
+			multiLockOnTargets_.clear();
+			break;
+		}
+	}
+}
+
 void Player::Attack() {
 	// SPACEキーまたはゲームパッドRBボタンで発射
-	bool shouldFire = input_->IsKeyTrigger(DIK_SPACE) ||
-		(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::RB));
+	bool shouldFire = input_->IsKeyDown(DIK_SPACE) ||
+		(input_->IsGamePadConnected() && input_->IsGamePadButtonDown(InputManager::GamePadButton::RB));
 
 	if (shouldFire) {
-		// ロックオン対象が存在する場合は、ホーミング弾を発射
-		if (lockOn_ && lockOn_->GetTarget() != nullptr && !lockOn_->GetTarget()->IsDead()) {
-			// ロックオン対象の敵を取得
-			Enemy* target = lockOn_->GetTarget();
+		fireTimer_--;
+
+		if (fireTimer_ <= 0) {
+			switch (attackMode_) {
+			case AttackMode::MultiLockOn:
+				FireMultiLockOn(); // マルチロックオンモード時の発射
+				break;
+			case AttackMode::Normal:
+			default:
+				Fire(); // 通常モード時の発射
+				break;
+			}
+			fireTimer_ = kFireInterval; // 発射間隔をリセット
+		}
+	}
+}
+
+void Player::Fire() {
+	// ロックオン対象が存在する場合は、ホーミング弾を発射
+	if (lockOn_ && lockOn_->GetTarget() != nullptr && !lockOn_->GetTarget()->IsDead()) {
+		// ロックオン対象の敵を取得
+		Enemy* target = lockOn_->GetTarget();
+		// ターゲットのワールド座標を取得
+		Vector3 targetPosition = target->GetWorldPosition();
+		// プレイヤーからターゲットへのベクトル
+		Vector3 bulletVelocity = targetPosition - GetWorldPosition();
+		// ベクトルの長さを整える
+		bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
+
+		// ホーミング弾を生成・初期化する
+		auto newHomingBullet = std::make_unique<PlayerHomingBullet>();
+		newHomingBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity, target);
+
+		// ホーミング弾を登録する
+		homingBullets_.push_back(std::move(newHomingBullet));
+
+	} else {
+		// ターゲットが存在しない場合は、通常弾を発射（レティクル狙い弾）
+		// 自機からレティクルへのベクトルを計算
+		Vector3 playerPos = GetWorldPosition();
+		Vector3 reticlePos = GetWorldPosition3DReticle();
+		Vector3 bulletVelocity = reticlePos - playerPos;
+
+		// 正規化して速度を設定
+		bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
+
+		// 弾丸を生成・初期化する
+		auto newBullet = std::make_unique<PlayerBullet>();
+		newBullet->Initialize(directXCommon_, playerPos, bulletVelocity);
+
+		// 弾丸を登録する
+		bullets_.push_back(std::move(newBullet));
+	}
+}
+
+void Player::FireMultiLockOn() {
+	// マルチロックオンモードでロックオン対象がいない場合は発射しない
+	if (multiLockOnTargets_.empty()) {
+		return;
+	}
+
+	// ロックオンしている全ての敵に向けてホーミング弾を発射
+	for (Enemy* target : multiLockOnTargets_) {
+		if (target != nullptr && !target->IsDead()) {
 			// ターゲットのワールド座標を取得
 			Vector3 targetPosition = target->GetWorldPosition();
-			// プレイヤーからターゲットへのベクトル
+			// 自機からターゲットへのベクトル
 			Vector3 bulletVelocity = targetPosition - GetWorldPosition();
 			// ベクトルの長さを整える
 			bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
@@ -253,25 +351,8 @@ void Player::Attack() {
 			auto newHomingBullet = std::make_unique<PlayerHomingBullet>();
 			newHomingBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity, target);
 
-			// ホーミング弾を登録する
+			// ホーミング弾を登録する(moveで所有権を渡す)
 			homingBullets_.push_back(std::move(newHomingBullet));
-
-		} else {
-			// ターゲットが存在しない場合は、通常弾を発射（レティクル狙い弾）
-			// 自機からレティクルへのベクトルを計算
-			Vector3 playerPos = GetWorldPosition();
-			Vector3 reticlePos = GetWorldPosition3DReticle();
-			Vector3 bulletVelocity = reticlePos - playerPos;
-
-			// 正規化して速度を設定
-			bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
-
-			// 弾丸を生成・初期化する
-			auto newBullet = std::make_unique<PlayerBullet>();
-			newBullet->Initialize(directXCommon_, playerPos, bulletVelocity);
-
-			// 弾丸を登録する
-			bullets_.push_back(std::move(newBullet));
 		}
 	}
 }

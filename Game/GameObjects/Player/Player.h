@@ -16,6 +16,14 @@
 class LockOn;
 
 /// <summary>
+/// 攻撃モード
+/// </summary>
+enum class AttackMode {
+	Normal,      // 通常モード
+	MultiLockOn  // マルチロックオンモード
+};
+
+/// <summary>
 /// プレイヤークラス
 /// </summary>
 class Player : public Collider {
@@ -131,6 +139,25 @@ public:
 	/// </summary>
 	/// <param name="lockOn">ロックオンシステム</param>
 	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }
+
+	/// <summary>
+	/// 現在の攻撃モードがマルチロックオンかどうか
+	/// </summary>
+	/// <returns>true: マルチロックオンモード, false: 通常モード</returns>
+	bool IsMultiLockOnMode() const { return attackMode_ == AttackMode::MultiLockOn; }
+
+	/// <summary>
+	/// 現在の攻撃モードを取得
+	/// </summary>
+	/// <returns>現在の攻撃モード</returns>
+	AttackMode GetAttackMode() const { return attackMode_; }
+
+	/// <summary>
+	/// マルチロックオンターゲットリストを取得
+	/// </summary>
+	/// <returns>マルチロックオンターゲットリスト</returns>
+	std::list<Enemy*>& GetMultiLockOnTargets() { return multiLockOnTargets_; }
+
 private:
 	// ゲームオブジェクト
 	std::unique_ptr<Model3D> gameObject_;
@@ -166,6 +193,14 @@ private:
 	// ロックオンシステム
 	LockOn* lockOn_ = nullptr;
 
+	/// 攻撃モード関連
+	AttackMode attackMode_ = AttackMode::Normal; // 攻撃モード（デフォルトは通常モード）
+	std::list<Enemy*> multiLockOnTargets_;       // マルチロックオン対象リスト
+
+	// 発射間隔
+	static constexpr float kFireInterval = 3.0f;   // 発射間隔（フレーム数）
+	float fireTimer_ = kFireInterval;              // 発射タイマー
+
 	// 移動制限
 	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
 	static constexpr float kMoveLimitY = 18.0f; // Y軸の移動制限
@@ -189,9 +224,24 @@ private:
 	void Rotate();
 
 	/// <summary>
+	/// 攻撃モード切り替え処理
+	/// </summary>
+	void SwitchAttackMode();
+
+	/// <summary>
 	/// 攻撃処理
 	/// </summary>
 	void Attack();
+
+	/// <summary>
+	/// 通常攻撃
+	/// </summary>
+	void Fire();
+
+	/// <summary>
+	/// マルチロックオン時の発射処理
+	/// </summary>
+	void FireMultiLockOn();
 
 	/// <summary>
 	/// 寿命の尽きた弾を削除する

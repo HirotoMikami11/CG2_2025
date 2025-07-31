@@ -82,16 +82,16 @@ private:
     // 線描画システム（追加）
     std::unique_ptr<LineRenderer> lineRenderer_;
 
-    // スプライン曲線制御点(通過点)
+    /// スプライン曲線制御点(通過点)
     std::vector<Vector3> controlPoints_;
 
     // レール移動用
-    float t_;					// スプライン曲線上の位置パラメータ (0.0 - 1.0)
-    float speed_;				// 移動速度
-    bool isMoving_;				// 移動中フラグ
-    float lookAheadDistance_;	// 注視点の先読み距離
+    float t_;                 // スプライン曲線上の位置パラメータ (0.0 - 1.0)
+    float speed_;             // 移動速度
+    bool isMoving_;           // 移動中フラグ
+    float lookAheadDistance_; // 注視点の先読み距離
 
-    // 軌道描画設定（追加）
+    // 軌道描画設定
     bool showRailTrack_;        // 軌道表示フラグ
     Vector4 railTrackColor_;    // 軌道の色
     int railTrackSegments_;     // 軌道の分割数
@@ -103,10 +103,7 @@ private:
     // システム参照
     DirectXCommon* directXCommon_ = nullptr;
 
-    /// <summary>
-    /// スプライン曲線上の位置を計算してカメラを更新
-    /// </summary>
-    void UpdateCameraPosition();
+
 
     /// <summary>
     /// カメラモデルの更新（描画時に呼び出し）
@@ -117,6 +114,13 @@ private:
     /// 軌道の線分を生成
     /// </summary>
     void GenerateRailTrackLines();
+
+    /// <summary>
+    /// スプライン曲線上の位置を計算してカメラを更新
+    /// </summary>
+    void UpdateCameraPosition();
+
+
 
     /// <summary>
     /// 注視点を計算する

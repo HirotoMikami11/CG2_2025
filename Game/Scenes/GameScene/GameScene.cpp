@@ -163,7 +163,13 @@ void GameScene::Update() {
 	UpdateGameObjects();
 
 	// ロックオンシステムの更新
-	lockOn_->Update(player_.get(), enemies_, viewProjectionMatrix);
+	if (player_->IsMultiLockOnMode()) {
+		// マルチロックオンモードの場合
+		lockOn_->UpdateMultiLockOn(player_.get(), enemies_, viewProjectionMatrix, player_->GetMultiLockOnTargets());
+	} else {
+		// 通常モードの場合
+		lockOn_->Update(player_.get(), enemies_, viewProjectionMatrix);
+	}
 
 	// 敵と敵弾の削除
 	DeleteDeadEnemies();
@@ -172,11 +178,11 @@ void GameScene::Update() {
 	///*-----------------------------------------------------------------------*///
 	///								衝突判定									///
 	///*-----------------------------------------------------------------------*///
-	
+#pragma region 衝突判定
 	// 衝突マネージャーの更新
 	// プレイヤー・敵弾のリストを取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
-	const std::list<std::unique_ptr<PlayerHomingBullet>>& playerHomingBullets = player_->GetHomingBullets(); 
+	const std::list<std::unique_ptr<PlayerHomingBullet>>& playerHomingBullets = player_->GetHomingBullets();
 
 
 	// 衝突マネージャーのリストをクリアする
@@ -201,6 +207,7 @@ void GameScene::Update() {
 
 	// 衝突判定と応答
 	collisionManager_->Update();
+#pragma endregion
 
 }
 
@@ -246,10 +253,16 @@ void GameScene::DrawBackBuffer() {
 		player_->DrawUI();
 	}
 
-	if (lockOn_) {
+	// ロックオンUI描画
+	if (player_->IsMultiLockOnMode()) {
+		// マルチロックオンモードの場合
+		lockOn_->DrawMultiLockOnUI(player_->GetMultiLockOnTargets(), viewProjectionMatrix, viewProjectionMatrixSprite);
+	} else {
+		// 通常モードの場合
 		lockOn_->DrawUI(viewProjectionMatrixSprite);
 	}
 }
+
 void GameScene::DrawGameObjects() {
 	// 背景オブジェクトの描画（先に描画）
 	if (skydome_) {
@@ -507,7 +520,7 @@ void GameScene::Finalize() {
 	enemyPopCommands.seekg(0);
 	isWait_ = false;
 	waitTimer_ = 0;
-	
+
 	// プレイヤーを明示的にリセット
 	if (player_) {
 		player_.reset();
