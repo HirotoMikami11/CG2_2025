@@ -27,7 +27,7 @@ enum class CullMode {
 
 /// <summary>
 /// PSO作成用の設定を保持するクラス
-/// ビルダーパターンで直感的に設定可能
+/// パターンで簡単に設定可能
 /// </summary>
 class PSODescriptor {
 public:

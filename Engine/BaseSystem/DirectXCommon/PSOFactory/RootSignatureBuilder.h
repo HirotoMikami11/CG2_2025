@@ -7,7 +7,7 @@
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// RootSignatureを簡単に構築するためのビルダークラス
+/// RootSignatureを簡単に構築するためのクラス
 /// </summary>
 class RootSignatureBuilder {
 public:

@@ -10,7 +10,7 @@
 #include "BaseSystem/Logger/Logger.h"
 
 /// <summary>
-/// PipelineStateObjectを生成するファクトリークラス？
+/// PipelineStateObjectを生成するクラス
 /// </summary>
 class PSOFactory {
 public:
