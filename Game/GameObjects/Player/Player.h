@@ -235,12 +235,11 @@ private:
 	// 移動制限
 	static constexpr float kMoveLimitX = 18.0f; // X軸の移動制限
 	static constexpr float kMoveLimitY = 10.0f; // Y軸の移動制限
-	static constexpr float kCharacterSpeed = 0.4f; // 移動速度
-	static constexpr float kRotSpeed = 0.02f; // 回転速度
+	static constexpr float kCharacterSpeed = 0.2f; // 移動速度
+	static constexpr float kReticleSpeed = 10.0f; // レティクル移動速度
 	static constexpr float kBulletSpeed = 1.0f; // 弾の速度
-	//キーボードの時は自キャラからの距離
-	static constexpr float kDistancePlayerTo3DReticleKeyborad = 20.0f; // プレイヤーから3Dレティクルまでの距離(キーボードの時)
-	// ゲームパッドの時の距離は、カメラからの距離なので、カメラと自キャラの距離を加算した値
+	// レティクルとプレイヤーの距離（キーボード・ゲームパッド共通）
+	static constexpr float kDistancePlayerTo3DReticleKeyborad = 50.0f; // プレイヤーから3Dレティクルまでの距離(キーボードの時)
 	static constexpr float kDistancePlayerTo3DReticleGamepad = 50.0f; // プレイヤーから3Dレティクルまでの距離(ゲームパッドの時)
 
 	// HP/ENシステム
@@ -265,14 +264,9 @@ private:
 	void Move();
 
 	/// <summary>
-	/// 回転処理（従来版）
+	/// カメラに背を向ける処理
 	/// </summary>
-	void Rotate();
-
-	/// <summary>
-	/// レールカメラ対応回転処理
-	/// </summary>
-	void RotateWithRailCamera();
+	void FaceAwayFromCamera();
 
 	/// <summary>
 	/// 攻撃モード切り替え処理
@@ -311,16 +305,10 @@ private:
 	void ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix);
 
 	/// <summary>
-	/// キーボードでワールド座標に変換されたレティクルを2Dスクリーン座標に変換
-	/// </summary>
-	/// <param name="camera"></param>
-	void ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix);
-
-	/// <summary>
-	/// 3Dレティクルのワールド座標を2Dレティクルのスクリーン座標に変換
+	/// キーボードで上下左右キーでレティクルを操作
 	/// </summary>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
-	void ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix);
+	void ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix);
 
 	/// <summary>
 	/// 寿命の尽きたホーミング弾を削除する

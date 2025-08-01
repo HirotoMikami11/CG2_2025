@@ -79,8 +79,8 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 移動処理
 	Move();
 
-	// 回転処理（レールカメラ対応）
-	RotateWithRailCamera();
+	// 自機をカメラに背を向ける処理
+	FaceAwayFromCamera();
 
 	//攻撃方法の変更
 	SwitchAttackMode();
@@ -255,16 +255,17 @@ void Player::Move() {
 		move.y += input_->GetAnalogStick(InputManager::AnalogStick::LEFT_Y) * kCharacterSpeed;
 	}
 
-	// キーボード入力の処理
-	if (input_->IsKeyDown(DIK_LEFT)) {
+	// キーボード入力の処理（WASD: プレイヤーの移動）
+	if (input_->IsKeyDown(DIK_A)) {
 		move.x -= kCharacterSpeed; // 左
-	} else if (input_->IsKeyDown(DIK_RIGHT)) {
+	}
+	if (input_->IsKeyDown(DIK_D)) {
 		move.x += kCharacterSpeed; // 右
 	}
-
-	if (input_->IsKeyDown(DIK_UP)) {
+	if (input_->IsKeyDown(DIK_W)) {
 		move.y += kCharacterSpeed; // 上
-	} else if (input_->IsKeyDown(DIK_DOWN)) {
+	}
+	if (input_->IsKeyDown(DIK_S)) {
 		move.y -= kCharacterSpeed; // 下
 	}
 
@@ -279,45 +280,37 @@ void Player::Move() {
 	// 位置を設定
 	gameObject_->SetPosition(currentPos);
 }
-
-void Player::Rotate() {
-	// 現在の回転を取得
-	Vector3 currentRotation = gameObject_->GetRotation();
-
-	// 押した方向で回転（KamataEngineと同じキー割り当て）
-	if (input_->IsKeyDown(DIK_A)) {
-		currentRotation.y += kRotSpeed;
-	} else if (input_->IsKeyDown(DIK_D)) {
-		currentRotation.y -= kRotSpeed;
+void Player::FaceAwayFromCamera() {
+	// 親（レールカメラ）が設定されている場合は、ローカル座標系で固定の向きに設定
+	if (gameObject_->GetTransform().GetParent() != nullptr) {
+		// レールカメラに対して常に背を向く（Y軸回転180度）
+		// これにより、レールカメラがどの方向を向いていても、プレイヤーは常にカメラに背を向ける
+		Vector3 fixedRotation = { 0.0f, 0.0f, 0.0f }; // Y軸180度回転でカメラに背を向ける
+		gameObject_->SetRotation(fixedRotation);
+		return;
 	}
 
-	// 回転を設定
-	gameObject_->SetRotation(currentRotation);
-}
-
-void Player::RotateWithRailCamera() {
-	// レールカメラを使用している場合は、カメラの進行方向に合わせて回転
+	// 親がない場合は従来の処理を実行
 	CameraController* cameraController = CameraController::GetInstance();
-	if (cameraController && cameraController->GetActiveCameraId() == "rail") {
-		RailCamera* railCamera = dynamic_cast<RailCamera*>(cameraController->GetCamera("rail"));
-		if (railCamera) {
-			// レールカメラの進行方向を取得
-			Vector3 forwardDirection = railCamera->GetForwardDirection();
-
-			// 進行方向からY軸回転角を計算
-			float targetRotationY = std::atan2(forwardDirection.x, forwardDirection.z);
-
-			// プレイヤーの回転を設定
-			Vector3 currentRotation = gameObject_->GetRotation();
-			currentRotation.y = targetRotationY;
-			gameObject_->SetRotation(currentRotation);
-
-			return; // レールカメラ使用時は通常の回転処理をスキップ
-		}
+	if (!cameraController) {
+		return;
 	}
 
-	// レールカメラを使用していない場合は通常の回転処理
-	Rotate();
+	// カメラの位置を取得
+	Vector3 cameraPosition = cameraController->GetPosition();
+	Vector3 playerPosition = GetWorldPosition();
+
+	// カメラから自機への方向ベクトルを計算
+	Vector3 cameraToPlayer = playerPosition - cameraPosition;
+	cameraToPlayer = Normalize(cameraToPlayer);
+
+	// Y軸回転角を計算（カメラに背を向ける）
+	float rotationY = std::atan2(cameraToPlayer.x, cameraToPlayer.z);
+
+	// プレイヤーの回転を設定
+	Vector3 currentRotation = gameObject_->GetRotation();
+	currentRotation.y = rotationY;
+	gameObject_->SetRotation(currentRotation);
 }
 
 void Player::SwitchAttackMode() {
@@ -468,12 +461,11 @@ void Player::DeleteBullets() {
 }
 
 void Player::UpdateReticle(const Matrix4x4& viewProjectionMatrix) {
-
 	if (input_->IsGamePadConnected()) {
-		// ゲームパッドが接続されている場合：ゲームパッドでレティクル操作
+		// ゲームパッドが接続されている場合：右スティックでレティクル操作
 		ConvertGamePadToWorldReticle(viewProjectionMatrix);
 	} else {
-		// キーボードの場合：プレイヤーの向きに基づいてレティクル操作
+		// キーボードの場合：上下左右キーでレティクル操作
 		ConvertKeyboardToWorldReticle(viewProjectionMatrix);
 	}
 }
@@ -514,46 +506,44 @@ void Player::ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix)
 }
 
 void Player::ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix) {
-	// キーボード操作：プレイヤーの向きに基づいて3Dレティクルを配置
+	// 現在のスプライト位置を取得
+	Vector2 spritePos = sprite2DReticle_->GetPosition();
 
-	// レールカメラ使用時は進行方向を使用、それ以外は従来通り
-	Vector3 forwardDirection = { 0.0f, 0.0f, 1.0f }; // デフォルト方向
-
-	CameraController* cameraController = CameraController::GetInstance();
-	if (cameraController && cameraController->GetActiveCameraId() == "rail") {
-		RailCamera* railCamera = dynamic_cast<RailCamera*>(cameraController->GetCamera("rail"));
-		if (railCamera) {
-			forwardDirection = railCamera->GetForwardDirection();
-		}
-	} else {
-		// 従来の方法：自機のワールド行列の回転を反映
-		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
-		forwardDirection = Matrix4x4TransformNormal(forwardDirection, worldMatrix);
+	// 上下左右キーでレティクル移動
+	if (input_->IsKeyDown(DIK_LEFT)) {
+		spritePos.x -= kReticleSpeed; // 左
+	}
+	if (input_->IsKeyDown(DIK_RIGHT)) {
+		spritePos.x += kReticleSpeed; // 右
+	}
+	if (input_->IsKeyDown(DIK_UP)) {
+		spritePos.y -= kReticleSpeed; // 上
+	}
+	if (input_->IsKeyDown(DIK_DOWN)) {
+		spritePos.y += kReticleSpeed; // 下
 	}
 
-	// ベクトルの長さを整える
-	forwardDirection = Normalize(forwardDirection) * kDistancePlayerTo3DReticleKeyborad;
+	// 画面外に出ないように制限
+	spritePos.x = std::clamp(spritePos.x, 0.0f, 1280.0f);
+	spritePos.y = std::clamp(spritePos.y, 0.0f, 720.0f);
 
-	// 3Dレティクルの座標を設定
-	Vector3 reticlePosition = GetWorldPosition() + forwardDirection;
-	reticle3D_->SetPosition(reticlePosition);
+	// スプライト位置を更新
+	sprite2DReticle_->SetPosition(spritePos);
 
-	// 3Dレティクルの位置を2Dスプライトに反映
-	ConvertWorldToScreenReticle(viewProjectionMatrix);
-}
+	// 3D座標に変換
+	Matrix4x4 matVPV = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
+	Matrix4x4 matInverseVPV = Matrix4x4Inverse(matVPV);
 
-void Player::ConvertWorldToScreenReticle(const Matrix4x4& viewProjectionMatrix) {
-	// 3Dレティクルの位置を取得
-	Vector3 positionReticle = GetWorldPosition3DReticle();
+	// スクリーンからワールドに変換
+	posNear_ = Vector3(spritePos.x, spritePos.y, 0.0f);
+	posFar_ = Vector3(spritePos.x, spritePos.y, 1.0f);
 
-	// ビュープロジェクション行列とビューポート行列を合成
-	Matrix4x4 matViewProjectionViewport = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
+	posNear_ = Matrix4x4Transform(posNear_, matInverseVPV);
+	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
 
-	// ワールド座標からスクリーン座標に変換（3Dから2Dになる）
-	positionReticle = Matrix4x4Transform(positionReticle, matViewProjectionViewport);
-
-	// 2Dレティクルスプライトに座標設定
-	sprite2DReticle_->SetPosition(Vector2(positionReticle.x, positionReticle.y));
+	Vector3 direction = Normalize(posFar_ - posNear_);
+	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticleKeyborad);
+	reticle3D_->SetPosition(spritePosition_);
 }
 
 void Player::DeleteHomingBullets()
