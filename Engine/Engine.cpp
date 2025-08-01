@@ -207,7 +207,6 @@ void Engine::Finalize() {
 }
 
 void Engine::ImGui() {
-#ifdef _DEBUG
 
 	//開発用UIの処理
 	ImGui::Begin("Engine");
@@ -238,5 +237,5 @@ void Engine::ImGui() {
 		cameraController_->ImGui();
 	}
 
-#endif
+
 }

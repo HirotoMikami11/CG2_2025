@@ -450,7 +450,6 @@ void InputManager::StopGamePadVibration(int controllerIndex) {
 
 void InputManager::ImGui()
 {
-#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("InputManager")) {
 
 
@@ -686,7 +685,6 @@ void InputManager::ImGui()
 #pragma endregion
 		}
 	}
-#endif
 }
 
 float InputManager::ApplyDeadZone(SHORT value, SHORT deadZone) const {
@@ -710,7 +708,7 @@ float InputManager::ApplyDeadZone(SHORT value, SHORT deadZone) const {
 
 
 void InputManager::DrawJoystickVisualizer(float lx, float ly) {
-#ifdef _DEBUG
+
 	// 円の半径
 	const float radius = 50.0f;
 	const float canvas_size = radius * 2.5f;
@@ -757,5 +755,5 @@ void InputManager::DrawJoystickVisualizer(float lx, float ly) {
 
 	// スティック位置
 	draw_list->AddCircleFilled(stick_pos, 8.0f, IM_COL32(255, 0, 0, 255));
-#endif
+
 }

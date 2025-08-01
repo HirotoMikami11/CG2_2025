@@ -165,7 +165,6 @@ void AudioManager::StopAll() {
 
 void AudioManager::ImGui()
 {
-#ifdef _DEBUG
 
 	if (ImGui::CollapsingHeader("AudioManager")) {
 
@@ -402,5 +401,5 @@ void AudioManager::ImGui()
 			}
 		}
 	}
-#endif
+
 }

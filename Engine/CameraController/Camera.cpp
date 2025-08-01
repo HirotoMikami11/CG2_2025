@@ -91,7 +91,6 @@ void NormalCamera::LookAt(const Vector3& target, const Vector3& up) {
 }
 
 void NormalCamera::ImGui() {
-#ifdef _DEBUG
 	ImGui::Text("NormalCamera");
 	ImGui::Separator();
 
@@ -127,5 +126,4 @@ void NormalCamera::ImGui() {
 	if (ImGui::Button("Reset Camera")) {
 		SetDefaultCamera(initialPosition_,initialRotation_);
 	}
-#endif
 }

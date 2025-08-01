@@ -466,7 +466,7 @@ void OffscreenRenderer::CreatePSO() {
 }
 
 void OffscreenRenderer::ImGui() {
-#ifdef _DEBUG
+
 	if (ImGui::CollapsingHeader("Offscreen Renderer ")) {
 
 		// ポストプロセスチェーンのImGui
@@ -474,5 +474,5 @@ void OffscreenRenderer::ImGui() {
 			postProcessChain_->ImGui();
 		}
 	}
-#endif
+
 }

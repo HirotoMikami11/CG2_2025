@@ -212,7 +212,6 @@ void Sprite::DrawWithCustomPSOAndDepth(
 
 void Sprite::ImGui()
 {
-#ifdef _DEBUG
 	if (ImGui::TreeNode(name_.c_str())) {
 		// 表示・アクティブ状態
 		ImGui::Checkbox("Visible", &isVisible_);
@@ -310,7 +309,6 @@ void Sprite::ImGui()
 
 		ImGui::TreePop();
 	}
-#endif
 }
 
 // サイズ管理用の新しいメソッド

@@ -127,7 +127,7 @@ void LineRenderer::UpdateVertexBuffer() {
 }
 
 void LineRenderer::ImGui() {
-#ifdef _DEBUG
+
 	if (ImGui::TreeNode("Line Renderer")) {
 		// 基本情報
 		ImGui::Checkbox("Visible", &isVisible_);
@@ -154,5 +154,5 @@ void LineRenderer::ImGui() {
 
 		ImGui::TreePop();
 	}
-#endif
+
 }

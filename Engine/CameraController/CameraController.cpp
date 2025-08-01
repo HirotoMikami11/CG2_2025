@@ -87,13 +87,13 @@ void CameraController::Update() {
 }
 
 void CameraController::HandleDebugInput() {
-#ifdef _DEBUG
+
 	// Shift + TAB でデバッグカメラの切り替え
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_TAB) &&
 		InputManager::GetInstance()->IsKeyDown(DIK_LSHIFT)) {
 		ToggleDebugCamera();
 	}
-#endif
+
 }
 void CameraController::ToggleDebugCamera() {
 	if (activeCameraId_ == "debug") {
@@ -168,7 +168,7 @@ std::vector<std::string> CameraController::GetRegisteredCameraIds() const {
 
 
 void CameraController::ImGui() {
-#ifdef _DEBUG
+
 	ImGui::Begin("CameraController");
 
 	// 現在の状態表示
@@ -235,5 +235,5 @@ void CameraController::ImGui() {
 
 	// Shift + Enter でデバッグカメラの切り替え
 	ImGui::End();
-#endif
+
 }

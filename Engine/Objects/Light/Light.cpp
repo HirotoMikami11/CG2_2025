@@ -27,7 +27,7 @@ void Light::SetDefaultSettings()
 
 void Light::ImGui(const std::string& label)
 {
-#ifdef _DEBUG
+
 
 	if (ImGui::TreeNode(label.c_str())) {
 		// ライトの色
@@ -54,5 +54,5 @@ void Light::ImGui(const std::string& label)
 		ImGui::TreePop();
 	}
 
-#endif
+
 }

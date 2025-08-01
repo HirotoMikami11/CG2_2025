@@ -187,7 +187,7 @@ void VignettePostEffect::SetVignetteColor(const Vector4& color) {
 }
 
 void VignettePostEffect::ImGui() {
-#ifdef _DEBUG
+
 	if (ImGui::CollapsingHeader(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
@@ -245,5 +245,5 @@ void VignettePostEffect::ImGui() {
 		}
 
 	}
-#endif
+
 }

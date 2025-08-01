@@ -170,7 +170,7 @@ void SceneManager::ProcessSceneChange() {
 }
 
 void SceneManager::ImGui() {
-#ifdef _DEBUG
+
 	ImGui::Begin("Scene");
 
 	// シーン管理UI
@@ -182,11 +182,10 @@ void SceneManager::ImGui() {
 	DrawCurrentSceneUI();
 
 	ImGui::End();
-#endif
 }
 
 void SceneManager::DrawScenesUI() {
-#ifdef _DEBUG
+
 	ImGui::Text("Scene Management");
 
 	ImGui::Spacing();
@@ -246,7 +245,7 @@ void SceneManager::DrawScenesUI() {
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Next Scene: %s", nextSceneName_.c_str());
 		ImGui::Text("(Will change next frame)");
 	}
-#endif
+
 }
 
 void SceneManager::DrawCurrentSceneUI() {

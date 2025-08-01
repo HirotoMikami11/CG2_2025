@@ -105,7 +105,7 @@ void GridLine::Draw(const Matrix4x4& viewProjectionMatrix)
 
 void GridLine::ImGui()
 {
-#ifdef _DEBUG
+
 	if (ImGui::TreeNode(name_.c_str())) {
 		// 基本設定
 		ImGui::Checkbox("Visible", &isVisible_);
@@ -166,7 +166,7 @@ void GridLine::ImGui()
 
 		ImGui::TreePop();
 	}
-#endif
+
 }
 
 void GridLine::CreateXZGrid(float halfSize)

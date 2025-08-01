@@ -274,7 +274,7 @@ void DemoScene::DrawGameObjects() {
 }
 
 void DemoScene::ImGui() {
-#ifdef _DEBUG
+
 
 	// 球体のImGui
 	ImGui::Text("Sphere");
@@ -315,7 +315,6 @@ void DemoScene::ImGui() {
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
 
-#endif
 }
 
 void DemoScene::Finalize() {

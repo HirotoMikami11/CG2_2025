@@ -334,7 +334,7 @@ Vector3 DebugCamera::GetCameraUp() const {
 }
 
 void DebugCamera::ImGui() {
-#ifdef _DEBUG
+
 	ImGui::Text("DebugCamera");
 	ImGui::Separator();
 
@@ -424,5 +424,5 @@ void DebugCamera::ImGui() {
 		ImGui::Text("QE: Move up/down");
 	}
 
-#endif
+
 }
