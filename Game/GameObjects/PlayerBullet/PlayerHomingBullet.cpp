@@ -86,9 +86,6 @@ Vector3 PlayerHomingBullet::GetWorldPosition() {
 	return Vector3{ 0.0f, 0.0f, 0.0f };
 }
 
-void PlayerHomingBullet::OnCollision() {
-	isDead_ = true; // デスフラグを立てる
-}
 
 Vector3 PlayerHomingBullet::IsHoming() {
 	// ターゲットが存在しない場合はホーミングしない
@@ -113,6 +110,17 @@ Vector3 PlayerHomingBullet::IsHoming() {
 	Vector3 newVelocity = Slerp(normalizedVelocity, toTarget, t_) * bulletSpeed_;
 
 	return newVelocity;
+}
+void PlayerHomingBullet::OnCollision() {
+	// ダメージを受ける
+	TakeDamage(1);
+}
+
+void PlayerHomingBullet::TakeDamage(int damage) {
+	hp_ -= damage;
+	if (hp_ <= 0) {
+		isDead_ = true; // HPが0以下になったら死亡
+	}
 }
 
 void PlayerHomingBullet::SetToTargetDirection() {

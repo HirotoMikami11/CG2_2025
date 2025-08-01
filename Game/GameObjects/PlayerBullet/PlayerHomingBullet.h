@@ -60,6 +60,18 @@ public:
 	/// </summary>
 	void OnCollision() override;
 
+	/// <summary>
+	/// ダメージを受ける
+	/// </summary>
+	/// <param name="damage">ダメージ量</param>
+	void TakeDamage(int damage);
+
+	/// <summary>
+	/// HPを取得
+	/// </summary>
+	/// <returns>現在のHP</returns>
+	int GetHP() const { return hp_; }
+
 private:
 	// ゲームオブジェクト
 	std::unique_ptr<Model3D> gameObject_;
@@ -78,7 +90,8 @@ private:
 	static const int32_t kLifeTime_ = 60 * 5; // 弾の寿命（フレーム数）
 	int32_t deathTimer_ = kLifeTime_; // 弾の寿命タイマー
 	bool isDead_ = false; // 弾が消滅したかどうかのフラグ
-
+	// HP
+	int hp_ = 1; // 弾のHP（デフォルト1）
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
 

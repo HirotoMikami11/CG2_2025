@@ -159,6 +159,36 @@ public:
 	/// <returns>マルチロックオンターゲットリスト</returns>
 	std::list<Enemy*>& GetMultiLockOnTargets() { return multiLockOnTargets_; }
 
+	/// <summary>
+	/// ダメージを受ける
+	/// </summary>
+	/// <param name="damage">ダメージ量</param>
+	void TakeDamage(float damage);
+
+	/// <summary>
+	/// 現在のHPを取得
+	/// </summary>
+	/// <returns>現在のHP</returns>
+	float GetCurrentHP() const { return currentHP_; }
+
+	/// <summary>
+	/// 最大HPを取得
+	/// </summary>
+	/// <returns>最大HP</returns>
+	float GetMaxHP() const { return maxHP_; }
+
+	/// <summary>
+	/// 現在のENを取得
+	/// </summary>
+	/// <returns>現在のEN</returns>
+	float GetCurrentEN() const { return currentEN_; }
+
+	/// <summary>
+	/// 最大ENを取得
+	/// </summary>
+	/// <returns>最大EN</returns>
+	float GetMaxEN() const { return maxEN_; }
+
 private:
 	// ゲームオブジェクト
 	std::unique_ptr<Model3D> gameObject_;
@@ -199,13 +229,13 @@ private:
 	std::list<Enemy*> multiLockOnTargets_;       // マルチロックオン対象リスト
 
 	// 発射間隔
-	static constexpr float kFireInterval = 3.0f;   // 発射間隔（フレーム数）
+	static constexpr float kFireInterval = 10.0f;   // 発射間隔（フレーム数）
 	float fireTimer_ = kFireInterval;              // 発射タイマー
 
 	// 移動制限
-	static constexpr float kMoveLimitX = 33.0f; // X軸の移動制限
-	static constexpr float kMoveLimitY = 18.0f; // Y軸の移動制限
-	static constexpr float kCharacterSpeed = 0.2f; // 移動速度
+	static constexpr float kMoveLimitX = 18.0f; // X軸の移動制限
+	static constexpr float kMoveLimitY = 10.0f; // Y軸の移動制限
+	static constexpr float kCharacterSpeed = 0.4f; // 移動速度
 	static constexpr float kRotSpeed = 0.02f; // 回転速度
 	static constexpr float kBulletSpeed = 1.0f; // 弾の速度
 	//キーボードの時は自キャラからの距離
@@ -213,6 +243,21 @@ private:
 	// ゲームパッドの時の距離は、カメラからの距離なので、カメラと自キャラの距離を加算した値
 	static constexpr float kDistancePlayerTo3DReticleGamepad = 50.0f; // プレイヤーから3Dレティクルまでの距離(ゲームパッドの時)
 
+	// HP/ENシステム
+	float maxHP_ = 100.0f;           // 最大HP（酸素）
+	float currentHP_ = 100.0f;       // 現在のHP
+	float maxEN_ = 100.0f;           // 最大EN（エネルギー）
+	float currentEN_ = 100.0f;       // 現在のEN
+	float energyCostPerShot_ = 0.5f; // 1発撃つごとのエネルギー消費量
+	float energyRegenRate_ = 1.0f;   // エネルギー回復速度（毎フレーム）
+	int energyRegenDelay_ = 60;      // エネルギー回復開始までの待機時間（フレーム）
+	int energyRegenTimer_ = 0;       // エネルギー回復タイマー
+
+	// HP/ENゲージ用スプライト
+	std::unique_ptr<Sprite> hpGaugeBar_;      // HPゲージの枠
+	std::unique_ptr<Sprite> hpGaugeFill_;     // HPゲージの中身
+	std::unique_ptr<Sprite> enGaugeBar_;      // ENゲージの枠
+	std::unique_ptr<Sprite> enGaugeFill_;     // ENゲージの中身
 
 	/// <summary>
 	/// 移動処理
@@ -281,4 +326,28 @@ private:
 	/// 寿命の尽きたホーミング弾を削除する
 	/// </summary>
 	void DeleteHomingBullets();
+
+	/// <summary>
+	/// エネルギーの更新処理
+	/// </summary>
+	void UpdateEnergy();
+
+	/// <summary>
+	/// HP/ENゲージの初期化
+	/// </summary>
+	void InitializeGauges();
+
+	/// <summary>
+	/// HP/ENゲージの更新
+	/// </summary>
+	void UpdateGauges();
+
+	/// <summary>
+	/// 偏差射撃の計算
+	/// </summary>
+	/// <param name="enemyPos">敵の位置</param>
+	/// <param name="enemyVelocity">敵の速度</param>
+	/// <param name="bulletSpeed">弾の速度</param>
+	/// <returns>予測位置</returns>
+	Vector3 CalculateLeadingShot(const Vector3& enemyPos, const Vector3& enemyVelocity, float bulletSpeed);
 };

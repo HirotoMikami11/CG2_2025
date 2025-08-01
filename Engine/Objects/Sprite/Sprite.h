@@ -7,7 +7,7 @@
 
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
 #include "MyMath/MyFunction.h"
-#include "Objects/Sprite/Transform2D.h"  // Transform2Dを使用
+#include "Objects/Sprite/Transform2D.h"  // Transform2D
 
 #include "Managers/Texture/TextureManager.h"
 #include "Managers/ObjectID/ObjectIDManager.h"
@@ -21,7 +21,7 @@ struct SpriteMaterial {
 };
 
 /// <summary>
-/// 2Dスプライト専用クラス（GameObjectから独立）
+/// 2Dスプライト専用クラス
 /// </summary>
 class Sprite
 {
@@ -36,11 +36,13 @@ public:
 	/// <param name="textureName">テクスチャ名</param>
 	/// <param name="center">中心座標（Transform2Dの初期位置として設定）</param>
 	/// <param name="size">サイズ（Transform2Dの初期スケールとして設定）</param>
+	/// <param name="anchor">アンカーポイント（0.0-1.0の範囲、デフォルトは中央{0.5f, 0.5f}）</param>
 	void Initialize(
 		DirectXCommon* dxCommon,
 		const std::string& textureName,
 		const Vector2& center,
-		const Vector2& size
+		const Vector2& size,
+		const Vector2& anchor = { 0.5f, 0.5f }
 	);
 
 	/// <summary>
@@ -48,15 +50,17 @@ public:
 	/// </summary>
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	/// <param name="center">中心座標</param>
-	/// <param name="size">サイズ/param>
+	/// <param name="size">サイズ</param>
+	/// <param name="anchor">アンカーポイント（0.0-1.0の範囲、デフォルトは中央{0.5f, 0.5f}）</param>
 	void Initialize(
 		DirectXCommon* dxCommon,
 		const Vector2& center = { 50.0f, 50.0f },
-		const Vector2& size = { 100.0f, 100.0f }
+		const Vector2& size = { 100.0f, 100.0f },
+		const Vector2& anchor = { 0.5f, 0.5f }
 	);
 
 	/// <summary>
-	/// 更新処理（スプライト専用のビュープロジェクション行列を使用）
+	/// 更新処理（スプライト専用のビュープロジェクション）
 	/// </summary>
 	/// <param name="viewProjectionMatrix">スプライト用ビュープロジェクション行列</param>
 	void Update(const Matrix4x4& viewProjectionMatrix);
@@ -65,36 +69,6 @@ public:
 	/// 通常の描画処理（UI用スプライト専用）
 	/// </summary>
 	void Draw();
-
-	/// <summary>
-	/// カスタムPSOを使用した描画（オフスクリーン用）
-	/// </summary>
-	/// <param name="rootSignature">使用するルートシグネチャ</param>
-	/// <param name="pipelineState">使用するパイプラインステート</param>
-	/// <param name="textureHandle">使用するテクスチャハンドル</param>
-	/// <param name="materialBufferGPUAddress">使用するマテリアルバッファのGPUアドレス（0の場合は内部マテリアルを使用）</param>
-	void DrawWithCustomPSO(
-		ID3D12RootSignature* rootSignature,
-		ID3D12PipelineState* pipelineState,
-		D3D12_GPU_DESCRIPTOR_HANDLE textureHandle,
-		D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress = 0
-	);
-
-	/// <summary>
-	/// 深度テクスチャ対応のカスタムPSOを使用した描画（深度フォグ用）
-	/// </summary>
-	/// <param name="rootSignature">使用するルートシグネチャ</param>
-	/// <param name="pipelineState">使用するパイプラインステート</param>
-	/// <param name="colorTextureHandle">使用するカラーテクスチャハンドル</param>
-	/// <param name="depthTextureHandle">使用する深度テクスチャハンドル</param>
-	/// <param name="materialBufferGPUAddress">使用するマテリアルバッファのGPUアドレス（0の場合は内部マテリアルを使用）</param>
-	void DrawWithCustomPSOAndDepth(
-		ID3D12RootSignature* rootSignature,
-		ID3D12PipelineState* pipelineState,
-		D3D12_GPU_DESCRIPTOR_HANDLE colorTextureHandle,
-		D3D12_GPU_DESCRIPTOR_HANDLE depthTextureHandle,
-		D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress = 0
-	);
 
 	/// <summary>
 	/// ImGui用のデバッグ表示
@@ -124,6 +98,7 @@ public:
 	bool IsActive() const { return isActive_; }
 	const std::string& GetName() const { return name_; }
 	const std::string& GetTextureName() const { return textureName_; }
+	Vector2 GetAnchor() const { return anchor_; }
 
 	// Transform関連のSetter（2D用）
 	void SetTransform(const Vector2Transform& newTransform) { transform_.SetTransform(newTransform); }
@@ -150,6 +125,7 @@ public:
 	void SetActive(bool active) { isActive_ = active; }
 	void SetName(const std::string& name) { name_ = name; }
 	void SetTexture(const std::string& textureName) { textureName_ = textureName; }
+	void SetAnchor(const Vector2& anchor);
 
 	// Transform操作（2D用）
 	void AddPosition(const Vector2& deltaPosition) { transform_.AddPosition(deltaPosition); }
@@ -178,9 +154,9 @@ public:
 private:
 
 	/// <summary>
-	/// 標準スプライトメッシュを作成（原点中心、サイズ1.0x1.0）
+	/// アンカーからプライトメッシュを作成
 	/// </summary>
-	void CreateStandardSpriteMesh();
+	void CreateSpriteMesh();
 
 	/// <summary>
 	/// バッファを作成
@@ -203,6 +179,9 @@ private:
 	std::string name_ = "Sprite";
 	std::string textureName_ = "";
 
+	// アンカーポイント（0.0-1.0の範囲）
+	Vector2 anchor_{ 0.5f, 0.5f };
+
 	// Transform2Dクラスを使用
 	Transform2D transform_;
 
@@ -215,7 +194,7 @@ private:
 	Vector2 uvScale_{ 1.0f, 1.0f };
 	float uvRotateZ_ = 0.0f;
 
-	// メッシュデータ（標準メッシュ：原点中心、サイズ1.0x1.0）
+	// メッシュデータ
 	std::vector<VertexData> vertices_;
 	std::vector<uint32_t> indices_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
@@ -231,4 +210,5 @@ private:
 	Vector2 imguiUvPosition_{ 0.0f, 0.0f };
 	Vector2 imguiUvScale_{ 1.0f, 1.0f };
 	float imguiUvRotateZ_{ 0.0f };
+	Vector2 imguiAnchor_{ 0.5f, 0.5f };
 };

@@ -3,17 +3,18 @@
 #include <cstring>
 #include "Managers/ImGui/ImGuiManager.h" 
 
-void Sprite::Initialize(DirectXCommon* dxCommon, const std::string& textureName, const Vector2& center, const Vector2& size)
+void Sprite::Initialize(DirectXCommon* dxCommon, const std::string& textureName, const Vector2& center, const Vector2& size, const Vector2& anchor)
 {
 	directXCommon_ = dxCommon;
 	textureName_ = textureName;
+	anchor_ = anchor;
 
 	//ID生成
 	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 	name_ = idManager->GenerateName("Sprite");
 
-	// 標準メッシュを作成（原点中心、サイズ1.0x1.0）
-	CreateStandardSpriteMesh();
+	// アンカーポイントを考慮したメッシュを作成
+	CreateSpriteMesh();
 
 	// Transform2Dクラスを初期化
 	transform_.Initialize(dxCommon);
@@ -37,21 +38,21 @@ void Sprite::Initialize(DirectXCommon* dxCommon, const std::string& textureName,
 	imguiUvPosition_ = uvTranslate_;
 	imguiUvScale_ = uvScale_;
 	imguiUvRotateZ_ = uvRotateZ_;
+	imguiAnchor_ = anchor_;
 }
 
-void Sprite::Initialize(DirectXCommon* dxCommon, const Vector2& center, const Vector2& size)
+void Sprite::Initialize(DirectXCommon* dxCommon, const Vector2& center, const Vector2& size, const Vector2& anchor)
 {
-
 	directXCommon_ = dxCommon;
 	textureName_ = "white";
-
+	anchor_ = anchor;
 
 	//ID生成
 	ObjectIDManager* idManager = ObjectIDManager::GetInstance();
 	name_ = idManager->GenerateName("Sprite");
 
-	// 標準メッシュを作成（原点中心、サイズ1.0x1.0）
-	CreateStandardSpriteMesh();
+	// アンカーポイントを考慮したメッシュを作成
+	CreateSpriteMesh();
 
 	// Transform2Dクラスを初期化
 	transform_.Initialize(dxCommon);
@@ -75,7 +76,7 @@ void Sprite::Initialize(DirectXCommon* dxCommon, const Vector2& center, const Ve
 	imguiUvPosition_ = uvTranslate_;
 	imguiUvScale_ = uvScale_;
 	imguiUvRotateZ_ = uvRotateZ_;
-
+	imguiAnchor_ = anchor_;
 }
 
 void Sprite::Update(const Matrix4x4& viewProjectionMatrix)
@@ -128,88 +129,6 @@ void Sprite::Draw()
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void Sprite::DrawWithCustomPSO(
-	ID3D12RootSignature* rootSignature,
-	ID3D12PipelineState* pipelineState,
-	D3D12_GPU_DESCRIPTOR_HANDLE textureHandle,
-	D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress)
-{
-	// 非表示、アクティブでない場合は描画しない
-	if (!isVisible_ || !isActive_) {
-		return;
-	}
-
-	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
-
-	// 外部で指定されたPSOを設定
-	commandList->SetGraphicsRootSignature(rootSignature);
-	commandList->SetPipelineState(pipelineState);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// マテリアル（外部指定があればそれを使用、なければ内部のものを使用）
-	D3D12_GPU_VIRTUAL_ADDRESS materialAddress = materialBufferGPUAddress != 0 ?
-		materialBufferGPUAddress : materialResource_->GetGPUVirtualAddress();
-	commandList->SetGraphicsRootConstantBufferView(0, materialAddress);
-
-	// トランスフォーム（Transform2Dを使用）
-	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
-
-	// 外部指定のテクスチャを使用
-	commandList->SetGraphicsRootDescriptorTable(2, textureHandle);
-
-	// 頂点バッファをバインド
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-	commandList->IASetIndexBuffer(&indexBufferView_);
-
-	// 描画
-	commandList->DrawIndexedInstanced(static_cast<UINT>(indices_.size()), 1, 0, 0, 0);
-
-	// PSO復元は呼び出し元で行う
-}
-
-void Sprite::DrawWithCustomPSOAndDepth(
-	ID3D12RootSignature* rootSignature,
-	ID3D12PipelineState* pipelineState,
-	D3D12_GPU_DESCRIPTOR_HANDLE colorTextureHandle,
-	D3D12_GPU_DESCRIPTOR_HANDLE depthTextureHandle,
-	D3D12_GPU_VIRTUAL_ADDRESS materialBufferGPUAddress)
-{
-	// 非表示、アクティブでない場合は描画しない
-	if (!isVisible_ || !isActive_) {
-		return;
-	}
-
-	ID3D12GraphicsCommandList* commandList = directXCommon_->GetCommandList();
-
-	// 外部で指定されたPSOを設定
-	commandList->SetGraphicsRootSignature(rootSignature);
-	commandList->SetPipelineState(pipelineState);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// マテリアル（外部指定があればそれを使用、なければ内部のものを使用）
-	D3D12_GPU_VIRTUAL_ADDRESS materialAddress = materialBufferGPUAddress != 0 ?
-		materialBufferGPUAddress : materialResource_->GetGPUVirtualAddress();
-	commandList->SetGraphicsRootConstantBufferView(0, materialAddress);
-
-	// トランスフォーム（Transform2Dを使用）
-	commandList->SetGraphicsRootConstantBufferView(1, transform_.GetResource()->GetGPUVirtualAddress());
-
-	// カラーテクスチャを設定（t0）
-	commandList->SetGraphicsRootDescriptorTable(2, colorTextureHandle);
-
-	// 深度テクスチャを設定（t1）
-	commandList->SetGraphicsRootDescriptorTable(3, depthTextureHandle);
-
-	// 頂点バッファをバインド
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-	commandList->IASetIndexBuffer(&indexBufferView_);
-
-	// 描画
-	commandList->DrawIndexedInstanced(static_cast<UINT>(indices_.size()), 1, 0, 0, 0);
-
-	// PSO復元は呼び出し元で行う
-}
-
 void Sprite::ImGui()
 {
 #ifdef _DEBUG
@@ -237,6 +156,12 @@ void Sprite::ImGui()
 			// 2Dサイズ用（XYのみ）- スケールとして管理
 			if (ImGui::DragFloat2("Size", &imguiScale_.x, 1.0f, 0.1f, 1000.0f)) {
 				transform_.SetScale(imguiScale_);
+			}
+
+			// アンカーポイント設定
+			imguiAnchor_ = anchor_;
+			if (ImGui::DragFloat2("Anchor", &imguiAnchor_.x, 0.01f, 0.0f, 1.0f)) {
+				SetAnchor(imguiAnchor_);
 			}
 
 			// 3D互換表示用（参考情報として表示）
@@ -275,36 +200,36 @@ void Sprite::ImGui()
 			}
 		}
 
-		// Texture
+		// テクスチャ設定
 		if (ImGui::CollapsingHeader("Texture")) {
 			ImGui::Text("Current Texture: %s", textureName_.c_str());
 
-			// uvCheckerボタン
-			if (textureName_ == "uvChecker") {
-				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-				if (ImGui::Button("uvChecker")) {
-					SetTexture("uvChecker");
+			// カスタムテクスチャ選択
+			std::vector<std::string> textureList = textureManager_->GetTextureTagList();
+			if (!textureList.empty()) {
+				std::vector<const char*> textureNames;
+				textureNames.push_back("Default");
+				for (const auto& texture : textureList) {
+					textureNames.push_back(texture.c_str());
 				}
-				ImGui::PopStyleColor();
+				int currentIndex = 0;
+				if (!textureName_.empty()) {
+					for (size_t i = 0; i < textureList.size(); ++i) {
+						if (textureList[i] == textureName_) {
+							currentIndex = static_cast<int>(i + 1);
+							break;
+						}
+					}
+				}
+				if (ImGui::Combo("Custom Texture", &currentIndex, textureNames.data(), static_cast<int>(textureNames.size()))) {
+					if (currentIndex == 0) {
+						SetTexture("");
+					} else {
+						SetTexture(textureList[currentIndex - 1]);
+					}
+				}
 			} else {
-				if (ImGui::Button("uvChecker")) {
-					SetTexture("uvChecker");
-				}
-			}
-
-			ImGui::SameLine();
-
-			// monsterBallボタン
-			if (textureName_ == "monsterBall") {
-				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-				if (ImGui::Button("monsterBall")) {
-					SetTexture("monsterBall");
-				}
-				ImGui::PopStyleColor();
-			} else {
-				if (ImGui::Button("monsterBall")) {
-					SetTexture("monsterBall");
-				}
+				ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No textures loaded");
 			}
 		}
 
@@ -336,6 +261,18 @@ void Sprite::SetColor(const Vector4& color)
 	}
 }
 
+void Sprite::SetAnchor(const Vector2& anchor)
+{
+	anchor_ = anchor;
+	// アンカーが変更されたらメッシュを再生成
+	CreateSpriteMesh();
+
+	// 頂点バッファを更新
+	VertexData* vertexData = nullptr;
+	vertexBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std::memcpy(vertexData, vertices_.data(), sizeof(VertexData) * vertices_.size());
+}
+
 void Sprite::SetUVTransformScale(const Vector2& uvScale)
 {
 	uvScale_ = uvScale;
@@ -354,28 +291,34 @@ void Sprite::SetUVTransformTranslate(const Vector2& uvTranslate)
 	UpdateUVTransform();
 }
 
-void Sprite::CreateStandardSpriteMesh()
+void Sprite::CreateSpriteMesh()
 {
-	// 標準メッシュ：原点中心、サイズ1.0x1.0の正方形
+	//アンカーを基準とした正方形
 	vertices_.resize(4);
 
+	// アンカーに基づいて頂点座標を計算
+	float left = -anchor_.x;
+	float right = 1.0f - anchor_.x;
+	float top = anchor_.y - 1.0f;  // 画面座標系に合わせて上下反転
+	float bottom = anchor_.y;
+
 	// 左下
-	vertices_[0].position = { -0.5f, 0.5f, 0.0f, 1.0f };
+	vertices_[0].position = { left, bottom, 0.0f, 1.0f };
 	vertices_[0].texcoord = { 0.0f, 1.0f };
 	vertices_[0].normal = { 0.0f, 0.0f, -1.0f };
 
 	// 左上
-	vertices_[1].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	vertices_[1].position = { left, top, 0.0f, 1.0f };
 	vertices_[1].texcoord = { 0.0f, 0.0f };
 	vertices_[1].normal = { 0.0f, 0.0f, -1.0f };
 
 	// 右下
-	vertices_[2].position = { 0.5f, 0.5f, 0.0f, 1.0f };
+	vertices_[2].position = { right, bottom, 0.0f, 1.0f };
 	vertices_[2].texcoord = { 1.0f, 1.0f };
 	vertices_[2].normal = { 0.0f, 0.0f, -1.0f };
 
 	// 右上
-	vertices_[3].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	vertices_[3].position = { right, top, 0.0f, 1.0f };
 	vertices_[3].texcoord = { 1.0f, 0.0f };
 	vertices_[3].normal = { 0.0f, 0.0f, -1.0f };
 

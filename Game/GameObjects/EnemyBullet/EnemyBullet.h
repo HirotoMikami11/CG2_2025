@@ -67,6 +67,18 @@ public:
 	/// <param name="player">プレイヤーのポインタ</param>
 	void SetPlayer(Player* player) { player_ = player; }
 
+	/// <summary>
+	/// ダメージを受ける
+	/// </summary>
+	/// <param name="damage">ダメージ量</param>
+	void TakeDamage(int damage);
+
+	/// <summary>
+	/// HPを取得
+	/// </summary>
+	/// <returns>現在のHP</returns>
+	int GetHP() const { return hp_; }
+
 private:
 	// ゲームオブジェクト
 	std::unique_ptr<Sphere> gameObject_;
@@ -85,7 +97,8 @@ private:
 	// ホーミング用の変数
 	float bulletSpeed_; // 速度
 	float t_; // ホーミングの補間割合
-
+	// HP
+	int hp_ = 1; // 弾のHP（デフォルト1）
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
 

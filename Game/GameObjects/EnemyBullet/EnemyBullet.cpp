@@ -83,10 +83,6 @@ Vector3 EnemyBullet::GetWorldPosition() {
 	return Vector3{ 0.0f, 0.0f, 0.0f };
 }
 
-void EnemyBullet::OnCollision() {
-	isDead_ = true; // デスフラグを立てる
-}
-
 Vector3 EnemyBullet::IsHoming() {
 	// プレイヤーが無効な場合は現在の速度をそのまま返す
 	if (!player_ || player_ == nullptr) {
@@ -107,8 +103,20 @@ Vector3 EnemyBullet::IsHoming() {
 	return velocity_;
 }
 
+void EnemyBullet::OnCollision() {
+	// ダメージを受ける
+	TakeDamage(1);
+}
+
+void EnemyBullet::TakeDamage(int damage) {
+	hp_ -= damage;
+	if (hp_ <= 0) {
+		isDead_ = true; // HPが0以下になったら死亡
+	}
+}
+
 void EnemyBullet::SetToPlayerDirection() {
-	if (!player_|| player_ == nullptr) {
+	if (!player_ || player_ == nullptr) {
 		return;
 	}
 

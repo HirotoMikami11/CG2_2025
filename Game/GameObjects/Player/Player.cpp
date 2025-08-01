@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Player.h"
 #include "Managers/ImGui/ImGuiManager.h"
 #include "GameObjects/LockOn/LockOn.h"
@@ -56,6 +57,9 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	// スプライト用ビュープロジェクション行列を単位行列で初期化
 	viewProjectionMatrixSprite_ = MakeIdentity4x4();
 
+	// HP/ENゲージの初期化
+	InitializeGauges();
+
 	// 衝突判定設定
 	SetRadius(1.0f); // Colliderの半径をセット
 	// スケールをコライダーの半径に合わせる
@@ -83,6 +87,12 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 
 	// 攻撃処理
 	Attack();
+
+	// エネルギーの更新
+	UpdateEnergy();
+
+	// HP/ENゲージの更新
+	UpdateGauges();
 
 	// レティクルの更新
 	UpdateReticle(viewProjectionMatrix);
@@ -120,7 +130,26 @@ void Player::Draw(const Light& directionalLight) {
 		homingBullet->Draw(directionalLight);
 	}
 }
+
 void Player::DrawUI() {
+	// HP/ENゲージの描画
+	if (hpGaugeBar_) {
+		hpGaugeBar_->Update(viewProjectionMatrixSprite_);
+		hpGaugeBar_->Draw();
+	}
+	if (hpGaugeFill_) {
+		hpGaugeFill_->Update(viewProjectionMatrixSprite_);
+		hpGaugeFill_->Draw();
+	}
+	if (enGaugeBar_) {
+		enGaugeBar_->Update(viewProjectionMatrixSprite_);
+		enGaugeBar_->Draw();
+	}
+	if (enGaugeFill_) {
+		enGaugeFill_->Update(viewProjectionMatrixSprite_);
+		enGaugeFill_->Draw();
+	}
+
 	// マルチロックオンモードか
 	// 通常モードで、ロックオン対象がいなければ2Dレティクルの描画
 	if (
@@ -139,6 +168,15 @@ void Player::ImGui() {
 		if (gameObject_) {
 			gameObject_->ImGui();
 		}
+
+		// HP/EN情報
+		ImGui::Separator();
+		ImGui::Text("HP/EN System");
+		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
+		ImGui::ProgressBar(currentHP_ / maxHP_, ImVec2(200, 20), "HP");
+		ImGui::Text("EN: %.1f / %.1f", currentEN_, maxEN_);
+		ImGui::ProgressBar(currentEN_ / maxEN_, ImVec2(200, 20), "EN");
+		ImGui::Text("Energy Regen Timer: %d", energyRegenTimer_);
 
 		/// 攻撃モード情報
 		ImGui::Separator();
@@ -203,7 +241,8 @@ Vector3 Player::GetWorldPosition3DReticle() {
 }
 
 void Player::OnCollision() {
-	// 何もしない（必要に応じて実装）
+	// ダメージを受ける（仮のダメージ量1）
+	TakeDamage(1.0f);
 }
 
 void Player::Move() {
@@ -324,23 +363,37 @@ void Player::Attack() {
 }
 
 void Player::Fire() {
-	// ロックオン対象が存在する場合は、ホーミング弾を発射
+	// エネルギーが足りない場合は発射できない
+	if (currentEN_ < energyCostPerShot_) {
+		return;
+	}
+
+	// 通常モードでは偏差射撃を使用
 	if (lockOn_ && lockOn_->GetTarget() != nullptr && !lockOn_->GetTarget()->IsDead()) {
 		// ロックオン対象の敵を取得
 		Enemy* target = lockOn_->GetTarget();
-		// ターゲットのワールド座標を取得
-		Vector3 targetPosition = target->GetWorldPosition();
-		// プレイヤーからターゲットへのベクトル
-		Vector3 bulletVelocity = targetPosition - GetWorldPosition();
+
+		// 敵の速度を取得
+		Vector3 enemyVelocity = target->GetVelocity();
+
+		// 偏差射撃で予測位置を計算
+		Vector3 predictedPosition = CalculateLeadingShot(
+			target->GetWorldPosition(),
+			enemyVelocity,
+			kBulletSpeed
+		);
+
+		// プレイヤーから予測位置へのベクトル
+		Vector3 bulletVelocity = predictedPosition - GetWorldPosition();
 		// ベクトルの長さを整える
 		bulletVelocity = Normalize(bulletVelocity) * kBulletSpeed;
 
-		// ホーミング弾を生成・初期化する
-		auto newHomingBullet = std::make_unique<PlayerHomingBullet>();
-		newHomingBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity, target);
+		// 通常弾を生成・初期化する
+		auto newBullet = std::make_unique<PlayerBullet>();
+		newBullet->Initialize(directXCommon_, GetWorldPosition(), bulletVelocity);
 
-		// ホーミング弾を登録する
-		homingBullets_.push_back(std::move(newHomingBullet));
+		// 弾を登録する
+		bullets_.push_back(std::move(newBullet));
 
 	} else {
 		// ターゲットが存在しない場合は、通常弾を発射（レティクル狙い弾）
@@ -359,12 +412,25 @@ void Player::Fire() {
 		// 弾丸を登録する
 		bullets_.push_back(std::move(newBullet));
 	}
+
+	// エネルギーを消費
+	currentEN_ -= energyCostPerShot_;
+	currentEN_ = std::max(0.0f, currentEN_); // 0以下にならないように
+
+	// エネルギー回復タイマーをリセット
+	energyRegenTimer_ = energyRegenDelay_;
 }
 
 void Player::FireMultiLockOn() {
 	// マルチロックオンモードでロックオン対象がいない場合は発射しない
 	if (multiLockOnTargets_.empty()) {
 		return;
+	}
+
+	// 必要なエネルギーを計算（ターゲット数 × 消費量）
+	float requiredEnergy = multiLockOnTargets_.size() * energyCostPerShot_;
+	if (currentEN_ < requiredEnergy) {
+		return; // エネルギーが足りない
 	}
 
 	// ロックオンしている全ての敵に向けてホーミング弾を発射
@@ -385,6 +451,13 @@ void Player::FireMultiLockOn() {
 			homingBullets_.push_back(std::move(newHomingBullet));
 		}
 	}
+
+	// エネルギーを消費
+	currentEN_ -= requiredEnergy;
+	currentEN_ = std::max(0.0f, currentEN_); // 0以下にならないように
+
+	// エネルギー回復タイマーをリセット
+	energyRegenTimer_ = energyRegenDelay_;
 }
 
 void Player::DeleteBullets() {
@@ -489,4 +562,144 @@ void Player::DeleteHomingBullets()
 	homingBullets_.remove_if([](const std::unique_ptr<PlayerHomingBullet>& homingBullet) {
 		return homingBullet->IsDead();
 		});
+}
+
+void Player::TakeDamage(float damage) {
+	currentHP_ -= damage;
+	currentHP_ = std::max(0.0f, currentHP_); // 0以下にならないように
+}
+
+void Player::UpdateEnergy() {
+	// エネルギー回復タイマーを更新
+	if (energyRegenTimer_ > 0) {
+		energyRegenTimer_--;
+	}
+
+	// タイマーが0になったらエネルギーを回復
+	if (energyRegenTimer_ <= 0 && currentEN_ < maxEN_) {
+		currentEN_ += energyRegenRate_;
+		currentEN_ = std::min(currentEN_, maxEN_); // 最大値を超えないように
+	}
+}
+void Player::InitializeGauges() {
+	// HPゲージの枠
+	hpGaugeBar_ = std::make_unique<Sprite>();
+	hpGaugeBar_->Initialize(
+		directXCommon_,
+		"white",
+		{ 25.0f, 50.0f },
+		{ 204.0f, 24.0f },
+		{ 0.0f, 0.5f }
+	);
+	hpGaugeBar_->SetColor({ 0.2f, 0.2f, 0.2f, 1.0f }); // 暗い灰色
+
+	// HPゲージの中身
+	hpGaugeFill_ = std::make_unique<Sprite>();
+	hpGaugeFill_->Initialize(
+		directXCommon_,
+		"white",
+		{ 27.0f, 50.0f },
+		{ 200.0f, 20.0f },
+		{ 0.0f, 0.5f }
+	);
+	hpGaugeFill_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色
+
+	// ENゲージの枠
+	enGaugeBar_ = std::make_unique<Sprite>();
+	enGaugeBar_->Initialize(
+		directXCommon_,
+		"white",
+		{ 25.0f, 80.0f },
+		{ 204.0f, 24.0f },
+		{ 0.0f, 0.5f }
+	);
+	enGaugeBar_->SetColor({ 0.2f, 0.2f, 0.2f, 1.0f }); // 暗い灰色
+
+	// ENゲージの中身
+	enGaugeFill_ = std::make_unique<Sprite>();
+	enGaugeFill_->Initialize(
+		directXCommon_,
+		"white",
+		{ 27.0f, 80.0f },
+		{ 200.0f, 20.0f },
+		{ 0.0f, 0.5f }
+	);
+	enGaugeFill_->SetColor({ 0.0f, 0.5f, 1.0f, 1.0f }); // 青色
+}
+
+void Player::UpdateGauges() {
+	// HPゲージの更新
+	if (hpGaugeFill_) {
+		float hpRatio = currentHP_ / maxHP_;
+		Vector2 currentSize = hpGaugeFill_->GetSize();
+		currentSize.x = 200.0f * hpRatio; // 最大幅200に対する割合
+		hpGaugeFill_->SetSize(currentSize);
+
+		// HPが低い時は赤色に変更
+		if (hpRatio < 0.3f) {
+			hpGaugeFill_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色
+		} else if (hpRatio < 0.6f) {
+			hpGaugeFill_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+		} else {
+			hpGaugeFill_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色
+		}
+	}
+
+	// ENゲージの更新
+	if (enGaugeFill_) {
+		float enRatio = currentEN_ / maxEN_;
+		Vector2 currentSize = enGaugeFill_->GetSize();
+		currentSize.x = 200.0f * enRatio; // 最大幅200に対する割合
+		enGaugeFill_->SetSize(currentSize);
+
+		// ENが低い時は暗い青色に変更
+		if (enRatio < 0.3f) {
+			enGaugeFill_->SetColor({ 0.0f, 0.2f, 0.5f, 1.0f }); // 暗い青色
+		} else {
+			enGaugeFill_->SetColor({ 0.0f, 0.5f, 1.0f, 1.0f }); // 通常の青色
+		}
+	}
+}
+
+Vector3 Player::CalculateLeadingShot(const Vector3& enemyPos, const Vector3& enemyVelocity, float bulletSpeed) {
+	// プレイヤーの位置
+	Vector3 playerPos = GetWorldPosition();
+
+	// プレイヤーから敵への相対位置
+	Vector3 relativePos = enemyPos - playerPos;
+
+	// 二次方程式の係数を計算
+	// at^2 + bt + c = 0
+	float a = Dot(enemyVelocity, enemyVelocity) - bulletSpeed * bulletSpeed;
+	float b = 2.0f * Dot(enemyVelocity, relativePos);
+	float c = Dot(relativePos, relativePos);
+
+	// 判別式
+	float discriminant = b * b - 4 * a * c;
+
+	// 解が存在しない場合は現在の敵位置を返す
+	if (discriminant < 0) {
+		return enemyPos;
+	}
+
+	// 二次方程式を解く
+	float sqrtDiscriminant = std::sqrt(discriminant);
+	float t1 = (-b - sqrtDiscriminant) / (2 * a);
+	float t2 = (-b + sqrtDiscriminant) / (2 * a);
+
+	// 正の最小時間を選択
+	float t = 0;
+	if (t1 > 0 && t2 > 0) {
+		t = std::min(t1, t2);
+	} else if (t1 > 0) {
+		t = t1;
+	} else if (t2 > 0) {
+		t = t2;
+	} else {
+		// 両方負の場合は現在の敵位置を返す
+		return enemyPos;
+	}
+
+	// 予測位置を計算
+	return enemyPos + enemyVelocity * t;
 }

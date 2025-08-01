@@ -75,7 +75,15 @@ Vector3 PlayerBullet::GetWorldPosition() {
 }
 
 void PlayerBullet::OnCollision() {
-	isDead_ = true; // デスフラグを立てる
+	// ダメージを受ける
+	TakeDamage(1);
+}
+
+void PlayerBullet::TakeDamage(int damage) {
+	hp_ -= damage;
+	if (hp_ <= 0) {
+		isDead_ = true; // HPが0以下になったら死亡
+	}
 }
 
 void PlayerBullet::SetToVelocityDirection() {
