@@ -251,7 +251,7 @@ void SceneManager::DrawScenesUI() {
 
 void SceneManager::DrawCurrentSceneUI() {
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Current Scene Debug")) {
+	if (ImGui::CollapsingHeader("Current Scene Debug", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (currentScene_) {
 			ImGui::TextColored(ImVec4(0, 1, 0, 1), "Scene: %s", currentSceneName_.c_str());
 			ImGui::Separator();

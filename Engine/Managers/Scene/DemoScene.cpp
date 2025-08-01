@@ -224,6 +224,10 @@ void DemoScene::UpdateGameObjects() {
 
 	// 球体の更新
 	sphere_->Update(viewProjectionMatrix);
+
+	
+	uvTransformX += 0.01f; // UV変換のY座標を更新 
+	sprite_->SetUVTransformTranslate({ uvTransformX, 0.0f });
 	// スプライトの更新
 	sprite_->Update(viewProjectionMatrixSprite);
 	// モデルの更新

@@ -67,7 +67,6 @@ private:
 	std::unique_ptr<Model3D> modelMultiMesh_;
 	std::unique_ptr<Model3D> modelMultiMaterial_;
 
-
 	std::unique_ptr<Sprite> sprite_;
 	std::unique_ptr<GridLine> gridLine_;
 
@@ -86,4 +85,8 @@ private:
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
+
+	// スプライトのUV変換
+	float uvTransformX = 0.0f;
+
 };
