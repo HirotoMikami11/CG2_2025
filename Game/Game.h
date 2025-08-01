@@ -7,8 +7,7 @@
 //最初から用意されているシーン
 #include "Managers/Scene/DemoScene.h"
 //必要なシーン郡
-#include "Scenes/GameScene/GameScene.h"
-#include "Scenes/TitleScene/TitleScene.h"
+
 
 /// 				Transitions							///
 #include "Managers/Transition/SceneTransitionHelper.h"

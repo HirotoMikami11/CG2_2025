@@ -31,15 +31,6 @@
     <Filter Include="Game">
       <UniqueIdentifier>{feec44c0-5ba6-4e64-9ba3-5db0d0ca8d0f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Scenes">
-      <UniqueIdentifier>{91b6173e-1f16-4090-a701-d3fb5a067a8f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Scenes\GameScene">
-      <UniqueIdentifier>{92ccc106-94e0-45b1-96a4-bf83ad623174}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Scenes\TitleScene">
-      <UniqueIdentifier>{657acde6-db28-4149-9d7d-0c9c3feca823}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\RGBShift">
       <UniqueIdentifier>{869937fb-cbe3-4a2d-85c9-d01611d182d2}</UniqueIdentifier>
     </Filter>
@@ -181,45 +172,6 @@
     <Filter Include="Engine\Managers\Transition\TransitionEffect\Slide">
       <UniqueIdentifier>{d1435d44-23bc-485c-b36f-37d4ef080def}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\GameObjects">
-      <UniqueIdentifier>{0126492a-2253-4b67-9cff-eedc8047fabb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\TitlePlayer">
-      <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Player">
-      <UniqueIdentifier>{48f28e37-02ea-469d-8085-0ef416add2ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Player\PlayerBullet">
-      <UniqueIdentifier>{61b3c35b-8a6a-4335-adf7-cd54b55024bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Enemy">
-      <UniqueIdentifier>{56598550-c9c7-447a-b1ab-70c08f84cef9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\EnemyBullet">
-      <UniqueIdentifier>{91b12361-6ee4-4983-b31b-d87d1f43655e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Enemy\State">
-      <UniqueIdentifier>{257d1e67-a471-42a9-b817-99e2a55e03da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\CollisionManager">
-      <UniqueIdentifier>{b30ed82a-661a-440c-b89b-0eb2dc0de461}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Ground">
-      <UniqueIdentifier>{870c0878-97d5-4239-8ee3-2ad5f21793c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Skydome">
-      <UniqueIdentifier>{e391d72a-ce5f-49ea-a8dd-1bc2fa8655f7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\RailCamera">
-      <UniqueIdentifier>{08e0c1ad-2fbd-425a-97db-968da7068377}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Player\PlayerHomingBullet">
-      <UniqueIdentifier>{6ca5a977-7048-49d4-844a-e0795499f9e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\LockOn">
-      <UniqueIdentifier>{00f4bbcc-8f21-414e-985c-095e21211fa1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\BaseSystem\DirectXCommon\PSOFactory">
       <UniqueIdentifier>{e4ebb2ec-6440-411d-a771-08b37296965c}</UniqueIdentifier>
     </Filter>
@@ -251,12 +203,6 @@
     </ClCompile>
     <ClCompile Include="Game\Game.cpp">
       <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp">
-      <Filter>Game\Scenes\GameScene</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
-      <Filter>Game\Scenes\TitleScene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Engine.cpp">
       <Filter>Engine</Filter>
@@ -324,9 +270,6 @@
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Objects\TitlePlayer.cpp">
-      <Filter>Game\GameObjects\TitlePlayer</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
       <Filter>Engine\Managers\Model</Filter>
     </ClCompile>
@@ -393,62 +336,14 @@
     <ClCompile Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.cpp">
       <Filter>Engine\Managers\Transition\TransitionEffect\Slide</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp">
-      <Filter>Game\GameObjects\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\EnemyBullet\EnemyBullet.cpp">
-      <Filter>Game\GameObjects\EnemyBullet</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Player\Player.cpp">
-      <Filter>Game\GameObjects\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerBullet.cpp">
-      <Filter>Game\GameObjects\Player\PlayerBullet</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Managers\Input\InputManager.cpp">
       <Filter>Engine\Managers\Input</Filter>
     </ClCompile>
     <ClCompile Include="Engine\MyMath\TimedCall.cpp">
       <Filter>Engine\MyMath</Filter>
     </ClCompile>
-    <ClCompile Include="Game\CollisionManager\CollisionManager.cpp">
-      <Filter>Game\CollisionManager</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Skydome\Skydome.cpp">
-      <Filter>Game\GameObjects\Skydome</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Ground\Ground.cpp">
-      <Filter>Game\GameObjects\Ground</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Camera\RailCamera.cpp">
-      <Filter>Game\RailCamera</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Objects\Line\LineRenderer.cpp">
       <Filter>Engine\Objects\Line</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.cpp">
-      <Filter>Game\GameObjects\Player\PlayerHomingBullet</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\LockOn\LockOn.cpp">
-      <Filter>Game\GameObjects\LockOn</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Camera\RailCameraEditor.cpp">
-      <Filter>Game\RailCamera</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Camera\RailPoint.cpp">
-      <Filter>Game\RailCamera</Filter>
     </ClCompile>
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\PSOFactory\RootSignatureBuilder.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
@@ -535,12 +430,6 @@
     <ClInclude Include="Game\Game.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Scenes\GameScene\GameScene.h">
-      <Filter>Game\Scenes\GameScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
-      <Filter>Game\Scenes\TitleScene</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Engine.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -619,9 +508,6 @@
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Objects\TitlePlayer.h">
-      <Filter>Game\GameObjects\TitlePlayer</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Managers\Model\ModelManager.h">
       <Filter>Engine\Managers\Model</Filter>
     </ClInclude>
@@ -697,68 +583,14 @@
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.h">
       <Filter>Engine\Managers\Transition\TransitionEffect\Slide</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\Enemy.h">
-      <Filter>Game\GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\EnemyBullet\EnemyBullet.h">
-      <Filter>Game\GameObjects\EnemyBullet</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Player\Player.h">
-      <Filter>Game\GameObjects\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerBullet.h">
-      <Filter>Game\GameObjects\Player\PlayerBullet</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Managers\Input\InputManager.h">
       <Filter>Engine\Managers\Input</Filter>
     </ClInclude>
     <ClInclude Include="Engine\MyMath\TimedCall.h">
       <Filter>Engine\MyMath</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Collider.h">
-      <Filter>Game\GameObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\CollisionManager\CollisionManager.h">
-      <Filter>Game\CollisionManager</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\CollisionManager\CollisionConfig.h">
-      <Filter>Game\CollisionManager</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Skydome\Skydome.h">
-      <Filter>Game\GameObjects\Skydome</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Ground\Ground.h">
-      <Filter>Game\GameObjects\Ground</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Camera\RailCamera.h">
-      <Filter>Game\RailCamera</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Objects\Line\LineRenderer.h">
       <Filter>Engine\Objects\Line</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.h">
-      <Filter>Game\GameObjects\Player\PlayerHomingBullet</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\LockOn\LockOn.h">
-      <Filter>Game\GameObjects\LockOn</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Camera\RailCameraEditor.h">
-      <Filter>Game\RailCamera</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Camera\RailPoint.h">
-      <Filter>Game\RailCamera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\PSOFactory\RootSignatureBuilder.h">
       <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>

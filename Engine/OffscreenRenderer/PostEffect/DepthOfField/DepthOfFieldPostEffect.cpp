@@ -166,7 +166,7 @@ void DepthOfFieldPostEffect::SetBlurStrength(float strength) {
 
 void DepthOfFieldPostEffect::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode(name_.c_str())) {
+	if (ImGui::CollapsingHeader(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
@@ -197,19 +197,12 @@ void DepthOfFieldPostEffect::ImGui() {
 
 				if (ImGui::SliderFloat("Animation Speed", &animationSpeed_, 0.0f, 3.0f)) {
 				}
-
-				ImGui::TreePop();
 			}
 
 			// 情報表示
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", parameters_.time);
-			ImGui::Text("Focus Distance: %.2f", parameters_.focusDistance);
-			ImGui::Text("Focus Range: %.2f", parameters_.focusRange);
-			ImGui::Text("Blur Strength: %.2f", parameters_.blurStrength);
 		}
-
-		ImGui::TreePop();
 	}
 #endif
 }

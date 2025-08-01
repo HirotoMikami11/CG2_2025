@@ -188,7 +188,7 @@ void VignettePostEffect::SetVignetteColor(const Vector4& color) {
 
 void VignettePostEffect::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode(name_.c_str())) {
+	if (ImGui::CollapsingHeader(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
@@ -242,13 +242,8 @@ void VignettePostEffect::ImGui() {
 			// 情報表示
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", parameters_.time);
-			ImGui::Text("Vignette Strength: %.2f", parameters_.vignetteStrength);
-			ImGui::Text("Vignette Radius: %.2f", parameters_.vignetteRadius);
-			ImGui::Text("Vignette Softness: %.2f", parameters_.vignetteSoftness);
-			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 
-		ImGui::TreePop();
 	}
 #endif
 }

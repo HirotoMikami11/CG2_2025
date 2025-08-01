@@ -191,7 +191,7 @@ void DepthFogPostEffect::SetFogDensity(float density) {
 
 void DepthFogPostEffect::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode(name_.c_str())) {
+	if (ImGui::CollapsingHeader(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
@@ -241,13 +241,8 @@ void DepthFogPostEffect::ImGui() {
 			// 情報表示
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", parameters_.time);
-			ImGui::Text("Fog Near: %.2f", parameters_.fogNear);
-			ImGui::Text("Fog Far: %.2f", parameters_.fogFar);
-			ImGui::Text("Fog Density: %.2f", parameters_.fogDensity);
-			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 
-		ImGui::TreePop();
 	}
 #endif
 }

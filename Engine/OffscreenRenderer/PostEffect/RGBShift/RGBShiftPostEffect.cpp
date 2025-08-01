@@ -160,7 +160,7 @@ void RGBShiftPostEffect::SetRGBShiftStrength(float strength) {
 
 void RGBShiftPostEffect::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode(name_.c_str())) {
+	if (ImGui::CollapsingHeader(name_.c_str())) {
 		// エフェクトの状態表示
 		ImGui::Text("Effect Status: %s", isEnabled_ ? "ENABLED" : "DISABLED");
 		ImGui::Text("Initialized: %s", isInitialized_ ? "YES" : "NO");
@@ -193,11 +193,8 @@ void RGBShiftPostEffect::ImGui() {
 			// 情報表示
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", parameters_.time);
-			ImGui::Text("RGB Shift Strength: %.2f", parameters_.rgbShiftStrength);
-			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 
-		ImGui::TreePop();
 	}
 #endif
 }
