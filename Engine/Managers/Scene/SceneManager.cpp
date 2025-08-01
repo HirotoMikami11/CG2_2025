@@ -250,17 +250,16 @@ void SceneManager::DrawScenesUI() {
 }
 
 void SceneManager::DrawCurrentSceneUI() {
-#ifdef _DEBUG
+
 	if (ImGui::CollapsingHeader("Current Scene Debug", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (currentScene_) {
 			ImGui::TextColored(ImVec4(0, 1, 0, 1), "Scene: %s", currentSceneName_.c_str());
 			ImGui::Separator();
-
 			// 現在のシーンのImGuiを呼び出し
 			currentScene_->ImGui();
 		} else {
 			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "No active scene");
 		}
 	}
-#endif
+
 }
