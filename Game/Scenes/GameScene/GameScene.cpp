@@ -350,20 +350,6 @@ void GameScene::ImGui() {
 	player_->ImGui();
 	ImGui::Spacing();
 
-	// 敵のImGui
-	ImGui::Text("Enemies Count: %zu", enemies_.size());
-	for (size_t i = 0; i < enemies_.size() && i < 3; ++i) { // 最初の3体のみ表示
-		if (enemies_.size() > i) {
-			auto it = enemies_.begin();
-			std::advance(it, i);
-			if (*it) {
-				ImGui::Text("Enemy %zu", i);
-				(*it)->ImGui();
-			}
-		}
-	}
-	ImGui::Spacing();
-
 	// 敵弾のImGui
 	ImGui::Text("Enemy Bullets Count: %zu", enemyBullets_.size());
 	ImGui::Spacing();
@@ -372,6 +358,12 @@ void GameScene::ImGui() {
 	ImGui::Text("Ground");
 	ground_->ImGui();
 	ImGui::Spacing();
+
+	// 天球のImGui
+	ImGui::Text("Skydome");
+	skydome_->ImGui();
+	ImGui::Spacing();
+
 
 	// ライトのImGui
 	ImGui::Text("Lighting");

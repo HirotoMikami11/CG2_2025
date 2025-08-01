@@ -36,6 +36,11 @@ public:
 	/// <param name="directionalLight">平行光源</param>
 	void Draw(const Light& directionalLight);
 
+
+	/// <summary>
+	/// imgui
+	/// </summary>
+	void ImGui();
 private:
 	// ゲームオブジェクト
 	std::unique_ptr<Model3D> gameObject_;

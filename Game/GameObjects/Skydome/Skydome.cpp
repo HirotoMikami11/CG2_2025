@@ -33,3 +33,12 @@ void Skydome::Draw(const Light& directionalLight) {
 	// 天球の描画
 	gameObject_->Draw(directionalLight);
 }
+
+void Skydome::ImGui()
+{
+#ifdef _DEBUG
+	if (gameObject_) {
+		gameObject_->ImGui();
+	}
+#endif
+}
