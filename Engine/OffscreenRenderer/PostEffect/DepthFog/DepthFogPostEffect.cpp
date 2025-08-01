@@ -241,10 +241,6 @@ void DepthFogPostEffect::ImGui() {
 			// 情報表示
 			ImGui::Separator();
 			ImGui::Text("Current Time: %.2f", parameters_.time);
-			ImGui::Text("Fog Near: %.2f", parameters_.fogNear);
-			ImGui::Text("Fog Far: %.2f", parameters_.fogFar);
-			ImGui::Text("Fog Density: %.2f", parameters_.fogDensity);
-			ImGui::Text("Animation Speed: %.2f", animationSpeed_);
 		}
 
 		ImGui::TreePop();

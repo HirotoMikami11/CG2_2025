@@ -6,7 +6,7 @@
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 
 //タイトルプレイヤー
-#include "Objects/TitlePlayer.h"
+#include "GameObjects/TitlePlayer/TitlePlayer.h"
 
 class TitleScene : public BaseScene
 {

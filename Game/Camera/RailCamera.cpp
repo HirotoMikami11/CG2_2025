@@ -6,7 +6,7 @@ RailCamera::RailCamera()
 	, speed_(0.001f)
 	, isMoving_(true)
 	, loopEnabled_(true)
-	, lookAheadDistance_(0.01f)
+	, lookAheadDistance_(0.005f)
 	, uniformSpeedEnabled_(true)
 	, totalLength_(0.0f)
 	, lengthTableResolution_(1000)
@@ -14,8 +14,10 @@ RailCamera::RailCamera()
 	, railTrackColor_({ 1.0f, 0.0f, 0.0f, 1.0f })
 	, railTrackSegments_(100)
 	, showControlPoints_(true)
-	, controlPointColor_({ 0.0f, 1.0f, 0.0f, 1.0f })
+	, controlPointColor_({ 0.0f, 1.0f, 0.0f, 1.0f })  // 通常は緑色
+	, selectedPointColor_({ 1.0f, 1.0f, 0.0f, 1.0f })  // 選択時は黄色
 	, controlPointSize_(0.5f)
+	, selectedPointIndex_(-1)
 	, directXCommon_(nullptr) {
 }
 
@@ -39,25 +41,10 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	lineRenderer_ = std::make_unique<LineRenderer>();
 	lineRenderer_->Initialize(directXCommon_);
 
-	// デフォルトの制御点を設定
-	controlPoints_ = {
-		{0,  0,   0 },
-		{10, 10,  0 },
-		{10, 15,  0 },
-		{20, 15,  0 },
-		{20, 0,   0 },
-		{20, 0,   10},
-		{30, -10, 5 },
-		{20, -10, 0 },
-		{20, -15, 5 },
-		{10, -15, 0 },
-		{10, -10, 0 },
-		{0,  0,   0 },
-	};
 
 	// レール移動パラメータの初期化
 	t_ = 0.0f;
-	speed_ = 0.001f;
+	speed_ = 0.00015f;
 	isMoving_ = true;
 	loopEnabled_ = true;
 	lookAheadDistance_ = 0.01f;
@@ -99,7 +86,7 @@ void RailCamera::UpdateCameraPosition() {
 				isMoving_ = false;  // 移動を停止
 			}
 		}
-		
+
 		//距離からtパラメータを取得
 		float newT = GetTFromLength(currentLength);
 		t_ = newT;
@@ -140,6 +127,30 @@ void RailCamera::UpdateCameraPosition() {
 	rotation.z = 0.0f;
 
 	transform_.SetRotation(rotation);
+}
+
+Vector3 RailCamera::GetForwardDirection() const {
+	if (controlPoints_.size() < 4) {
+		return Vector3{ 0.0f, 0.0f, 1.0f }; // デフォルト方向
+	}
+
+	// 現在の位置から少し先の位置を計算して進行方向を求める
+	float lookAheadT = t_ + 0.001f; // 小さな値で先読み
+	if (lookAheadT > 1.0f) {
+		lookAheadT = 1.0f;
+	}
+
+	Vector3 currentPos = CatmullRomPosition(controlPoints_, t_);
+	Vector3 futurePos = CatmullRomPosition(controlPoints_, lookAheadT);
+
+	Vector3 forwardDirection = futurePos - currentPos;
+
+	// 方向ベクトルが極小の場合はデフォルト方向を返す
+	if (Length(forwardDirection) < 0.001f) {
+		return Vector3{ 0.0f, 0.0f, 1.0f };
+	}
+
+	return Normalize(forwardDirection);
 }
 
 void RailCamera::BuildLengthTable() {
@@ -271,17 +282,22 @@ void RailCamera::DrawControlPoints() {
 	}
 
 	// 制御点を小さな十字で表示
-	for (const auto& point : controlPoints_) {
+	for (int i = 0; i < static_cast<int>(controlPoints_.size()); ++i) {
+		const Vector3& point = controlPoints_[i];
+
+		// 選択されたポイントかどうかで色を変える
+		Vector4 pointColor = (i == selectedPointIndex_) ? selectedPointColor_ : controlPointColor_;
+
 		Vector3 offset1 = { controlPointSize_, 0.0f, 0.0f };
 		Vector3 offset2 = { 0.0f, controlPointSize_, 0.0f };
 		Vector3 offset3 = { 0.0f, 0.0f, controlPointSize_ };
 
 		// X軸方向の線
-		lineRenderer_->AddLine(point - offset1, point + offset1, controlPointColor_);
+		lineRenderer_->AddLine(point - offset1, point + offset1, pointColor);
 		// Y軸方向の線
-		lineRenderer_->AddLine(point - offset2, point + offset2, controlPointColor_);
+		lineRenderer_->AddLine(point - offset2, point + offset2, pointColor);
 		// Z軸方向の線
-		lineRenderer_->AddLine(point - offset3, point + offset3, controlPointColor_);
+		lineRenderer_->AddLine(point - offset3, point + offset3, pointColor);
 	}
 }
 
@@ -352,7 +368,7 @@ void RailCamera::ImGui() {
 	}
 
 	ImGui::Checkbox("Loop Movement", &loopEnabled_);
-	ImGui::DragFloat("Speed", &speed_, 0.0001f, 0.0001f, 0.01f);
+	ImGui::DragFloat("Speed", &speed_, (1.0f / 6000.0f), 0.0001f, 0.0001f);
 	ImGui::DragFloat("Look Ahead Distance", &lookAheadDistance_, 0.001f);
 
 	// 等間隔移動設定
@@ -376,6 +392,12 @@ void RailCamera::ImGui() {
 			BuildLengthTable();
 		}
 	}
+
+	// 進行方向表示
+	ImGui::Separator();
+	ImGui::Text("Direction Info:");
+	Vector3 forwardDir = GetForwardDirection();
+	ImGui::Text("Forward Direction: (%.3f, %.3f, %.3f)", forwardDir.x, forwardDir.y, forwardDir.z);
 
 	ImGui::Separator();
 
@@ -406,8 +428,19 @@ void RailCamera::ImGui() {
 		trackSettingsChanged = true;
 	}
 
+	if (ImGui::ColorEdit4("Selected Point Color", &selectedPointColor_.x)) {
+		trackSettingsChanged = true;
+	}
+
 	if (ImGui::DragFloat("Control Point Size", &controlPointSize_, 0.01f, 0.1f, 2.0f)) {
 		trackSettingsChanged = true;
+	}
+
+	// 選択情報表示
+	if (selectedPointIndex_ >= 0) {
+		ImGui::Text("Selected Point: %d", selectedPointIndex_);
+	} else {
+		ImGui::Text("Selected Point: None");
 	}
 
 	// 軌道設定が変更された場合は再生成

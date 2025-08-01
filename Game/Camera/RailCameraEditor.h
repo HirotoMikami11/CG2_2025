@@ -91,6 +91,16 @@ private:
 	bool isDirty_;
 
 	/// <summary>
+	/// 名前編集用バッファ
+	/// </summary>
+	char nameEditBuffer_[256];
+
+	/// <summary>
+	/// 名前編集中のポイントインデックス
+	/// </summary>
+	int editingNameIndex_;
+
+	/// <summary>
 	/// RailCameraに制御点を適用
 	/// </summary>
 	void ApplyToRailCamera();
@@ -123,4 +133,20 @@ private:
 	/// データ変更フラグを設定
 	/// </summary>
 	void MarkDirty();
+
+	/// <summary>
+	/// 名前編集を開始
+	/// </summary>
+	/// <param name="pointIndex">編集するポイントのインデックス</param>
+	void StartNameEdit(int pointIndex);
+
+	/// <summary>
+	/// 名前編集を確定
+	/// </summary>
+	void ConfirmNameEdit();
+
+	/// <summary>
+	/// 名前編集をキャンセル
+	/// </summary>
+	void CancelNameEdit();
 };

@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Managers/ImGui/ImGuiManager.h"
 #include "GameObjects/LockOn/LockOn.h"
+#include "Camera/RailCamera.h"
 
 Player::Player() {
 }
@@ -74,8 +75,8 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 移動処理
 	Move();
 
-	// 回転処理
-	Rotate();
+	// 回転処理（レールカメラ対応）
+	RotateWithRailCamera();
 
 	//攻撃方法の変更
 	SwitchAttackMode();
@@ -135,44 +136,44 @@ void Player::ImGui() {
 #ifdef _DEBUG
 	// 現在の名前を表示
 	if (ImGui::TreeNode("Player")) {
-	if (gameObject_) {
-		gameObject_->ImGui();
+		if (gameObject_) {
+			gameObject_->ImGui();
+		}
+
+		/// 攻撃モード情報
+		ImGui::Separator();
+		ImGui::Text("Attack Mode");
+		const char* modeText = "";
+		switch (attackMode_) {
+		case AttackMode::Normal:
+			modeText = "Normal";
+			break;
+		case AttackMode::MultiLockOn:
+			modeText = "Multi Lock-On";
+			break;
+		}
+		ImGui::Text("Current Mode: %s", modeText);
+		ImGui::Text("Multi Lock-On Targets: %zu", multiLockOnTargets_.size());
+		ImGui::Separator();
+		ImGui::Text("Bullets Count: %zu", bullets_.size());
+
+		// レティクル情報
+		ImGui::Separator();
+		ImGui::Text("Reticle Info:");
+		Vector3 reticlePos = GetWorldPosition3DReticle();
+		ImGui::Text("3D Reticle Position: (%.2f, %.2f, %.2f)", reticlePos.x, reticlePos.y, reticlePos.z);
+
+		Vector2 spritePos = sprite2DReticle_->GetPosition();
+		ImGui::Text("2D Reticle Position: (%.2f, %.2f)", spritePos.x, spritePos.y);
+
+		// KamataEngineのデバッグ表示と同様の情報を表示
+		Vector3 worldPos = GetWorldPosition();
+		ImGui::Text("World Position: (%.2f, %.2f, %.2f)", worldPos.x, worldPos.y, worldPos.z);
+
+		Vector3 localPos = gameObject_->GetPosition();
+		ImGui::Text("Local Position: (%.2f, %.2f, %.2f)", localPos.x, localPos.y, localPos.z);
+		ImGui::TreePop();
 	}
-
-	/// 攻撃モード情報
-	ImGui::Separator();
-	ImGui::Text("Attack Mode");
-	const char* modeText = "";
-	switch (attackMode_) {
-	case AttackMode::Normal:
-		modeText = "Normal";
-		break;
-	case AttackMode::MultiLockOn:
-		modeText = "Multi Lock-On";
-		break;
-	}
-	ImGui::Text("Current Mode: %s", modeText);
-	ImGui::Text("Multi Lock-On Targets: %zu", multiLockOnTargets_.size());
-	ImGui::Separator();
-	ImGui::Text("Bullets Count: %zu", bullets_.size());
-
-	// レティクル情報
-	ImGui::Separator();
-	ImGui::Text("Reticle Info:");
-	Vector3 reticlePos = GetWorldPosition3DReticle();
-	ImGui::Text("3D Reticle Position: (%.2f, %.2f, %.2f)", reticlePos.x, reticlePos.y, reticlePos.z);
-
-	Vector2 spritePos = sprite2DReticle_->GetPosition();
-	ImGui::Text("2D Reticle Position: (%.2f, %.2f)", spritePos.x, spritePos.y);
-
-	// KamataEngineのデバッグ表示と同様の情報を表示
-	Vector3 worldPos = GetWorldPosition();
-	ImGui::Text("World Position: (%.2f, %.2f, %.2f)", worldPos.x, worldPos.y, worldPos.z);
-
-	Vector3 localPos = gameObject_->GetPosition();
-	ImGui::Text("Local Position: (%.2f, %.2f, %.2f)", localPos.x, localPos.y, localPos.z);
-	ImGui::TreePop();
-}
 #endif
 }
 
@@ -253,6 +254,31 @@ void Player::Rotate() {
 
 	// 回転を設定
 	gameObject_->SetRotation(currentRotation);
+}
+
+void Player::RotateWithRailCamera() {
+	// レールカメラを使用している場合は、カメラの進行方向に合わせて回転
+	CameraController* cameraController = CameraController::GetInstance();
+	if (cameraController && cameraController->GetActiveCameraId() == "rail") {
+		RailCamera* railCamera = dynamic_cast<RailCamera*>(cameraController->GetCamera("rail"));
+		if (railCamera) {
+			// レールカメラの進行方向を取得
+			Vector3 forwardDirection = railCamera->GetForwardDirection();
+
+			// 進行方向からY軸回転角を計算
+			float targetRotationY = std::atan2(forwardDirection.x, forwardDirection.z);
+
+			// プレイヤーの回転を設定
+			Vector3 currentRotation = gameObject_->GetRotation();
+			currentRotation.y = targetRotationY;
+			gameObject_->SetRotation(currentRotation);
+
+			return; // レールカメラ使用時は通常の回転処理をスキップ
+		}
+	}
+
+	// レールカメラを使用していない場合は通常の回転処理
+	Rotate();
 }
 
 void Player::SwitchAttackMode() {
@@ -416,18 +442,27 @@ void Player::ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix)
 
 void Player::ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix) {
 	// キーボード操作：プレイヤーの向きに基づいて3Dレティクルを配置
-	// 自機から3Dレティクルへのオフセット（Z+方向）
-	Vector3 offset = { 0.0f, 0.0f, 1.0f };
 
-	// 自機のワールド行列の回転を反映
-	Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
-	offset = Matrix4x4TransformNormal(offset, worldMatrix);
+	// レールカメラ使用時は進行方向を使用、それ以外は従来通り
+	Vector3 forwardDirection = { 0.0f, 0.0f, 1.0f }; // デフォルト方向
+
+	CameraController* cameraController = CameraController::GetInstance();
+	if (cameraController && cameraController->GetActiveCameraId() == "rail") {
+		RailCamera* railCamera = dynamic_cast<RailCamera*>(cameraController->GetCamera("rail"));
+		if (railCamera) {
+			forwardDirection = railCamera->GetForwardDirection();
+		}
+	} else {
+		// 従来の方法：自機のワールド行列の回転を反映
+		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
+		forwardDirection = Matrix4x4TransformNormal(forwardDirection, worldMatrix);
+	}
 
 	// ベクトルの長さを整える
-	offset = Normalize(offset) * kDistancePlayerTo3DReticleKeyborad;
+	forwardDirection = Normalize(forwardDirection) * kDistancePlayerTo3DReticleKeyborad;
 
 	// 3Dレティクルの座標を設定
-	Vector3 reticlePosition = GetWorldPosition() + offset;
+	Vector3 reticlePosition = GetWorldPosition() + forwardDirection;
 	reticle3D_->SetPosition(reticlePosition);
 
 	// 3Dレティクルの位置を2Dスプライトに反映
@@ -455,4 +490,3 @@ void Player::DeleteHomingBullets()
 		return homingBullet->IsDead();
 		});
 }
-

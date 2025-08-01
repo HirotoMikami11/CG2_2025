@@ -223,6 +223,9 @@
     <Filter Include="Engine\BaseSystem\DirectXCommon\PSOFactory">
       <UniqueIdentifier>{e4ebb2ec-6440-411d-a771-08b37296965c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObjects\Player\PlayerAttendant">
+      <UniqueIdentifier>{e313422a-f0a5-41b9-be33-9af9ce8b9f7a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -323,9 +326,6 @@
     </ClCompile>
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\TitlePlayer.cpp">
-      <Filter>Game\GameObjects\TitlePlayer</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp">
       <Filter>Engine\Managers\Model</Filter>
@@ -458,6 +458,12 @@
     </ClCompile>
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\PSOFactory\PSOFactory.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseAttendant.cpp">
+      <Filter>Game\GameObjects\Player\PlayerAttendant</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\TitlePlayer\TitlePlayer.cpp">
+      <Filter>Game\GameObjects\TitlePlayer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -619,9 +625,6 @@
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Objects\TitlePlayer.h">
-      <Filter>Game\GameObjects\TitlePlayer</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Managers\Model\ModelManager.h">
       <Filter>Engine\Managers\Model</Filter>
     </ClInclude>
@@ -768,6 +771,12 @@
     </ClInclude>
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\PSOFactory\PSOFactory.h">
       <Filter>Engine\BaseSystem\DirectXCommon\PSOFactory</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseAttendant.h">
+      <Filter>Game\GameObjects\Player\PlayerAttendant</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\TitlePlayer\TitlePlayer.h">
+      <Filter>Game\GameObjects\TitlePlayer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

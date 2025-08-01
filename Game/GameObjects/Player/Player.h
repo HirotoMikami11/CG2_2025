@@ -11,6 +11,7 @@
 #include "GameObjects/Enemy/Enemy.h"
 #include "GameObjects/Collider.h"	//衝突判定
 #include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
+#include "CameraController/CameraController.h" // カメラコントローラー
 
 // 前方宣言
 class LockOn;
@@ -219,9 +220,14 @@ private:
 	void Move();
 
 	/// <summary>
-	/// 回転処理
+	/// 回転処理（従来版）
 	/// </summary>
 	void Rotate();
+
+	/// <summary>
+	/// レールカメラ対応回転処理
+	/// </summary>
+	void RotateWithRailCamera();
 
 	/// <summary>
 	/// 攻撃モード切り替え処理

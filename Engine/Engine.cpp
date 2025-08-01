@@ -68,9 +68,9 @@ void Engine::LoadDefaultResources() {
 	///								テクスチャの読み込み							///
 	///*-----------------------------------------------------------------------*///
 
-	textureManager_->LoadTexture("resources/uvChecker.png", "uvChecker");
-	textureManager_->LoadTexture("resources/monsterBall.png", "monsterBall");
-	textureManager_->LoadTexture("resources/white2x2.png", "white");
+	textureManager_->LoadTexture("resources/Texture/uvChecker.png", "uvChecker");
+	textureManager_->LoadTexture("resources/Texture/monsterBall.png", "monsterBall");
+	textureManager_->LoadTexture("resources/Texture/white2x2.png", "white");
 
 	///*-----------------------------------------------------------------------*///
 	///								音声データの読み込み							///

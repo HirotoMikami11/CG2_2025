@@ -54,7 +54,7 @@ void GameScene::ConfigureOffscreenEffects() {
 
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
-		depthFogEffect->SetEnabled(true);
+		//depthFogEffect->SetEnabled(true);
 		depthFogEffect->SetFogDistance(0.2f, 260.0f);//レールカメラの時は180程度
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();

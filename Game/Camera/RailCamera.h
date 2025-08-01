@@ -141,6 +141,24 @@ public:
 	/// <param name="progress">進行度（0.0-1.0）</param>
 	void SetProgress(float progress) { t_ = std::clamp(progress, 0.0f, 1.0f); }
 
+	/// <summary>
+	/// 現在の進行方向ベクトルを取得
+	/// </summary>
+	/// <returns>正規化された進行方向ベクトル</returns>
+	Vector3 GetForwardDirection() const;
+
+	/// <summary>
+	/// 選択されたポイントのインデックスを設定（エディタ用）
+	/// </summary>
+	/// <param name="index">選択されたポイントのインデックス（-1で選択解除）</param>
+	void SetSelectedPointIndex(int index) { selectedPointIndex_ = index; }
+
+	/// <summary>
+	/// 選択されたポイントのインデックスを取得
+	/// </summary>
+	/// <returns>選択されたポイントのインデックス（-1は選択なし）</returns>
+	int GetSelectedPointIndex() const { return selectedPointIndex_; }
+
 private:
 	// トランスフォーム
 	Transform3D transform_;
@@ -179,7 +197,11 @@ private:
 	// 制御点描画設定
 	bool showControlPoints_;    // 制御点表示フラグ
 	Vector4 controlPointColor_; // 制御点の色
+	Vector4 selectedPointColor_; // 選択された制御点の色
 	float controlPointSize_;    // 制御点のサイズ
+
+	// エディタ用
+	int selectedPointIndex_;    // 選択された制御点のインデックス
 
 	// 初期値保存用
 	Vector3 initialPosition_;
