@@ -32,8 +32,8 @@ void DebugCamera::Update() {
 
 	if (enableCameraControl_) {
 		HandlePivotRotation();      // 中クリックでピボット回転
-		HandleCameraMovement();     // Shift+中クリックで移動
-		HandleZoom();               // マウスホイールでズーム
+		HandleCameraMovement();     // Shift+ 中クリックで移動
+		HandleZoom();               // Shift+ マウスホイールでズーム
 		HandleKeyboardMovement();   // キーボードでの移動
 	}
 
@@ -61,6 +61,8 @@ void DebugCamera::SetPosition(const Vector3& position) {
 	cameraTransform_.translate = position;
 	cartesianPosition_ = position;
 	UpdateSphericalFromPosition();
+	// 回転を反映して10m先にターゲットを配置
+	target_ = CalculateTargetFromRotation(position, { 0,0,0 });
 }
 
 void DebugCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotation) {
@@ -211,17 +213,19 @@ void DebugCamera::HandleCameraMovement() {
 }
 
 void DebugCamera::HandleZoom() {
-	// マウスホイールでズーム
-	float wheelDelta = static_cast<float>(input_->GetMouseWheel());
-	if (wheelDelta != 0.0f) {
-		// 距離を変更
-		spherical_.radius -= wheelDelta * zoomSensitivity_;
+	// Shift + マウスホイールでズーム
+	if (input_->IsKeyDown(DIK_LSHIFT)) {
+		float wheelDelta = static_cast<float>(input_->GetMouseWheel());
+		if (wheelDelta != 0.0f) {
+			// 距離を変更
+			spherical_.radius -= wheelDelta * zoomSensitivity_;
 
-		// 距離を制限
-		spherical_.radius = std::clamp(spherical_.radius, minDistance_, maxDistance_);
+			// 距離を制限
+			spherical_.radius = std::clamp(spherical_.radius, minDistance_, maxDistance_);
 
-		// 球面座標からカメラ位置を更新
-		UpdatePositionFromSpherical();
+			// 球面座標からカメラ位置を更新
+			UpdatePositionFromSpherical();
+		}
 	}
 }
 
@@ -362,7 +366,7 @@ void DebugCamera::ImGui() {
 			positionChanged = true;
 		}
 
-		if (ImGui::DragFloat3("Rotation", &cartesianRotation_.x, 0.01f, -3.14159f, 3.14159f)) {
+		if (ImGui::DragFloat3("Rotation", &cartesianRotation_.x, 0.01f, -(float)M_PI, (float)M_PI)) {
 			cameraTransform_.rotate = cartesianRotation_;
 			rotationChanged = true;
 		}
@@ -379,12 +383,12 @@ void DebugCamera::ImGui() {
 	// 球面座標系の設定（折りたたみ可能）
 	if (ImGui::CollapsingHeader("Spherical Coordinates")) {
 		ImGui::Text("  Radius: %.2f", spherical_.radius);
-		ImGui::Text("  Theta: %.2f rad (%.1f deg)", spherical_.theta, spherical_.theta * 180.0f / 3.14159f);
-		ImGui::Text("  Phi: %.2f rad (%.1f deg)", spherical_.phi, spherical_.phi * 180.0f / 3.14159f);
+		ImGui::Text("  Theta: %.2f rad (%.1f deg)", spherical_.theta, spherical_.theta * 180.0f / (float)M_PI);
+		ImGui::Text("  Phi: %.2f rad (%.1f deg)", spherical_.phi, spherical_.phi * 180.0f / (float)M_PI);
 
 		ImGui::DragFloat("Distance", &spherical_.radius, 0.1f, minDistance_, maxDistance_);
 
-		if (ImGui::DragFloat("Theta", &spherical_.theta, 0.01f, -3.14159f, 3.14159f) ||
+		if (ImGui::DragFloat("Theta", &spherical_.theta, 0.01f, -(float)M_PI, (float)M_PI) ||
 			ImGui::DragFloat("Phi", &spherical_.phi, 0.01f, minPhi_, maxPhi_)) {
 			UpdatePositionFromSpherical();
 		}
@@ -413,9 +417,9 @@ void DebugCamera::ImGui() {
 	if (ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Text("TAB: Toggle camera control");
 		ImGui::Text("Shift + Enter: Toggle camera control");
-		ImGui::Text("Middle Mouse: Orbit around target");
 		ImGui::Text("Shift + Middle Mouse: Pan camera");
-		ImGui::Text("Mouse Wheel: Zoom in/out");
+		ImGui::Text("Shift + Mouse Wheel: Zoom in/out");
+		ImGui::Text("Middle Mouse: Orbit around target");
 		ImGui::Text("WASD: Move camera and target");
 		ImGui::Text("QE: Move up/down");
 	}

@@ -193,7 +193,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE PostProcessChain::ApplyEffectsWithDepth(D3D12_GPU_DE
 }
 
 
-void PostProcessChain::SetAllEffectsEnabled(bool enabled){
+void PostProcessChain::SetAllEffectsEnabled(bool enabled) {
 	for (size_t i = 0; i < effects_.size(); ++i) {
 		effects_[i]->SetEnabled(enabled);
 	}
@@ -308,65 +308,65 @@ size_t PostProcessChain::GetDepthRequiredEffectCount() const {
 
 void PostProcessChain::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::TreeNode("Post Process Chain")) {
-		ImGui::Text("Effects Count: %zu", effects_.size());
-		ImGui::Text("Chain Size: %dx%d", width_, height_);
+	//if (ImGui::TreeNode("Post Process Chain")) {
+	ImGui::Text("Effects Count: %zu", effects_.size());
+	ImGui::Text("Chain Size: %dx%d", width_, height_);
 
-		// 有効なエフェクト数をカウント
-		size_t activeCount = GetActiveEffectCount();
-		size_t depthRequiredCount = GetDepthRequiredEffectCount();
-		ImGui::Text("Active Effects: %zu", activeCount);
-		ImGui::Text("Depth Required Effects: %zu", depthRequiredCount);
+	// 有効なエフェクト数をカウント
+	size_t activeCount = GetActiveEffectCount();
+	size_t depthRequiredCount = GetDepthRequiredEffectCount();
+	ImGui::Text("Active Effects: %zu", activeCount);
+	ImGui::Text("Depth Required Effects: %zu", depthRequiredCount);
 
-		// OffscreenTriangle情報
-		ImGui::Separator();
-		ImGui::Text("Render Method: OffscreenTriangle");
-		ImGui::Text("Triangle Valid: %s", offscreenTriangle_ && offscreenTriangle_->IsValid() ? "YES" : "NO");
+	// OffscreenTriangle情報
+	ImGui::Separator();
+	ImGui::Text("Render Method: OffscreenTriangle");
+	ImGui::Text("Triangle Valid: %s", offscreenTriangle_ && offscreenTriangle_->IsValid() ? "YES" : "NO");
 
 
 
-		ImGui::Separator();
+	ImGui::Separator();
 
-		// 各エフェクトのImGui
-		for (size_t i = 0; i < effects_.size(); ++i) {
-			ImGui::PushID(static_cast<int>(i));
+	// 各エフェクトのImGui
+	for (size_t i = 0; i < effects_.size(); ++i) {
+		ImGui::PushID(static_cast<int>(i));
 
-			// エフェクト名とインデックス、深度要求の表示
-			std::string effectInfo = std::format("[{}] {}", i, effects_[i]->GetName());
-			if (effects_[i]->RequiresDepthTexture()) {
-				effectInfo += " [DEPTH]";
-			}
-			ImGui::Text("%s", effectInfo.c_str());
-			ImGui::SameLine();
-
-			// 有効/無効チェックボックス
-			bool enabled = effects_[i]->IsEnabled();
-			if (ImGui::Checkbox("##enabled", &enabled)) {
-				effects_[i]->SetEnabled(enabled);
-			}
-
-			// 順序変更ボタン
-			if (i > 0) {
-				ImGui::SameLine();
-				if (ImGui::ArrowButton("##up", ImGuiDir_Up)) {
-					MoveEffect(i, i - 1);
-				}
-			}
-			if (i < effects_.size() - 1) {
-				ImGui::SameLine();
-				if (ImGui::ArrowButton("##down", ImGuiDir_Down)) {
-					MoveEffect(i, i + 1);
-				}
-			}
-
-			// エフェクト固有のImGui
-			effects_[i]->ImGui();
-
-			ImGui::PopID();
-			ImGui::Separator();
+		// エフェクト名とインデックス、深度要求の表示
+		std::string effectInfo = std::format("[{}] {}", i, effects_[i]->GetName());
+		if (effects_[i]->RequiresDepthTexture()) {
+			effectInfo += " [DEPTH]";
 		}
-		ImGui::TreePop();
+		ImGui::Text("%s", effectInfo.c_str());
+		ImGui::SameLine();
+
+		// 有効/無効チェックボックス
+		bool enabled = effects_[i]->IsEnabled();
+		if (ImGui::Checkbox("##enabled", &enabled)) {
+			effects_[i]->SetEnabled(enabled);
+		}
+
+		// 順序変更ボタン
+		if (i > 0) {
+			ImGui::SameLine();
+			if (ImGui::ArrowButton("##up", ImGuiDir_Up)) {
+				MoveEffect(i, i - 1);
+			}
+		}
+		if (i < effects_.size() - 1) {
+			ImGui::SameLine();
+			if (ImGui::ArrowButton("##down", ImGuiDir_Down)) {
+				MoveEffect(i, i + 1);
+			}
+		}
+
+		// エフェクト固有のImGui
+		effects_[i]->ImGui();
+
+		ImGui::PopID();
+		ImGui::Separator();
 	}
+	//	ImGui::TreePop();
+	//}
 #endif
 }
 

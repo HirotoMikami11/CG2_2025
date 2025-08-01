@@ -101,7 +101,7 @@ void NormalCamera::ImGui() {
 		UpdateMatrix();
 	}
 
-	if (ImGui::SliderFloat3("Rotation", &cameraTransform_.rotate.x, -3.14159f, 3.14159f)) {
+	if (ImGui::SliderFloat3("Rotation", &cameraTransform_.rotate.x, -(float)M_PI, (float)M_PI)) {
 		// 回転変更時は行列を更新
 		UpdateMatrix();
 	}
