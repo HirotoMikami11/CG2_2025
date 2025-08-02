@@ -3,7 +3,7 @@
 #include <string>
 
 /// <summary>
-/// レールカメラの制御点（簡略化版）
+/// レールカメラの制御点
 /// </summary>
 class RailPoint {
 public:

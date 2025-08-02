@@ -465,6 +465,15 @@
     <ClCompile Include="Game\GameObjects\TitlePlayer\TitlePlayer.cpp">
       <Filter>Game\GameObjects\TitlePlayer</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObjects\Player\PlayerHealth.cpp">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Player\PlayerReticle.cpp">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Player\PlayerUI.cpp">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -777,6 +786,15 @@
     </ClInclude>
     <ClInclude Include="Game\GameObjects\TitlePlayer\TitlePlayer.h">
       <Filter>Game\GameObjects\TitlePlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Player\PlayerHealth.h">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Player\PlayerReticle.h">
+      <Filter>Game\GameObjects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Player\PlayerUI.h">
+      <Filter>Game\GameObjects\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

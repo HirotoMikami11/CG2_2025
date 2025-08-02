@@ -59,7 +59,10 @@ void GameScene::ConfigureOffscreenEffects() {
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
-		depthOfFieldEffect->SetEnabled(false);
+		//depthOfFieldEffect->SetEnabled(true);
+		depthOfFieldEffect->SetFocusDistance(2.0f); // フォーカス距離
+		depthOfFieldEffect->SetFocusRange(30.0f); // フォーカス範囲
+	
 	}
 
 	auto* vignettePostEffect = offscreenRenderer_->GetVignetteEffect();

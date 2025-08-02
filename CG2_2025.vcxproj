@@ -163,6 +163,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerBullet.cpp" />
     <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.cpp" />
     <ClCompile Include="Game\GameObjects\Player\Player.cpp" />
+    <ClCompile Include="Game\GameObjects\Player\PlayerHealth.cpp" />
+    <ClCompile Include="Game\GameObjects\Player\PlayerReticle.cpp" />
+    <ClCompile Include="Game\GameObjects\Player\PlayerUI.cpp" />
     <ClCompile Include="Game\GameObjects\Skydome\Skydome.cpp" />
     <ClCompile Include="Game\GameObjects\TitlePlayer\TitlePlayer.cpp" />
     <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp" />
@@ -311,6 +314,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerBullet.h" />
     <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.h" />
     <ClInclude Include="Game\GameObjects\Player\Player.h" />
+    <ClInclude Include="Game\GameObjects\Player\PlayerHealth.h" />
+    <ClInclude Include="Game\GameObjects\Player\PlayerReticle.h" />
+    <ClInclude Include="Game\GameObjects\Player\PlayerUI.h" />
     <ClInclude Include="Game\GameObjects\Skydome\Skydome.h" />
     <ClInclude Include="Game\GameObjects\TitlePlayer\TitlePlayer.h" />
     <ClInclude Include="Game\Scenes\GameScene\GameScene.h" />

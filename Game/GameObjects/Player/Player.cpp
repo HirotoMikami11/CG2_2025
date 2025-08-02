@@ -30,35 +30,18 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	};
 	gameObject_->SetTransform(defaultTransform);
 
-	// 3Dレティクルの初期化
-	reticle3D_ = std::make_unique<Model3D>();
-	reticle3D_->Initialize(dxCommon, "player"); // 仮でplayerモデルを使用
-	reticle3D_->SetName("Reticle3D");
+	// 分離したシステムの初期化
+	health_ = std::make_unique<PlayerHealth>();
+	health_->Initialize();
 
-	Vector3Transform reticleTransform{
-		{2.0f, 2.0f, 2.0f},           // scale（わかりやすくデカく）
-		{0.0f, 0.0f, 0.0f},           // rotate
-		{0.0f, 0.0f, 50.0f}           // translate（プレイヤーの前方）
-	};
-	reticle3D_->SetTransform(reticleTransform);
+	ui_ = std::make_unique<PlayerUI>();
+	ui_->Initialize(dxCommon);
 
-	// 2Dレティクル用のスプライト初期化
-	sprite2DReticle_ = std::make_unique<Sprite>();
-	sprite2DReticle_->Initialize(
-		dxCommon,
-		"reticle",                    // テクスチャ名
-		{ 640.0f, 360.0f },             // 画面中央
-		{ 64.0f, 64.0f }                // サイズ
-	);
+	reticle_ = std::make_unique<PlayerReticle>();
+	reticle_->Initialize(dxCommon);
 
-	// ビューポート行列の計算(画面サイズが変わったら変更)
-	matViewport_ = MakeViewportMatrix(0, 0, GraphicsConfig::kClientWidth, GraphicsConfig::kClientHeight, 0, 1);
-
-	// スプライト用ビュープロジェクション行列を単位行列で初期化
+	// ビュープロジェクション行列を単位行列で初期化
 	viewProjectionMatrixSprite_ = MakeIdentity4x4();
-
-	// HP/ENゲージの初期化
-	InitializeGauges();
 
 	// 衝突判定設定
 	SetRadius(1.0f); // Colliderの半径をセット
@@ -88,14 +71,10 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 攻撃処理
 	Attack();
 
-	// エネルギーの更新
-	UpdateEnergy();
-
-	// HP/ENゲージの更新
-	UpdateGauges();
-
-	// レティクルの更新
-	UpdateReticle(viewProjectionMatrix);
+	// 分離したシステムの更新
+	health_->Update();
+	ui_->Update(*health_, viewProjectionMatrixSprite_);
+	reticle_->Update(viewProjectionMatrix, viewProjectionMatrixSprite_);
 
 	// 弾の更新
 	for (auto& bullet : bullets_) {
@@ -109,8 +88,6 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
-	reticle3D_->Update(viewProjectionMatrix);
-
 }
 
 void Player::Draw(const Light& directionalLight) {
@@ -118,7 +95,7 @@ void Player::Draw(const Light& directionalLight) {
 	gameObject_->Draw(directionalLight);
 
 	// 3Dレティクルの描画
-	reticle3D_->Draw(directionalLight);
+	reticle_->Draw3D(directionalLight);
 
 	// 弾の描画
 	for (auto& bullet : bullets_) {
@@ -132,32 +109,15 @@ void Player::Draw(const Light& directionalLight) {
 }
 
 void Player::DrawUI() {
-	// HP/ENゲージの描画
-	if (hpGaugeBar_) {
-		hpGaugeBar_->Update(viewProjectionMatrixSprite_);
-		hpGaugeBar_->Draw();
-	}
-	if (hpGaugeFill_) {
-		hpGaugeFill_->Update(viewProjectionMatrixSprite_);
-		hpGaugeFill_->Draw();
-	}
-	if (enGaugeBar_) {
-		enGaugeBar_->Update(viewProjectionMatrixSprite_);
-		enGaugeBar_->Draw();
-	}
-	if (enGaugeFill_) {
-		enGaugeFill_->Update(viewProjectionMatrixSprite_);
-		enGaugeFill_->Draw();
-	}
+	// UIシステムによるゲージ描画
+	ui_->Draw();
 
 	// マルチロックオンモードか
 	// 通常モードで、ロックオン対象がいなければ2Dレティクルの描画
-	if (
-		attackMode_ == AttackMode::MultiLockOn ||
+	if (attackMode_ == AttackMode::MultiLockOn ||
 		(lockOn_ == nullptr || lockOn_->GetTarget() == nullptr)) {
 		// 通常モードでロックオン対象がいない場合は2Dレティクルを描画
-		sprite2DReticle_->Update(viewProjectionMatrixSprite_);
-		sprite2DReticle_->Draw();
+		reticle_->Draw2D();
 	}
 }
 
@@ -169,14 +129,10 @@ void Player::ImGui() {
 			gameObject_->ImGui();
 		}
 
-		// HP/EN情報
-		ImGui::Separator();
-		ImGui::Text("HP/EN System");
-		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
-		ImGui::ProgressBar(currentHP_ / maxHP_, ImVec2(200, 20), "HP");
-		ImGui::Text("EN: %.1f / %.1f", currentEN_, maxEN_);
-		ImGui::ProgressBar(currentEN_ / maxEN_, ImVec2(200, 20), "EN");
-		ImGui::Text("Energy Regen Timer: %d", energyRegenTimer_);
+		// 分離したシステムのImGui
+		health_->ImGui();
+		ui_->ImGui();
+		reticle_->ImGui();
 
 		/// 攻撃モード情報
 		ImGui::Separator();
@@ -195,15 +151,6 @@ void Player::ImGui() {
 		ImGui::Separator();
 		ImGui::Text("Bullets Count: %zu", bullets_.size());
 
-		// レティクル情報
-		ImGui::Separator();
-		ImGui::Text("Reticle Info:");
-		Vector3 reticlePos = GetWorldPosition3DReticle();
-		ImGui::Text("3D Reticle Position: (%.2f, %.2f, %.2f)", reticlePos.x, reticlePos.y, reticlePos.z);
-
-		Vector2 spritePos = sprite2DReticle_->GetPosition();
-		ImGui::Text("2D Reticle Position: (%.2f, %.2f)", spritePos.x, spritePos.y);
-
 		// KamataEngineのデバッグ表示と同様の情報を表示
 		Vector3 worldPos = GetWorldPosition();
 		ImGui::Text("World Position: (%.2f, %.2f, %.2f)", worldPos.x, worldPos.y, worldPos.z);
@@ -217,7 +164,7 @@ void Player::ImGui() {
 
 Vector3 Player::GetWorldPosition() {
 	if (gameObject_) {
-		// Transform3Dが親子関係を考慮したワールド行列を返してくれる（KamataEngineと同じ）
+		// Transform3Dが親子関係を考慮したワールド行列を返してくれる
 		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
 		return Vector3{
 			worldMatrix.m[3][0],
@@ -229,20 +176,12 @@ Vector3 Player::GetWorldPosition() {
 }
 
 Vector3 Player::GetWorldPosition3DReticle() {
-	if (reticle3D_) {
-		Matrix4x4 worldMatrix = reticle3D_->GetTransform().GetWorldMatrix();
-		return Vector3{
-			worldMatrix.m[3][0],
-			worldMatrix.m[3][1],
-			worldMatrix.m[3][2]
-		};
-	}
-	return Vector3{ 0.0f, 0.0f, 0.0f };
+	return reticle_->GetWorldPosition3DReticle();
 }
 
 void Player::OnCollision() {
-	// ダメージを受ける（仮のダメージ量1）
-	TakeDamage(1.0f);
+	// ダメージを受ける(体力システムに渡す)
+	health_->TakeDamage(1.0f);
 }
 
 void Player::Move() {
@@ -280,12 +219,13 @@ void Player::Move() {
 	// 位置を設定
 	gameObject_->SetPosition(currentPos);
 }
+
 void Player::FaceAwayFromCamera() {
 	// 親（レールカメラ）が設定されている場合は、ローカル座標系で固定の向きに設定
 	if (gameObject_->GetTransform().GetParent() != nullptr) {
-		// レールカメラに対して常に背を向く（Y軸回転180度）
+		// レールカメラに対して常に向こう側を向く
 		// これにより、レールカメラがどの方向を向いていても、プレイヤーは常にカメラに背を向ける
-		Vector3 fixedRotation = { 0.0f, 0.0f, 0.0f }; // Y軸180度回転でカメラに背を向ける
+		Vector3 fixedRotation = { 0.0f, 0.0f, 0.0f }; 
 		gameObject_->SetRotation(fixedRotation);
 		return;
 	}
@@ -315,7 +255,7 @@ void Player::FaceAwayFromCamera() {
 
 void Player::SwitchAttackMode() {
 	// モード切り替え (MキーまたはXボタン)
-	if (input_->IsKeyTrigger(DIK_M) ||                                      // Mキー
+	if (input_->IsKeyTrigger(DIK_M) ||// Mキー
 		(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::X))) { // Xボタン
 
 		// モード切り替え
@@ -357,7 +297,7 @@ void Player::Attack() {
 
 void Player::Fire() {
 	// エネルギーが足りない場合は発射できない
-	if (currentEN_ < energyCostPerShot_) {
+	if (!health_->HasEnoughEnergy(health_->GetEnergyCostPerShot())) {
 		return;
 	}
 
@@ -406,12 +346,8 @@ void Player::Fire() {
 		bullets_.push_back(std::move(newBullet));
 	}
 
-	// エネルギーを消費
-	currentEN_ -= energyCostPerShot_;
-	currentEN_ = std::max(0.0f, currentEN_); // 0以下にならないように
-
-	// エネルギー回復タイマーをリセット
-	energyRegenTimer_ = energyRegenDelay_;
+	// エネルギーを消費(体力システムに渡す)
+	health_->ConsumeEnergy(health_->GetEnergyCostPerShot());
 }
 
 void Player::FireMultiLockOn() {
@@ -421,8 +357,8 @@ void Player::FireMultiLockOn() {
 	}
 
 	// 必要なエネルギーを計算（ターゲット数 × 消費量）
-	float requiredEnergy = multiLockOnTargets_.size() * energyCostPerShot_;
-	if (currentEN_ < requiredEnergy) {
+	float requiredEnergy = multiLockOnTargets_.size() * health_->GetEnergyCostPerShot();
+	if (!health_->HasEnoughEnergy(requiredEnergy)) {
 		return; // エネルギーが足りない
 	}
 
@@ -445,12 +381,8 @@ void Player::FireMultiLockOn() {
 		}
 	}
 
-	// エネルギーを消費
-	currentEN_ -= requiredEnergy;
-	currentEN_ = std::max(0.0f, currentEN_); // 0以下にならないように
-
-	// エネルギー回復タイマーをリセット
-	energyRegenTimer_ = energyRegenDelay_;
+	// エネルギーを消費(体力システムに渡す)
+	health_->ConsumeEnergy(requiredEnergy);
 }
 
 void Player::DeleteBullets() {
@@ -460,195 +392,12 @@ void Player::DeleteBullets() {
 		});
 }
 
-void Player::UpdateReticle(const Matrix4x4& viewProjectionMatrix) {
-	if (input_->IsGamePadConnected()) {
-		// ゲームパッドが接続されている場合：右スティックでレティクル操作
-		ConvertGamePadToWorldReticle(viewProjectionMatrix);
-	} else {
-		// キーボードの場合：上下左右キーでレティクル操作
-		ConvertKeyboardToWorldReticle(viewProjectionMatrix);
-	}
-}
-
-void Player::ConvertGamePadToWorldReticle(const Matrix4x4& viewProjectionMatrix) {
-	// 現在のスプライト位置を取得
-	Vector2 spritePos = sprite2DReticle_->GetPosition();
-
-	// 右スティックでレティクル移動
-	float stickX = input_->GetAnalogStick(InputManager::AnalogStick::RIGHT_X);
-	float stickY = input_->GetAnalogStick(InputManager::AnalogStick::RIGHT_Y);
-
-	// スティック入力をスプライト移動量に変換
-	spritePos.x += stickX * 10.0f; // 感度調整
-	spritePos.y -= stickY * 10.0f; // Y軸反転
-
-	// 画面外に出ないように制限
-	spritePos.x = std::clamp(spritePos.x, 0.0f, 1280.0f);
-	spritePos.y = std::clamp(spritePos.y, 0.0f, 720.0f);
-
-	// スプライト位置を更新
-	sprite2DReticle_->SetPosition(spritePos);
-
-	// 3D座標に変換
-	Matrix4x4 matVPV = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
-	Matrix4x4 matInverseVPV = Matrix4x4Inverse(matVPV);
-
-	// スクリーンからワールドに変換
-	posNear_ = Vector3(spritePos.x, spritePos.y, 0.0f);
-	posFar_ = Vector3(spritePos.x, spritePos.y, 1.0f);
-
-	posNear_ = Matrix4x4Transform(posNear_, matInverseVPV);
-	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
-
-	Vector3 direction = Normalize(posFar_ - posNear_);
-	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticleGamepad);
-	reticle3D_->SetPosition(spritePosition_);
-}
-
-void Player::ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectionMatrix) {
-	// 現在のスプライト位置を取得
-	Vector2 spritePos = sprite2DReticle_->GetPosition();
-
-	// 上下左右キーでレティクル移動
-	if (input_->IsKeyDown(DIK_LEFT)) {
-		spritePos.x -= kReticleSpeed; // 左
-	}
-	if (input_->IsKeyDown(DIK_RIGHT)) {
-		spritePos.x += kReticleSpeed; // 右
-	}
-	if (input_->IsKeyDown(DIK_UP)) {
-		spritePos.y -= kReticleSpeed; // 上
-	}
-	if (input_->IsKeyDown(DIK_DOWN)) {
-		spritePos.y += kReticleSpeed; // 下
-	}
-
-	// 画面外に出ないように制限
-	spritePos.x = std::clamp(spritePos.x, 0.0f, 1280.0f);
-	spritePos.y = std::clamp(spritePos.y, 0.0f, 720.0f);
-
-	// スプライト位置を更新
-	sprite2DReticle_->SetPosition(spritePos);
-
-	// 3D座標に変換
-	Matrix4x4 matVPV = Matrix4x4Multiply(viewProjectionMatrix, matViewport_);
-	Matrix4x4 matInverseVPV = Matrix4x4Inverse(matVPV);
-
-	// スクリーンからワールドに変換
-	posNear_ = Vector3(spritePos.x, spritePos.y, 0.0f);
-	posFar_ = Vector3(spritePos.x, spritePos.y, 1.0f);
-
-	posNear_ = Matrix4x4Transform(posNear_, matInverseVPV);
-	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
-
-	Vector3 direction = Normalize(posFar_ - posNear_);
-	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticleKeyborad);
-	reticle3D_->SetPosition(spritePosition_);
-}
-
 void Player::DeleteHomingBullets()
 {
 	// デスフラグが立っているホーミング弾を削除する
 	homingBullets_.remove_if([](const std::unique_ptr<PlayerHomingBullet>& homingBullet) {
 		return homingBullet->IsDead();
 		});
-}
-
-void Player::TakeDamage(float damage) {
-	currentHP_ -= damage;
-	currentHP_ = std::max(0.0f, currentHP_); // 0以下にならないように
-}
-
-void Player::UpdateEnergy() {
-	// エネルギー回復タイマーを更新
-	if (energyRegenTimer_ > 0) {
-		energyRegenTimer_--;
-	}
-
-	// タイマーが0になったらエネルギーを回復
-	if (energyRegenTimer_ <= 0 && currentEN_ < maxEN_) {
-		currentEN_ += energyRegenRate_;
-		currentEN_ = std::min(currentEN_, maxEN_); // 最大値を超えないように
-	}
-}
-void Player::InitializeGauges() {
-	// HPゲージの枠
-	hpGaugeBar_ = std::make_unique<Sprite>();
-	hpGaugeBar_->Initialize(
-		directXCommon_,
-		"white",
-		{ 25.0f, 50.0f },
-		{ 204.0f, 24.0f },
-		{ 0.0f, 0.5f }
-	);
-	hpGaugeBar_->SetColor({ 0.2f, 0.2f, 0.2f, 1.0f }); // 暗い灰色
-
-	// HPゲージの中身
-	hpGaugeFill_ = std::make_unique<Sprite>();
-	hpGaugeFill_->Initialize(
-		directXCommon_,
-		"white",
-		{ 27.0f, 50.0f },
-		{ 200.0f, 20.0f },
-		{ 0.0f, 0.5f }
-	);
-	hpGaugeFill_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色
-
-	// ENゲージの枠
-	enGaugeBar_ = std::make_unique<Sprite>();
-	enGaugeBar_->Initialize(
-		directXCommon_,
-		"white",
-		{ 25.0f, 80.0f },
-		{ 204.0f, 24.0f },
-		{ 0.0f, 0.5f }
-	);
-	enGaugeBar_->SetColor({ 0.2f, 0.2f, 0.2f, 1.0f }); // 暗い灰色
-
-	// ENゲージの中身
-	enGaugeFill_ = std::make_unique<Sprite>();
-	enGaugeFill_->Initialize(
-		directXCommon_,
-		"white",
-		{ 27.0f, 80.0f },
-		{ 200.0f, 20.0f },
-		{ 0.0f, 0.5f }
-	);
-	enGaugeFill_->SetColor({ 0.0f, 0.5f, 1.0f, 1.0f }); // 青色
-}
-
-void Player::UpdateGauges() {
-	// HPゲージの更新
-	if (hpGaugeFill_) {
-		float hpRatio = currentHP_ / maxHP_;
-		Vector2 currentSize = hpGaugeFill_->GetSize();
-		currentSize.x = 200.0f * hpRatio; // 最大幅200に対する割合
-		hpGaugeFill_->SetSize(currentSize);
-
-		// HPが低い時は赤色に変更
-		if (hpRatio < 0.3f) {
-			hpGaugeFill_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤色
-		} else if (hpRatio < 0.6f) {
-			hpGaugeFill_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
-		} else {
-			hpGaugeFill_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f }); // 緑色
-		}
-	}
-
-	// ENゲージの更新
-	if (enGaugeFill_) {
-		float enRatio = currentEN_ / maxEN_;
-		Vector2 currentSize = enGaugeFill_->GetSize();
-		currentSize.x = 200.0f * enRatio; // 最大幅200に対する割合
-		enGaugeFill_->SetSize(currentSize);
-
-		// ENが低い時は暗い青色に変更
-		if (enRatio < 0.3f) {
-			enGaugeFill_->SetColor({ 0.0f, 0.2f, 0.5f, 1.0f }); // 暗い青色
-		} else {
-			enGaugeFill_->SetColor({ 0.0f, 0.5f, 1.0f, 1.0f }); // 通常の青色
-		}
-	}
 }
 
 Vector3 Player::CalculateLeadingShot(const Vector3& enemyPos, const Vector3& enemyVelocity, float bulletSpeed) {
