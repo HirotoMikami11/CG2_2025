@@ -119,6 +119,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Managers\Transition\TransitionManager.cpp" />
     <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
     <ClCompile Include="Engine\MyMath\MyMath.cpp" />
+    <ClCompile Include="Engine\MyMath\Random\Random.cpp" />
     <ClCompile Include="Engine\MyMath\TimedCall.cpp" />
     <ClCompile Include="Engine\Objects\GameObject\GameObject.cpp" />
     <ClCompile Include="Engine\Objects\GameObject\Material.cpp" />
@@ -162,6 +163,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.cpp" />
+    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateRush.cpp" />
     <ClCompile Include="Game\GameObjects\Ground\Ground.cpp" />
     <ClCompile Include="Game\GameObjects\LockOn\LockOn.cpp" />
     <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerBullet.cpp" />
@@ -271,6 +273,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Managers\Transition\TransitionManager.h" />
     <ClInclude Include="Engine\MyMath\MyFunction.h" />
     <ClInclude Include="Engine\MyMath\MyMath.h" />
+    <ClInclude Include="Engine\MyMath\Random\Random.h" />
     <ClInclude Include="Engine\MyMath\TimedCall.h" />
     <ClInclude Include="Engine\Objects\GameObject\GameObject.h" />
     <ClInclude Include="Engine\Objects\GameObject\Material.h" />
@@ -318,6 +321,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h" />
     <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h" />
     <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.h" />
+    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateRush.h" />
     <ClInclude Include="Game\GameObjects\Ground\Ground.h" />
     <ClInclude Include="Game\GameObjects\LockOn\LockOn.h" />
     <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerBullet.h" />

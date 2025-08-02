@@ -27,8 +27,11 @@ public:
 
 private:
 	// ホーミング速度
-	static constexpr float kHomingSpeed = 0.5f;
+	float homingSpeed_ = 1.0f; // デフォルト値
 
 	// ホーミングの強度（0.0f〜1.0f）
-	static constexpr float kHomingStrength = 0.3f;
+	static constexpr float kHomingStrength = 0.05f;
+
+	// 直進状態に遷移する距離の閾値
+	static constexpr float kRushTriggerDistance = 30.0f;
 };

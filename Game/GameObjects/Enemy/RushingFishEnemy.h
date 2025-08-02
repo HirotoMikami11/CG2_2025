@@ -3,6 +3,7 @@
 
 #include "BaseEnemy.h"
 #include "State/RushingFishStateHoming.h"
+#include "State/RushingFishStateRush.h"
 
 /// <summary>
 /// 突進してくる魚の敵クラス

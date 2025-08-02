@@ -241,6 +241,9 @@
     <Filter Include="Game\EnemyPopCommand">
       <UniqueIdentifier>{4c60a2cb-406f-4952-a289-ab14647d60e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\MyMath\Random">
+      <UniqueIdentifier>{5f6878ac-ebc5-4a09-929f-37da07a49d41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -503,6 +506,12 @@
     </ClCompile>
     <ClCompile Include="Game\EnemyPopCommand\EnemyPopCommand.cpp">
       <Filter>Game\EnemyPopCommand</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateRush.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\MyMath\Random\Random.cpp">
+      <Filter>Engine\MyMath\Random</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -840,6 +849,12 @@
     </ClInclude>
     <ClInclude Include="Game\EnemyPopCommand\EnemyPopCommand.h">
       <Filter>Game\EnemyPopCommand</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateRush.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\MyMath\Random\Random.h">
+      <Filter>Engine\MyMath\Random</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

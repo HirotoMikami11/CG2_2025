@@ -87,6 +87,14 @@ void RushingFishEnemy::ImGui() {
 		// HP情報
 		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
 
+		// プレイヤーとの距離表示
+		if (player_) {
+			Vector3 playerPos = player_->GetWorldPosition();
+			Vector3 enemyPos = GetWorldPosition();
+			float distance = Distance(playerPos, enemyPos);
+			ImGui::Text("Distance to Player: %.2f", distance);
+		}
+
 		// デバッグ情報を表示
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 		ImGui::Text("Pattern: %d", static_cast<int>(pattern_));
@@ -97,6 +105,9 @@ void RushingFishEnemy::ImGui() {
 		// デバッグでステートの切り替え
 		if (ImGui::Button("Change State Homing")) {
 			ChangeState(std::make_unique<RushingFishStateHoming>(this));
+		}
+		if (ImGui::Button("Change State Rush (Current Velocity)")) {
+			ChangeState(std::make_unique<RushingFishStateRush>(this, velocity_));
 		}
 	}
 #endif
