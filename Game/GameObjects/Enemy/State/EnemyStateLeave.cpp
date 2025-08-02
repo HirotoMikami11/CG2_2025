@@ -1,13 +1,12 @@
 #include "EnemyStateLeave.h"
-#include "GameObjects/Enemy/Enemy.h"
+#include "GameObjects/Enemy/BaseEnemy.h"
 
-EnemyStateLeave::EnemyStateLeave(Enemy* enemy) : BaseEnemyState("State Leave", enemy) {
+EnemyStateLeave::EnemyStateLeave(BaseEnemy* enemy) : BaseEnemyState("State Leave", enemy) {
+	// パターンを保持
+	EnemyPattern pattern = enemy_->GetPattern();
 
-	// Patternを保持
-	EnemyPattern pattern_ = enemy_->GetPattern();
-
-	// Patternによって移動する方向を変更
-	switch (pattern_) {
+	// パターンによって移動する方向を変更
+	switch (pattern) {
 	case EnemyPattern::LeaveLeft:
 		// 左上に移動
 		velocity_ = { -0.35f, 0.35f, -0.35f };
@@ -27,7 +26,6 @@ EnemyStateLeave::EnemyStateLeave(Enemy* enemy) : BaseEnemyState("State Leave", e
 }
 
 void EnemyStateLeave::Update() {
-
 	// 離脱フェーズの更新処理
 	enemy_->SetPosition((enemy_->GetPosition() + velocity_));
 }

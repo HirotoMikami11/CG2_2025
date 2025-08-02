@@ -3,7 +3,7 @@
 #include "Managers/ImGui/ImGuiManager.h"
 #include "Scenes/GameScene/GameScene.h"
 
-Enemy::Enemy() {
+Enemy::Enemy() : BaseEnemy(EnemyType::Normal) {
 }
 
 Enemy::~Enemy() {
@@ -37,6 +37,10 @@ void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position, EnemyPa
 
 	// パターンの設定
 	pattern_ = pattern;
+
+	// HP設定（通常の敵はHP15）
+	maxHP_ = 15.0f;
+	currentHP_ = maxHP_;
 
 	// 衝突判定設定
 	SetRadius(3.0f); // Colliderの半径をセット
@@ -85,7 +89,7 @@ void Enemy::Draw(const Light& directionalLight) {
 
 void Enemy::ImGui() {
 #ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Enemy")) {
+	if (ImGui::CollapsingHeader("Normal Enemy")) {
 		if (gameObject_) {
 			// 座標調整
 			Vector3 pos = gameObject_->GetPosition();
@@ -95,6 +99,9 @@ void Enemy::ImGui() {
 		}
 
 		ImGui::Separator();
+
+		// HP情報
+		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
 
 		// デバッグ情報を表示
 		ImGui::Text("Auto Fire: %s", isAutoFire_ ? "ON" : "OFF");
@@ -114,11 +121,6 @@ void Enemy::ImGui() {
 		}
 	}
 #endif
-}
-
-void Enemy::ChangeState(std::unique_ptr<BaseEnemyState> state) {
-	// 引数で受け取った状態を次の状態としてセットする
-	state_ = std::move(state);
 }
 
 void Enemy::Fire() {
@@ -179,64 +181,9 @@ void Enemy::StartAutoFire() {
 	timedCalls_.push_back(std::make_unique<TimedCall>(std::bind(&Enemy::AutoFire, this), kFireInterval_));
 }
 
-void Enemy::UpdateTimedCalls() {
-	// １フレ遅れさせてからクリアの実行
-	if (shouldClearTimedCalls_) {
-		timedCalls_.clear();
-		isAutoFire_ = false;
-		shouldClearTimedCalls_ = false;
-		return; // 今回は更新をスキップ
-	}
-
-	// 終了した時限発動の削除
-	timedCalls_.remove_if([](const std::unique_ptr<TimedCall>& timedCall) {
-		return timedCall->IsFinished();
-		});
-
-	// 時限発動の更新
-	for (auto& timedCall : timedCalls_) {
-		timedCall->Update();
-	}
-}
-
-void Enemy::ClearTimeCalls() {
-	// 次のフレームでクリアする
-	shouldClearTimedCalls_ = true;
-}
-
-Vector3 Enemy::GetWorldPosition() {
-	if (gameObject_) {
-		// Transform3DのWorld行列から移動成分を取得
-		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
-		return Vector3{
-			worldMatrix.m[3][0],
-			worldMatrix.m[3][1],
-			worldMatrix.m[3][2]
-		};
-	}
-	return Vector3{ 0.0f, 0.0f, 0.0f };
-}
-
 void Enemy::OnCollision() {
-	isDead_ = true; // デスフラグを立てる
-}
-
-void Enemy::SetToVelocityDirection() {
-	if (gameObject_) {
-		// 速度の方向を向くように回転
-		Vector3 rotation = gameObject_->GetRotation();
-
-		// Y軸周り角度（水平回転）
-		rotation.y = std::atan2(velocity_.x, velocity_.z);
-
-		// 横軸方向の長さを求める
-		float XZLength = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
-
-		// X軸周り角度（垂直回転）
-		rotation.x = std::atan2(-velocity_.y, XZLength);
-
-		gameObject_->SetRotation(rotation);
-	}
+	// プレイヤーの弾に当たった場合はダメージを受ける
+	TakeDamage(1.0f); // 1ダメージ
 }
 
 void Enemy::SetInitializeState() {
@@ -247,6 +194,10 @@ void Enemy::SetInitializeState() {
 	case EnemyPattern::LeaveRight:
 		// 接近→離脱パターン
 		ChangeState(std::make_unique<EnemyStateApproach>(this));
+		break;
+	default:
+		// その他のパターンは直進
+		ChangeState(std::make_unique<EnemyStateStraight>(this));
 		break;
 	}
 }

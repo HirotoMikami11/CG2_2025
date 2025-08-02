@@ -7,7 +7,7 @@
 
 // 前方宣言
 class Player;
-class Enemy;
+class BaseEnemy;
 
 /// <summary>
 /// ロックオンシステム
@@ -36,7 +36,7 @@ public:
 	/// <param name="player">プレイヤー</param>
 	/// <param name="enemies">敵のリスト</param>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
-	void Update(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, const Matrix4x4& viewProjectionMatrix);
+	void Update(Player* player, std::list<std::unique_ptr<BaseEnemy>>& enemies, const Matrix4x4& viewProjectionMatrix);
 
 	/// <summary>
 	/// マルチロックオン用の更新処理
@@ -45,7 +45,7 @@ public:
 	/// <param name="enemies">敵のリスト</param>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	/// <param name="multiLockOnTargets">マルチロックオン対象リスト</param>
-	void UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, const Matrix4x4& viewProjectionMatrix, std::list<Enemy*>& multiLockOnTargets);
+	void UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<BaseEnemy>>& enemies, const Matrix4x4& viewProjectionMatrix, std::list<BaseEnemy*>& multiLockOnTargets);
 
 	/// <summary>
 	/// UI描画（通常モード）
@@ -58,13 +58,13 @@ public:
 	/// <param name="multiLockOnTargets">マルチロックオン対象リスト</param>
 	/// <param name="viewProjectionMatrix">ビュープロジェクション行列</param>
 	/// <param name="viewProjectionMatrixSprite">スプライト用ビュープロジェクション行列</param>
-	void DrawMultiLockOnUI(const std::list<Enemy*>& multiLockOnTargets, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewProjectionMatrixSprite);
+	void DrawMultiLockOnUI(const std::list<BaseEnemy*>& multiLockOnTargets, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewProjectionMatrixSprite);
 
 	/// <summary>
 	/// ターゲットを取得
 	/// </summary>
 	/// <returns>ロックオン対象の敵（nullptrの場合はロックオンなし）</returns>
-	Enemy* GetTarget() const { return target_; }
+	BaseEnemy* GetTarget() const { return target_; }
 
 private:
 	// ロックオンマークのスプライト
@@ -74,7 +74,7 @@ private:
 	std::list<std::unique_ptr<Sprite>> multiLockOnMarks_;
 
 	// ロック対象
-	Enemy* target_ = nullptr;
+	BaseEnemy* target_ = nullptr;
 
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;

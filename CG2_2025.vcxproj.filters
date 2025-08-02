@@ -232,6 +232,15 @@
     <Filter Include="Game\Scenes\GameoverScene">
       <UniqueIdentifier>{09d761e9-9b04-4990-a317-d4b8824345ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObjects\Enemy\Standard">
+      <UniqueIdentifier>{3b989d87-6549-4389-bf91-b2578769c817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy\RushingFish">
+      <UniqueIdentifier>{3dfa3971-bff3-4a8b-83a9-ea508e5a1578}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\EnemyPopCommand">
+      <UniqueIdentifier>{4c60a2cb-406f-4952-a289-ab14647d60e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -465,9 +474,6 @@
     <ClCompile Include="Game\GameObjects\Player\PlayerUI.cpp">
       <Filter>Game\GameObjects\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp">
-      <Filter>Game\GameObjects\Enemy</Filter>
-    </ClCompile>
     <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp">
       <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClCompile>
@@ -482,6 +488,21 @@
     </ClCompile>
     <ClCompile Include="Game\Scenes\GameoverScene\GameoverScene.cpp">
       <Filter>Game\Scenes\GameoverScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\BaseEnemy.cpp">
+      <Filter>Game\GameObjects\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\RushingFishEnemy.cpp">
+      <Filter>Game\GameObjects\Enemy\RushingFish</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp">
+      <Filter>Game\GameObjects\Enemy\Standard</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\EnemyPopCommand\EnemyPopCommand.cpp">
+      <Filter>Game\EnemyPopCommand</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -790,9 +811,6 @@
     <ClInclude Include="Game\GameObjects\Player\PlayerUI.h">
       <Filter>Game\GameObjects\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\Enemy.h">
-      <Filter>Game\GameObjects\Enemy</Filter>
-    </ClInclude>
     <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h">
       <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClInclude>
@@ -807,6 +825,21 @@
     </ClInclude>
     <ClInclude Include="Game\Scenes\GameoverScene\GameoverScene.h">
       <Filter>Game\Scenes\GameoverScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\BaseEnemy.h">
+      <Filter>Game\GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\RushingFishEnemy.h">
+      <Filter>Game\GameObjects\Enemy\RushingFish</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\Enemy.h">
+      <Filter>Game\GameObjects\Enemy\Standard</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\EnemyPopCommand\EnemyPopCommand.h">
+      <Filter>Game\EnemyPopCommand</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

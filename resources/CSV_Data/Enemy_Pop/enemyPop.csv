@@ -1,18 +1,76 @@
-//コマンド,x/waitTime,y,z,pattern
-POP,0,5,200,0
-POP,-20,5,200,1
-POP,20,5,200,2
-WAIT,120,,,
-POP,-20,0,200,1
-WAIT,120,,,
-POP,20,0,200,2
-WAIT,120,,,
-POP,-20,0,200,1
-WAIT,120,,,
-POP,20,0,200,2
-WAIT,120,,,
-POP,0,0,200,0
-POP,15,-10,200,0
-POP,30,10,200,0
-POP,-15,-10,200,0
-POP,30,10,200,0
+// 敵生成データフォーマット
+// POP,X座標,Y座標,Z座標,敵の種類,パターン
+// WAIT,フレーム数
+
+// 敵の種類:
+// Normal または 0 = 通常の敵（射撃する敵、HP15）
+// RushingFish または 1 = 突進魚（ホーミングで突進、HP10、プレイヤーに10ダメージ）
+
+// パターン:
+// Straight または 0 = 直進
+// LeaveLeft または 1 = 左上に離脱
+// LeaveRight または 2 = 右上に離脱
+// Homing または 3 = ホーミング（突進魚専用）
+
+// ゲーム開始
+WAIT,120
+
+// 最初の敵グループ - 通常の敵
+POP,50.0,10.0,200.0,Normal,Straight
+POP,-50.0,10.0,200.0,Normal,Straight
+WAIT,60
+
+// 突進魚を混ぜる
+POP,30.0,15.0,180.0,RushingFish,Homing
+POP,-30.0,15.0,180.0,RushingFish,Homing
+WAIT,90
+
+// 複雑な編成
+POP,60.0,20.0,220.0,Normal,LeaveLeft
+POP,0.0,10.0,200.0,Normal,Straight
+POP,-60.0,20.0,220.0,Normal,LeaveRight
+WAIT,45
+
+// 突進魚の群れ
+POP,40.0,5.0,150.0,RushingFish,Homing
+POP,20.0,15.0,160.0,RushingFish,Homing
+POP,-20.0,15.0,160.0,RushingFish,Homing
+POP,-40.0,5.0,150.0,RushingFish,Homing
+WAIT,120
+
+// 混合編成
+POP,80.0,25.0,250.0,Normal,LeaveLeft
+POP,40.0,10.0,180.0,RushingFish,Homing
+POP,0.0,15.0,200.0,Normal,Straight
+POP,-40.0,10.0,180.0,RushingFish,Homing
+POP,-80.0,25.0,250.0,Normal,LeaveRight
+WAIT,150
+
+// 大量出現
+POP,100.0,30.0,300.0,Normal,LeaveLeft
+POP,70.0,20.0,280.0,Normal,Straight
+POP,40.0,10.0,200.0,RushingFish,Homing
+POP,0.0,15.0,220.0,Normal,Straight
+POP,-40.0,10.0,200.0,RushingFish,Homing
+POP,-70.0,20.0,280.0,Normal,Straight
+POP,-100.0,30.0,300.0,Normal,LeaveRight
+WAIT,180
+
+// 終盤の激しい攻撃
+POP,60.0,25.0,180.0,RushingFish,Homing
+POP,30.0,5.0,200.0,Normal,Straight
+POP,0.0,15.0,190.0,RushingFish,Homing
+POP,-30.0,5.0,200.0,Normal,Straight
+POP,-60.0,25.0,180.0,RushingFish,Homing
+WAIT,60
+
+POP,20.0,20.0,160.0,RushingFish,Homing
+POP,-20.0,20.0,160.0,RushingFish,Homing
+WAIT,30
+
+POP,40.0,0.0,200.0,Normal,LeaveLeft
+POP,-40.0,0.0,200.0,Normal,LeaveRight
+WAIT,90
+
+// ラスト
+POP,0.0,10.0,150.0,RushingFish,Homing

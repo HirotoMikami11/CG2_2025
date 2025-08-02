@@ -11,12 +11,16 @@
 
 #include "Objects/Line/GridLine.h"
 #include "GameObjects/Player/Player.h"
+#include "GameObjects/Enemy/BaseEnemy.h"
 #include "GameObjects/Enemy/Enemy.h"
+#include "GameObjects/Enemy/RushingFishEnemy.h"
 #include "GameObjects/EnemyBullet/EnemyBullet.h"
 #include "CollisionManager/CollisionManager.h"	//衝突判定マネージャー
 #include "GameObjects/Ground/Ground.h"			//地面
 #include "GameObjects/Skydome/Skydome.h"		//天球
 #include "GameObjects/LockOn/LockOn.h"
+
+#include "EnemyPopCommand/EnemyPopCommand.h"
 
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCamera.h"		//レールカメラ
@@ -59,7 +63,6 @@ public:
 
 	void Finalize() override;
 
-
 	// ImGui描画
 	void ImGui() override;
 
@@ -79,7 +82,7 @@ private:
 	// ロックオンシステム
 	std::unique_ptr<LockOn> lockOn_;
 
-	std::list<std::unique_ptr<Enemy>> enemies_;
+	std::list<std::unique_ptr<BaseEnemy>> enemies_;
 
 	// 敵の弾丸
 	std::list<std::unique_ptr<EnemyBullet>> enemyBullets_;
@@ -113,7 +116,7 @@ private:
 
 	//					敵発生関連					//
 	// 敵発生コマンド
-	std::stringstream enemyPopCommands;
+	std::unique_ptr<EnemyPopCommand> enemyPopCommand_;
 	// 待機中フラグ
 	bool isWait_ = false;
 	// 待機タイマー
@@ -133,8 +136,9 @@ private:
 	/// 敵を生成する
 	/// </summary>
 	/// <param name="position">生成位置</param>
+	/// <param name="enemyType">敵の種類</param>
 	/// <param name="pattern">敵のパターン</param>
-	void CreateEnemy(const Vector3& position, EnemyPattern pattern);
+	void CreateEnemy(const Vector3& position, EnemyType enemyType, EnemyPattern pattern);
 
 	/// <summary>
 	/// 死んでいる敵を削除する
@@ -155,5 +159,4 @@ private:
 	/// 全ての敵を削除する
 	/// </summary>
 	void ClearAllEnemies();
-
 };

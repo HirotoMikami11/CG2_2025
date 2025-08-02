@@ -1,11 +1,15 @@
 #pragma once
+#include <memory>
 #include "Objects/GameObject/GameObject.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
+#include "Objects/Light/Light.h"
+#include "Engine.h"
+
 #include "GameObjects/Collider.h"
 #include "CollisionManager/CollisionConfig.h"
 
 // 前方宣言
-class Enemy;
+class BaseEnemy;
 
 /// <summary>
 /// プレイヤーのホーミング弾クラス
@@ -28,8 +32,8 @@ public:
 	/// <param name="dxCommon">DirectXCommonのポインタ</param>
 	/// <param name="position">初期位置</param>
 	/// <param name="velocity">初期速度</param>
-	/// <param name="target">ホーミング対象</param>
-	void Initialize(DirectXCommon* dxCommon, const Vector3& position, const Vector3& velocity, Enemy* target);
+	/// <param name="target">ターゲットの敵</param>
+	void Initialize(DirectXCommon* dxCommon, const Vector3& position, const Vector3& velocity, BaseEnemy* target);
 
 	/// <summary>
 	/// 更新
@@ -44,16 +48,9 @@ public:
 	void Draw(const Light& directionalLight);
 
 	/// <summary>
-	/// 死亡フラグを取得
+	/// ImGui
 	/// </summary>
-	/// <returns>死亡フラグ</returns>
-	bool IsDead() const { return isDead_; }
-
-	/// <summary>
-	/// ワールド座標を取得（オーバーライド）
-	/// </summary>
-	/// <returns>ワールド座標</returns>
-	Vector3 GetWorldPosition() override;
+	void ImGui();
 
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
@@ -61,16 +58,19 @@ public:
 	void OnCollision() override;
 
 	/// <summary>
-	/// ダメージを受ける
+	/// ワールド座標を取得（オーバーライド）
 	/// </summary>
-	/// <param name="damage">ダメージ量</param>
-	void TakeDamage(int damage);
+	/// <returns>ワールド座標</returns>
+	Vector3 GetWorldPosition() override;
 
-	/// <summary>
-	/// HPを取得
-	/// </summary>
-	/// <returns>現在のHP</returns>
-	int GetHP() const { return hp_; }
+	// Getter
+	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
+	Vector3 GetVelocity() const { return velocity_; }
+	bool IsDead() const { return isDead_; }
+
+	// Setter
+	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
+	void SetVelocity(const Vector3& velocity) { velocity_ = velocity; }
 
 private:
 	// ゲームオブジェクト
@@ -79,30 +79,25 @@ private:
 	// 速度
 	Vector3 velocity_;
 
-	// ホーミング対象
-	Enemy* target_ = nullptr;
+	// ターゲット敵
+	BaseEnemy* target_ = nullptr;
 
-	// ホーミング用の変数
-	float bulletSpeed_;  // 速度の大きさ
-	float t_;            // ホーミングの補間割合
+	// 生存時間
+	static const int32_t kLifeTime = 60 * 10; // 60fpsで10秒
+	int32_t deathTimer_ = kLifeTime;
 
-	// 寿命
-	static const int32_t kLifeTime_ = 60 * 5; // 弾の寿命（フレーム数）
-	int32_t deathTimer_ = kLifeTime_; // 弾の寿命タイマー
-	bool isDead_ = false; // 弾が消滅したかどうかのフラグ
-	// HP
-	int hp_ = 1; // 弾のHP（デフォルト1）
+	// 死亡フラグ
+	bool isDead_ = false;
+
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
+
+	// ホーミング性能
+	static constexpr float kHomingStrength = 0.1f; // ホーミングの強さ（0.0f〜1.0f）
+	static constexpr float kMaxSpeed = 1.0f;       // 最大速度
 
 	/// <summary>
 	/// ホーミング処理
 	/// </summary>
-	/// <returns>新しい速度ベクトル</returns>
-	Vector3 IsHoming();
-
-	/// <summary>
-	/// ターゲットの方向を向く
-	/// </summary>
-	void SetToTargetDirection();
+	void UpdateHoming();
 };

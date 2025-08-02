@@ -54,13 +54,13 @@ void GameScene::ConfigureOffscreenEffects() {
 
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
-		depthFogEffect->SetEnabled(true);
+		//depthFogEffect->SetEnabled(true);
 		depthFogEffect->SetFogColor({ 0.02f, 0.08f, 0.25f, 1.0f });
 		depthFogEffect->SetFogDistance(0.2f, 260.0f);//レールカメラの時は180程度
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
-		depthOfFieldEffect->SetEnabled(true);
+	//	depthOfFieldEffect->SetEnabled(true);
 		depthOfFieldEffect->SetFocusDistance(2.0f); // フォーカス距離
 		depthOfFieldEffect->SetFocusRange(30.0f); // フォーカス範囲
 
@@ -117,6 +117,8 @@ void GameScene::Initialize() {
 	///*-----------------------------------------------------------------------*///	
 	///							敵のコマンド読込									///
 	///*-----------------------------------------------------------------------*///
+	// 敵発生コマンドの初期化
+	enemyPopCommand_ = std::make_unique<EnemyPopCommand>();
 	// 敵発生データの読み込み
 	LoadEnemyPopData();
 
@@ -198,11 +200,11 @@ void GameScene::Update() {
 	///								衝突判定									///
 	///*-----------------------------------------------------------------------*///
 #pragma region 衝突判定
+
 	// 衝突マネージャーの更新
 	// プレイヤー・敵弾のリストを取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
 	const std::list<std::unique_ptr<PlayerHomingBullet>>& playerHomingBullets = player_->GetHomingBullets();
-
 
 	// 衝突マネージャーのリストをクリアする
 	collisionManager_->ClearColliderList();
@@ -226,13 +228,13 @@ void GameScene::Update() {
 
 	// 衝突判定と応答
 	collisionManager_->Update();
+
 #pragma endregion
 
 	// レールカメラエディタの更新
 	if (railCameraEditor_) {
 		railCameraEditor_->Update();
 	}
-
 }
 
 void GameScene::UpdateGameObjects() {
@@ -263,14 +265,12 @@ void GameScene::UpdateGameObjects() {
 	}
 }
 
-
 void GameScene::DrawOffscreen() {
 	// 3Dゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }
 
 void GameScene::DrawBackBuffer() {
-
 	// UI(スプライトなど)の描画（オフスクリーン外に描画）
 
 	// プレイヤーのUI描画（レティクル）
@@ -315,7 +315,6 @@ void GameScene::DrawGameObjects() {
 	}
 
 	// レールカメラの軌道描画（デバッグ用）
-	// デバッグカメラ時でも常に描画されるように修正
 	if (railCamera_) {
 		railCamera_->DrawRailTrack(viewProjectionMatrix, directionalLight_);
 	}
@@ -356,6 +355,17 @@ void GameScene::ImGui() {
 	player_->ImGui();
 	ImGui::Spacing();
 
+	// 敵のImGui
+	ImGui::Text("Enemies Count: %zu", enemies_.size());
+	int enemyIndex = 0;
+	for (auto& enemy : enemies_) {
+		ImGui::PushID(enemyIndex);
+		enemy->ImGui();
+		ImGui::PopID();
+		enemyIndex++;
+	}
+	ImGui::Spacing();
+
 	// 敵弾のImGui
 	ImGui::Text("Enemy Bullets Count: %zu", enemyBullets_.size());
 	ImGui::Spacing();
@@ -370,7 +380,6 @@ void GameScene::ImGui() {
 	skydome_->ImGui();
 	ImGui::Spacing();
 
-
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
@@ -380,16 +389,18 @@ void GameScene::ImGui() {
 	ImGui::Text("Enemy Spawn System");
 	ImGui::Text("Is Wait: %s", isWait_ ? "YES" : "NO");
 	ImGui::Text("Wait Timer: %d", waitTimer_);
-	if (ImGui::Button("Create Test Enemy")) {
-		CreateEnemy(Vector3{ 50.0f, 10.0f, 200.0f }, EnemyPattern::Straight);
+	if (ImGui::Button("Create Test Normal Enemy")) {
+		CreateEnemy(Vector3{ 50.0f, 10.0f, 200.0f }, EnemyType::Normal, EnemyPattern::Straight);
+	}
+	if (ImGui::Button("Create Test Rushing Fish")) {
+		CreateEnemy(Vector3{ -30.0f, 15.0f, 150.0f }, EnemyType::RushingFish, EnemyPattern::Homing);
 	}
 
 	ImGui::SameLine();
 	//タイマーの初期化
 	if (ImGui::Button("Reset Enemy Pop Commands")) {
-		// 敵発生コマンドのストリームをリセット
-		enemyPopCommands.clear();
-		enemyPopCommands.seekg(0);
+		// 敵発生コマンドをリセット
+		enemyPopCommand_->Reset();
 		LoadEnemyPopData(); // 再読み込み
 		// 待機中フラグ
 		isWait_ = false;
@@ -407,20 +418,10 @@ void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) {
 }
 
 void GameScene::LoadEnemyPopData() {
-	// ファイルを開く
-	std::ifstream file;
-	file.open("resources/CSV_Data/Enemy_Pop/enemyPop.csv");
-
-	if (!file.is_open()) {
-		Logger::Log(Logger::GetStream(), "GameScene: Failed to open enemyPop.csv\n");
-		return;
+	// CSVファイルから敵発生データを読み込み
+	if (!enemyPopCommand_->LoadFromCSV("resources/CSV_Data/Enemy_Pop/enemyPop.csv")) {
+		Logger::Log(Logger::GetStream(), "GameScene: Failed to load enemy pop data\n");
 	}
-
-	// ファイルの内容を丸ごと文字列ストリームにコピー
-	enemyPopCommands << file.rdbuf();
-
-	// ファイルを閉じる
-	file.close();
 }
 
 void GameScene::UpdateEnemyPopCommands() {
@@ -435,81 +436,45 @@ void GameScene::UpdateEnemyPopCommands() {
 		return;
 	}
 
-	// 一行分の文字列を入れる変数
-	std::string line;
+	// コマンド実行ループ
+	EnemyPopCommandType commandType;
+	EnemyPopData popData;
+	WaitData waitData;
 
-	// コマンド実行ループ(コマンドは一行単位なので一行づつ取り出す)
-	while (std::getline(enemyPopCommands, line)) {
-		// 一行分の文字列をストリームに変換して解析しやすくする。
-		std::istringstream line_stream(line);
-
-		// 一行の中から[,]が現れるまでwordに入れる
-		std::string word;
-		// カンマ区切りで行の先頭文字列を取得
-		std::getline(line_stream, word, ',');
-
-		//"//"から始まる行はコメントなのでスキップ
-		if (word.find("//") == 0) {
-			// スキップする
-			continue;
-		}
-
-		// POPコマンド
-		if (word.find("POP") == 0) {
-			// x座標
-			std::getline(line_stream, word, ',');
-			float x = (float)std::atof(word.c_str());
-
-			// y座標
-			std::getline(line_stream, word, ',');
-			float y = (float)std::atof(word.c_str());
-
-			// z座標
-			std::getline(line_stream, word, ',');
-			float z = (float)std::atof(word.c_str());
-
-			// Patternの指定
-			std::getline(line_stream, word, ',');
-			int patternValue = atoi(word.c_str());
-			// 値をPatternに変更
-			//   パターン値を列挙型に変換
-			EnemyPattern pattern = EnemyPattern::Straight; // デフォルト
-			switch (patternValue) {
-			case 0:
-				pattern = EnemyPattern::Straight;
-				break;
-			case 1:
-				pattern = EnemyPattern::LeaveLeft;
-				break;
-			case 2:
-				pattern = EnemyPattern::LeaveRight;
-				break;
-			default:
-				pattern = EnemyPattern::Straight; // 不正な値の場合はデフォルト
-				break;
-			}
-
+	while (enemyPopCommand_->GetNextCommand(commandType, popData, waitData)) {
+		switch (commandType) {
+		case EnemyPopCommandType::POP:
 			// 敵を発生させる
-			CreateEnemy(Vector3(x, y, z), pattern);
+			CreateEnemy(popData.position, popData.enemyType, popData.pattern);
+			break;
 
-			// WAITコマンド
-		} else if (word.find("WAIT") == 0) {
-			std::getline(line_stream, word, ',');
-			// 待ち時間
-			int32_t waitTime = atoi(word.c_str());
+		case EnemyPopCommandType::WAIT:
 			// 待機開始
 			isWait_ = true;
-			waitTimer_ = waitTime;
-
+			waitTimer_ = waitData.waitTime;
 			// コマンドループを抜ける
-			break;
+			return;
 		}
 	}
 }
 
-void GameScene::CreateEnemy(const Vector3& position, EnemyPattern pattern) {
-	// 敵キャラの生成
-	auto enemy = std::make_unique<Enemy>();
+void GameScene::CreateEnemy(const Vector3& position, EnemyType enemyType, EnemyPattern pattern) {
+	std::unique_ptr<BaseEnemy> enemy;
+
+	// 敵の種類に応じて生成
+	switch (enemyType) {
+	case EnemyType::Normal:
+		enemy = std::make_unique<Enemy>();
+		break;
+	case EnemyType::RushingFish:
+		enemy = std::make_unique<RushingFishEnemy>();
+		break;
+	default:
+		// デフォルトは通常の敵
+		enemy = std::make_unique<Enemy>();
+		break;
+	}
+
 	// 敵キャラの初期化
 	enemy->Initialize(directXCommon_, position, pattern);
 	// 敵キャラにプレイヤーのアドレスを渡す
@@ -521,7 +486,7 @@ void GameScene::CreateEnemy(const Vector3& position, EnemyPattern pattern) {
 
 void GameScene::DeleteDeadEnemies() {
 	// デスフラグが立っている敵を削除する
-	enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
+	enemies_.remove_if([](const std::unique_ptr<BaseEnemy>& enemy) {
 		return enemy->IsDead();
 		});
 }
@@ -538,9 +503,10 @@ void GameScene::Finalize() {
 	ClearAllEnemyBullets();
 	ClearAllEnemies();
 
-	// 敵発生コマンドのストリームをリセット
-	enemyPopCommands.clear();
-	enemyPopCommands.seekg(0);
+	// 敵発生コマンドのリセット
+	if (enemyPopCommand_) {
+		enemyPopCommand_->Reset();
+	}
 	isWait_ = false;
 	waitTimer_ = 0;
 
@@ -549,19 +515,10 @@ void GameScene::Finalize() {
 		railCameraEditor_.reset();
 	}
 
-
 	// プレイヤーを明示的にリセット
 	if (player_) {
 		player_.reset();
 	}
-
-	////
-	///悩まされたので備忘録TODO:カメラを後図家するときも簡単に消せるような仕組みにする
-	////
-
-	//CameraControllerがシングルトンのため、他のオブジェクトより後に破棄される
-	//RailCameraがModel3D → MaterialGroup → Material → DirectX12リソースという深い階層でリソースを保持
-	//アプリケーション終了時にDirectXCommonが先に破棄され、その後でDirectX12リソースを解放しようとしてエラーが発生
 
 	// レールカメラのリソースを明示的に解放
 	if (railCamera_) {
@@ -578,4 +535,3 @@ void GameScene::Finalize() {
 		cameraController_->UnregisterCamera("rail");
 	}
 }
-

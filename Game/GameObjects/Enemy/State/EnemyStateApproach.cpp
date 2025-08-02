@@ -1,10 +1,18 @@
 #include "EnemyStateApproach.h"
+#include "GameObjects/Enemy/BaseEnemy.h"
 #include "GameObjects/Enemy/Enemy.h"
+#include "EnemyStateLeave.h"
+#include "EnemyStateStraight.h"
 
+EnemyStateApproach::EnemyStateApproach(BaseEnemy* enemy) : BaseEnemyState("State Approach", enemy) {
+	// 通常の敵の場合は自動発射を開始する
+	if (enemy_->GetEnemyType() == EnemyType::Normal) {
+		Enemy* normalEnemy = dynamic_cast<Enemy*>(enemy_);
+		if (normalEnemy) {
+			normalEnemy->StartAutoFire();
+		}
+	}
 
-EnemyStateApproach::EnemyStateApproach(Enemy* enemy) : BaseEnemyState("State Approach", enemy) {
-	// 自動発射を開始する
-	enemy->StartAutoFire();
 	// 敵の速度を設定
 	enemy_->SetVelocity(velocity_);
 }
@@ -12,11 +20,9 @@ EnemyStateApproach::EnemyStateApproach(Enemy* enemy) : BaseEnemyState("State App
 EnemyStateApproach::~EnemyStateApproach() {
 	// 時限発動のリストを他のフェーズに移行する場合、1フレーム遅れさせて時限発動リストをクリアする。
 	enemy_->ClearTimeCalls();
-
 }
 
 void EnemyStateApproach::Update() {
-
 	//									移動処理									//
 
 	// 座標を取得
@@ -24,14 +30,12 @@ void EnemyStateApproach::Update() {
 	// 接近フェーズの更新処理
 	enemy_->SetPosition((enemyPos + velocity_));
 
-
 	//									状態遷移									//
 	// 状態遷移の条件
-	if (enemyPos.z <= ChangeLeavePosZ_) {
+	if (enemyPos.z <= changeLeavePosZ_) {
 		// パターンに応じて離脱フェーズに移行
 		EnemyPattern pattern = enemy_->GetPattern();
 		switch (pattern) {
-
 			//まっすぐ進んでくる
 		case EnemyPattern::Straight:
 			enemy_->ChangeState(std::make_unique<EnemyStateStraight>(enemy_));

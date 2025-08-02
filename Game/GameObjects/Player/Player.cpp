@@ -225,7 +225,7 @@ void Player::FaceAwayFromCamera() {
 	if (gameObject_->GetTransform().GetParent() != nullptr) {
 		// レールカメラに対して常に向こう側を向く
 		// これにより、レールカメラがどの方向を向いていても、プレイヤーは常にカメラに背を向ける
-		Vector3 fixedRotation = { 0.0f, 0.0f, 0.0f }; 
+		Vector3 fixedRotation = { 0.0f, 0.0f, 0.0f };
 		gameObject_->SetRotation(fixedRotation);
 		return;
 	}
@@ -304,7 +304,7 @@ void Player::Fire() {
 	// 通常モードでは偏差射撃を使用
 	if (lockOn_ && lockOn_->GetTarget() != nullptr && !lockOn_->GetTarget()->IsDead()) {
 		// ロックオン対象の敵を取得
-		Enemy* target = lockOn_->GetTarget();
+		BaseEnemy* target = lockOn_->GetTarget();
 
 		// 敵の速度を取得
 		Vector3 enemyVelocity = target->GetVelocity();
@@ -363,7 +363,7 @@ void Player::FireMultiLockOn() {
 	}
 
 	// ロックオンしている全ての敵に向けてホーミング弾を発射
-	for (Enemy* target : multiLockOnTargets_) {
+	for (BaseEnemy* target : multiLockOnTargets_) {
 		if (target != nullptr && !target->IsDead()) {
 			// ターゲットのワールド座標を取得
 			Vector3 targetPosition = target->GetWorldPosition();

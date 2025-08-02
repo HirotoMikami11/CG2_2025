@@ -5,9 +5,11 @@
 #include "Engine.h"
 
 #include "Objects/GameObject/GameObject.h"
+
 #include "GameObjects/PlayerBullet/PlayerBullet.h"
 #include "GameObjects/PlayerBullet/PlayerHomingBullet.h"
-#include "GameObjects/Enemy/Enemy.h"
+#include "GameObjects/Enemy/BaseEnemy.h"
+
 #include "GameObjects/Collider.h"	//衝突判定
 #include "CollisionManager/CollisionConfig.h"	//衝突属性のフラグを定義する
 #include "CameraController/CameraController.h" // カメラコントローラー
@@ -89,17 +91,12 @@ public:
 	/// </summary>
 	void OnCollision() override;
 
-
-
-
-
 	//Getter
 	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
 	Vector2 GetPosition2DReticle() const { return reticle_->GetPosition2DReticle(); }	// 2Dレティクルの位置を取得
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }	// 弾リストを取得
 	const std::list<std::unique_ptr<PlayerHomingBullet>>& GetHomingBullets() const { return homingBullets_; }	// ホーミング弾リストを取得
-
 
 	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
 	// 親オブジェクトを設定（Transform3Dの親子関係）
@@ -111,7 +108,7 @@ public:
 	void SetLockOn(LockOn* lockOn) { lockOn_ = lockOn; }	// ロックオンシステムを設定
 	bool IsMultiLockOnMode() const { return attackMode_ == AttackMode::MultiLockOn; }	// 現在の攻撃モードがマルチロックオンかどうか
 	AttackMode GetAttackMode() const { return attackMode_; }	// 現在の攻撃モードを取得
-	std::list<Enemy*>& GetMultiLockOnTargets() { return multiLockOnTargets_; }	// マルチロックオンターゲットリストを取得
+	std::list<BaseEnemy*>& GetMultiLockOnTargets() { return multiLockOnTargets_; }	// マルチロックオンターゲットリストを取得
 
 	// UIシステムへのアクセス
 	PlayerUI& GetUI() { return *ui_; }
@@ -159,7 +156,7 @@ private:
 
 	/// 攻撃モード関連
 	AttackMode attackMode_ = AttackMode::Normal;	// 攻撃モード（デフォルトは通常モード）
-	std::list<Enemy*> multiLockOnTargets_;			// マルチロックオン対象リスト
+	std::list<BaseEnemy*> multiLockOnTargets_;		// マルチロックオン対象リスト
 
 	// 発射間隔
 	static constexpr float kFireInterval = 10.0f;	// 発射間隔（フレーム数）

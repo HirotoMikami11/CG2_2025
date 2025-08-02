@@ -1,6 +1,6 @@
 #include "LockOn.h"
 #include "GameObjects/Player/Player.h"
-#include "GameObjects/Enemy/Enemy.h"
+#include "GameObjects/Enemy/BaseEnemy.h"
 #include "Managers/ImGui/ImGuiManager.h"
 
 LockOn::LockOn() {
@@ -27,7 +27,8 @@ void LockOn::Initialize(DirectXCommon* dxCommon) {
 	// ビューポート行列の計算(画面サイズが変わったら変更)
 	matViewport_ = MakeViewportMatrix(0, 0, 1280, 720, 0, 1);
 }
-void LockOn::Update(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, const Matrix4x4& viewProjectionMatrix) {
+
+void LockOn::Update(Player* player, std::list<std::unique_ptr<BaseEnemy>>& enemies, const Matrix4x4& viewProjectionMatrix) {
 	// 現在のターゲットが死んでいる場合は即座に解除
 	if (target_ != nullptr && target_->IsDead()) {
 		target_ = nullptr;
@@ -35,7 +36,7 @@ void LockOn::Update(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, 
 
 	// ロックオン対象候補リスト
 	// 距離と敵のポインタをペアとして扱う
-	std::list<std::pair<float, Enemy*>> targets;
+	std::list<std::pair<float, BaseEnemy*>> targets;
 
 	// プレイヤーのワールド座標を取得
 	Vector3 playerPositionWorld = player->GetWorldPosition();
@@ -43,7 +44,7 @@ void LockOn::Update(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, 
 	// ロックオン判定処理
 	for (auto& enemy : enemies) {
 		// unique_ptrから生ポインタを取得
-		Enemy* enemyPtr = enemy.get();
+		BaseEnemy* enemyPtr = enemy.get();
 
 		// 死んだ敵は最初からスキップ
 		if (enemyPtr->IsDead()) {
@@ -81,7 +82,7 @@ void LockOn::Update(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, 
 	// 対象を絞り込んで座標設定する
 	if (!targets.empty()) {
 		// 距離で昇順にソート（近い順）
-		targets.sort([](const std::pair<float, Enemy*>& a, const std::pair<float, Enemy*>& b) {
+		targets.sort([](const std::pair<float, BaseEnemy*>& a, const std::pair<float, BaseEnemy*>& b) {
 			return a.first < b.first;
 			});
 
@@ -106,13 +107,12 @@ void LockOn::DrawUI(const Matrix4x4& viewProjectionMatrixSprite) {
 	lockOnMark_->Draw();
 }
 
-
-void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<Enemy>>& enemies, const Matrix4x4& viewProjectionMatrix, std::list<Enemy*>& multiLockOnTargets) {
+void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<BaseEnemy>>& enemies, const Matrix4x4& viewProjectionMatrix, std::list<BaseEnemy*>& multiLockOnTargets) {
 	// 自機のワールド座標を取得する
 	Vector3 playerPositionWorld = player->GetWorldPosition();
 
 	// 死んだ敵、または自機より後ろに行った敵をマルチロックオンリストから除去
-	multiLockOnTargets.remove_if([&viewProjectionMatrix, &playerPositionWorld](Enemy* enemy) {
+	multiLockOnTargets.remove_if([&viewProjectionMatrix, &playerPositionWorld](BaseEnemy* enemy) {
 		// 死んだ敵は除去
 		if (enemy == nullptr || enemy->IsDead()) {
 			return true;
@@ -134,7 +134,7 @@ void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<Enemy>>
 
 	// マルチロックオン判定処理
 	for (auto& enemy : enemies) {
-		Enemy* enemyPtr = enemy.get();
+		BaseEnemy* enemyPtr = enemy.get();
 
 		// 死んだ敵は最初からスキップ
 		if (enemyPtr->IsDead()) {
@@ -158,7 +158,7 @@ void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<Enemy>>
 
 		// 既にロックオンされているかチェック
 		bool alreadyLocked = false;
-		for (Enemy* lockedEnemy : multiLockOnTargets) {
+		for (BaseEnemy* lockedEnemy : multiLockOnTargets) {
 			if (lockedEnemy == enemyPtr) {
 				alreadyLocked = true;
 				break;
@@ -173,7 +173,7 @@ void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<Enemy>>
 	}
 }
 
-void LockOn::DrawMultiLockOnUI(const std::list<Enemy*>& multiLockOnTargets, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewProjectionMatrixSprite) {
+void LockOn::DrawMultiLockOnUI(const std::list<BaseEnemy*>& multiLockOnTargets, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewProjectionMatrixSprite) {
 	// 既存のマルチロックオンスプライトをクリア
 	ClearMultiLockOnSprites();
 
@@ -183,7 +183,7 @@ void LockOn::DrawMultiLockOnUI(const std::list<Enemy*>& multiLockOnTargets, cons
 	}
 
 	// 各ロックオン対象にマークを描画
-	for (Enemy* target : multiLockOnTargets) {
+	for (BaseEnemy* target : multiLockOnTargets) {
 		if (target != nullptr && !target->IsDead()) {
 			// 敵のワールド座標を取得
 			Vector3 targetPosition = target->GetWorldPosition();
