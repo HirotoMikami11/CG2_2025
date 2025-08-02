@@ -96,26 +96,19 @@ public:
 	/// <returns>保存成功フラグ</returns>
 	static bool SaveEnemyInfoToCSV(const std::string& filePath, const std::vector<EditorEnemyInfo>& enemyInfos);
 
-private:
-	// コマンドストリーム
-	std::stringstream commandStream_;
-
-	// エディタ用：読み込まれた敵情報を保持
-	std::vector<EditorEnemyInfo> loadedEnemyInfos_;
-
 	/// <summary>
 	/// 文字列をEnemyTypeに変換
 	/// </summary>
 	/// <param name="typeStr">文字列</param>
 	/// <returns>EnemyType</returns>
-	EnemyType StringToEnemyType(const std::string& typeStr);
+	static EnemyType StringToEnemyType(const std::string& typeStr);
 
 	/// <summary>
 	/// 文字列をEnemyPatternに変換
 	/// </summary>
 	/// <param name="patternStr">文字列</param>
 	/// <returns>EnemyPattern</returns>
-	EnemyPattern StringToEnemyPattern(const std::string& patternStr);
+	static EnemyPattern StringToEnemyPattern(const std::string& patternStr);
 
 	/// <summary>
 	/// EnemyTypeを文字列に変換
@@ -130,4 +123,11 @@ private:
 	/// <param name="pattern">敵パターン</param>
 	/// <returns>文字列</returns>
 	static std::string EnemyPatternToString(EnemyPattern pattern);
+
+private:
+	// コマンドストリーム
+	std::stringstream commandStream_;
+
+	// エディタ用：読み込まれた敵情報を保持
+	std::vector<EditorEnemyInfo> loadedEnemyInfos_;
 };

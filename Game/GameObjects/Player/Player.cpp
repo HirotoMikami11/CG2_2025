@@ -367,10 +367,11 @@ void Player::Fire() {
 
 		// 弾丸を登録する
 		bullets_.push_back(std::move(newBullet));
-	}
 
+	}
 	// エネルギーを消費(体力システムに渡す)
 	health_->ConsumeEnergy(health_->GetEnergyCostPerShot());
+
 }
 
 void Player::FireMultiLockOn() {
@@ -405,7 +406,7 @@ void Player::FireMultiLockOn() {
 	}
 
 	// エネルギーを消費(体力システムに渡す)
-	health_->ConsumeEnergy(requiredEnergy);
+	health_->ConsumeEnergy(requiredEnergy * 3.0f);
 }
 
 void Player::DeleteBullets() {

@@ -7,7 +7,7 @@ class BaseEnemy;
 
 /// <summary>
 /// 射撃魚のホバー状態
-/// プレイヤーの前方でうろうろする
+/// カメラの前方でうろうろする（カメラとの相対位置を維持）
 /// </summary>
 class FishStateHover : public BaseEnemyState {
 public:
@@ -29,16 +29,19 @@ public:
 
 private:
 	// ホバー移動速度
-	static constexpr float kHoverSpeed = 0.1f;
+	static constexpr float kHoverSpeed = 0.2f;
 
-	// プレイヤーからの基準距離
-	static constexpr float kBaseDistance = 100.0f;
+	// カメラからの基準距離
+	static constexpr float kBaseDistance = 150.0f;
 
 	// ランダムオフセットの範囲
-	static constexpr float kOffsetRange = 10.0f;
+	static constexpr float kOffsetRange = 15.0f;
 
 	// 射撃間隔（フレーム数）
-	static constexpr int kShootInterval = 240;
+	static constexpr int kShootInterval = 240 ;
+
+	// カメラが移動したと判定する閾値
+	static constexpr float kCameraMovementThreshold = 1.0f;
 
 	// 射撃タイマー
 	int shootTimer_ = 0;
@@ -52,8 +55,11 @@ private:
 	// 目標位置変更間隔
 	static constexpr int kTargetChangeInterval = 60;
 
+	// 前回のカメラ位置（カメラの移動を検出するため）
+	Vector3 lastCameraPosition_;
+
 	/// <summary>
-	/// 新しいホバー目標位置を生成
+	/// 新しいホバー目標位置を生成（カメラ基準）
 	/// </summary>
 	void GenerateNewHoverTarget();
 };

@@ -82,7 +82,7 @@ void GameoverScene::Initialize() {
 	cameraController_ = CameraController::GetInstance();
 	// 座標と回転を指定して初期化
 	Vector3 initialPosition = { 5.569f, 7.390f, -10.685f };
-	Vector3 initialRotation = { 0.615,-0.460,0.0f };
+	Vector3 initialRotation = { 0.615f,-0.460f,0.0f };
 	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
 

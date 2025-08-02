@@ -14,8 +14,8 @@ void ShootingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& posit
 	directXCommon_ = dxCommon;
 
 	// ゲームオブジェクト（球体）の初期化
-	gameObject_ = std::make_unique<Sphere>();
-	gameObject_->Initialize(dxCommon, "sphere", "uvChecker");
+	gameObject_ = std::make_unique<Model3D>();
+	gameObject_->Initialize(dxCommon, "shootingFish");
 	gameObject_->SetName("ShootingFishEnemy");
 
 	// 初期位置設定
@@ -23,7 +23,7 @@ void ShootingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& posit
 
 	// 大きさを設定（通常の敵と同程度）
 	Vector3Transform enemyTransform{
-		{2.5f, 2.5f, 2.5f},   // scale
+		{5.0f, 5.0f, 5.0f},   // scale
 		{0.0f, 0.0f, 0.0f},   // rotate
 		position              // translate
 	};
@@ -35,8 +35,8 @@ void ShootingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& posit
 	// パターンの設定
 	pattern_ = pattern;
 
-	// HP設定（射撃魚はHP12）
-	maxHP_ = 12.0f;
+	// HP設定（射撃魚はHP7）
+	maxHP_ = 7.0f;
 	currentHP_ = maxHP_;
 
 	// 衝突判定設定

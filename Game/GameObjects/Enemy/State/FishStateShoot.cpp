@@ -5,11 +5,20 @@
 #include "GameObjects/Enemy/ShootingFishEnemy.h"
 #include "GameObjects/Player/Player.h"
 #include "GameObjects/EnemyBullet/EnemyBullet.h"
+#include "CameraController/CameraController.h"
 #include "Scenes/GameScene/GameScene.h"
 
 FishStateShoot::FishStateShoot(BaseEnemy* enemy) : BaseEnemyState("Shoting Fish Shoot", enemy) {
 	// 停止
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+
+	// カメラコントローラーを取得
+	CameraController* cameraController = CameraController::GetInstance();
+	if (cameraController) {
+		lastCameraPosition_ = cameraController->GetPosition();
+		// 現在位置からカメラとの相対位置を計算
+		relativePosition_ = enemy_->GetPosition() - lastCameraPosition_;
+	}
 
 	// 照準フェーズから開始
 	currentPhase_ = ShootPhase::Aiming;
@@ -24,8 +33,22 @@ void FishStateShoot::Update() {
 	if (!GetPlayer()) {
 		return;
 	}
+
+	// カメラコントローラーを取得
+	CameraController* cameraController = CameraController::GetInstance();
+	if (cameraController) {
+		// カメラが移動した場合は相対位置を維持
+		Vector3 currentCameraPos = cameraController->GetPosition();
+		if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold) {
+			// カメラとの相対位置を維持して敵の位置を更新
+			Vector3 newEnemyPosition = currentCameraPos + relativePosition_;
+			enemy_->SetPosition(newEnemyPosition);
+			lastCameraPosition_ = currentCameraPos;
+		}
+	}
+
 	if (enemy_->GetEnemyType() == EnemyType::ShootingFish) {
-		ShootingFishEnemy* shotingEnemy = dynamic_cast<ShootingFishEnemy*>(enemy_);
+		ShootingFishEnemy* shootingEnemy = dynamic_cast<ShootingFishEnemy*>(enemy_);
 
 		phaseTimer_--;
 
@@ -38,8 +61,8 @@ void FishStateShoot::Update() {
 				// 射撃フェーズに移行
 				currentPhase_ = ShootPhase::Shooting;
 				Shoot();
-				if (shotingEnemy) {
-					shotingEnemy->AddShotCount();
+				if (shootingEnemy) {
+					shootingEnemy->AddShotCount();
 				}
 				phaseTimer_ = kCooldownTime;
 				currentPhase_ = ShootPhase::Cooldown; // 射撃後すぐにクールダウン
@@ -50,7 +73,7 @@ void FishStateShoot::Update() {
 		case ShootPhase::Cooldown:
 			if (phaseTimer_ <= 0) {
 				// 最大射撃回数に到達したかチェック
-				if (shotingEnemy->GetShotCount() >= kMaxShotCount) {
+				if (shootingEnemy && shootingEnemy->GetShotCount() >= kMaxShotCount) {
 					// 逃走状態に遷移
 					enemy_->ChangeState(std::make_unique<FishStateEscape>(enemy_));
 					return;
@@ -94,12 +117,10 @@ void FishStateShoot::AimAtPlayer() {
 }
 
 void FishStateShoot::Shoot() {
-
 	if (enemy_->GetEnemyType() == EnemyType::ShootingFish) {
 		ShootingFishEnemy* normalEnemy = dynamic_cast<ShootingFishEnemy*>(enemy_);
 		if (normalEnemy) {
 			normalEnemy->Fire();
 		}
 	}
-
 }

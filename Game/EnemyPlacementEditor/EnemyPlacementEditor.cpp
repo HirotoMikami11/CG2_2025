@@ -6,6 +6,77 @@
 #include "CameraController/CameraController.h"
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+
+namespace {
+	// エディタ定数
+	constexpr float kNormalEnemyScale = 3.0f;
+	constexpr float kRushingFishScale = 2.0f;
+	constexpr float kShootingFishScale = 2.5f;
+
+	constexpr float kNormalEnemyRadius = 3.0f;
+	constexpr float kRushingFishRadius = 2.0f;
+	constexpr float kShootingFishRadius = 2.5f;
+
+	constexpr int kMaxWaitTime = 600;
+	constexpr float kColorBrightness = 0.3f;
+	constexpr float kSelectedColorBoost = 0.3f;
+	constexpr float kNormalAlpha = 0.7f;
+	constexpr float kSelectedAlpha = 0.9f;
+	constexpr float kNewEnemyAlpha = 0.5f;
+
+	// 敵タイプ表示名の配列
+	const char* kEnemyTypeDisplayNames[] = {
+		"Normal",
+		"RushingFish",
+		"ShootingFish"
+	};
+	constexpr int kEnemyTypeCount = 3;
+
+	// パターン表示名の配列
+	const char* kPatternDisplayNames[] = {
+		"Straight",
+		"LeaveLeft",
+		"LeaveRight",
+		"Homing",
+		"Shooting"
+	};
+	constexpr int kPatternCount = 5;
+
+	// 敵タイプごとのスケールを取得
+	float GetEnemyTypeScale(EnemyType enemyType) {
+		switch (enemyType) {
+		case EnemyType::Normal: return kNormalEnemyScale;
+		case EnemyType::RushingFish: return kRushingFishScale;
+		case EnemyType::ShootingFish: return kShootingFishScale;
+		default: return kNormalEnemyScale;
+		}
+	}
+
+	// 敵タイプごとの半径を取得
+	float GetEnemyTypeRadius(EnemyType enemyType) {
+		switch (enemyType) {
+		case EnemyType::Normal: return kNormalEnemyRadius;
+		case EnemyType::RushingFish: return kRushingFishRadius;
+		case EnemyType::ShootingFish: return kShootingFishRadius;
+		default: return kNormalEnemyRadius;
+		}
+	}
+
+	// 敵タイプごとの基本色を取得
+	Vector4 GetEnemyTypeBaseColor(EnemyType enemyType) {
+		switch (enemyType) {
+		case EnemyType::Normal:
+			return { 1.0f, kColorBrightness, kColorBrightness, kNormalAlpha }; // 赤系
+		case EnemyType::RushingFish:
+			return { kColorBrightness, kColorBrightness, 1.0f, kNormalAlpha }; // 青系
+		case EnemyType::ShootingFish:
+			return { kColorBrightness, 1.0f, kColorBrightness, kNormalAlpha }; // 緑系
+		default:
+			return { 0.5f, 0.5f, 0.5f, kNormalAlpha }; // グレー
+		}
+	}
+}
 
 EnemyPlacementEditor::EnemyPlacementEditor()
 	: directXCommon_(nullptr)
@@ -126,7 +197,7 @@ void EnemyPlacementEditor::ImGui() {
 		if (ImGui::Button("Get Camera Position")) {
 			if (cameraController_) {
 				// カメラの現在位置を直接取得
-				Vector3 position = cameraController_->GetPosition();
+				newEnemyData_.position = cameraController_->GetPosition();
 
 				// プレビューモデルを更新
 				if (newEnemyData_.previewModel) {
@@ -157,26 +228,24 @@ void EnemyPlacementEditor::ImGui() {
 		}
 
 		// 敵タイプ選択
-		const char* enemyTypeItems[] = { "Normal", "RushingFish" };
 		int currentEnemyType = static_cast<int>(newEnemyData_.enemyType);
-		if (ImGui::Combo("Enemy Type", &currentEnemyType, enemyTypeItems, IM_ARRAYSIZE(enemyTypeItems))) {
+		if (ImGui::Combo("Enemy Type", &currentEnemyType, kEnemyTypeDisplayNames, kEnemyTypeCount)) {
 			newEnemyData_.enemyType = static_cast<EnemyType>(currentEnemyType);
 			// 新規追加用は白色を維持
 			if (newEnemyData_.previewModel) {
-				Vector4 color = { 1.0f, 1.0f, 1.0f, 0.5f };
+				Vector4 color = { 1.0f, 1.0f, 1.0f, kNewEnemyAlpha };
 				newEnemyData_.previewModel->SetColor(color);
 			}
 		}
 
 		// パターン選択
-		const char* patternItems[] = { "Straight", "LeaveLeft", "LeaveRight", "Homing" };
 		int currentPattern = static_cast<int>(newEnemyData_.pattern);
-		if (ImGui::Combo("Pattern", &currentPattern, patternItems, IM_ARRAYSIZE(patternItems))) {
+		if (ImGui::Combo("Pattern", &currentPattern, kPatternDisplayNames, kPatternCount)) {
 			newEnemyData_.pattern = static_cast<EnemyPattern>(currentPattern);
 		}
 
 		// 待機時間
-		ImGui::DragInt("Wait Time", &newEnemyData_.waitTime, 1, 0, 600);
+		ImGui::DragInt("Wait Time", &newEnemyData_.waitTime, 1, 0, kMaxWaitTime);
 
 		if (ImGui::Button("Add Enemy")) {
 			EnemyPlacementData newPlacement;
@@ -190,12 +259,7 @@ void EnemyPlacementEditor::ImGui() {
 			enemyPlacements_.push_back(std::move(newPlacement));
 
 			// 新規追加用データをリセット
-			newEnemyData_.position = { 0.0f, 0.0f, 100.0f };
-			newEnemyData_.enemyType = EnemyType::Normal;
-			newEnemyData_.pattern = EnemyPattern::Straight;
-			newEnemyData_.waitTime = 0;
-			// プレビューモデルをリセット
-			newEnemyData_.previewModel.reset();
+			ResetNewEnemyData();
 		}
 
 		ImGui::Separator();
@@ -214,68 +278,27 @@ void EnemyPlacementEditor::ImGui() {
 
 				// より詳細な敵情報を表示
 				std::string enemyLabel = "Enemy " + std::to_string(i) +
-					" [" + EnemyTypeToString(placement.enemyType) + "]";
+					" [" + EnemyPopCommand::EnemyTypeToString(placement.enemyType) + "]";
 
 				if (ImGui::Selectable(enemyLabel.c_str(), isSelected)) {
 					selectedIndex_ = isSelected ? -1 : static_cast<int>(i);
 					// 選択状態を更新
-					for (auto& p : enemyPlacements_) {
-						p.isSelected = false;
-					}
-					if (selectedIndex_ >= 0) {
-						placement.isSelected = true;
-						UpdatePreviewModelColor(placement);
-					}
+					UpdateSelectionStates(selectedIndex_);
 				}
 
 				// 敵情報を2行で表示
 				ImGui::Text("  Pos: (%.1f, %.1f, %.1f) | Pattern: %s",
 					placement.position.x, placement.position.y, placement.position.z,
-					EnemyPatternToString(placement.pattern).c_str());
+					EnemyPopCommand::EnemyPatternToString(placement.pattern).c_str());
 				ImGui::Text("  Wait: %d frames", placement.waitTime);
 
 				// インライン編集（選択されている場合）
 				if (selectedIndex_ == static_cast<int>(i)) {
-					ImGui::Separator();
-					ImGui::Text("Quick Edit:");
-
-					// 座標の直接編集
-					if (ImGui::DragFloat3(("Pos##" + std::to_string(i)).c_str(),
-						&placement.position.x, 0.5f)) {
-						if (placement.previewModel) {
-							placement.previewModel->SetPosition(placement.position);
-						}
-					}
-
-					// 待機時間の直接編集
-					ImGui::DragInt(("Wait##" + std::to_string(i)).c_str(),
-						&placement.waitTime, 1, 0, 600);
+					DrawInlineEditor(placement, i);
 				}
 
-				// 削除ボタン
-				ImGui::SameLine();
-				if (ImGui::Button(("Delete##" + std::to_string(i)).c_str())) {
-					enemyPlacements_.erase(enemyPlacements_.begin() + i);
-					if (selectedIndex_ >= static_cast<int>(i)) {
-						selectedIndex_--;
-					}
-					ImGui::PopID();
-					break; // イテレータが無効になるのでbreak
-				}
-
-				// カメラ位置に移動ボタン
-				ImGui::SameLine();
-				if (ImGui::Button(("Set Cam Pos##" + std::to_string(i)).c_str())) {
-					if (cameraController_) {
-						// カメラの現在位置を直接取得
-						placement.position = cameraController_->GetPosition();
-
-						// プレビューモデルを更新
-						if (placement.previewModel) {
-							placement.previewModel->SetPosition(placement.position);
-						}
-					}
-				}
+				// アクションボタン群
+				DrawActionButtons(placement, i);
 
 				ImGui::PopID();
 			}
@@ -283,34 +306,8 @@ void EnemyPlacementEditor::ImGui() {
 		ImGui::EndChild();
 
 		// 選択中の敵の詳細編集
-		if (selectedIndex_ >= 0 && selectedIndex_ < static_cast<int>(enemyPlacements_.size())) {
-			ImGui::Separator();
-			ImGui::Text("Edit Selected Enemy:");
-
-			auto& selectedPlacement = enemyPlacements_[selectedIndex_];
-
-			// 座標編集
-			if (ImGui::DragFloat3("Edit Position", &selectedPlacement.position.x, 0.5f)) {
-				if (selectedPlacement.previewModel) {
-					selectedPlacement.previewModel->SetPosition(selectedPlacement.position);
-				}
-			}
-
-			// 敵タイプ編集
-			int editEnemyType = static_cast<int>(selectedPlacement.enemyType);
-			if (ImGui::Combo("Edit Enemy Type", &editEnemyType, enemyTypeItems, IM_ARRAYSIZE(enemyTypeItems))) {
-				selectedPlacement.enemyType = static_cast<EnemyType>(editEnemyType);
-				UpdatePreviewModelColor(selectedPlacement);
-			}
-
-			// パターン編集
-			int editPattern = static_cast<int>(selectedPlacement.pattern);
-			if (ImGui::Combo("Edit Pattern", &editPattern, patternItems, IM_ARRAYSIZE(patternItems))) {
-				selectedPlacement.pattern = static_cast<EnemyPattern>(editPattern);
-			}
-
-			// 待機時間編集
-			ImGui::DragInt("Edit Wait Time", &selectedPlacement.waitTime, 1, 0, 600);
+		if (IsValidSelectedIndex()) {
+			DrawDetailedEditor();
 		}
 	}
 #endif
@@ -327,35 +324,21 @@ void EnemyPlacementEditor::LoadFromEnemyPopCommand(EnemyPopCommand* enemyPopComm
 }
 
 bool EnemyPlacementEditor::SaveToCSV(const std::string& filePath) {
-	std::ofstream file(filePath);
-	if (!file.is_open()) {
-		Logger::Log(Logger::GetStream(), "EnemyPlacementEditor: Failed to open file for writing: " + filePath + "\n");
-		return false;
-	}
+	// EditorEnemyInfo のベクターを作成
+	std::vector<EditorEnemyInfo> enemyInfos;
+	enemyInfos.reserve(enemyPlacements_.size());
 
-	// ヘッダーコメントを書き込み
-	file << "// Enemy Placement Data\n";
-	file << "// Format: COMMAND,X,Y,Z,TYPE,PATTERN or WAIT,TIME\n";
-	file << "\n";
-
-	// 敵配置データを書き込み
 	for (const auto& placement : enemyPlacements_) {
-		// 待機コマンドを先に書き込み（0でない場合）
-		if (placement.waitTime > 0) {
-			file << "WAIT," << placement.waitTime << "\n";
-		}
-
-		// 敵生成コマンドを書き込み
-		file << "POP,"
-			<< placement.position.x << ","
-			<< placement.position.y << ","
-			<< placement.position.z << ","
-			<< EnemyTypeToString(placement.enemyType) << ","
-			<< EnemyPatternToString(placement.pattern) << "\n";
+		EditorEnemyInfo info;
+		info.position = placement.position;
+		info.enemyType = placement.enemyType;
+		info.pattern = placement.pattern;
+		info.waitTime = placement.waitTime;
+		enemyInfos.push_back(info);
 	}
 
-	file.close();
-	return true;
+	// EnemyPopCommand の static メソッドを使用して保存
+	return EnemyPopCommand::SaveEnemyInfoToCSV(filePath, enemyInfos);
 }
 
 bool EnemyPlacementEditor::LoadFromCSV(const std::string& filePath) {
@@ -403,8 +386,8 @@ bool EnemyPlacementEditor::LoadFromCSV(const std::string& filePath) {
 			placement.position.x = static_cast<float>(std::atof(xStr.c_str()));
 			placement.position.y = static_cast<float>(std::atof(yStr.c_str()));
 			placement.position.z = static_cast<float>(std::atof(zStr.c_str()));
-			placement.enemyType = StringToEnemyType(typeStr);
-			placement.pattern = StringToEnemyPattern(patternStr);
+			placement.enemyType = EnemyPopCommand::StringToEnemyType(typeStr);
+			placement.pattern = EnemyPopCommand::StringToEnemyPattern(patternStr);
 
 			// プレビューモデルを作成
 			CreatePreviewModel(placement, false);
@@ -426,21 +409,10 @@ void EnemyPlacementEditor::CreatePreviewModel(EnemyPlacementData& placement, boo
 	placement.previewModel->SetPosition(placement.position);
 
 	// 敵タイプに応じてサイズを調整
-	Vector3 scale;
-	switch (placement.enemyType) {
-	case EnemyType::Normal:
-		scale = { 3.0f, 3.0f, 3.0f };
-		break;
-	case EnemyType::RushingFish:
-		scale = { 2.0f, 2.0f, 2.0f };
-		break;
-	default:
-		scale = { 3.0f, 3.0f, 3.0f };
-		break;
-	}
+	float scale = GetEnemyTypeScale(placement.enemyType);
 
 	Vector3Transform transform{
-		scale,
+		{scale, scale, scale},
 		{0.0f, 0.0f, 0.0f},
 		placement.position
 	};
@@ -449,7 +421,7 @@ void EnemyPlacementEditor::CreatePreviewModel(EnemyPlacementData& placement, boo
 	// 色を設定
 	if (isNewEnemy) {
 		// 新規追加用は白っぽく表示
-		Vector4 color = { 1.0f, 1.0f, 1.0f, 0.5f };
+		Vector4 color = { 1.0f, 1.0f, 1.0f, kNewEnemyAlpha };
 		placement.previewModel->SetColor(color);
 	} else {
 		UpdatePreviewModelColor(placement);
@@ -460,66 +432,109 @@ void EnemyPlacementEditor::UpdatePreviewModelColor(EnemyPlacementData& placement
 	if (!placement.previewModel) return;
 
 	// 敵タイプに応じて色を変更
-	Vector4 color;
-	switch (placement.enemyType) {
-	case EnemyType::Normal:
-		color = { 1.0f, 0.3f, 0.3f, 0.7f }; // 赤系
-		break;
-	case EnemyType::RushingFish:
-		color = { 0.3f, 0.3f, 1.0f, 0.7f }; // 青系
-		break;
-	default:
-		color = { 0.5f, 0.5f, 0.5f, 0.7f }; // グレー
-		break;
-	}
+	Vector4 color = GetEnemyTypeBaseColor(placement.enemyType);
 
 	// 選択されている場合は明度を上げる
 	if (placement.isSelected) {
-		color.x = std::min(1.0f, color.x + 0.3f);
-		color.y = std::min(1.0f, color.y + 0.3f);
-		color.z = std::min(1.0f, color.z + 0.3f);
-		color.w = 0.9f; // 不透明度も上げる
+		color.x = std::min(1.0f, color.x + kSelectedColorBoost);
+		color.y = std::min(1.0f, color.y + kSelectedColorBoost);
+		color.z = std::min(1.0f, color.z + kSelectedColorBoost);
+		color.w = kSelectedAlpha; // 不透明度も上げる
 	}
 
 	placement.previewModel->SetColor(color);
 }
 
-std::string EnemyPlacementEditor::EnemyTypeToString(EnemyType type) {
-	switch (type) {
-	case EnemyType::Normal: return "Normal";
-	case EnemyType::RushingFish: return "RushingFish";
-	default: return "Normal";
+void EnemyPlacementEditor::ResetNewEnemyData() {
+	newEnemyData_.position = { 0.0f, 0.0f, 100.0f };
+	newEnemyData_.enemyType = EnemyType::Normal;
+	newEnemyData_.pattern = EnemyPattern::Straight;
+	newEnemyData_.waitTime = 0;
+	// プレビューモデルをリセット
+	newEnemyData_.previewModel.reset();
+}
+
+void EnemyPlacementEditor::UpdateSelectionStates(int selectedIndex) {
+	for (size_t i = 0; i < enemyPlacements_.size(); ++i) {
+		auto& placement = enemyPlacements_[i];
+		placement.isSelected = (selectedIndex >= 0 && i == static_cast<size_t>(selectedIndex));
+		UpdatePreviewModelColor(placement);
 	}
 }
 
-std::string EnemyPlacementEditor::EnemyPatternToString(EnemyPattern pattern) {
-	switch (pattern) {
-	case EnemyPattern::Straight: return "Straight";
-	case EnemyPattern::LeaveLeft: return "LeaveLeft";
-	case EnemyPattern::LeaveRight: return "LeaveRight";
-	case EnemyPattern::Homing: return "Homing";
-	default: return "Straight";
+bool EnemyPlacementEditor::IsValidSelectedIndex() const {
+	return selectedIndex_ >= 0 && selectedIndex_ < static_cast<int>(enemyPlacements_.size());
+}
+
+void EnemyPlacementEditor::DrawInlineEditor(EnemyPlacementData& placement, size_t index) {
+	ImGui::Separator();
+	ImGui::Text("Quick Edit:");
+
+	// 座標の直接編集
+	if (ImGui::DragFloat3(("Pos##" + std::to_string(index)).c_str(),
+		&placement.position.x, 0.5f)) {
+		if (placement.previewModel) {
+			placement.previewModel->SetPosition(placement.position);
+		}
+	}
+
+	// 待機時間の直接編集
+	ImGui::DragInt(("Wait##" + std::to_string(index)).c_str(),
+		&placement.waitTime, 1, 0, kMaxWaitTime);
+}
+
+void EnemyPlacementEditor::DrawActionButtons(EnemyPlacementData& placement, size_t index) {
+	// 削除ボタン
+	ImGui::SameLine();
+	if (ImGui::Button(("Delete##" + std::to_string(index)).c_str())) {
+		enemyPlacements_.erase(enemyPlacements_.begin() + index);
+		if (selectedIndex_ >= static_cast<int>(index)) {
+			selectedIndex_--;
+		}
+		return; // イテレータが無効になるので早期リターン
+	}
+
+	// カメラ位置に移動ボタン
+	ImGui::SameLine();
+	if (ImGui::Button(("Set Cam Pos##" + std::to_string(index)).c_str())) {
+		if (cameraController_) {
+			// カメラの現在位置を直接取得
+			placement.position = cameraController_->GetPosition();
+
+			// プレビューモデルを更新
+			if (placement.previewModel) {
+				placement.previewModel->SetPosition(placement.position);
+			}
+		}
 	}
 }
 
-EnemyType EnemyPlacementEditor::StringToEnemyType(const std::string& typeStr) {
-	if (typeStr == "Normal" || typeStr == "0") {
-		return EnemyType::Normal;
-	} else if (typeStr == "RushingFish" || typeStr == "1") {
-		return EnemyType::RushingFish;
-	}
-	return EnemyType::Normal;
-}
+void EnemyPlacementEditor::DrawDetailedEditor() {
+	ImGui::Separator();
+	ImGui::Text("Edit Selected Enemy:");
 
-EnemyPattern EnemyPlacementEditor::StringToEnemyPattern(const std::string& patternStr) {
-	if (patternStr == "Straight" || patternStr == "0") {
-		return EnemyPattern::Straight;
-	} else if (patternStr == "LeaveLeft" || patternStr == "1") {
-		return EnemyPattern::LeaveLeft;
-	} else if (patternStr == "LeaveRight" || patternStr == "2") {
-		return EnemyPattern::LeaveRight;
-	} else if (patternStr == "Homing" || patternStr == "3") {
-		return EnemyPattern::Homing;
+	auto& selectedPlacement = enemyPlacements_[selectedIndex_];
+
+	// 座標編集
+	if (ImGui::DragFloat3("Edit Position", &selectedPlacement.position.x, 0.5f)) {
+		if (selectedPlacement.previewModel) {
+			selectedPlacement.previewModel->SetPosition(selectedPlacement.position);
+		}
 	}
-	return EnemyPattern::Straight;
+
+	// 敵タイプ編集
+	int editEnemyType = static_cast<int>(selectedPlacement.enemyType);
+	if (ImGui::Combo("Edit Enemy Type", &editEnemyType, kEnemyTypeDisplayNames, kEnemyTypeCount)) {
+		selectedPlacement.enemyType = static_cast<EnemyType>(editEnemyType);
+		UpdatePreviewModelColor(selectedPlacement);
+	}
+
+	// パターン編集
+	int editPattern = static_cast<int>(selectedPlacement.pattern);
+	if (ImGui::Combo("Edit Pattern", &editPattern, kPatternDisplayNames, kPatternCount)) {
+		selectedPlacement.pattern = static_cast<EnemyPattern>(editPattern);
+	}
+
+	// 待機時間編集
+	ImGui::DragInt("Edit Wait Time", &selectedPlacement.waitTime, 1, 0, kMaxWaitTime);
 }

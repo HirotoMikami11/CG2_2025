@@ -52,6 +52,7 @@ public:
 	Matrix4x4 GetSpriteViewProjectionMatrix() const override;
 	Vector3 GetPosition() const override { return transform_.GetPosition(); }
 	void SetPosition(const Vector3& position) override { transform_.SetPosition(position); }
+	Vector3 GetRotation() const override { return transform_.GetRotation(); }
 	std::string GetCameraType() const override { return "Rail"; }
 
 	// RailCamera固有機能
@@ -158,7 +159,6 @@ public:
 	/// </summary>
 	/// <returns>選択されたポイントのインデックス（-1は選択なし）</returns>
 	int GetSelectedPointIndex() const { return selectedPointIndex_; }
-
 private:
 	// トランスフォーム
 	Transform3D transform_;

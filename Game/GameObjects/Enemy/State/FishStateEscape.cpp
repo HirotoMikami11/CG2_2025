@@ -1,6 +1,7 @@
 #include "FishStateEscape.h"
 #include "GameObjects/Enemy/BaseEnemy.h"
 #include "GameObjects/Player/Player.h"
+#include "CameraController/CameraController.h"
 #include "MyMath/Random/Random.h"
 
 FishStateEscape::FishStateEscape(BaseEnemy* enemy) : BaseEnemyState("Shoting Fish Escape", enemy) {
@@ -20,42 +21,41 @@ void FishStateEscape::Update() {
 	Vector3 currentPos = enemy_->GetPosition();
 	Vector3 newPosition = currentPos + enemy_->GetVelocity();
 	enemy_->SetPosition(newPosition);
-
 }
 
 void FishStateEscape::CalculateEscapeDirection() {
-	if (!GetPlayer()) {
-		// プレイヤーがいない場合はデフォルト方向
+	// カメラコントローラーを取得
+	CameraController* cameraController = CameraController::GetInstance();
+	if (!cameraController) {
+		// カメラコントローラーがない場合はデフォルト方向
 		escapeDirection_ = Vector3{ 1.0f, 0.0f, 0.0f };
 		return;
 	}
 
-	// プレイヤーの前方向を取得
-	Vector3 playerForward = GetPlayer()->GetForward();
+	// カメラの前方向を取得（レールカメラの進行方向）
+	Vector3 cameraForward = cameraController->GetForward();
+	Vector3 cameraPos = cameraController->GetPosition();
 
-	// プレイヤーの前方向に垂直な方向を2つ計算
-	// 上方向ベクトル（仮にY軸上方向とする）
-	Vector3 up = { 0.0f, 1.0f, 0.0f };
+	// カメラの座標系を計算
+	Vector3 worldUp = { 0.0f, 1.0f, 0.0f };
+	Vector3 cameraRight = Normalize(Cross(cameraForward, worldUp));
+	Vector3 cameraUp = Normalize(Cross(cameraRight, cameraForward));
 
-	// 外積で垂直なベクトルを2つ作成
-	Vector3 right = Cross(playerForward, up);
-	Vector3 realUp = Cross(right, playerForward);
-
-	right = Normalize(right);
-	realUp = Normalize(realUp);
-
-	// ランダムな角度で垂直方向を選択
+	// カメラの前方向に垂直な平面でランダムな方向を生成
 	float randomAngle = Random::GetInstance().GenerateFloat(0.0f, 2.0f * 3.14159f); // 0～2π
 
-	// 垂直平面内でランダムな方向を計算
-	escapeDirection_ = right * std::cos(randomAngle) + realUp * std::sin(randomAngle);
-	escapeDirection_ = Normalize(escapeDirection_);
+	// カメラの座標系での垂直方向を計算
+	Vector3 perpendicularDirection = cameraRight * std::cos(randomAngle) + cameraUp * std::sin(randomAngle);
 
-	// カメラ外に向かうように、プレイヤーから遠ざかる成分を追加
+	// カメラから遠ざかる成分を追加
 	Vector3 enemyPos = enemy_->GetPosition();
-	Vector3 playerPos = GetPlayer()->GetWorldPosition();
-	Vector3 awayFromPlayer = Normalize(enemyPos - playerPos);
+	Vector3 awayFromCamera = Normalize(enemyPos - cameraPos);
 
-	// 逃走方向とプレイヤーから遠ざかる方向を合成
-	escapeDirection_ = Normalize(escapeDirection_ + awayFromPlayer * 0.5f);
+	// 垂直方向とカメラから遠ざかる方向を合成
+	// より強くカメラから遠ざかるように重み付け
+	escapeDirection_ = Normalize(perpendicularDirection * 0.3f + awayFromCamera * 0.7f);
+
+	// 後方への逃走も考慮（カメラの後方へ逃げる可能性も追加）
+	float backwardWeight = Random::GetInstance().GenerateFloat(0.0f, 0.5f);
+	escapeDirection_ = Normalize(escapeDirection_ - cameraForward * backwardWeight);
 }

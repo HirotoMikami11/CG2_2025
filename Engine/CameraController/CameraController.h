@@ -91,8 +91,23 @@ public:
 	Matrix4x4 GetViewProjectionMatrix() const;
 	Matrix4x4 GetViewProjectionMatrixSprite() const;
 
+	/// <summary>
+	/// アクティブカメラの位置を取得
+	/// </summary>
+	/// <returns>カメラの位置</returns>
 	Vector3 GetPosition() const;
+
+	/// <summary>
+	/// アクティブカメラの位置を設定
+	/// </summary>
+	/// <param name="position">設定する位置</param>
 	void SetPosition(const Vector3& position);
+
+	/// <summary>
+	/// アクティブカメラの前方向ベクトルを取得
+	/// </summary>
+	/// <returns>カメラの前方向ベクトル（正規化済み）</returns>
+	Vector3 GetForward() const;
 
 
 	BaseCamera* GetCamera(const std::string& cameraId) const;

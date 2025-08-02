@@ -15,7 +15,7 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 
 	// ゲームオブジェクト（球体）の初期化
 	gameObject_ = std::make_unique<Model3D>();
-	gameObject_->Initialize(dxCommon, "RushFish");
+	gameObject_->Initialize(dxCommon, "rushFish");
 	gameObject_->SetName("RushingFishEnemy");
 
 	// 初期位置設定

@@ -2,8 +2,12 @@
 #include "GameObjects/Enemy/State/FishStateHover.h"
 #include "GameObjects/Enemy/BaseEnemy.h"
 #include "GameObjects/Player/Player.h"
+#include "CameraController/CameraController.h"
+#include "MyMath/Random/Random.h"
 
 FishStateApproach::FishStateApproach(BaseEnemy* enemy) : BaseEnemyState("Shoting Fish Approach", enemy) {
+	// 初期目標位置を計算
+	CalculateTargetPosition();
 }
 
 FishStateApproach::~FishStateApproach() {
@@ -15,18 +19,23 @@ void FishStateApproach::Update() {
 		return;
 	}
 
-	// プレイヤーの位置と方向を取得
-	Vector3 playerPos = GetPlayer()->GetWorldPosition();
+	// カメラコントローラーを取得
+	CameraController* cameraController = CameraController::GetInstance();
+	if (!cameraController) {
+		return;
+	}
+
+	// カメラが動いた場合は目標位置を再計算
+	Vector3 currentCameraPos = cameraController->GetPosition();
+	if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold) {
+		CalculateTargetPosition();
+		lastCameraPosition_ = currentCameraPos;
+	}
+
 	Vector3 enemyPos = enemy_->GetPosition();
 
-	// プレイヤーの前方ベクトルを取得（プレイヤーの向いている方向）
-	Vector3 playerForward = GetPlayer()->GetForward(); // プレイヤークラスにGetForward()があると仮定
-
-	// プレイヤーの前方kTargetDistance離れた位置を目標とする
-	Vector3 targetPos = playerPos + playerForward * kTargetDistance;
-
 	// 目標位置への方向ベクトルを計算
-	Vector3 toTarget = targetPos - enemyPos;
+	Vector3 toTarget = targetPosition_ - enemyPos;
 	float distanceToTarget = Length(toTarget);
 
 	// 目標距離に到達したかチェック
@@ -45,4 +54,32 @@ void FishStateApproach::Update() {
 	// 移動処理
 	Vector3 newPosition = enemyPos + velocity;
 	enemy_->SetPosition(newPosition);
+}
+
+void FishStateApproach::CalculateTargetPosition() {
+	// カメラコントローラーを取得
+	CameraController* cameraController = CameraController::GetInstance();
+	if (!cameraController) {
+		return;
+	}
+
+	// カメラの現在位置と前方向を取得
+	Vector3 cameraPos = cameraController->GetPosition();
+	Vector3 cameraForward = cameraController->GetForward();
+	lastCameraPosition_ = cameraPos;
+
+	// カメラの右方向と上方向を計算
+	Vector3 worldUp = { 0.0f, 1.0f, 0.0f };
+	Vector3 cameraRight = Normalize(Cross(cameraForward, worldUp));
+	Vector3 cameraUp = Normalize(Cross(cameraRight, cameraForward));
+
+	// カメラから kTargetDistance 離れた基準位置
+	Vector3 basePosition = cameraPos + cameraForward * kTargetDistance;
+
+	// x,y方向に -+10 の範囲でランダムオフセットを追加
+	float randomX = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
+	float randomY = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
+
+	// カメラの座標系に基づいてオフセットを適用
+	targetPosition_ = basePosition + cameraRight * randomX + cameraUp * randomY;
 }

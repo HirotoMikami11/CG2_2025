@@ -134,6 +134,25 @@ void CameraController::SetPosition(const Vector3& position) {
 	}
 }
 
+Vector3 CameraController::GetForward() const {
+	BaseCamera* activeCamera = GetActiveCamera();
+	if (!activeCamera) {
+		return Vector3{ 0.0f, 0.0f, 1.0f }; // デフォルトの前方向
+	}
+
+	// カメラの回転情報から前方向ベクトルを計算
+	Vector3 rotation = activeCamera->GetRotation();
+
+	// 回転角度から前方向ベクトルを計算
+	// Y軸回転（ヨー）とX軸回転（ピッチ）から前方向を算出
+	Vector3 forward;
+	forward.x = std::sin(rotation.y) * std::cos(rotation.x);
+	forward.y = -std::sin(rotation.x);
+	forward.z = std::cos(rotation.y) * std::cos(rotation.x);
+
+	// 正規化して返す
+	return Normalize(forward);
+}
 bool CameraController::IsRegistered(const std::string& cameraId) const {
 	return registeredCameras_.find(cameraId) != registeredCameras_.end();
 }
@@ -178,6 +197,8 @@ void CameraController::ImGui() {
 		ImGui::Text("Camera Type: %s", activeCamera->GetCameraType().c_str());
 		Vector3 pos = activeCamera->GetPosition();
 		ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		Vector3 forward = GetForward();
+		ImGui::Text("Forward: (%.2f, %.2f, %.2f)", forward.x, forward.y, forward.z);
 	}
 
 	ImGui::Separator();

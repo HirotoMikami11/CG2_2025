@@ -7,7 +7,7 @@ class BaseEnemy;
 
 /// <summary>
 /// 射撃魚の逃走状態
-/// プレイヤーの向いている方向から垂直なランダムな方向に逃げる
+/// カメラの向いている方向から垂直かつカメラから遠ざかる方向に逃げる
 /// </summary>
 class FishStateEscape : public BaseEnemyState {
 public:
@@ -29,13 +29,13 @@ public:
 
 private:
 	// 逃走速度
-	static constexpr float kEscapeSpeed = 2.0f;
+	static constexpr float kEscapeSpeed = 2.5f;
 
 	// 逃走方向
 	Vector3 escapeDirection_;
 
 	/// <summary>
-	/// 逃走方向を計算する
+	/// 逃走方向を計算する（カメラ基準）
 	/// </summary>
 	void CalculateEscapeDirection();
 };

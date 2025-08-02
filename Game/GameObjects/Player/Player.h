@@ -169,10 +169,10 @@ private:
 	float fireTimer_ = kFireInterval;				// 発射タイマー
 
 	// 移動制限
-	static constexpr float kMoveLimitX = 18.0f; // X軸の移動制限
-	static constexpr float kMoveLimitY = 10.0f; // Y軸の移動制限
+	static constexpr float kMoveLimitX = 10.0f; // X軸の移動制限
+	static constexpr float kMoveLimitY = 6.0f; // Y軸の移動制限
 	static constexpr float kCharacterSpeed = 0.2f; // 移動速度
-	static constexpr float kBulletSpeed = 1.0f; // 弾の速度
+	static constexpr float kBulletSpeed = 2.0f; // 弾の速度
 
 	/// <summary>
 	/// 移動処理

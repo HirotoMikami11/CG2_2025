@@ -79,8 +79,8 @@ private:
 
 	// 設定値
 	float kReticleSpeed_ = 10.0f; // レティクル移動速度
-	float kDistancePlayerTo3DReticleKeyboard_ = 50.0f; // プレイヤーから3Dレティクルまでの距離(キーボード)
-	float kDistancePlayerTo3DReticleGamepad_ = 50.0f;  // プレイヤーから3Dレティクルまでの距離(ゲームパッド)
+	float kDistancePlayerTo3DReticleKeyboard_ = 100.0f; // プレイヤーから3Dレティクルまでの距離(キーボード)
+	float kDistancePlayerTo3DReticleGamepad_ = 100.0f;  // プレイヤーから3Dレティクルまでの距離(ゲームパッド)
 
 	/// <summary>
 	/// 3Dレティクルの更新処理

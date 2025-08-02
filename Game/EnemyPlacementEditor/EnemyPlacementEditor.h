@@ -166,30 +166,38 @@ private:
 	void UpdatePreviewModelColor(EnemyPlacementData& placement);
 
 	/// <summary>
-	/// 敵タイプから文字列に変換
+	/// 新規敵データをリセット
 	/// </summary>
-	/// <param name="type">敵タイプ</param>
-	/// <returns>文字列</returns>
-	std::string EnemyTypeToString(EnemyType type);
+	void ResetNewEnemyData();
 
 	/// <summary>
-	/// 敵パターンから文字列に変換
+	/// 全敵の選択状態を更新
 	/// </summary>
-	/// <param name="pattern">敵パターン</param>
-	/// <returns>文字列</returns>
-	std::string EnemyPatternToString(EnemyPattern pattern);
+	/// <param name="selectedIndex">選択されたインデックス（-1で選択解除）</param>
+	void UpdateSelectionStates(int selectedIndex);
 
 	/// <summary>
-	/// 文字列から敵タイプに変換
+	/// 選択インデックスが有効かチェック
 	/// </summary>
-	/// <param name="typeStr">文字列</param>
-	/// <returns>敵タイプ</returns>
-	EnemyType StringToEnemyType(const std::string& typeStr);
+	/// <returns>有効かどうか</returns>
+	bool IsValidSelectedIndex() const;
 
 	/// <summary>
-	/// 文字列から敵パターンに変換
+	/// インラインエディタを描画
 	/// </summary>
-	/// <param name="patternStr">文字列</param>
-	/// <returns>敵パターン</returns>
-	EnemyPattern StringToEnemyPattern(const std::string& patternStr);
+	/// <param name="placement">配置データ</param>
+	/// <param name="index">インデックス</param>
+	void DrawInlineEditor(EnemyPlacementData& placement, size_t index);
+
+	/// <summary>
+	/// アクションボタン群を描画
+	/// </summary>
+	/// <param name="placement">配置データ</param>
+	/// <param name="index">インデックス</param>
+	void DrawActionButtons(EnemyPlacementData& placement, size_t index);
+
+	/// <summary>
+	/// 詳細エディタを描画
+	/// </summary>
+	void DrawDetailedEditor();
 };

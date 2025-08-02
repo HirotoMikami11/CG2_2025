@@ -197,6 +197,8 @@ EnemyType EnemyPopCommand::StringToEnemyType(const std::string& typeStr) {
 		return EnemyType::Normal;
 	} else if (typeStr == "RushingFish" || typeStr == "1") {
 		return EnemyType::RushingFish;
+	} else if (typeStr == "ShootingFish" || typeStr == "2") {
+		return EnemyType::ShootingFish;
 	}
 
 	// デフォルトは通常の敵
@@ -212,6 +214,8 @@ EnemyPattern EnemyPopCommand::StringToEnemyPattern(const std::string& patternStr
 		return EnemyPattern::LeaveRight;
 	} else if (patternStr == "Homing" || patternStr == "3") {
 		return EnemyPattern::Homing;
+	} else if (patternStr == "Shooting" || patternStr == "4") {
+		return EnemyPattern::Shooting;
 	}
 
 	// デフォルトは直進
@@ -222,6 +226,7 @@ std::string EnemyPopCommand::EnemyTypeToString(EnemyType type) {
 	switch (type) {
 	case EnemyType::Normal: return "Normal";
 	case EnemyType::RushingFish: return "RushingFish";
+	case EnemyType::ShootingFish: return "ShootingFish";
 	default: return "Normal";
 	}
 }
@@ -232,6 +237,7 @@ std::string EnemyPopCommand::EnemyPatternToString(EnemyPattern pattern) {
 	case EnemyPattern::LeaveLeft: return "LeaveLeft";
 	case EnemyPattern::LeaveRight: return "LeaveRight";
 	case EnemyPattern::Homing: return "Homing";
+	case EnemyPattern::Shooting: return "Shooting";
 	default: return "Straight";
 	}
 }

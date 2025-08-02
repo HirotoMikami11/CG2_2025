@@ -42,7 +42,8 @@ void GameScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/PlayerHomingBullet", "playerHomingBullet.obj", "playerHomingBullet");
 	// 敵関連
 	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
-	modelManager_->LoadModel("resources/Model/Squid", "Mesh_Squid.obj", "RushFish");
+	modelManager_->LoadModel("resources/Model/Squid", "Mesh_Squid.obj", "rushFish");
+	modelManager_->LoadModel("resources/Model/Goldfish", "Mesh_Goldfish.obj", "shootingFish");
 
 	// テクスチャ読み込み
 	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
@@ -422,10 +423,9 @@ void GameScene::ImGui() {
 	if (ImGui::Button("Create Test Rushing Fish")) {
 		CreateEnemy(Vector3{ -30.0f, 15.0f, 150.0f }, EnemyType::RushingFish, EnemyPattern::Homing);
 	}
-	if (ImGui::Button("Create Test shooting Fish")) {
-		CreateEnemy(Vector3{ -30.0f, 15.0f, 150.0f }, EnemyType::ShootingFish, EnemyPattern::Shooting);
+	if (ImGui::Button("Create Test Shooting Fish")) {
+		CreateEnemy(Vector3{ 30.0f, 20.0f, 180.0f }, EnemyType::ShootingFish, EnemyPattern::Shooting);
 	}
-
 	ImGui::SameLine();
 	//タイマーの初期化
 	if (ImGui::Button("Reset Enemy Pop Commands")) {
@@ -500,7 +500,6 @@ void GameScene::UpdateEnemyPopCommands() {
 		}
 	}
 }
-
 void GameScene::CreateEnemy(const Vector3& position, EnemyType enemyType, EnemyPattern pattern) {
 	std::unique_ptr<BaseEnemy> enemy;
 
@@ -512,7 +511,6 @@ void GameScene::CreateEnemy(const Vector3& position, EnemyType enemyType, EnemyP
 	case EnemyType::RushingFish:
 		enemy = std::make_unique<RushingFishEnemy>();
 		break;
-
 	case EnemyType::ShootingFish:
 		enemy = std::make_unique<ShootingFishEnemy>();
 		break;

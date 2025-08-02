@@ -35,6 +35,7 @@ public:
 	virtual Matrix4x4 GetSpriteViewProjectionMatrix() const = 0;
 
 	virtual Vector3 GetPosition() const = 0;
+	virtual Vector3 GetRotation() const = 0;
 	virtual void SetPosition(const Vector3& position) = 0;
 	virtual std::string GetCameraType() const = 0;
 

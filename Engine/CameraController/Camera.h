@@ -32,6 +32,7 @@ public:
 	Matrix4x4 GetViewProjectionMatrix() const override { return viewProjectionMatrix_; }
 	Matrix4x4 GetSpriteViewProjectionMatrix() const override { return spriteViewProjectionMatrix_; }
 	Vector3 GetPosition() const override { return cameraTransform_.translate; }
+	Vector3 GetRotation() const override { return cameraTransform_.rotate; }
 	void SetPosition(const Vector3& position) override { cameraTransform_.translate = position; }
 	std::string GetCameraType() const override { return "Normal"; }
 
@@ -40,8 +41,6 @@ public:
 	void SetRotation(const Vector3& rotation) { cameraTransform_.rotate = rotation; }
 	// トランスフォーム全体を設定
 	void SetTransform(const Vector3Transform& transform) { cameraTransform_ = transform; }
-	// 回転角度を取得
-	Vector3 GetRotation() const { return cameraTransform_.rotate; }
 
 	/// <summary>
 	/// カメラを指定した座標を向くように設定

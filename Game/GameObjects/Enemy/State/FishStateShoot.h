@@ -7,7 +7,7 @@ class BaseEnemy;
 
 /// <summary>
 /// 射撃魚の射撃状態
-/// 停止してプレイヤーの方向を向いて弾を発射
+/// 停止してプレイヤーの方向を向いて弾を発射（カメラとの相対位置を維持）
 /// </summary>
 class FishStateShoot : public BaseEnemyState {
 public:
@@ -44,6 +44,9 @@ private:
 	// クールダウン時間（フレーム数）
 	static constexpr int kCooldownTime = 30;
 
+	// カメラが移動したと判定する閾値
+	static constexpr float kCameraMovementThreshold = 1.0f;
+
 	// フェーズタイマー
 	int phaseTimer_ = 0;
 
@@ -55,6 +58,12 @@ private:
 
 	// 最大射撃回数
 	static constexpr int kMaxShotCount = 4;
+
+	// カメラとの相対位置
+	Vector3 relativePosition_;
+
+	// 前回のカメラ位置（カメラの移動を検出するため）
+	Vector3 lastCameraPosition_;
 
 	/// <summary>
 	/// プレイヤーの方向を向く（イージング付き）

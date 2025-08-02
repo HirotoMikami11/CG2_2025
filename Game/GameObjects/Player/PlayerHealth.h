@@ -62,7 +62,7 @@ private:
 	float maxEN_ = 100.0f;				// 最大EN（エネルギー）
 	float currentEN_ = 100.0f;			 // 現在のEN
 
-	float energyCostPerShot_ = 0.5f;	// 1発撃つごとのエネルギー消費量
+	float energyCostPerShot_ = 1.0f;	// 1発撃つごとのエネルギー消費量
 	float energyRegenRate_ = 1.0f;		// エネルギー回復速度（毎フレーム）
 	int energyRegenDelay_ = 60;			// エネルギー回復開始までの待機時間（フレーム）
 	int energyRegenTimer_ = 0;			// エネルギー回復タイマー
