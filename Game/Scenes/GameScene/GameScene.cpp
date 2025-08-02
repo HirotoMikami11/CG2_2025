@@ -60,7 +60,7 @@ void GameScene::ConfigureOffscreenEffects() {
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
-	//	depthOfFieldEffect->SetEnabled(true);
+		//	depthOfFieldEffect->SetEnabled(true);
 		depthOfFieldEffect->SetFocusDistance(2.0f); // フォーカス距離
 		depthOfFieldEffect->SetFocusRange(30.0f); // フォーカス範囲
 
@@ -102,6 +102,12 @@ void GameScene::Initialize() {
 	// レールカメラエディタの初期化
 	railCameraEditor_ = std::make_unique<RailCameraEditor>();
 	railCameraEditor_->Initialize(railCamera_);
+
+	///*-----------------------------------------------------------------------*///
+	///								敵配置エディタの初期化							///
+	///*-----------------------------------------------------------------------*///
+	enemyPlacementEditor_ = std::make_unique<EnemyPlacementEditor>();
+	enemyPlacementEditor_->Initialize(directXCommon_, cameraController_);
 
 	///*-----------------------------------------------------------------------*///
 	///								衝突マネージャー								///
@@ -235,6 +241,11 @@ void GameScene::Update() {
 	if (railCameraEditor_) {
 		railCameraEditor_->Update();
 	}
+
+	// 敵配置エディタの更新
+	if (enemyPlacementEditor_) {
+		enemyPlacementEditor_->Update(viewProjectionMatrix);
+	}
 }
 
 void GameScene::UpdateGameObjects() {
@@ -318,6 +329,11 @@ void GameScene::DrawGameObjects() {
 	if (railCamera_) {
 		railCamera_->DrawRailTrack(viewProjectionMatrix, directionalLight_);
 	}
+
+	// 敵配置エディタの描画（プレビューモデル）
+	if (enemyPlacementEditor_) {
+		enemyPlacementEditor_->Draw(directionalLight_);
+	}
 }
 
 void GameScene::ClearAllEnemyBullets() {
@@ -348,6 +364,11 @@ void GameScene::ImGui() {
 	// レールカメラエディタのImGui
 	if (railCameraEditor_) {
 		railCameraEditor_->ImGui();
+	}
+
+	// 敵配置エディタのImGui
+	if (enemyPlacementEditor_) {
+		enemyPlacementEditor_->ImGui();
 	}
 
 	// プレイヤーのImGui
@@ -408,6 +429,14 @@ void GameScene::ImGui() {
 		waitTimer_ = 0;
 	}
 
+	// エディタからCSVを再読み込み
+	if (ImGui::Button("Reload CSV from Editor")) {
+		LoadEnemyPopData();
+		if (enemyPlacementEditor_) {
+			enemyPlacementEditor_->LoadFromEnemyPopCommand(enemyPopCommand_.get());
+		}
+	}
+
 	ImGui::Spacing();
 
 #endif
@@ -421,6 +450,11 @@ void GameScene::LoadEnemyPopData() {
 	// CSVファイルから敵発生データを読み込み
 	if (!enemyPopCommand_->LoadFromCSV("resources/CSV_Data/Enemy_Pop/enemyPop.csv")) {
 		Logger::Log(Logger::GetStream(), "GameScene: Failed to load enemy pop data\n");
+	} else {
+		// 敵配置エディタにも読み込んだデータを反映
+		if (enemyPlacementEditor_) {
+			enemyPlacementEditor_->LoadFromEnemyPopCommand(enemyPopCommand_.get());
+		}
 	}
 }
 
@@ -513,6 +547,11 @@ void GameScene::Finalize() {
 	// レールカメラエディタのリソース解放
 	if (railCameraEditor_) {
 		railCameraEditor_.reset();
+	}
+
+	// 敵配置エディタのリソース解放
+	if (enemyPlacementEditor_) {
+		enemyPlacementEditor_.reset();
 	}
 
 	// プレイヤーを明示的にリセット

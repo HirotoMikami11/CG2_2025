@@ -31,6 +31,16 @@ struct WaitData {
 };
 
 /// <summary>
+/// エディタ用敵配置情報
+/// </summary>
+struct EditorEnemyInfo {
+	Vector3 position;
+	EnemyType enemyType;
+	EnemyPattern pattern;
+	int waitTime;
+};
+
+/// <summary>
 /// 敵生成コマンドクラス
 /// </summary>
 class EnemyPopCommand {
@@ -72,9 +82,26 @@ public:
 	/// <returns>全て処理済みかどうか</returns>
 	bool IsFinished() const;
 
+	/// <summary>
+	/// エディタ用：読み込まれた敵情報をすべて取得
+	/// </summary>
+	/// <returns>敵配置情報のベクター</returns>
+	std::vector<EditorEnemyInfo> GetAllEnemyInfo() const;
+
+	/// <summary>
+	/// エディタ用：敵情報をCSVに保存
+	/// </summary>
+	/// <param name="filePath">保存先ファイルパス</param>
+	/// <param name="enemyInfos">敵配置情報</param>
+	/// <returns>保存成功フラグ</returns>
+	static bool SaveEnemyInfoToCSV(const std::string& filePath, const std::vector<EditorEnemyInfo>& enemyInfos);
+
 private:
 	// コマンドストリーム
 	std::stringstream commandStream_;
+
+	// エディタ用：読み込まれた敵情報を保持
+	std::vector<EditorEnemyInfo> loadedEnemyInfos_;
 
 	/// <summary>
 	/// 文字列をEnemyTypeに変換
@@ -89,4 +116,18 @@ private:
 	/// <param name="patternStr">文字列</param>
 	/// <returns>EnemyPattern</returns>
 	EnemyPattern StringToEnemyPattern(const std::string& patternStr);
+
+	/// <summary>
+	/// EnemyTypeを文字列に変換
+	/// </summary>
+	/// <param name="type">敵タイプ</param>
+	/// <returns>文字列</returns>
+	static std::string EnemyTypeToString(EnemyType type);
+
+	/// <summary>
+	/// EnemyPatternを文字列に変換
+	/// </summary>
+	/// <param name="pattern">敵パターン</param>
+	/// <returns>文字列</returns>
+	static std::string EnemyPatternToString(EnemyPattern pattern);
 };

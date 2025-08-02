@@ -244,6 +244,9 @@
     <Filter Include="Engine\MyMath\Random">
       <UniqueIdentifier>{5f6878ac-ebc5-4a09-929f-37da07a49d41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\EnemyPlacementEditor">
+      <UniqueIdentifier>{46725e1a-9e94-4bb8-bd38-5d72da68247f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -512,6 +515,9 @@
     </ClCompile>
     <ClCompile Include="Engine\MyMath\Random\Random.cpp">
       <Filter>Engine\MyMath\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\EnemyPlacementEditor\EnemyPlacementEditor.cpp">
+      <Filter>Game\EnemyPlacementEditor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -855,6 +861,9 @@
     </ClInclude>
     <ClInclude Include="Engine\MyMath\Random\Random.h">
       <Filter>Engine\MyMath\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\EnemyPlacementEditor\EnemyPlacementEditor.h">
+      <Filter>Game\EnemyPlacementEditor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

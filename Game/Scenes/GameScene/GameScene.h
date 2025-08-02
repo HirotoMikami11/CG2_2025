@@ -21,6 +21,7 @@
 #include "GameObjects/LockOn/LockOn.h"
 
 #include "EnemyPopCommand/EnemyPopCommand.h"
+#include "EnemyPlacementEditor/EnemyPlacementEditor.h" // 敵配置エディタ
 
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCamera.h"		//レールカメラ
@@ -113,6 +114,9 @@ private:
 
 	//					レールカメラエディタ						//
 	std::unique_ptr<RailCameraEditor> railCameraEditor_;
+
+	//					敵配置エディタ					//
+	std::unique_ptr<EnemyPlacementEditor> enemyPlacementEditor_;
 
 	//					敵発生関連					//
 	// 敵発生コマンド

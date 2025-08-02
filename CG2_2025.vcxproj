@@ -152,6 +152,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Camera\RailCameraEditor.cpp" />
     <ClCompile Include="Game\Camera\RailPoint.cpp" />
     <ClCompile Include="Game\CollisionManager\CollisionManager.cpp" />
+    <ClCompile Include="Game\EnemyPlacementEditor\EnemyPlacementEditor.cpp" />
     <ClCompile Include="Game\EnemyPopCommand\EnemyPopCommand.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Game\GameObjects\EnemyBullet\EnemyBullet.cpp" />
@@ -309,6 +310,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Camera\RailPoint.h" />
     <ClInclude Include="Game\CollisionManager\CollisionConfig.h" />
     <ClInclude Include="Game\CollisionManager\CollisionManager.h" />
+    <ClInclude Include="Game\EnemyPlacementEditor\EnemyPlacementEditor.h" />
     <ClInclude Include="Game\EnemyPopCommand\EnemyPopCommand.h" />
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Game\GameObjects\Collider.h" />
