@@ -368,12 +368,12 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 		float txmax = (aabb.max.x - segment.origin.x) / segment.diff.x;
 
 		// Near/Farを正しい順序にする
-		float tNearX = min(txmin, txmax);
-		float tFarX = max(txmin, txmax);
+		float tNearX = std::min(txmin, txmax);
+		float tFarX = std::max(txmin, txmax);
 
 		// 全体の範囲を更新
-		tmin = max(tmin, tNearX);
-		tmax = min(tmax, tFarX);
+		tmin = std::max(tmin, tNearX);
+		tmax = std::min(tmax, tFarX);
 
 		if (tmin > tmax) {
 			return false;// tminがtmaxより大きい場合、衝突していない
@@ -395,11 +395,11 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 		float tymax = (aabb.max.y - segment.origin.y) / segment.diff.y;
 
 		// Near/Farを正しい順序にする
-		float tNearY = min(tymin, tymax);
-		float tFarY = max(tymin, tymax);
+		float tNearY = std::min(tymin, tymax);
+		float tFarY = std::max(tymin, tymax);
 		// 全体の範囲を更新
-		tmin = max(tmin, tNearY);
-		tmax = min(tmax, tFarY);
+		tmin = std::max(tmin, tNearY);
+		tmax = std::min(tmax, tFarY);
 
 		if (tmin > tmax) {
 			return false;// tminがtmaxより大きい場合、衝突していない
@@ -421,12 +421,12 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 		float tzmax = (aabb.max.z - segment.origin.z) / segment.diff.z;
 
 		// Near/Farを正しい順序にする
-		float tNearZ = min(tzmin, tzmax);
-		float tFarZ = max(tzmin, tzmax);
+		float tNearZ = std::min(tzmin, tzmax);
+		float tFarZ = std::max(tzmin, tzmax);
 
 		// 全体の範囲を更新
-		tmin = max(tmin, tNearZ);
-		tmax = min(tmax, tFarZ);
+		tmin = std::max(tmin, tNearZ);
+		tmax = std::min(tmax, tFarZ);
 
 		if (tmin > tmax) {
 			return false;	// tminがtmaxより大きい場合、衝突していない

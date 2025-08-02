@@ -1,9 +1,11 @@
 #pragma once
 #define _USE_MATH_DEFINES
+#define NOMINMAX
 #include<math.h>
 #include <cmath>
 #include<assert.h>
 #include <vector>
+
 //ファイルに書いたり読んだりするライブラリ
 #include<fstream>
 #include<sstream>
@@ -486,7 +488,6 @@ Matrix4x4 MakeOrthograpicMatrix(float left, float top, float right, float bottom
 //ビューポート変換行列
 Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
 
-//
 Matrix4x4 MakeViewProjectionMatrix(const Vector3Transform& camera, float aspectRatio);
 //矩形Sprite用のカメラを原点としたviewProjecton
 Matrix4x4 MakeViewProjectionMatrixSprite();
