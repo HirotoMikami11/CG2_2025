@@ -3,6 +3,11 @@
 #include "Managers/Scene/SceneManager.h" 
 #include "Managers/Transition/SceneTransitionHelper.h"
 
+#include "GameObjects/Enemy/Enemy.h"
+#include "GameObjects/Enemy/RushingFishEnemy.h"
+#include "GameObjects/Enemy/ShootingFishEnemy.h"
+
+
 GameScene::GameScene()
 	: BaseScene("GameScene") // シーン名を設定
 	, cameraController_(nullptr)
@@ -37,6 +42,7 @@ void GameScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/PlayerHomingBullet", "playerHomingBullet.obj", "playerHomingBullet");
 	// 敵関連
 	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
+	modelManager_->LoadModel("resources/Model/Squid", "Mesh_Squid.obj", "RushFish");
 
 	// テクスチャ読み込み
 	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
@@ -416,6 +422,9 @@ void GameScene::ImGui() {
 	if (ImGui::Button("Create Test Rushing Fish")) {
 		CreateEnemy(Vector3{ -30.0f, 15.0f, 150.0f }, EnemyType::RushingFish, EnemyPattern::Homing);
 	}
+	if (ImGui::Button("Create Test shooting Fish")) {
+		CreateEnemy(Vector3{ -30.0f, 15.0f, 150.0f }, EnemyType::ShootingFish, EnemyPattern::Shooting);
+	}
 
 	ImGui::SameLine();
 	//タイマーの初期化
@@ -502,6 +511,10 @@ void GameScene::CreateEnemy(const Vector3& position, EnemyType enemyType, EnemyP
 		break;
 	case EnemyType::RushingFish:
 		enemy = std::make_unique<RushingFishEnemy>();
+		break;
+
+	case EnemyType::ShootingFish:
+		enemy = std::make_unique<ShootingFishEnemy>();
 		break;
 	default:
 		// デフォルトは通常の敵

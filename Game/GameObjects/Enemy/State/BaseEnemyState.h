@@ -19,6 +19,9 @@ public:
 	// 毎フレーム処理
 	virtual void Update() = 0;
 
+	// Getter
+	const std::string& GetName() const { return name_; }
+
 protected:
 	// 状態名
 	std::string name_;

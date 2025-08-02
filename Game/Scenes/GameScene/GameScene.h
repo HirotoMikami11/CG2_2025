@@ -12,8 +12,7 @@
 #include "Objects/Line/GridLine.h"
 #include "GameObjects/Player/Player.h"
 #include "GameObjects/Enemy/BaseEnemy.h"
-#include "GameObjects/Enemy/Enemy.h"
-#include "GameObjects/Enemy/RushingFishEnemy.h"
+
 #include "GameObjects/EnemyBullet/EnemyBullet.h"
 #include "CollisionManager/CollisionManager.h"	//衝突判定マネージャー
 #include "GameObjects/Ground/Ground.h"			//地面

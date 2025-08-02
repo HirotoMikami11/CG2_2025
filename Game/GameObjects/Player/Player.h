@@ -87,6 +87,12 @@ public:
 	Vector3 GetWorldPosition3DReticle();
 
 	/// <summary>
+	/// プレイヤーの前方向ベクトルを取得
+	/// </summary>
+	/// <returns>前方向ベクトル</returns>
+	Vector3 GetForward() const;
+
+	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
 	/// </summary>
 	void OnCollision() override;

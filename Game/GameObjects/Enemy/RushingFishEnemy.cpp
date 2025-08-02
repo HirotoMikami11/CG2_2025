@@ -14,8 +14,8 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 	directXCommon_ = dxCommon;
 
 	// ゲームオブジェクト（球体）の初期化
-	gameObject_ = std::make_unique<Sphere>();
-	gameObject_->Initialize(dxCommon, "sphere", "uvChecker");
+	gameObject_ = std::make_unique<Model3D>();
+	gameObject_->Initialize(dxCommon, "RushFish");
 	gameObject_->SetName("RushingFishEnemy");
 
 	// 初期位置設定
@@ -23,7 +23,7 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 
 	// 大きさを設定（通常の敵より少し小さく）
 	Vector3Transform enemyTransform{
-		{2.0f, 2.0f, 2.0f},   // scale（少し小さめ）
+		{5.0f, 5.0f, 5.0f},   // scale（少し小さめ）
 		{0.0f, 0.0f, 0.0f},   // rotate
 		position              // translate
 	};
@@ -40,7 +40,7 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 	currentHP_ = maxHP_;
 
 	// 衝突判定設定
-	SetRadius(2.0f); // Colliderの半径をセット（通常より小さく）
+	SetRadius(4.0f); // Colliderの半径をセット（通常より小さく）
 	/// 衝突属性の設定
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	/// 衝突対象は自分の属性以外に設定(ビット反転)

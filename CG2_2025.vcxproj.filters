@@ -247,6 +247,18 @@
     <Filter Include="Game\EnemyPlacementEditor">
       <UniqueIdentifier>{46725e1a-9e94-4bb8-bd38-5d72da68247f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObjects\Enemy\ShootingFish">
+      <UniqueIdentifier>{d5fd2a02-03fa-4aef-b24b-7c7525425c7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy\State\Standard">
+      <UniqueIdentifier>{bb1db68f-ea21-4818-a3d6-e7b5a448d628}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy\State\Rushing">
+      <UniqueIdentifier>{37a3f32b-fb55-4c5a-83e0-6b3f6a5247fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy\State\Shooting">
+      <UniqueIdentifier>{a774b15d-06c2-43ed-854b-5c626da96800}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -483,23 +495,11 @@
     <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp">
       <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Scenes\GameoverScene\GameoverScene.cpp">
       <Filter>Game\Scenes\GameoverScene</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Enemy\BaseEnemy.cpp">
       <Filter>Game\GameObjects\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Enemy\RushingFishEnemy.cpp">
       <Filter>Game\GameObjects\Enemy\RushingFish</Filter>
@@ -510,14 +510,41 @@
     <ClCompile Include="Game\EnemyPopCommand\EnemyPopCommand.cpp">
       <Filter>Game\EnemyPopCommand</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateRush.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\MyMath\Random\Random.cpp">
       <Filter>Engine\MyMath\Random</Filter>
     </ClCompile>
     <ClCompile Include="Game\EnemyPlacementEditor\EnemyPlacementEditor.cpp">
       <Filter>Game\EnemyPlacementEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\ShootingFishEnemy.cpp">
+      <Filter>Game\GameObjects\Enemy\ShootingFish</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Standard</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Standard</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Standard</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\FishStateApproach.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\FishStateEscape.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\FishStateHover.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\FishStateShoot.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateRush.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -829,23 +856,11 @@
     <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h">
       <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
     <ClInclude Include="Game\Scenes\GameoverScene\GameoverScene.h">
       <Filter>Game\Scenes\GameoverScene</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Enemy\BaseEnemy.h">
       <Filter>Game\GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Enemy\RushingFishEnemy.h">
       <Filter>Game\GameObjects\Enemy\RushingFish</Filter>
@@ -856,14 +871,41 @@
     <ClInclude Include="Game\EnemyPopCommand\EnemyPopCommand.h">
       <Filter>Game\EnemyPopCommand</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateRush.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\MyMath\Random\Random.h">
       <Filter>Engine\MyMath\Random</Filter>
     </ClInclude>
     <ClInclude Include="Game\EnemyPlacementEditor\EnemyPlacementEditor.h">
       <Filter>Game\EnemyPlacementEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\ShootingFishEnemy.h">
+      <Filter>Game\GameObjects\Enemy\ShootingFish</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h">
+      <Filter>Game\GameObjects\Enemy\State\Standard</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h">
+      <Filter>Game\GameObjects\Enemy\State\Standard</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
+      <Filter>Game\GameObjects\Enemy\State\Standard</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\FishStateApproach.h">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\FishStateEscape.h">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\FishStateHover.h">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\FishStateShoot.h">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateRush.h">
+      <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.h">
+      <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

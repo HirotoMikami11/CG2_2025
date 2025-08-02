@@ -157,6 +157,11 @@ void Player::ImGui() {
 
 		Vector3 localPos = gameObject_->GetPosition();
 		ImGui::Text("Local Position: (%.2f, %.2f, %.2f)", localPos.x, localPos.y, localPos.z);
+
+		// 前方向ベクトルのデバッグ表示
+		Vector3 forward = GetForward();
+		ImGui::Text("Forward Vector: (%.2f, %.2f, %.2f)", forward.x, forward.y, forward.z);
+
 		ImGui::TreePop();
 	}
 #endif
@@ -177,6 +182,24 @@ Vector3 Player::GetWorldPosition() {
 
 Vector3 Player::GetWorldPosition3DReticle() {
 	return reticle_->GetWorldPosition3DReticle();
+}
+
+Vector3 Player::GetForward() const {
+	if (!gameObject_) {
+		return Vector3{ 0.0f, 0.0f, 1.0f }; // デフォルトの前方向
+	}
+
+	// プレイヤーの回転を取得
+	Vector3 rotation = gameObject_->GetRotation();
+
+	// Y軸回転から前方向ベクトルを計算
+	// プレイヤーはカメラに背を向けているので、Z軸正方向が前方
+	Vector3 forward;
+	forward.x = std::sin(rotation.y);
+	forward.y = 0.0f; // 水平方向のみ考慮
+	forward.z = std::cos(rotation.y);
+
+	return Normalize(forward);
 }
 
 void Player::OnCollision() {

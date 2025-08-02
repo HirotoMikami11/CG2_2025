@@ -22,8 +22,9 @@ class GameScene;
 /// 敵の種類
 /// </summary>
 enum class EnemyType {
-	Normal = 0,     // 通常の敵（現在の敵）
-	RushingFish = 1 // 突進してくる魚
+	Normal = 0,        // 通常の敵（現在の敵）
+	RushingFish = 1,   // 突進してくる魚
+	ShootingFish = 2    // 射撃する魚
 };
 
 /// <summary>
@@ -33,7 +34,8 @@ enum class EnemyPattern {
 	Straight = 0,   // まっすぐ進み続ける
 	LeaveLeft = 1,  // 離脱フェーズで左上に移動
 	LeaveRight = 2, // 離脱フェーズで右上に移動
-	Homing = 3      // ホーミング（突進魚用）
+	Homing = 3,     // ホーミング（突進魚用）
+	Shooting = 4     // 射撃パターン（射撃魚用）
 };
 
 /// <summary>
@@ -100,6 +102,7 @@ public:
 
 	// Getter
 	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
+	Vector3 GetRotation() const { return gameObject_->GetRotation(); }
 	Vector3 GetVelocity() const { return velocity_; }
 	Vector3 GetWorldPosition() override;
 	EnemyType GetEnemyType() const { return enemyType_; }
@@ -116,6 +119,7 @@ public:
 
 	// Setter
 	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
+	void SetRotation(const Vector3& rotation) { gameObject_->SetRotation(rotation); }
 	void SetVelocity(const Vector3& velocity) { velocity_ = velocity; }
 	void SetPlayer(Player* player) { player_ = player; }
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
