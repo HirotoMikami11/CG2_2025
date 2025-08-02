@@ -1,10 +1,10 @@
-#include "TitleScene.h"
+#include "GameoverScene.h"
 #include "Managers/ImGui/ImGuiManager.h" 
 #include "Managers/Scene/SceneManager.h" 
 #include "Managers/Transition/SceneTransitionHelper.h"
 
-TitleScene::TitleScene()
-	: BaseScene("TitleScene") // シーン名を設定
+GameoverScene::GameoverScene()
+	: BaseScene("GameoverScene") // シーン名を設定
 	, cameraController_(nullptr)
 	, directXCommon_(nullptr)
 	, offscreenRenderer_(nullptr)
@@ -15,11 +15,11 @@ TitleScene::TitleScene()
 {
 }
 
-TitleScene::~TitleScene() = default;
+GameoverScene::~GameoverScene() = default;
 
-void TitleScene::LoadResources() {
+void GameoverScene::LoadResources() {
 	// リソースの読み込み
-	Logger::Log(Logger::GetStream(), "TitleScene: Loading resources...\n");
+	Logger::Log(Logger::GetStream(), "GameoverScene: Loading resources...\n");
 
 	// リソースマネージャーの取得
 	modelManager_ = ModelManager::GetInstance();
@@ -28,11 +28,12 @@ void TitleScene::LoadResources() {
 	// モデルを事前読み込み
 	modelManager_->LoadModel("resources/Model/TitleFont", "titleFont.obj", "titleFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+	//modelManager_->LoadModel("resources/Model/Ground", "ground.obj", "ground");
 
-	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
+	Logger::Log(Logger::GetStream(), "GameoverScene: Resources loaded successfully\n");
 }
 
-void TitleScene::ConfigureOffscreenEffects()
+void GameoverScene::ConfigureOffscreenEffects()
 {
 	/// オフスクリーンレンダラーのエフェクト設定
 
@@ -42,9 +43,9 @@ void TitleScene::ConfigureOffscreenEffects()
 
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
-		depthFogEffect->SetEnabled(true); 
-		depthFogEffect->SetFogColor({ 0.02f, 0.08f, 0.25f, 1.0f });
-		depthFogEffect->SetFogDistance(depthFogEffect->GetFogNear(), 50.0f);
+		depthFogEffect->SetEnabled(true); // 深度フォグを有効化
+		depthFogEffect->SetFogColor({ 0.000f, 0.048f, 0.275f, 1.000f});
+		depthFogEffect->SetFogDistance(depthFogEffect->GetFogNear(), 24.0f);
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
@@ -52,6 +53,7 @@ void TitleScene::ConfigureOffscreenEffects()
 		depthOfFieldEffect->SetFocusDistance(2.0f);
 		depthOfFieldEffect->SetFocusRange(5.4f);
 	}
+
 	auto* lineGlitchPostEffect = offscreenRenderer_->GetLineGlitchEffect();
 	if (lineGlitchPostEffect) {
 		lineGlitchPostEffect->SetEnabled(true);
@@ -61,13 +63,13 @@ void TitleScene::ConfigureOffscreenEffects()
 	auto* vignetteEffect = offscreenRenderer_->GetVignetteEffect();
 	if (vignetteEffect) {
 		vignetteEffect->SetEnabled(true);
-		vignetteEffect->SetVignetteStrength(0.6f);
-		vignetteEffect->SetVignetteRadius(0.40f);
+		vignetteEffect->SetVignetteStrength(0.9f);
+		vignetteEffect->SetVignetteRadius(0.38f);
 	}
 
 }
 
-void TitleScene::Initialize() {
+void GameoverScene::Initialize() {
 	// システム参照の取得
 	directXCommon_ = Engine::GetInstance()->GetDirectXCommon();
 	offscreenRenderer_ = Engine::GetInstance()->GetOffscreenRenderer();
@@ -76,8 +78,12 @@ void TitleScene::Initialize() {
 	///*-----------------------------------------------------------------------*///
 	///								カメラの初期化									///
 	///*-----------------------------------------------------------------------*///
+
 	cameraController_ = CameraController::GetInstance();
-	cameraController_->Initialize({ 0.0f, 0.0f, -10.0f });
+	// 座標と回転を指定して初期化
+	Vector3 initialPosition = { 5.569f, 7.390f, -10.685f };
+	Vector3 initialRotation = { 0.615,-0.460,0.0f };
+	cameraController_->Initialize(initialPosition, initialRotation);
 	cameraController_->SetActiveCamera("normal");
 
 	// ゲームオブジェクト初期化
@@ -86,32 +92,45 @@ void TitleScene::Initialize() {
 	ConfigureOffscreenEffects();
 }
 
-void TitleScene::InitializeGameObjects() {
+void GameoverScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	///									タイトルフォント							///
 	///*-----------------------------------------------------------------------*///
 
-	Vector3 titleFontPos = { 0.11f, 1.0f, -0.5f };
-	//初期化、座標設定（リソースは既に読み込み済みなので軽量）
-	titleFont_ = std::make_unique<Model3D>();
-	titleFont_->Initialize(directXCommon_, "titleFont");  // 軽量（リソース参照のみ）
-	titleFont_->SetPosition(titleFontPos);
+	Vector3 gameoverFontPos = { -0.09f, 1.06f, -0.59f };
+	Vector3 gameoverFontRote = { 0.12f, -0.058f, -0.47f };
+
+	//初期化、座標設定
+	gameoverFont_ = std::make_unique<Model3D>();
+	gameoverFont_->Initialize(directXCommon_, "titleFont");
+	gameoverFont_->SetPosition(gameoverFontPos);
+	gameoverFont_->SetRotation(gameoverFontRote);
 
 	///*-----------------------------------------------------------------------*///
 	///									プレイヤー(置物)							///
 	///*-----------------------------------------------------------------------*///
-
+	Vector3 gameoverPlayerPos = { 1.03f, 0.1f, -2.67f };
+	Vector3 gameoverPlayerRote = { 0.42f, -2.83f, -0.47f };
 	//初期化
-	titlePlayer_ = std::make_unique<TitlePlayer>();
-	titlePlayer_->Initialize();
+	gameoverPlayer_ = std::make_unique<Model3D>();
+	gameoverPlayer_->Initialize(directXCommon_, "player");
+	gameoverPlayer_->SetPosition(gameoverPlayerPos);
+	gameoverPlayer_->SetRotation(gameoverPlayerRote);
 
+	///*-----------------------------------------------------------------------*///
+	///								地面									///
+	///*-----------------------------------------------------------------------*///
+	// 地面の生成
+	ground_ = std::make_unique<Ground>();
+	ground_->Initialize(directXCommon_, { 0.0f, 0.0f, 0.0f });
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
+	directionalLight_.SetIntensity(0.2f);
 }
 
-void TitleScene::Update() {
+void GameoverScene::Update() {
 	// カメラ更新
 	cameraController_->Update();
 
@@ -119,13 +138,13 @@ void TitleScene::Update() {
 	UpdateGameObjects();
 }
 
-void TitleScene::UpdateGameObjects() {
+void GameoverScene::UpdateGameObjects() {
 
 	// タイトルシーンに戻る
 	// スペースキーでゲームシーンへ遷移
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)) {
 		// フェードを使った遷移（ヘルパークラスを使用）
-		SceneTransitionHelper::FadeToScene("GameScene", 1.0f);
+		SceneTransitionHelper::FadeToScene("TitleScene", 1.0f);
 
 		// スライドエフェクトを使った遷移
 		// SceneTransitionHelper::TransitionToScene("GameScene", "slide_left", 0.5f, 0.5f);
@@ -139,40 +158,41 @@ void TitleScene::UpdateGameObjects() {
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
 
 	// モデルの更新
-	titleFont_->Update(viewProjectionMatrix);
+	gameoverFont_->Update(viewProjectionMatrix);
 
 	//プレイヤー(置物)の更新
-	titlePlayer_->AddRotation(rotate_);
-	titlePlayer_->Update(viewProjectionMatrix);
+	gameoverPlayer_->Update(viewProjectionMatrix);
+	ground_->Update(viewProjectionMatrix);
 }
 
-void TitleScene::DrawOffscreen() {
-
+void GameoverScene::DrawOffscreen() {
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
 	DrawGameObjects();
 }
-void TitleScene::DrawBackBuffer()
+void GameoverScene::DrawBackBuffer()
 {
 	//一応3Dのものも外に置けるようにした
 
 
 }
 
-void TitleScene::DrawGameObjects() {
+void GameoverScene::DrawGameObjects() {
 	//タイトル文字
-	titleFont_->Draw(directionalLight_);
+	gameoverFont_->Draw(directionalLight_);
 	//タイトルプレイヤー(置物)
-	titlePlayer_->Draw(directionalLight_);
+	gameoverPlayer_->Draw(directionalLight_);
+	ground_->Draw(directionalLight_);
 }
 
-void TitleScene::ImGui() {
+void GameoverScene::ImGui() {
 #ifdef _DEBUG
-	ImGui::Text("TitleFont");
-	titleFont_->ImGui();
+	ImGui::Text("gameoverFont");
+	gameoverFont_->ImGui();
 	ImGui::Spacing();
 
 	//プレイヤー(置物)
-	titlePlayer_->ImGui();
+	gameoverPlayer_->ImGui();
+	ground_->ImGui();
 
 	// ライトのImGui
 	ImGui::Text("Lighting");
@@ -182,7 +202,7 @@ void TitleScene::ImGui() {
 
 
 
-void TitleScene::Finalize() {
+void GameoverScene::Finalize() {
 	// unique_ptrで自動的に解放される
-	Logger::Log(Logger::GetStream(), "TitleScene: Finalize\n");
+	Logger::Log(Logger::GetStream(), "GameoverScene: Finalize\n");
 }

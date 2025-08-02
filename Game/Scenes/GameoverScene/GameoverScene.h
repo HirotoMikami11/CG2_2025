@@ -5,14 +5,13 @@
 #include "Engine.h"
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 
-//タイトルプレイヤー
-#include "GameObjects/TitlePlayer/TitlePlayer.h"
+#include "GameObjects/Ground/Ground.h"			//地面
 
-class TitleScene : public BaseScene
+class GameoverScene : public BaseScene
 {
 public:
-	TitleScene();
-	~TitleScene() override;
+	GameoverScene();
+	~GameoverScene() override;
 
 	/// <summary>
 	/// リソース読み込み（1回のみ実行）
@@ -53,13 +52,13 @@ private:
 	// ゲームオブジェクト
 
 	//タイトルフォント
-	std::unique_ptr<Model3D> titleFont_ = nullptr;
+	std::unique_ptr<Model3D> gameoverFont_ = nullptr;
 
 	//タイトル用のプレイヤー
-	std::unique_ptr<TitlePlayer> titlePlayer_ = nullptr;
-	//回転速度
-	Vector3 rotate_ = { 0,0.005f,0 };
+	std::unique_ptr<Model3D> gameoverPlayer_ = nullptr;
 
+	// 背景オブジェクト
+	std::unique_ptr<Ground> ground_;
 	// ライティング
 	Light directionalLight_;
 

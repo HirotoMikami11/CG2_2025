@@ -43,6 +43,9 @@ void Game::InitializeScenes() {
 	auto titleScene = std::make_unique<TitleScene>();
 	sceneManager_->RegisterScene("TitleScene", std::move(titleScene));
 
+	auto gameoverScene = std::make_unique<GameoverScene>();
+	sceneManager_->RegisterScene("GameoverScene", std::move(gameoverScene));
+
 	// 将来的に追加するシーン
 	// auto debugScene = std::make_unique<DebugScene>();
 	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));

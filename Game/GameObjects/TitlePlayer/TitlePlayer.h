@@ -19,14 +19,11 @@ public:
 
 	void ImGui();
 
+	void AddRotation(const Vector3 rotation) { Object_->AddRotation(rotation); }
 private:
 
 	//タイトル用のプレイヤー
 	std::unique_ptr<Model3D> Object_ = nullptr;
-
-
-	//回転速度
-	Vector3 rotate_;
 
 	// システム参照
 	DirectXCommon* directXCommon_;

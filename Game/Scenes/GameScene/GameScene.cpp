@@ -54,20 +54,23 @@ void GameScene::ConfigureOffscreenEffects() {
 
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
-		//depthFogEffect->SetEnabled(true);
+		depthFogEffect->SetEnabled(true);
+		depthFogEffect->SetFogColor({ 0.02f, 0.08f, 0.25f, 1.0f });
 		depthFogEffect->SetFogDistance(0.2f, 260.0f);//レールカメラの時は180程度
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
-		//depthOfFieldEffect->SetEnabled(true);
+		depthOfFieldEffect->SetEnabled(true);
 		depthOfFieldEffect->SetFocusDistance(2.0f); // フォーカス距離
 		depthOfFieldEffect->SetFocusRange(30.0f); // フォーカス範囲
-	
+
 	}
 
-	auto* vignettePostEffect = offscreenRenderer_->GetVignetteEffect();
-	if (vignettePostEffect) {
-		vignettePostEffect->SetEnabled(true);
+	auto* vignetteEffect = offscreenRenderer_->GetVignetteEffect();
+	if (vignetteEffect) {
+		vignetteEffect->SetEnabled(true);
+		vignetteEffect->SetVignetteStrength(0.6f);
+		vignetteEffect->SetVignetteRadius(0.40f);
 	}
 
 }

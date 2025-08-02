@@ -199,9 +199,6 @@
     <Filter Include="Game\GameObjects\EnemyBullet">
       <UniqueIdentifier>{91b12361-6ee4-4983-b31b-d87d1f43655e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\GameObjects\Enemy\State">
-      <UniqueIdentifier>{257d1e67-a471-42a9-b817-99e2a55e03da}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\CollisionManager">
       <UniqueIdentifier>{b30ed82a-661a-440c-b89b-0eb2dc0de461}</UniqueIdentifier>
     </Filter>
@@ -225,6 +222,15 @@
     </Filter>
     <Filter Include="Game\GameObjects\Player\PlayerAttendant">
       <UniqueIdentifier>{e313422a-f0a5-41b9-be33-9af9ce8b9f7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObjects\Enemy\State">
+      <UniqueIdentifier>{4a29580b-7115-45d4-a2de-fcd74f5e19c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameClearScene">
+      <UniqueIdentifier>{32bff9e9-9a4f-46aa-9207-7f068308179d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scenes\GameoverScene">
+      <UniqueIdentifier>{09d761e9-9b04-4990-a317-d4b8824345ec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -393,18 +399,6 @@
     <ClCompile Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.cpp">
       <Filter>Engine\Managers\Transition\TransitionEffect\Slide</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp">
-      <Filter>Game\GameObjects\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="Game\GameObjects\EnemyBullet\EnemyBullet.cpp">
       <Filter>Game\GameObjects\EnemyBullet</Filter>
     </ClCompile>
@@ -434,9 +428,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Objects\Line\LineRenderer.cpp">
       <Filter>Engine\Objects\Line</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.cpp">
       <Filter>Game\GameObjects\Player\PlayerHomingBullet</Filter>
@@ -473,6 +464,24 @@
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Player\PlayerUI.cpp">
       <Filter>Game\GameObjects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp">
+      <Filter>Game\GameObjects\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\BaseEnemyState.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateApproach.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateLeave.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\EnemyStateStraight.cpp">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scenes\GameoverScene\GameoverScene.cpp">
+      <Filter>Game\Scenes\GameoverScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -709,18 +718,6 @@
     <ClInclude Include="Engine\Managers\Transition\TransitionEffect\SlideEffect.h">
       <Filter>Engine\Managers\Transition\TransitionEffect\Slide</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\Enemy.h">
-      <Filter>Game\GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
     <ClInclude Include="Game\GameObjects\EnemyBullet\EnemyBullet.h">
       <Filter>Game\GameObjects\EnemyBullet</Filter>
     </ClInclude>
@@ -757,9 +754,6 @@
     <ClInclude Include="Engine\Objects\Line\LineRenderer.h">
       <Filter>Engine\Objects\Line</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
-      <Filter>Game\GameObjects\Enemy\State</Filter>
-    </ClInclude>
     <ClInclude Include="Game\GameObjects\PlayerBullet\PlayerHomingBullet.h">
       <Filter>Game\GameObjects\Player\PlayerHomingBullet</Filter>
     </ClInclude>
@@ -795,6 +789,24 @@
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Player\PlayerUI.h">
       <Filter>Game\GameObjects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\Enemy.h">
+      <Filter>Game\GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\BaseEnemyState.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateApproach.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateLeave.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\EnemyStateStraight.h">
+      <Filter>Game\GameObjects\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\GameoverScene\GameoverScene.h">
+      <Filter>Game\Scenes\GameoverScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
