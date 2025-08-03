@@ -48,7 +48,7 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 
 	// レール移動パラメータの初期化
 	t_ = 0.0f;
-	speed_ = 0.00015f;
+	speed_ = 0.00025f;
 	isMoving_ = true;
 	loopEnabled_ = true;
 	lookAheadDistance_ = 0.01f;

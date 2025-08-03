@@ -35,8 +35,8 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 	// パターンの設定
 	pattern_ = pattern;
 
-	// HP設定（突進魚はHP10）
-	maxHP_ = 10.0f;
+	// HP設定（突進魚はHP30）
+	maxHP_ = 30.0f;
 	currentHP_ = maxHP_;
 
 	// 衝突判定設定

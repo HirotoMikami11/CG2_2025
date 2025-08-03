@@ -13,6 +13,8 @@ void EnemyBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, c
 	bulletSpeed_ = speed;
 	t_ = 0.055f; // ホーミング補間割合
 
+	homingTimer_ = kHomingTime_;
+
 	// ゲームオブジェクト（球体）の初期化
 	gameObject_ = std::make_unique<Sphere>();
 	gameObject_->Initialize(dxCommon, "sphere", "white");
@@ -33,19 +35,22 @@ void EnemyBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, c
 	gameObject_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });
 
 	// 衝突判定設定
-	SetRadius(1.0f); // Colliderの半径をセット
-	/// 衝突属性の設定
+	SetRadius(1.0f);
 	SetCollisionAttribute(kCollisionAttributeEnemy);
-	/// 衝突対象は自分の属性以外に設定(ビット反転)
 	SetCollisionMask(~kCollisionAttributeEnemy);
 
-	// プレイヤーの方向を向くように回転
 	SetToPlayerDirection();
 }
 
 void EnemyBullet::Update(const Matrix4x4& viewProjectionMatrix) {
-	// ホーミング
-	velocity_ = IsHoming();
+	// フレーム時間（仮に60FPSで固定なら1/60秒）
+	const float deltaTime = 1.0f / 60.0f;
+
+	// ホーミング時間中のみホーミング処理
+	if (homingTimer_ > 0.0f) {
+		velocity_ = IsHoming();
+		homingTimer_ -= deltaTime;
+	}
 
 	// プレイヤーの方向を向くように回転
 	SetToPlayerDirection();
@@ -72,7 +77,6 @@ void EnemyBullet::Draw(const Light& directionalLight) {
 
 Vector3 EnemyBullet::GetWorldPosition() {
 	if (gameObject_) {
-		// Transform3DのWorld行列から移動成分を取得
 		Matrix4x4 worldMatrix = gameObject_->GetTransform().GetWorldMatrix();
 		return Vector3{
 			worldMatrix.m[3][0],
@@ -84,34 +88,25 @@ Vector3 EnemyBullet::GetWorldPosition() {
 }
 
 Vector3 EnemyBullet::IsHoming() {
-	// プレイヤーが無効な場合は現在の速度をそのまま返す
 	if (!player_ || player_ == nullptr) {
 		return velocity_;
 	}
 
-
-	// ホーミングの計算
 	Vector3 toPlayer = player_->GetWorldPosition() - GetWorldPosition();
-
-	// それぞれ正規化
 	toPlayer = Normalize(toPlayer);
 	velocity_ = Normalize(velocity_);
-
-	// 球面線形補間で今の速度とプレイヤーのベクトルを内挿し、新たな速度とする
 	velocity_ = Slerp(velocity_, toPlayer, t_) * bulletSpeed_;
-
 	return velocity_;
 }
 
 void EnemyBullet::OnCollision() {
-	// ダメージを受ける
 	TakeDamage(1);
 }
 
 void EnemyBullet::TakeDamage(int damage) {
 	hp_ -= damage;
 	if (hp_ <= 0) {
-		isDead_ = true; // HPが0以下になったら死亡
+		isDead_ = true;
 	}
 }
 
@@ -120,17 +115,9 @@ void EnemyBullet::SetToPlayerDirection() {
 		return;
 	}
 
-	// プレイヤーの方向を向くように回転
 	Vector3 rotation = gameObject_->GetRotation();
-
-	// Y軸周り角度（水平回転）
 	rotation.y = std::atan2(velocity_.x, velocity_.z);
-
-	// 横軸方向の長さを求める
 	float XZLength = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
-
-	// X軸周り角度（垂直回転）
 	rotation.x = std::atan2(-velocity_.y, XZLength);
-
 	gameObject_->SetRotation(rotation);
 }

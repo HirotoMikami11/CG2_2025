@@ -52,10 +52,10 @@ public:
 
 private:
 	// 移動速度
-	static constexpr float kMoveSpeed = 0.5f;
+	static constexpr float kMoveSpeed = 1.0f;
 
 	// プレイヤーへのダメージ量
-	static constexpr float kPlayerDamage = 10.0f;
+	static constexpr float kPlayerDamage = 5.0f;
 
 	/// <summary>
 	/// 設定されたパターンに応じた初期Stateを設定

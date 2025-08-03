@@ -38,7 +38,7 @@ private:
 	static constexpr float kOffsetRange = 15.0f;
 
 	// 射撃間隔（フレーム数）
-	static constexpr int kShootInterval = 240 ;
+	static constexpr int kShootInterval = 120 ;
 
 	// カメラが移動したと判定する閾値
 	static constexpr float kCameraMovementThreshold = 1.0f;

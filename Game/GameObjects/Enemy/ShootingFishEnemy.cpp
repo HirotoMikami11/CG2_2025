@@ -36,7 +36,7 @@ void ShootingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& posit
 	pattern_ = pattern;
 
 	// HP設定（射撃魚はHP7）
-	maxHP_ = 7.0f;
+	maxHP_ = 15.0f;
 	currentHP_ = maxHP_;
 
 	// 衝突判定設定
