@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <chrono>
 
 #include "Objects/GameObject/GameObject.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
@@ -14,6 +15,21 @@ class EnemyPopCommand;
 class CameraController;
 
 /// <summary>
+/// 敵プリセット定義
+/// </summary>
+struct EnemyPreset {
+	std::string name;
+	EnemyType enemyType;
+	EnemyPattern pattern;
+	int waitTime;
+	Vector3 defaultScale;
+
+	EnemyPreset(const std::string& n, EnemyType type, EnemyPattern pat, int wait, Vector3 scale)
+		: name(n), enemyType(type), pattern(pat), waitTime(wait), defaultScale(scale) {
+	}
+};
+
+/// <summary>
 /// エディタで管理する敵配置データ
 /// </summary>
 struct EnemyPlacementData {
@@ -23,6 +39,8 @@ struct EnemyPlacementData {
 	int waitTime;           // この敵の前の待機時間
 	bool isSelected;        // エディタで選択されているか
 	std::unique_ptr<GameObject> previewModel; // プレビュー用モデル
+	std::string modelName;  // モデル名
+	Vector3 modelScale;     // モデルスケール
 
 	// デフォルトコンストラクタ
 	EnemyPlacementData()
@@ -31,7 +49,9 @@ struct EnemyPlacementData {
 		, pattern(EnemyPattern::Straight)
 		, waitTime(0)
 		, isSelected(false)
-		, previewModel(nullptr) {
+		, previewModel(nullptr)
+		, modelName("sphere")
+		, modelScale{ 3.0f, 3.0f, 3.0f } {
 	}
 
 	// コピーコンストラクタを削除
@@ -47,7 +67,9 @@ struct EnemyPlacementData {
 		, pattern(other.pattern)
 		, waitTime(other.waitTime)
 		, isSelected(other.isSelected)
-		, previewModel(std::move(other.previewModel)) {
+		, previewModel(std::move(other.previewModel))
+		, modelName(std::move(other.modelName))
+		, modelScale(other.modelScale) {
 	}
 
 	// ムーブ代入演算子
@@ -59,6 +81,8 @@ struct EnemyPlacementData {
 			waitTime = other.waitTime;
 			isSelected = other.isSelected;
 			previewModel = std::move(other.previewModel);
+			modelName = std::move(other.modelName);
+			modelScale = other.modelScale;
 		}
 		return *this;
 	}
@@ -121,6 +145,36 @@ public:
 	/// <param name="filePath">読み込みファイルパス</param>
 	bool LoadFromCSV(const std::string& filePath);
 
+	/// <summary>
+	/// 一時保存
+	/// </summary>
+	bool SaveTemporary();
+
+	/// <summary>
+	/// 一時保存データから読み込み
+	/// </summary>
+	bool LoadTemporary();
+
+	/// <summary>
+	/// 一時保存ファイルリストを取得
+	/// </summary>
+	std::vector<std::string> GetTemporaryFileList() const;
+
+	/// <summary>
+	/// 選択された敵をコピー
+	/// </summary>
+	void CopySelectedEnemy();
+
+	/// <summary>
+	/// クリップボードから敵をペースト
+	/// </summary>
+	void PasteEnemyFromClipboard();
+
+	/// <summary>
+	/// クリップボードにデータがあるか
+	/// </summary>
+	bool HasClipboardData() const { return hasClipboardData_; }
+
 	// Getter
 	bool IsEditorEnabled() const { return isEditorEnabled_; }
 	bool IsPreviewVisible() const { return showPreviewModels_; }
@@ -139,6 +193,7 @@ private:
 	// 表示設定
 	bool showPreviewModels_;    // プレビューモデル表示
 	bool showCSVEnemies_;       // CSV敵表示
+	bool showActualModels_;     // 実際のモデル表示
 
 	// 敵配置データ
 	std::vector<EnemyPlacementData> enemyPlacements_;
@@ -149,8 +204,22 @@ private:
 	// 新規追加用データ
 	EnemyPlacementData newEnemyData_;
 
+	// 新規追加時の設定保持
+	bool preserveNewEnemySettings_;
+
 	// CSVファイルパス
 	std::string csvFilePath_;
+
+	// 一時保存フォルダパス
+	std::string temporaryFolderPath_;
+
+	// プリセット管理
+	std::vector<EnemyPreset> enemyPresets_;
+	int selectedPresetIndex_;
+
+	// クリップボード機能
+	EnemyPlacementData clipboardData_;
+	bool hasClipboardData_;
 
 	/// <summary>
 	/// プレビューモデルを作成
@@ -164,6 +233,12 @@ private:
 	/// </summary>
 	/// <param name="placement">配置データ</param>
 	void UpdatePreviewModelColor(EnemyPlacementData& placement);
+
+	/// <summary>
+	/// プレビューモデルのタイプを更新
+	/// </summary>
+	/// <param name="placement">配置データ</param>
+	void UpdatePreviewModelType(EnemyPlacementData& placement);
 
 	/// <summary>
 	/// 新規敵データをリセット
@@ -183,21 +258,48 @@ private:
 	bool IsValidSelectedIndex() const;
 
 	/// <summary>
-	/// インラインエディタを描画
+	/// プリセットを初期化
 	/// </summary>
-	/// <param name="placement">配置データ</param>
-	/// <param name="index">インデックス</param>
+	void InitializePresets();
+
+	/// <summary>
+	/// プリセットを適用
+	/// </summary>
+	/// <param name="preset">プリセット</param>
+	void ApplyPreset(const EnemyPreset& preset);
+
+	/// <summary>
+	/// 敵タイプからモデル名を取得
+	/// </summary>
+	/// <param name="enemyType">敵タイプ</param>
+	/// <returns>モデル名</returns>
+	std::string GetEnemyModelName(EnemyType enemyType) const;
+
+	/// <summary>
+	/// 敵タイプからデフォルトスケールを取得
+	/// </summary>
+	/// <param name="enemyType">敵タイプ</param>
+	/// <returns>デフォルトスケール</returns>
+	Vector3 GetEnemyDefaultScale(EnemyType enemyType) const;
+
+	/// <summary>
+	/// タイムスタンプ付きファイル名を生成
+	/// </summary>
+	/// <returns>ファイル名</returns>
+	std::string GenerateTimestampedFilename() const;
+
+	/// <summary>
+	/// 選択時の色を取得
+	/// </summary>
+	/// <returns>選択時の色</returns>
+	Vector4 GetSelectedColor() const { return { 0.1f, 0.1f, 0.1f, 0.9f }; }
+
+	// ImGui描画メソッド
+	void DrawFileOperations();
+	void DrawPresetSelection();
+	void DrawNewEnemySection();
+	void DrawEnemyList();
 	void DrawInlineEditor(EnemyPlacementData& placement, size_t index);
-
-	/// <summary>
-	/// アクションボタン群を描画
-	/// </summary>
-	/// <param name="placement">配置データ</param>
-	/// <param name="index">インデックス</param>
 	void DrawActionButtons(EnemyPlacementData& placement, size_t index);
-
-	/// <summary>
-	/// 詳細エディタを描画
-	/// </summary>
 	void DrawDetailedEditor();
 };

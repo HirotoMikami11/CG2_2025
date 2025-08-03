@@ -168,4 +168,10 @@ private:
 	/// 全ての敵を削除する
 	/// </summary>
 	void ClearAllEnemies();
+
+	/// <summary>
+	/// デバッグでゲーム開始処理
+	/// </summary>
+	void DebugStartGame();
+
 };

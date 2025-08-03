@@ -410,6 +410,46 @@ void GameScene::ClearAllEnemies() {
 	enemies_.clear(); // すべて削除
 }
 
+void GameScene::DebugStartGame() {
+	// 1. 全ての敵と敵弾をクリア
+	ClearAllEnemies();
+	ClearAllEnemyBullets();
+
+	// 2. 敵発生コマンドをリセット
+	if (enemyPopCommand_) {
+		enemyPopCommand_->Reset();
+	}
+	isWait_ = false;
+	waitTimer_ = 0;
+
+	// 3. CSVから敵配置データを再読み込み
+	LoadEnemyPopData();
+
+	// 4. レールカメラを初期位置にリセット
+	if (railCamera_) {
+		railCamera_->ResetPosition();
+		railCamera_->SetProgress(0.0f); // 進行度を0%に設定
+
+		// レールカメラの設定確認・調整
+		if (!railCamera_->IsLoopEnabled()) {
+			railCamera_->SetLoopEnabled(true); // ループを有効化
+		}
+	}
+
+	// 5. アクティブカメラをレールカメラに切り替え
+	if (cameraController_) {
+		cameraController_->SetActiveCamera("rail");
+	}
+
+	// 6. レールカメラの動きを開始
+	if (railCamera_) {
+		railCamera_->StartMovement();
+	}
+
+	// 7. ログ出力
+	Logger::Log(Logger::GetStream(), "GameScene: Game Started! Rail camera activated and moving.\n");
+	Logger::Log(Logger::GetStream(), "GameScene: Enemies cleared, CSV reloaded, camera reset to start position.\n");
+}
 void GameScene::ImGui() {
 #ifdef _DEBUG
 
@@ -457,6 +497,25 @@ void GameScene::ImGui() {
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");
 	ImGui::Spacing();
+
+	// ゲーム制御セクション
+	if (ImGui::CollapsingHeader("Game Control")) {
+		// Start Gameボタン（目立つように大きく表示）
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 0.8f));        // 緑色
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));  // ホバー時
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));   // 押下時
+
+		if (ImGui::Button("START GAME", ImVec2(200, 50))) {
+			DebugStartGame();
+		}
+
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+		ImGui::Text("Clear enemies, load CSV, reset rail camera and start");
+
+		ImGui::Separator();
+	}
 
 	// 敵生成関連のImGui
 	ImGui::Text("Enemy Spawn System");
@@ -514,7 +573,6 @@ void GameScene::ImGui() {
 	}
 #endif
 }
-
 void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) {
 	enemyBullets_.push_back(std::move(enemyBullet));
 }

@@ -402,6 +402,7 @@ bool FieldEditor::IsValidSelectedIndex() const {
 }
 
 void FieldEditor::DrawInlineEditor(FieldObjectData& objData, size_t index) {
+#ifdef _DEBUG
 	ImGui::Separator();
 	ImGui::Text("Quick Edit:");
 
@@ -428,9 +429,11 @@ void FieldEditor::DrawInlineEditor(FieldObjectData& objData, size_t index) {
 			objData.actualRock->SetScale(objData.scale);
 		}
 	}
+#endif
 }
 
 void FieldEditor::DrawActionButtons(FieldObjectData& objData, size_t index) {
+#ifdef _DEBUG
 	// カメラ位置に移動ボタン
 	if (ImGui::Button(("Set Cam Pos##" + std::to_string(index)).c_str())) {
 		if (cameraController_) {
@@ -450,9 +453,11 @@ void FieldEditor::DrawActionButtons(FieldObjectData& objData, size_t index) {
 		}
 		return; // イテレータが無効になるので早期リターン
 	}
+#endif
 }
 
 void FieldEditor::DrawDetailedEditor() {
+#ifdef _DEBUG
 	ImGui::Separator();
 	ImGui::Text("Edit Selected Rock:");
 
@@ -494,4 +499,5 @@ void FieldEditor::DrawDetailedEditor() {
 			UpdateRockColor(selectedData.actualRock.get(), selectedData.rockType, selectedData.isSelected, false);
 		}
 	}
+#endif
 }
