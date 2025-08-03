@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "GameScene.h"
 #include "Managers/ImGui/ImGuiManager.h"
 #include "Managers/Scene/SceneManager.h" 
@@ -48,7 +49,6 @@ void GameScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
 	modelManager_->LoadModel("resources/Model/Squid", "Mesh_Squid.obj", "rushFish");
 	modelManager_->LoadModel("resources/Model/Goldfish", "Mesh_Goldfish.obj", "shootingFish");
-
 
 	// テクスチャ読み込み
 	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
@@ -450,12 +450,159 @@ void GameScene::DebugStartGame() {
 	Logger::Log(Logger::GetStream(), "GameScene: Game Started! Rail camera activated and moving.\n");
 	Logger::Log(Logger::GetStream(), "GameScene: Enemies cleared, CSV reloaded, camera reset to start position.\n");
 }
+
 void GameScene::ImGui() {
 #ifdef _DEBUG
 
 	// レールカメラエディタのImGui
 	if (railCameraEditor_) {
 		railCameraEditor_->ImGui();
+	}
+
+	// ========== レールカメラデバッグコントロール ==========
+	if (ImGui::CollapsingHeader("Rail Camera Debug Control")) {
+		if (railCamera_) {
+			// フレーム情報表示
+			int currentFrame = railCamera_->GetCurrentFrameFromStart();
+			int maxFrames = railCamera_->GetMaxFrames();
+			float progress = railCamera_->GetProgress();
+
+			ImGui::Text("=== Frame Analysis ===");
+			ImGui::Text("Current Frame: %d", currentFrame);
+			ImGui::Text("Max Frames: %d", maxFrames);
+			ImGui::Text("Progress: %.1f%% (%.4f)", progress * 100.0f, progress);
+
+			// フレーム進行速度情報
+			float speed = railCamera_->GetSpeed();
+			if (railCamera_->IsUniformSpeedEnabled()) {
+				ImGui::Text("Speed: %.6f (distance per frame)", speed);
+			} else {
+				ImGui::Text("Speed: %.6f (t-parameter per frame)", speed);
+			}
+
+			ImGui::Separator();
+
+			// 視錐台表示コントロール
+			ImGui::Text("=== Visualization Controls ===");
+			bool showFrustum = railCamera_->IsViewFrustumVisible();
+			if (ImGui::Checkbox("Show Camera Frustum", &showFrustum)) {
+				railCamera_->SetViewFrustumVisible(showFrustum);
+				// 注意：視錐台は動的に更新されるため、手動での再生成は不要
+			}
+
+			if (showFrustum) {
+				// 視錐台設定（動的に反映される）
+				Vector4 frustumColor = railCamera_->GetViewFrustumColor();
+				if (ImGui::ColorEdit4("Frustum Color", &frustumColor.x)) {
+					railCamera_->SetViewFrustumColor(frustumColor);
+				}
+
+				float frustumDistance = railCamera_->GetViewFrustumDistance();
+				if (ImGui::DragFloat("Frustum Distance", &frustumDistance, 1.0f, 5.0f, 200.0f)) {
+					railCamera_->SetViewFrustumDistance(frustumDistance);
+				}
+			}
+
+			ImGui::Separator();
+
+			// クイックジャンプボタン
+			ImGui::Text("=== Quick Jump ===");
+			if (ImGui::Button("Jump to Start (0%)")) {
+				railCamera_->SetProgress(0.0f);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Jump to 25%")) {
+				railCamera_->SetProgress(0.25f);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Jump to 50%")) {
+				railCamera_->SetProgress(0.5f);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Jump to 75%")) {
+				railCamera_->SetProgress(0.75f);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Jump to End (100%)")) {
+				railCamera_->SetProgress(1.0f);
+				railCamera_->StopMovement();
+			}
+
+			// 特定フレームへのジャンプ
+			static int targetFrame = 0;
+			ImGui::Text("=== Frame Jump ===");
+			ImGui::PushItemWidth(120);
+			if (ImGui::InputInt("Target Frame", &targetFrame)) {
+				targetFrame = std::clamp(targetFrame, 0, maxFrames);
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+			if (ImGui::Button("Jump to Frame")) {
+				railCamera_->SetProgressFromFrame(targetFrame);
+				railCamera_->StopMovement();
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Current Frame")) {
+				targetFrame = currentFrame;
+			}
+
+			// フレームステップ操作
+			ImGui::Text("=== Frame Step ===");
+			if (ImGui::Button(" -10 Frames")) {
+				int newFrame = std::max(0, currentFrame - 10);
+				railCamera_->SetProgressFromFrame(newFrame);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(" -1 Frame")) {
+				int newFrame = std::max(0, currentFrame - 1);
+				railCamera_->SetProgressFromFrame(newFrame);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(" +1 Frame")) {
+				int newFrame = std::min(maxFrames, currentFrame + 1);
+				railCamera_->SetProgressFromFrame(newFrame);
+				railCamera_->StopMovement();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(" +10 Frames")) {
+				int newFrame = std::min(maxFrames, currentFrame + 10);
+				railCamera_->SetProgressFromFrame(newFrame);
+				railCamera_->StopMovement();
+			}
+
+			ImGui::Separator();
+
+			// デバッグ情報
+			ImGui::Text("=== Debug Info ===");
+			Vector3 cameraPos = railCamera_->GetPosition();
+			Vector3 cameraRot = railCamera_->GetRotation();
+			Vector3 forwardDir = railCamera_->GetForwardDirection();
+
+			ImGui::Text("Position: (%.2f, %.2f, %.2f)", cameraPos.x, cameraPos.y, cameraPos.z);
+			ImGui::Text("Rotation: (%.3f, %.3f, %.3f)", cameraRot.x, cameraRot.y, cameraRot.z);
+			ImGui::Text("Forward: (%.3f, %.3f, %.3f)", forwardDir.x, forwardDir.y, forwardDir.z);
+
+			// 時間換算表示
+			ImGui::Separator();
+			ImGui::Text("=== Time Conversion (60FPS) ===");
+			float seconds = currentFrame / 60.0f;
+			int minutes = static_cast<int>(seconds) / 60;
+			float remainingSeconds = seconds - (minutes * 60);
+			ImGui::Text("Current Time: %d:%05.2f", minutes, remainingSeconds);
+
+			float maxSeconds = maxFrames / 60.0f;
+			int maxMinutes = static_cast<int>(maxSeconds) / 60;
+			float maxRemainingSeconds = maxSeconds - (maxMinutes * 60);
+			ImGui::Text("Total Time: %d:%05.2f", maxMinutes, maxRemainingSeconds);
+		}
 	}
 
 	// 敵配置エディタのImGui
@@ -573,6 +720,7 @@ void GameScene::ImGui() {
 	}
 #endif
 }
+
 void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) {
 	enemyBullets_.push_back(std::move(enemyBullet));
 }
@@ -622,6 +770,7 @@ void GameScene::UpdateEnemyPopCommands() {
 		}
 	}
 }
+
 void GameScene::CreateEnemy(const Vector3& position, EnemyType enemyType, EnemyPattern pattern) {
 	std::unique_ptr<BaseEnemy> enemy;
 
@@ -687,7 +836,6 @@ void GameScene::Finalize() {
 	if (enemyPlacementEditor_) {
 		enemyPlacementEditor_.reset();
 	}
-
 
 	// フィールド関連のリソース解放
 #ifdef _DEBUG

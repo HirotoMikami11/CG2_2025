@@ -21,6 +21,14 @@ public:
 	};
 
 	/// <summary>
+	/// 視錐台の頂点データ
+	/// </summary>
+	struct ViewFrustum {
+		Vector3 nearCorners[4];  // 近クリップ面の4つの角
+		Vector3 farCorners[4];   // 遠クリップ面の4つの角
+	};
+
+	/// <summary>
 	/// コンストラクタ
 	/// </summary>
 	RailCamera();
@@ -114,6 +122,11 @@ public:
 	void GenerateRailTrackLines();
 
 	/// <summary>
+	/// 視錐台線分を生成（動的描画用）
+	/// </summary>
+	void GenerateViewFrustumLines();
+
+	/// <summary>
 	/// リソースの明示的解放
 	/// </summary>
 	void ReleaseResources();
@@ -159,6 +172,96 @@ public:
 	/// </summary>
 	/// <returns>選択されたポイントのインデックス（-1は選択なし）</returns>
 	int GetSelectedPointIndex() const { return selectedPointIndex_; }
+
+	// ======================== デバッグ機能 ========================
+
+	/// <summary>
+	/// 開始時点から現在の位置までのフレーム数を取得
+	/// </summary>
+	/// <returns>フレーム数</returns>
+	int GetCurrentFrameFromStart() const;
+
+	/// <summary>
+	/// 指定したフレーム数での進行度を計算
+	/// </summary>
+	/// <param name="frame">フレーム数</param>
+	/// <returns>進行度（0.0-1.0）</returns>
+	float GetProgressFromFrame(int frame) const;
+
+	/// <summary>
+	/// フレーム数から位置を設定
+	/// </summary>
+	/// <param name="frame">フレーム数</param>
+	void SetProgressFromFrame(int frame);
+
+	/// <summary>
+	/// 最大フレーム数を取得（ループなしで終端まで）
+	/// </summary>
+	/// <returns>最大フレーム数</returns>
+	int GetMaxFrames() const;
+
+	/// <summary>
+	/// 視錐台表示の有効/無効を設定
+	/// </summary>
+	/// <param name="visible">表示フラグ</param>
+	void SetViewFrustumVisible(bool visible) { showViewFrustum_ = visible; }
+
+	/// <summary>
+	/// 視錐台表示の状態を取得
+	/// </summary>
+	/// <returns>表示フラグ</returns>
+	bool IsViewFrustumVisible() const { return showViewFrustum_; }
+
+	/// <summary>
+	/// 視錐台の色を設定
+	/// </summary>
+	/// <param name="color">色</param>
+	void SetViewFrustumColor(const Vector4& color) { viewFrustumColor_ = color; }
+
+	/// <summary>
+	/// 視錐台の色を取得
+	/// </summary>
+	/// <returns>視錐台の色</returns>
+	Vector4 GetViewFrustumColor() const { return viewFrustumColor_; }
+
+	/// <summary>
+	/// 視錐台の距離を設定
+	/// </summary>
+	/// <param name="distance">描画距離</param>
+	void SetViewFrustumDistance(float distance) { viewFrustumDistance_ = distance; }
+
+	/// <summary>
+	/// 視錐台の描画距離を取得
+	/// </summary>
+	/// <returns>描画距離</returns>
+	float GetViewFrustumDistance() const { return viewFrustumDistance_; }
+
+	/// <summary>
+	/// カメラのFOVを取得（デバッグ用）
+	/// </summary>
+	/// <returns>FOV値</returns>
+	float GetFOV() const { return 0.45f; }
+
+	/// <summary>
+	/// カメラのアスペクト比を取得（デバッグ用）
+	/// </summary>
+	/// <returns>アスペクト比</returns>
+	float GetAspectRatio() const {
+		return (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
+	}
+
+	/// <summary>
+	/// カメラのnearクリップ距離を取得（デバッグ用）
+	/// </summary>
+	/// <returns>nearクリップ距離</returns>
+	float GetNearClip() const { return 0.1f; }
+
+	/// <summary>
+	/// カメラのfarクリップ距離を取得（デバッグ用）
+	/// </summary>
+	/// <returns>farクリップ距離</returns>
+	float GetFarClip() const { return 1000.0f; }
+
 private:
 	// トランスフォーム
 	Transform3D transform_;
@@ -210,6 +313,12 @@ private:
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
 
+	// デバッグ機能用
+	bool showViewFrustum_ = false;              // 視錐台表示フラグ
+	Vector4 viewFrustumColor_ = { 1.0f, 1.0f, 0.0f, 1.0f }; // 視錐台の色（黄色）
+	float viewFrustumDistance_ = 50.0f;         // 視錐台描画距離
+	int debugFrameInput_ = 0;                   // デバッグ用フレーム入力
+
 	/// <summary>
 	/// カメラモデルの更新（描画時に呼び出し）
 	/// </summary>
@@ -259,4 +368,13 @@ private:
 	/// 制御点を描画用の線分として追加
 	/// </summary>
 	void DrawControlPoints();
+
+	/// <summary>
+	/// 視錐台を計算する
+	/// </summary>
+	/// <param name="cameraPos">カメラ位置</param>
+	/// <param name="cameraRot">カメラ回転</param>
+	/// <param name="distance">描画距離</param>
+	/// <returns>視錐台データ</returns>
+	ViewFrustum CalculateViewFrustum(const Vector3& cameraPos, const Vector3& cameraRot, float distance) const;
 };

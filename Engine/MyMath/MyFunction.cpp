@@ -136,7 +136,7 @@ Vector3 ConvertWorldToScreenPosition(const Vector3& worldPosition, const Matrix4
 	Matrix4x4 matViewProjectionViewport = Matrix4x4Multiply(viewProjectionMatrix, matViewport);
 
 	// ワールドからスクリーンに座標変換(ここから3Dから2Dになる)
-	Vector3 screenPosition = Matrix4x4Transform(worldPosition, matViewProjectionViewport);
+	Vector3 screenPosition = Transform(worldPosition, matViewProjectionViewport);
 	return { screenPosition.x, screenPosition.y, screenPosition.z }; // 2D座標に変換して返す
 }
 
@@ -477,13 +477,13 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		//スクリーン座標系まで変換する
 		Matrix4x4 startWorldMatrix = MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 });
 		Matrix4x4 startWorldViewProjectionMatrix = Matrix4x4Multiply(startWorldMatrix, viewProjectionMatrix);
-		Vector3 startNdcPos = Matrix4x4Transform(startPos, startWorldViewProjectionMatrix);
-		Vector3 startScreenPos = Matrix4x4Transform(startNdcPos, viewportMatrix);
+		Vector3 startNdcPos = Transform(startPos, startWorldViewProjectionMatrix);
+		Vector3 startScreenPos = Transform(startNdcPos, viewportMatrix);
 
 		Matrix4x4 endWorldMatrix = MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 });
 		Matrix4x4 endWorldViewProjectionMatrix = Matrix4x4Multiply(endWorldMatrix, viewProjectionMatrix);
-		Vector3 endNdcPos = Matrix4x4Transform(endPos, endWorldViewProjectionMatrix);
-		Vector3 endScreenPos = Matrix4x4Transform(endNdcPos, viewportMatrix);
+		Vector3 endNdcPos = Transform(endPos, endWorldViewProjectionMatrix);
+		Vector3 endScreenPos = Transform(endNdcPos, viewportMatrix);
 
 		//変換した座標を使って表示
 		//Novice::DrawLine(
@@ -505,13 +505,13 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		//スクリーン座標系まで変換する
 		Matrix4x4 startWorldMatrix = MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 });
 		Matrix4x4 startWorldViewProjectionMatrix = Matrix4x4Multiply(startWorldMatrix, viewProjectionMatrix);
-		Vector3 startNdcPos = Matrix4x4Transform(startPos, startWorldViewProjectionMatrix);
-		Vector3 startScreenPos = Matrix4x4Transform(startNdcPos, viewportMatrix);
+		Vector3 startNdcPos = Transform(startPos, startWorldViewProjectionMatrix);
+		Vector3 startScreenPos = Transform(startNdcPos, viewportMatrix);
 
 		Matrix4x4 endWorldMatrix = MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 });
 		Matrix4x4 endWorldViewProjectionMatrix = Matrix4x4Multiply(endWorldMatrix, viewProjectionMatrix);
-		Vector3 endNdcPos = Matrix4x4Transform(endPos, endWorldViewProjectionMatrix);
-		Vector3 endScreenPos = Matrix4x4Transform(endNdcPos, viewportMatrix);
+		Vector3 endNdcPos = Transform(endPos, endWorldViewProjectionMatrix);
+		Vector3 endScreenPos = Transform(endNdcPos, viewportMatrix);
 
 		//変換した座標を使って表示
 		//Novice::DrawLine(
@@ -570,14 +570,14 @@ void DrawSphere(const SphereMath& sphere, const Matrix4x4& viewProjectionMatrix,
 			c = Add(sphere.center, Multiply(c, sphere.radius));
 
 			//a,b,cをスクリーン座標に変換
-			Vector3 aNdcPos = Matrix4x4Transform(a, viewProjectionMatrix);
-			Vector3 aScreenPos = Matrix4x4Transform(aNdcPos, viewportMatrix);
+			Vector3 aNdcPos = Transform(a, viewProjectionMatrix);
+			Vector3 aScreenPos = Transform(aNdcPos, viewportMatrix);
 
-			Vector3 bNdcPos = Matrix4x4Transform(b, viewProjectionMatrix);
-			Vector3 bScreenPos = Matrix4x4Transform(bNdcPos, viewportMatrix);
+			Vector3 bNdcPos = Transform(b, viewProjectionMatrix);
+			Vector3 bScreenPos = Transform(bNdcPos, viewportMatrix);
 
-			Vector3 cNdcPos = Matrix4x4Transform(c, viewProjectionMatrix);
-			Vector3 cScreenPos = Matrix4x4Transform(cNdcPos, viewportMatrix);
+			Vector3 cNdcPos = Transform(c, viewProjectionMatrix);
+			Vector3 cScreenPos = Transform(cNdcPos, viewportMatrix);
 
 			//ab,bcで線を引く
 			//Novice::DrawLine(
@@ -612,8 +612,8 @@ void DrawLine(const Segment& segment, const Matrix4x4& viewProjectionMatrix, con
 	Vector3 start = segment.origin;
 	Vector3 end = Add(segment.origin, segment.diff);
 	///スクリーン座標に変換
-	Vector3 screenStart = Matrix4x4Transform(Matrix4x4Transform(start, viewProjectionMatrix), viewportMatrix);
-	Vector3 screenEnd = Matrix4x4Transform(Matrix4x4Transform(end, viewProjectionMatrix), viewportMatrix);
+	Vector3 screenStart = Transform(Transform(start, viewProjectionMatrix), viewportMatrix);
+	Vector3 screenEnd = Transform(Transform(end, viewProjectionMatrix), viewportMatrix);
 	///描画
 	/*Novice::DrawLine(
 		static_cast<int>(screenStart.x),

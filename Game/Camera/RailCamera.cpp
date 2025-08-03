@@ -18,7 +18,12 @@ RailCamera::RailCamera()
 	, selectedPointColor_({ 1.0f, 1.0f, 0.0f, 1.0f })  // 選択時は黄色
 	, controlPointSize_(0.5f)
 	, selectedPointIndex_(-1)
-	, directXCommon_(nullptr) {
+	, directXCommon_(nullptr)
+	, showViewFrustum_(false)                           // 視錐台表示フラグ
+	, viewFrustumColor_({ 1.0f, 1.0f, 0.0f, 1.0f })   // 視錐台の色（黄色）
+	, viewFrustumDistance_(50.0f)                       // 視錐台描画距離
+	, debugFrameInput_(0)                               // デバッグ用フレーム入力
+{
 }
 
 RailCamera::~RailCamera() {
@@ -40,7 +45,6 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 
 	lineRenderer_ = std::make_unique<LineRenderer>();
 	lineRenderer_->Initialize(directXCommon_);
-
 
 	// レール移動パラメータの初期化
 	t_ = 0.0f;
@@ -72,7 +76,6 @@ void RailCamera::UpdateCameraPosition() {
 	}
 
 	if (uniformSpeedEnabled_ && !lengthTable_.empty()) {
-
 		// 等間隔移動：距離ベースでの移動
 		float currentLength = t_ * totalLength_;
 		currentLength += speed_ * totalLength_; // 速度を距離に変換
@@ -94,8 +97,8 @@ void RailCamera::UpdateCameraPosition() {
 		// 進行度を更新
 		t_ = currentLength / totalLength_;
 	} else {
-
 		// 従来の移動：tパラメータベース
+		t_ += speed_;
 		if (t_ >= 1.0f) {
 			if (loopEnabled_) {
 				t_ = 0.0f;  // ループ有効時のみリセット
@@ -183,7 +186,6 @@ void RailCamera::BuildLengthTable() {
 	}
 
 	totalLength_ = totalLength;
-
 }
 
 float RailCamera::GetTFromLength(float targetLength) const {
@@ -247,7 +249,6 @@ void RailCamera::SetControlPoints(const std::vector<Vector3>& controlPoints) {
 
 	// 軌道の線分を再生成
 	GenerateRailTrackLines();
-
 }
 
 void RailCamera::GenerateRailTrackLines() {
@@ -273,6 +274,36 @@ void RailCamera::GenerateRailTrackLines() {
 	// 制御点を描画
 	if (showControlPoints_) {
 		DrawControlPoints();
+	}
+
+	// 注意：視錐台はここでは描画しない（動的に更新するため）
+}
+
+void RailCamera::GenerateViewFrustumLines() {
+	if (!lineRenderer_ || !showViewFrustum_) {
+		return;
+	}
+
+	Vector3 cameraPos = transform_.GetPosition();
+	Vector3 cameraRot = transform_.GetRotation();
+
+	ViewFrustum frustum = CalculateViewFrustum(cameraPos, cameraRot, viewFrustumDistance_);
+
+	// Near面の線分
+	for (int i = 0; i < 4; ++i) {
+		int nextIndex = (i + 1) % 4;
+		lineRenderer_->AddLine(frustum.nearCorners[i], frustum.nearCorners[nextIndex], viewFrustumColor_);
+	}
+
+	// Far面の線分
+	for (int i = 0; i < 4; ++i) {
+		int nextIndex = (i + 1) % 4;
+		lineRenderer_->AddLine(frustum.farCorners[i], frustum.farCorners[nextIndex], viewFrustumColor_);
+	}
+
+	// Near面とFar面を結ぶ線分
+	for (int i = 0; i < 4; ++i) {
+		lineRenderer_->AddLine(frustum.nearCorners[i], frustum.farCorners[i], viewFrustumColor_);
 	}
 }
 
@@ -335,6 +366,125 @@ Vector3 RailCamera::CalculateLookAtTarget(float currentT) {
 	return CatmullRomPosition(controlPoints_, lookAheadT);
 }
 
+// ============================ デバッグ機能の実装 ============================
+
+int RailCamera::GetCurrentFrameFromStart() const {
+	if (speed_ <= 0.0f) {
+		return 0;
+	}
+
+	if (uniformSpeedEnabled_ && totalLength_ > 0.0f) {
+		// 等間隔移動の場合：距離ベースで計算
+		float currentDistance = t_ * totalLength_;
+		float distancePerFrame = speed_ * totalLength_;
+		return static_cast<int>(currentDistance / distancePerFrame);
+	} else {
+		// 従来の移動：tパラメータベース
+		return static_cast<int>(t_ / speed_);
+	}
+}
+
+float RailCamera::GetProgressFromFrame(int frame) const {
+	if (frame <= 0 || speed_ <= 0.0f) {
+		return 0.0f;
+	}
+
+	if (uniformSpeedEnabled_ && totalLength_ > 0.0f) {
+		// 等間隔移動の場合：距離ベースで計算
+		float distancePerFrame = speed_ * totalLength_;
+		float targetDistance = frame * distancePerFrame;
+		return std::clamp(targetDistance / totalLength_, 0.0f, 1.0f);
+	} else {
+		// 従来の移動：tパラメータベース
+		return std::clamp(frame * speed_, 0.0f, 1.0f);
+	}
+}
+
+void RailCamera::SetProgressFromFrame(int frame) {
+	float newProgress = GetProgressFromFrame(frame);
+	SetProgress(newProgress);
+}
+
+int RailCamera::GetMaxFrames() const {
+	if (speed_ <= 0.0f) {
+		return 0;
+	}
+
+	if (uniformSpeedEnabled_ && totalLength_ > 0.0f) {
+		// 等間隔移動の場合：距離ベースで計算
+		float distancePerFrame = speed_ * totalLength_;
+		return static_cast<int>(totalLength_ / distancePerFrame);
+	} else {
+		// 従来の移動：tパラメータベース
+		return static_cast<int>(1.0f / speed_);
+	}
+}
+
+RailCamera::ViewFrustum RailCamera::CalculateViewFrustum(const Vector3& cameraPos, const Vector3& cameraRot, float distance) const {
+	ViewFrustum frustum;
+
+	// プロジェクション行列からカメラパラメータを逆算
+	// 簡易的にデフォルト値を使用（より正確にはprojectionMatrix_から計算）
+	float fov = 0.45f;  // SetDefaultCameraで設定されているfov
+	float aspectRatio = (float(GraphicsConfig::kClientWidth) / float(GraphicsConfig::kClientHeight));
+	float nearClip = 0.1f;
+	float farClip = std::min(distance, 1000.0f);
+
+	// カメラの回転行列を計算
+	Matrix4x4 rotMatrix = MakeRotateXYZMatrix(cameraRot);
+
+	// カメラの前方向、右方向、上方向を計算
+	Vector3 forward = { 0.0f, 0.0f, 1.0f };
+	Vector3 right = { 1.0f, 0.0f, 0.0f };
+	Vector3 up = { 0.0f, 1.0f, 0.0f };
+
+	forward = TransformNormal(forward, rotMatrix);
+	right = TransformNormal(right, rotMatrix);
+	up = TransformNormal(up, rotMatrix);
+
+	// FOVから視錐台の幅と高さを計算
+	float halfFovY = fov * 0.5f;
+	float halfFovX = halfFovY * aspectRatio;
+
+	// Near面の幅と高さ
+	float nearHeight = 2.0f * nearClip * std::tan(halfFovY);
+	float nearWidth = nearHeight * aspectRatio;
+
+	// Far面の幅と高さ
+	float farHeight = 2.0f * farClip * std::tan(halfFovY);
+	float farWidth = farHeight * aspectRatio;
+
+	// Near面の中心
+	Vector3 nearCenter = cameraPos + forward * nearClip;
+
+	// Far面の中心
+	Vector3 farCenter = cameraPos + forward * farClip;
+
+	// Near面の4つの角
+	Vector3 nearRightUp = right * (nearWidth * 0.5f) + up * (nearHeight * 0.5f);
+	Vector3 nearRightDown = right * (nearWidth * 0.5f) - up * (nearHeight * 0.5f);
+	Vector3 nearLeftUp = -right * (nearWidth * 0.5f) + up * (nearHeight * 0.5f);
+	Vector3 nearLeftDown = -right * (nearWidth * 0.5f) - up * (nearHeight * 0.5f);
+
+	frustum.nearCorners[0] = nearCenter + nearRightUp;   // 右上
+	frustum.nearCorners[1] = nearCenter + nearRightDown; // 右下
+	frustum.nearCorners[2] = nearCenter + nearLeftDown;  // 左下
+	frustum.nearCorners[3] = nearCenter + nearLeftUp;    // 左上
+
+	// Far面の4つの角
+	Vector3 farRightUp = right * (farWidth * 0.5f) + up * (farHeight * 0.5f);
+	Vector3 farRightDown = right * (farWidth * 0.5f) - up * (farHeight * 0.5f);
+	Vector3 farLeftUp = -right * (farWidth * 0.5f) + up * (farHeight * 0.5f);
+	Vector3 farLeftDown = -right * (farWidth * 0.5f) - up * (farHeight * 0.5f);
+
+	frustum.farCorners[0] = farCenter + farRightUp;   // 右上
+	frustum.farCorners[1] = farCenter + farRightDown; // 右下
+	frustum.farCorners[2] = farCenter + farLeftDown;  // 左下
+	frustum.farCorners[3] = farCenter + farLeftUp;    // 左上
+
+	return frustum;
+}
+
 void RailCamera::ImGui() {
 #ifdef _DEBUG
 	ImGui::Text("RailCamera");
@@ -391,6 +541,55 @@ void RailCamera::ImGui() {
 		if (ImGui::Button("Rebuild Length Table")) {
 			BuildLengthTable();
 		}
+	}
+
+	// ====================== デバッグ機能セクション ======================
+	ImGui::Separator();
+	ImGui::Text("Debug Features:");
+
+	// フレーム計算機能
+	ImGui::Text("Frame Analysis:");
+	int currentFrame = GetCurrentFrameFromStart();
+	int maxFrames = GetMaxFrames();
+	ImGui::Text("Current Frame: %d / %d", currentFrame, maxFrames);
+	ImGui::Text("Progress: %.3f (%.1f%%)", t_, t_ * 100.0f);
+
+	// フレーム数入力
+	ImGui::PushItemWidth(100);
+	if (ImGui::InputInt("Jump to Frame", &debugFrameInput_)) {
+		debugFrameInput_ = std::clamp(debugFrameInput_, 0, maxFrames);
+	}
+	ImGui::PopItemWidth();
+
+	ImGui::SameLine();
+	if (ImGui::Button("Jump")) {
+		SetProgressFromFrame(debugFrameInput_);
+		// 移動を停止してデバッグ操作しやすくする
+		StopMovement();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Current->Input")) {
+		debugFrameInput_ = currentFrame;
+	}
+
+	// 進行度スライダー（より細かい制御用）
+	float progressSlider = t_;
+	if (ImGui::SliderFloat("Precise Progress", &progressSlider, 0.0f, 1.0f, "%.4f")) {
+		SetProgress(progressSlider);
+		StopMovement();
+	}
+
+	// 視錐台表示設定
+	ImGui::Separator();
+	ImGui::Text("View Frustum Visualization:");
+	ImGui::Checkbox("Show View Frustum", &showViewFrustum_);
+	// 注意：視錐台は動的に更新されるため、設定変更時の再生成は不要
+
+	if (showViewFrustum_) {
+		ImGui::ColorEdit4("Frustum Color", &viewFrustumColor_.x);
+		ImGui::DragFloat("Frustum Distance", &viewFrustumDistance_, 1.0f, 5.0f, 200.0f);
+		// 注意：これらの設定も動的に反映されるため、即座の再生成は不要
 	}
 
 	// 進行方向表示
@@ -488,6 +687,34 @@ void RailCamera::DrawRailTrack(const Matrix4x4& viewProjectionMatrix, const Ligh
 	}
 
 	if (lineRenderer_ && showRailTrack_) {
+		// 視錐台表示が有効な場合は、毎フレーム完全に再生成
+		if (showViewFrustum_) {
+			// 一度リセットして静的な線分を再生成
+			lineRenderer_->Reset();
+
+			// 軌道の線分を生成
+			std::vector<Vector3> pointsDrawing;
+			for (int i = 0; i < railTrackSegments_ + 1; i++) {
+				float t = 1.0f / railTrackSegments_ * i;
+				Vector3 point = CatmullRomPosition(controlPoints_, t);
+				pointsDrawing.push_back(point);
+			}
+
+			// 隣接する2点を結ぶ線分を追加
+			for (size_t i = 0; i < pointsDrawing.size() - 1; ++i) {
+				lineRenderer_->AddLine(pointsDrawing[i], pointsDrawing[i + 1], railTrackColor_);
+			}
+
+			// 制御点を描画
+			if (showControlPoints_) {
+				DrawControlPoints();
+			}
+
+			// 現在のカメラ位置での視錐台を動的に追加
+			GenerateViewFrustumLines();
+		}
+
+		// 描画実行
 		lineRenderer_->Draw(viewProjectionMatrix);
 	}
 }

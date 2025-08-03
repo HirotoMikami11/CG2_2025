@@ -107,8 +107,8 @@ void PlayerReticle::ConvertGamePadToWorldReticle(const Matrix4x4& viewProjection
 	posNear_ = Vector3(spritePos.x, spritePos.y, 0.0f);
 	posFar_ = Vector3(spritePos.x, spritePos.y, 1.0f);
 
-	posNear_ = Matrix4x4Transform(posNear_, matInverseVPV);
-	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
+	posNear_ = Transform(posNear_, matInverseVPV);
+	posFar_ = Transform(posFar_, matInverseVPV);
 
 	Vector3 direction = Normalize(posFar_ - posNear_);
 	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticleGamepad_);
@@ -148,8 +148,8 @@ void PlayerReticle::ConvertKeyboardToWorldReticle(const Matrix4x4& viewProjectio
 	posNear_ = Vector3(spritePos.x, spritePos.y, 0.0f);
 	posFar_ = Vector3(spritePos.x, spritePos.y, 1.0f);
 
-	posNear_ = Matrix4x4Transform(posNear_, matInverseVPV);
-	posFar_ = Matrix4x4Transform(posFar_, matInverseVPV);
+	posNear_ = Transform(posNear_, matInverseVPV);
+	posFar_ = Transform(posFar_, matInverseVPV);
 
 	Vector3 direction = Normalize(posFar_ - posNear_);
 	spritePosition_ = posNear_ + (direction * kDistancePlayerTo3DReticleKeyboard_);
