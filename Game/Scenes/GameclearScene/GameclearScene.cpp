@@ -152,7 +152,8 @@ void GameclearScene::InitializeGameObjects() {
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
-	directionalLight_.SetIntensity(0.2f);
+	directionalLight_.SetDirection({ -1.0f,-0.59f,-1.0f });
+	directionalLight_.SetIntensity(0.65f);
 }
 
 void GameclearScene::Update() {
