@@ -57,8 +57,8 @@ public:
 
 private:
 	// HP/ENシステム
-	float maxHP_ = 30.0f;				// 最大HP（酸素）			100に戻す
-	float currentHP_ = 30.0f;			// 現在のHP				100に戻す
+	float maxHP_ = 100.0f;				// 最大HP（酸素）			100に戻す
+	float currentHP_ = 100.0f;			// 現在のHP				100に戻す
 	float maxEN_ = 100.0f;				// 最大EN（エネルギー）
 	float currentEN_ = 100.0f;			 // 現在のEN
 

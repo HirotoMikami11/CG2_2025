@@ -65,7 +65,7 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 自機をカメラに背を向ける処理
 	FaceAwayFromCamera();
 
-	//攻撃方法の変更
+	//攻撃方法の変更(一時的に封印)
 	SwitchAttackMode();
 
 	// 攻撃処理

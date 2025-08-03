@@ -83,7 +83,7 @@ private:
 	BaseEnemy* target_ = nullptr;
 
 	// 生存時間
-	static const int32_t kLifeTime = 60 * 10; // 60fpsで10秒
+	static const int32_t kLifeTime = 60 * 10; // 60fps
 	int32_t deathTimer_ = kLifeTime;
 
 	// 死亡フラグ

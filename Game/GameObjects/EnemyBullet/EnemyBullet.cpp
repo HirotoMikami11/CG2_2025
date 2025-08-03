@@ -43,13 +43,11 @@ void EnemyBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, c
 }
 
 void EnemyBullet::Update(const Matrix4x4& viewProjectionMatrix) {
-	// フレーム時間（仮に60FPSで固定なら1/60秒）
-	const float deltaTime = 1.0f / 60.0f;
 
 	// ホーミング時間中のみホーミング処理
 	if (homingTimer_ > 0.0f) {
 		velocity_ = IsHoming();
-		homingTimer_ -= deltaTime;
+		homingTimer_ -- ;
 	}
 
 	// プレイヤーの方向を向くように回転
