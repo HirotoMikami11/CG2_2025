@@ -12,7 +12,7 @@ POP,-16.5,-17.5,128.5,RushingFish,Homing
 POP,-32,-34,147.5,RushingFish,Homing
 POP,-17.5,-22,201.5,RushingFish,Homing
 POP,-6.5,-20.5,183.5,RushingFish,Homing
-WAIT,300
+WAIT,360
 POP,163.36,-25.288,242.769,ShootingFish,Shooting
 WAIT,1000
 POP,298.523,23.843,-101.556,ShootingFish,Shooting
@@ -20,5 +20,7 @@ WAIT,600
 POP,309.523,23.843,-101.556,ShootingFish,Shooting
 WAIT,600
 POP,112.023,4.843,-70.556,ShootingFish,Shooting
+WAIT,120
+POP,112.023,-19.657,-67.056,ShootingFish,Shooting
 WAIT,120
 POP,112.023,32.343,-70.556,ShootingFish,Shooting

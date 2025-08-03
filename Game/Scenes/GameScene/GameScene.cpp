@@ -66,13 +66,13 @@ void GameScene::ConfigureOffscreenEffects() {
 
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
-		//depthFogEffect->SetEnabled(true);
+		depthFogEffect->SetEnabled(true);
 		depthFogEffect->SetFogColor({ 0.02f, 0.08f, 0.25f, 1.0f });
 		depthFogEffect->SetFogDistance(0.2f, 260.0f);//レールカメラの時は180程度
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
-		//	depthOfFieldEffect->SetEnabled(true);
+		depthOfFieldEffect->SetEnabled(true);
 		depthOfFieldEffect->SetFocusDistance(2.0f); // フォーカス距離
 		depthOfFieldEffect->SetFocusRange(30.0f); // フォーカス範囲
 
@@ -108,8 +108,9 @@ void GameScene::Initialize() {
 	cameraController_->RegisterCamera("rail", std::move(railCamera));
 
 	// デフォルトでレールカメラをアクティブに設定
-	//cameraController_->SetActiveCamera("rail");
-	railCamera_->StopMovement(); // レールカメラの動きを停止
+	cameraController_->SetActiveCamera("rail");
+	//railCamera_->StopMovement(); // レールカメラの動きを停止
+	railCamera_->SetLoopEnabled(false);//ループを停止
 
 	// レールカメラエディタの初期化
 	railCameraEditor_ = std::make_unique<RailCameraEditor>();
