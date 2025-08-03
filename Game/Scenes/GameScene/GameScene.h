@@ -28,6 +28,9 @@
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCameraEditor.h" 
 
+// 前方宣言（新しいRailCameraシステム）
+class RailCamera;
+
 /// <summary>
 /// ゲームシーン
 /// </summary>

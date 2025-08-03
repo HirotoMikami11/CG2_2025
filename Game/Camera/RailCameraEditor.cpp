@@ -7,27 +7,14 @@
 #include <format>
 #include <chrono>
 
-RailCameraEditor::RailCameraEditor()
-	: railCamera_(nullptr)
-	, selectedPointIndex_(-1)
-	, csvFilePath_("resources/CSV_Data/RailCameraPoints/Stage0")
-	, newPointPosition_{ 0.0f, 0.0f, 0.0f }
-	, isDirty_(false)
-	, editingNameIndex_(-1)
-{
-	// 名前編集バッファを初期化
+RailCameraEditor::RailCameraEditor() {
 	memset(nameEditBuffer_, 0, sizeof(nameEditBuffer_));
 }
 
 void RailCameraEditor::Initialize(RailCamera* railCamera) {
 	railCamera_ = railCamera;
-
-	// デフォルトの制御点を作成
 	CreateDefaultPoints();
-
-	// CSVファイルが存在する場合は読み込む
 	LoadFromCSV(csvFilePath_);
-
 	Logger::Log(Logger::GetStream(), "RailCameraEditor: Initialized\n");
 }
 
@@ -36,7 +23,6 @@ void RailCameraEditor::Update() {
 		return;
 	}
 
-	// データが変更された場合のみ適用
 	if (isDirty_) {
 		ApplyToRailCamera();
 		isDirty_ = false;
@@ -45,90 +31,360 @@ void RailCameraEditor::Update() {
 
 void RailCameraEditor::ImGui() {
 #ifdef _DEBUG
-	ImGui::Begin("Rail Camera Editor");
+	if (!ImGui::Begin("Rail Camera Editor")) {
+		ImGui::End();
+		return;
+	}
 
-	// === メインコントロール ===
-	ImGui::Text("Rail Camera Editor");
+	ImGui::Text("=== Rail Camera Editor ===");
+	ImGui::Separator();
 
+	// メインコントロール
+	ShowMainControls();
+	ImGui::Separator();
+
+	// 移動制御
+	ShowMovementControls();
+	ImGui::Separator();
+
+	// デバッグ機能（GameSceneから移動）
+	ShowDebugControls();
+	ImGui::Separator();
+
+	// 制御点リスト
+	ShowControlPointsList();
+	ImGui::Separator();
+
+	// ファイル操作
+	ShowFileOperations();
+	ImGui::Separator();
+
+	// クイックアクション
+	ShowQuickActions();
+
+	ImGui::End();
+#endif
+}
+
+void RailCameraEditor::ShowMainControls() {
+	ImGui::Text("Main Controls");
+
+	if (!railCamera_) {
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "No Rail Camera Connected!");
+		return;
+	}
+
+	// カメラリセット
 	if (ImGui::Button("Reset Camera Position")) {
-		if (railCamera_) {
-			railCamera_->ResetPosition();
-		}
+		railCamera_->ResetPosition();
 	}
 
 	ImGui::Text("Points: %zu", points_.size());
+}
 
-	ImGui::Separator();
+void RailCameraEditor::ShowMovementControls() {
+	if (ImGui::CollapsingHeader("Camera Movement")) {
+		if (!railCamera_ || !railCamera_->GetMovement()) {
+			return;
+		}
 
-	// === カメラ制御設定 ===
-	if (railCamera_) {
-		ImGui::Text("Camera Controls:");
+		auto* movement = railCamera_->GetMovement();
 
 		// 移動制御
-		bool isMoving = railCamera_->IsMoving();
+		bool isMoving = movement->IsMoving();
 		if (ImGui::Checkbox("Moving", &isMoving)) {
 			if (isMoving) {
-				railCamera_->StartMovement();
+				movement->StartMovement();
 			} else {
-				railCamera_->StopMovement();
+				movement->StopMovement();
 			}
 		}
 
 		ImGui::SameLine();
 		if (ImGui::Button("Start")) {
-			railCamera_->StartMovement();
+			movement->StartMovement();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Stop")) {
-			railCamera_->StopMovement();
+			movement->StopMovement();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Reset")) {
-			railCamera_->ResetPosition();
+			movement->ResetPosition();
 		}
 
 		// ループ設定
-		bool loopEnabled = railCamera_->IsLoopEnabled();
+		bool loopEnabled = movement->IsLoopEnabled();
 		if (ImGui::Checkbox("Loop Movement", &loopEnabled)) {
-			railCamera_->SetLoopEnabled(loopEnabled);
+			movement->SetLoopEnabled(loopEnabled);
 		}
 
 		// 速度設定
-		float speed = railCamera_->GetSpeed();
-		if (ImGui::DragFloat("Speed", &speed, (1.0f / 6000.0f), (1.0f / 6000.0f), 0.00001f)) {
-			railCamera_->SetSpeed(speed);
+		float speed = movement->GetSpeed();
+		if (ImGui::DragFloat("Speed", &speed, (1.0f / 6000.0f), (1.0f / 6000.0f), 0.001f, "%.9f")) {
+			movement->SetSpeed(speed);
 		}
-		ImGui::Text("Speed: %.9f", speed);
 
-		// 進行度表示と設定
-		float progress = railCamera_->GetProgress();
+		// 等間隔移動
+		bool uniformSpeed = movement->IsUniformSpeedEnabled();
+		if (ImGui::Checkbox("Uniform Speed", &uniformSpeed)) {
+			movement->SetUniformSpeedEnabled(uniformSpeed);
+			if (uniformSpeed && railCamera_->GetTrack()) {
+				railCamera_->GetTrack()->BuildLengthTable();
+			}
+		}
+
+		// 先読み距離
+		float lookAhead = movement->GetLookAheadDistance();
+		if (ImGui::DragFloat("Look Ahead Distance", &lookAhead, 0.001f)) {
+			movement->SetLookAheadDistance(lookAhead);
+		}
+
+		// 進行度表示
+		float progress = movement->GetProgress();
 		if (ImGui::SliderFloat("Progress", &progress, 0.0f, 1.0f)) {
-			railCamera_->SetProgress(progress);
+			movement->SetProgress(progress);
 		}
+	}
+}
 
+void RailCameraEditor::ShowDebugControls() {
+	if (ImGui::CollapsingHeader("Debug Controls (from GameScene)")) {
+		HandleFrameNavigation();
 		ImGui::Separator();
+		HandleProgressControl();
+		ImGui::Separator();
+		HandleVisualizationSettings();
+		ImGui::Separator();
+		HandleDebugInfo();
+	}
+}
+
+void RailCameraEditor::HandleFrameNavigation() {
+	ImGui::Text("=== Frame Navigation ===");
+
+	if (!railCamera_ || !railCamera_->GetMovement()) {
+		return;
 	}
 
-	// === 制御点リスト ===
+	auto* movement = railCamera_->GetMovement();
+	int currentFrame = movement->GetCurrentFrameFromStart();
+	int maxFrames = movement->GetMaxFrames();
+
+	ImGui::Text("Current Frame: %d / %d", currentFrame, maxFrames);
+	ImGui::Text("Progress: %.3f (%.1f%%)", movement->GetProgress(), movement->GetProgress() * 100.0f);
+
+	// クイックジャンプボタン
+	if (ImGui::Button("0%")) {
+		movement->SetProgress(0.0f);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("25%")) {
+		movement->SetProgress(0.25f);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("50%")) {
+		movement->SetProgress(0.5f);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("75%")) {
+		movement->SetProgress(0.75f);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("100%")) {
+		movement->SetProgress(1.0f);
+		movement->StopMovement();
+	}
+
+	// フレーム数入力
+	ImGui::PushItemWidth(120);
+	if (ImGui::InputInt("Target Frame", &debugFrameInput_)) {
+		debugFrameInput_ = std::clamp(debugFrameInput_, 0, maxFrames);
+	}
+	ImGui::PopItemWidth();
+
+	ImGui::SameLine();
+	if (ImGui::Button("Jump")) {
+		movement->SetProgressFromFrame(debugFrameInput_);
+		movement->StopMovement();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Current->Input")) {
+		debugFrameInput_ = currentFrame;
+	}
+
+	// フレームステップ操作
+	if (ImGui::Button("-10")) {
+		int newFrame = std::max(0, currentFrame - 10);
+		movement->SetProgressFromFrame(newFrame);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("-1")) {
+		int newFrame = std::max(0, currentFrame - 1);
+		movement->SetProgressFromFrame(newFrame);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+1")) {
+		int newFrame = std::min(maxFrames, currentFrame + 1);
+		movement->SetProgressFromFrame(newFrame);
+		movement->StopMovement();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+10")) {
+		int newFrame = std::min(maxFrames, currentFrame + 10);
+		movement->SetProgressFromFrame(newFrame);
+		movement->StopMovement();
+	}
+
+	// 時間換算表示
+	ImGui::Text("=== Time (60FPS) ===");
+	float seconds = currentFrame / 60.0f;
+	int minutes = static_cast<int>(seconds) / 60;
+	float remainingSeconds = seconds - (minutes * 60);
+	ImGui::Text("Current: %d:%05.2f", minutes, remainingSeconds);
+
+	float maxSeconds = maxFrames / 60.0f;
+	int maxMinutes = static_cast<int>(maxSeconds) / 60;
+	float maxRemainingSeconds = maxSeconds - (maxMinutes * 60);
+	ImGui::Text("Total: %d:%05.2f", maxMinutes, maxRemainingSeconds);
+}
+
+void RailCameraEditor::HandleProgressControl() {
+	ImGui::Text("=== Precise Progress Control ===");
+
+	if (!railCamera_ || !railCamera_->GetMovement()) {
+		return;
+	}
+
+	auto* movement = railCamera_->GetMovement();
+	progressSlider_ = movement->GetProgress();
+
+	if (ImGui::SliderFloat("Precise Progress", &progressSlider_, 0.0f, 1.0f, "%.4f")) {
+		movement->SetProgress(progressSlider_);
+		movement->StopMovement();
+	}
+}
+
+void RailCameraEditor::HandleVisualizationSettings() {
+	ImGui::Text("=== Visualization ===");
+
+	if (!railCamera_ || !railCamera_->GetDebugger()) {
+		return;
+	}
+
+	auto* debugger = railCamera_->GetDebugger();
+
+	// 視錐台表示
+	bool showFrustum = debugger->IsViewFrustumVisible();
+	if (ImGui::Checkbox("Show View Frustum", &showFrustum)) {
+		debugger->SetViewFrustumVisible(showFrustum);
+	}
+
+	if (showFrustum) {
+		Vector4 frustumColor = debugger->GetViewFrustumColor();
+		if (ImGui::ColorEdit4("Frustum Color", &frustumColor.x)) {
+			debugger->SetViewFrustumColor(frustumColor);
+		}
+
+		float frustumDistance = debugger->GetViewFrustumDistance();
+		if (ImGui::DragFloat("Frustum Distance", &frustumDistance, 1.0f, 5.0f, 200.0f)) {
+			debugger->SetViewFrustumDistance(frustumDistance);
+		}
+	}
+
+	// 軌道表示設定
+	ImGui::Separator();
+	bool showTrack = debugger->IsRailTrackVisible();
+	if (ImGui::Checkbox("Show Rail Track", &showTrack)) {
+		debugger->SetRailTrackVisible(showTrack);
+	}
+
+	if (showTrack) {
+		Vector4 trackColor = debugger->GetRailTrackColor();
+		if (ImGui::ColorEdit4("Track Color", &trackColor.x)) {
+			debugger->SetRailTrackColor(trackColor);
+			MarkDirty();
+		}
+
+		int segments = debugger->GetRailTrackSegments();
+		if (ImGui::DragInt("Track Segments", &segments, 1, 10, 500)) {
+			debugger->SetRailTrackSegments(segments);
+			MarkDirty();
+		}
+	}
+
+	// 制御点表示設定
+	ImGui::Separator();
+	bool showPoints = debugger->IsControlPointsVisible();
+	if (ImGui::Checkbox("Show Control Points", &showPoints)) {
+		debugger->SetControlPointsVisible(showPoints);
+		MarkDirty();
+	}
+
+	if (showPoints) {
+		Vector4 pointColor = debugger->GetControlPointColor();
+		if (ImGui::ColorEdit4("Point Color", &pointColor.x)) {
+			debugger->SetControlPointColor(pointColor);
+			MarkDirty();
+		}
+
+		Vector4 selectedColor = debugger->GetSelectedPointColor();
+		if (ImGui::ColorEdit4("Selected Color", &selectedColor.x)) {
+			debugger->SetSelectedPointColor(selectedColor);
+			MarkDirty();
+		}
+
+		float pointSize = debugger->GetControlPointSize();
+		if (ImGui::DragFloat("Point Size", &pointSize, 0.01f, 0.1f, 2.0f)) {
+			debugger->SetControlPointSize(pointSize);
+			MarkDirty();
+		}
+	}
+}
+
+void RailCameraEditor::HandleDebugInfo() {
+	ImGui::Text("=== Debug Information ===");
+
+	if (!railCamera_) {
+		return;
+	}
+
+	Vector3 cameraPos = railCamera_->GetPosition();
+	Vector3 cameraRot = railCamera_->GetRotation();
+	Vector3 forwardDir = railCamera_->GetForwardDirection();
+
+	ImGui::Text("Position: (%.2f, %.2f, %.2f)", cameraPos.x, cameraPos.y, cameraPos.z);
+	ImGui::Text("Rotation: (%.3f, %.3f, %.3f)", cameraRot.x, cameraRot.y, cameraRot.z);
+	ImGui::Text("Forward: (%.3f, %.3f, %.3f)", forwardDir.x, forwardDir.y, forwardDir.z);
+
+	if (railCamera_->GetTrack()) {
+		ImGui::Text("Total Length: %.2f", railCamera_->GetTrack()->GetTotalLength());
+	}
+}
+
+void RailCameraEditor::ShowControlPointsList() {
 	ImGui::Text("Control Points:");
 
 	if (ImGui::BeginChild("PointsList", ImVec2(0, 200), true)) {
 		for (int i = 0; i < static_cast<int>(points_.size()); ++i) {
 			ImGui::PushID(i);
 
-			// 選択状態の表示（色を変更）
 			bool isSelected = (selectedPointIndex_ == i);
 			if (isSelected) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.2f, 1.0f)); // 黄色
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.2f, 1.0f));
 			}
 
-			// 制御点の情報表示と編集
 			std::string headerLabel = std::format("[{}] {}", i, points_[i].GetName());
 			if (ImGui::CollapsingHeader(headerLabel.c_str())) {
-
 				// 名前編集
 				if (editingNameIndex_ == i) {
-					// 編集中の場合
 					ImGui::InputText("##EditName", nameEditBuffer_, sizeof(nameEditBuffer_));
 
 					ImGui::SameLine();
@@ -141,7 +397,6 @@ void RailCameraEditor::ImGui() {
 						CancelNameEdit();
 					}
 				} else {
-					// 通常表示
 					ImGui::Text("Name: %s", points_[i].GetName().c_str());
 					ImGui::SameLine();
 					if (ImGui::Button("Edit Name")) {
@@ -156,24 +411,21 @@ void RailCameraEditor::ImGui() {
 					MarkDirty();
 				}
 
-				// 選択ボタン
+				// 操作ボタン
 				if (ImGui::Button("Select")) {
 					selectedPointIndex_ = (selectedPointIndex_ == i) ? -1 : i;
-					// 制御点の色を更新するためにRailCameraを更新
-					if (railCamera_) {
-						railCamera_->SetSelectedPointIndex(selectedPointIndex_);
+					if (railCamera_ && railCamera_->GetDebugger()) {
+						railCamera_->GetDebugger()->SetSelectedPointIndex(selectedPointIndex_);
 						railCamera_->GenerateRailTrackLines();
 					}
 				}
 
 				ImGui::SameLine();
-				// カメラ移動ボタン
 				if (ImGui::Button("Move Camera Here")) {
 					MoveToPoint(i);
 				}
 
 				ImGui::SameLine();
-				// 削除ボタン
 				if (ImGui::Button("Delete")) {
 					SafeRemovePoint(i);
 					MarkDirty();
@@ -181,7 +433,7 @@ void RailCameraEditor::ImGui() {
 					if (isSelected) {
 						ImGui::PopStyleColor();
 					}
-					break; // ループを抜ける
+					break;
 				}
 			}
 
@@ -194,9 +446,8 @@ void RailCameraEditor::ImGui() {
 	}
 	ImGui::EndChild();
 
+	// 制御点追加
 	ImGui::Separator();
-
-	// === 制御点追加 ===
 	ImGui::Text("Add New Point:");
 	ImGui::DragFloat3("Position", &newPointPosition_.x, 0.1f);
 
@@ -216,75 +467,11 @@ void RailCameraEditor::ImGui() {
 		points_.emplace_back(Vector3{ 0.0f, 0.0f, 0.0f });
 		MarkDirty();
 	}
+}
 
-	ImGui::Separator();
-
-	// === 選択されたポイントの詳細編集 ===
-	if (selectedPointIndex_ >= 0 && IsValidIndex(selectedPointIndex_)) {
-		ImGui::Text("Selected Point [%d]:", selectedPointIndex_);
-
-		// 選択されたポイントの背景色を変更
-		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.3f, 0.3f, 0.0f, 0.3f)); // 薄い黄色背景
-
-		RailPoint& selectedPoint = points_[selectedPointIndex_];
-
-		// 名前編集（選択されたポイント用）
-		if (editingNameIndex_ == selectedPointIndex_) {
-			ImGui::InputText("Selected Name", nameEditBuffer_, sizeof(nameEditBuffer_));
-
-			ImGui::SameLine();
-			if (ImGui::Button("OK##Selected") || ImGui::IsKeyPressed(ImGuiKey_Enter)) {
-				ConfirmNameEdit();
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Button("Cancel##Selected") || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-				CancelNameEdit();
-			}
-		} else {
-			ImGui::Text("Name: %s", selectedPoint.GetName().c_str());
-			ImGui::SameLine();
-			if (ImGui::Button("Edit Name##Selected")) {
-				StartNameEdit(selectedPointIndex_);
-			}
-		}
-
-		// 座標編集
-		Vector3 pos = selectedPoint.GetPosition();
-		if (ImGui::DragFloat3("Selected Position", &pos.x, 0.1f)) {
-			selectedPoint.SetPosition(pos);
-			MarkDirty();
-		}
-
-		ImGui::PopStyleColor(); // 背景色をリセット
-
-		// 操作ボタン
-		if (ImGui::Button("Move Camera to Selected")) {
-			MoveToPoint(selectedPointIndex_);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Update from Camera")) {
-			if (railCamera_) {
-				selectedPoint.SetPosition(railCamera_->GetPosition());
-				MarkDirty();
-			}
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Deselect")) {
-			selectedPointIndex_ = -1;
-			if (railCamera_) {
-				railCamera_->SetSelectedPointIndex(-1);
-				railCamera_->GenerateRailTrackLines();
-			}
-		}
-
-		ImGui::Separator();
-	}
-
-	// === ファイル操作 ===
+void RailCameraEditor::ShowFileOperations() {
 	ImGui::Text("File Operations:");
 
-	// ファイルパス入力
 	char pathBuffer[512];
 	strcpy_s(pathBuffer, sizeof(pathBuffer), csvFilePath_.c_str());
 	if (ImGui::InputText("CSV File Path", pathBuffer, sizeof(pathBuffer))) {
@@ -311,9 +498,42 @@ void RailCameraEditor::ImGui() {
 		std::string filename = std::format("resources/CSV_Data/RailCameraPoints/railCameraPoints_{}.csv", timestamp);
 		SaveToCSV(filename);
 	}
+}
 
-	ImGui::End();
-#endif
+void RailCameraEditor::ShowQuickActions() {
+	if (ImGui::CollapsingHeader("Quick Actions")) {
+		if (ImGui::Button("Regenerate Track")) {
+			if (railCamera_ && railCamera_->GetDebugger()) {
+				railCamera_->GenerateRailTrackLines();
+			}
+		}
+
+		if (selectedPointIndex_ >= 0 && IsValidIndex(selectedPointIndex_)) {
+			ImGui::Separator();
+			ImGui::Text("Selected Point [%d]:", selectedPointIndex_);
+
+			RailPoint& selectedPoint = points_[selectedPointIndex_];
+
+			if (ImGui::Button("Move Camera to Selected")) {
+				MoveToPoint(selectedPointIndex_);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Update from Camera")) {
+				if (railCamera_) {
+					selectedPoint.SetPosition(railCamera_->GetPosition());
+					MarkDirty();
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Deselect")) {
+				selectedPointIndex_ = -1;
+				if (railCamera_ && railCamera_->GetDebugger()) {
+					railCamera_->GetDebugger()->SetSelectedPointIndex(-1);
+					railCamera_->GenerateRailTrackLines();
+				}
+			}
+		}
+	}
 }
 
 bool RailCameraEditor::LoadFromCSV(const std::string& filename) {
@@ -339,7 +559,6 @@ bool RailCameraEditor::LoadFromCSV(const std::string& filename) {
 	while (std::getline(file, line)) {
 		lineNumber++;
 
-		// コメント行や空行をスキップ
 		if (line.empty() || line[0] == '#' || line.find("//") == 0) {
 			continue;
 		}
@@ -348,15 +567,12 @@ bool RailCameraEditor::LoadFromCSV(const std::string& filename) {
 		std::string token;
 		std::vector<std::string> tokens;
 
-		// カンマ区切りでトークンを分割
 		while (std::getline(lineStream, token, ',')) {
-			// 前後の空白を削除
 			token.erase(0, token.find_first_not_of(" \t"));
 			token.erase(token.find_last_not_of(" \t") + 1);
 			tokens.push_back(token);
 		}
 
-		// 最低3つの値（x, y, z）が必要
 		if (tokens.size() < 3) {
 			continue;
 		}
@@ -367,13 +583,10 @@ bool RailCameraEditor::LoadFromCSV(const std::string& filename) {
 			position.y = std::stof(tokens[1]);
 			position.z = std::stof(tokens[2]);
 
-			// 名前が指定されている場合は使用、なければデフォルト
 			std::string name = (tokens.size() > 3) ? tokens[3] : "";
-
 			points_.emplace_back(position, name);
 
 		} catch (const std::exception&) {
-			// エラーは無視して次の行へ
 			continue;
 		}
 	}
@@ -395,10 +608,8 @@ bool RailCameraEditor::SaveToCSV(const std::string& filename) {
 		return false;
 	}
 
-	// ヘッダー行
 	file << "x,y,z,name\n";
 
-	// 制御点データ
 	for (const auto& point : points_) {
 		const Vector3& pos = point.GetPosition();
 		file << std::format("{:.6f},{:.6f},{:.6f},{}\n",
@@ -421,8 +632,6 @@ void RailCameraEditor::MoveToPoint(int pointIndex) {
 
 	const Vector3& targetPosition = points_[pointIndex].GetPosition();
 	railCamera_->SetPosition(targetPosition);
-
-	// カメラの移動を停止して、現在位置から操作できるようにする
 	railCamera_->StopMovement();
 }
 
@@ -447,7 +656,6 @@ std::vector<Vector3> RailCameraEditor::ConvertToVector3List() const {
 }
 
 void RailCameraEditor::CreateDefaultPoints() {
-	// デフォルトは最初のパスから持ってくる
 	if (LoadFromCSV(csvFilePath_)) {
 		MarkDirty();
 	}
@@ -458,17 +666,15 @@ void RailCameraEditor::SafeRemovePoint(int index) {
 		return;
 	}
 
-	// 選択中の点を削除する場合は選択を解除
 	if (selectedPointIndex_ == index) {
 		selectedPointIndex_ = -1;
-		if (railCamera_) {
-			railCamera_->SetSelectedPointIndex(-1);
+		if (railCamera_ && railCamera_->GetDebugger()) {
+			railCamera_->GetDebugger()->SetSelectedPointIndex(-1);
 		}
 	} else if (selectedPointIndex_ > index) {
 		selectedPointIndex_--;
 	}
 
-	// 編集中の点を削除する場合は編集を終了
 	if (editingNameIndex_ == index) {
 		editingNameIndex_ = -1;
 	} else if (editingNameIndex_ > index) {
@@ -492,8 +698,6 @@ void RailCameraEditor::StartNameEdit(int pointIndex) {
 	}
 
 	editingNameIndex_ = pointIndex;
-
-	// 現在の名前をバッファにコピー
 	const std::string& currentName = points_[pointIndex].GetName();
 	strcpy_s(nameEditBuffer_, sizeof(nameEditBuffer_), currentName.c_str());
 }

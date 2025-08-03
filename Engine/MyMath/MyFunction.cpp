@@ -63,50 +63,53 @@ void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProje
 
 }
 
-Vector3 CatmullRomPosition(const std::vector< Vector3>& points, float t) {
 
-	// Catmull-Romスプラインには少なくとも4つの点が必要
-	assert(points.size() >= 4 && "制禦点は4点以上必要です");
-
-	// 区間数は制御店の飾宇-1
-	size_t division = points.size() - 1;
-	// 1区間の長さ(全体を1.0賭した時の割合)
-	float areaWidth = 1.0f / division;
-
-	// 区間番号
-	size_t index = static_cast<size_t>(t / areaWidth);
-	// 区間番号が上限を超えないようにする
-	index = std::clamp(index, static_cast<size_t>(0), division - 1);
-
-	// 区間内の支店を0.0f、終点を1.0fとする時の現在位置
-	float t_2 = (t - areaWidth * index) / areaWidth;
-	t_2 = std::clamp(t_2, 0.0f, 1.0f);
-
-
-	// ４店分のインデックス
-	size_t index0 = index - 1;
-	size_t index1 = index;
-	size_t index2 = index + 1;
-	size_t index3 = index + 2;
-
-	// 最初と最後
-	if (index == 0) {
-		index0 = index1;
+Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t) {
+	if (points.size() < 4) {
+		return Vector3{ 0.0f, 0.0f, 0.0f };
 	}
 
-	// 最後
-	if (index3 >= points.size()) {
-		index3 = index2;
+	// 全体のセグメント数
+	int numSegments = static_cast<int>(points.size()) - 3;
+
+	// tからセグメントインデックスとローカルtを計算
+	float scaledT = t * numSegments;
+	int segmentIndex = static_cast<int>(scaledT);
+	float localT = scaledT - segmentIndex;
+
+	// 最後のセグメントの場合の調整
+	if (segmentIndex >= numSegments) {
+		segmentIndex = numSegments - 1;
+		localT = 1.0f;
 	}
 
-	// 4点の座標
-	const Vector3 p0 = points[index0];
-	const Vector3 p1 = points[index1];
-	const Vector3 p2 = points[index2];
-	const Vector3 p3 = points[index3];
+	// 4つの制御点を取得
+	const Vector3& p0 = points[segmentIndex];
+	const Vector3& p1 = points[segmentIndex + 1];
+	const Vector3& p2 = points[segmentIndex + 2];
+	const Vector3& p3 = points[segmentIndex + 3];
 
-	// Catmull-Romスプライン曲線の補間を行う
-	return CatmullRomInterpolation(p0, p1, p2, p3, t_2);
+	// CatmullRom補間の計算
+	float t2 = localT * localT;
+	float t3 = t2 * localT;
+
+	Vector3 result;
+	result.x = 0.5f * ((2.0f * p1.x) +
+		(-p0.x + p2.x) * localT +
+		(2.0f * p0.x - 5.0f * p1.x + 4.0f * p2.x - p3.x) * t2 +
+		(-p0.x + 3.0f * p1.x - 3.0f * p2.x + p3.x) * t3);
+
+	result.y = 0.5f * ((2.0f * p1.y) +
+		(-p0.y + p2.y) * localT +
+		(2.0f * p0.y - 5.0f * p1.y + 4.0f * p2.y - p3.y) * t2 +
+		(-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t3);
+
+	result.z = 0.5f * ((2.0f * p1.z) +
+		(-p0.z + p2.z) * localT +
+		(2.0f * p0.z - 5.0f * p1.z + 4.0f * p2.z - p3.z) * t2 +
+		(-p0.z + 3.0f * p1.z - 3.0f * p2.z + p3.z) * t3);
+
+	return result;
 }
 
 /// CatmullRomスプライン曲線の補間

@@ -567,6 +567,15 @@
     <ClCompile Include="Game\Scenes\GameclearScene\GameclearScene.cpp">
       <Filter>Game\Scenes\GameClearScene</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Camera\RailCameraDebugger.cpp">
+      <Filter>Game\RailCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Camera\RailCameraMovement.cpp">
+      <Filter>Game\RailCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Camera\RailTrack.cpp">
+      <Filter>Game\RailCamera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -939,6 +948,15 @@
     </ClInclude>
     <ClInclude Include="Game\Scenes\GameclearScene\GameclearScene.h">
       <Filter>Game\Scenes\GameClearScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera\RailTrack.h">
+      <Filter>Game\RailCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera\RailCameraDebugger.h">
+      <Filter>Game\RailCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera\RailCameraMovement.h">
+      <Filter>Game\RailCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,24 +6,17 @@
 #include <memory>
 
 /// <summary>
-/// レールカメラの軌道エディタ
+/// レールカメラの統合エディタ
+/// すべてのImGui操作を統一して管理
 /// </summary>
 class RailCameraEditor {
 public:
-	/// <summary>
-	/// コンストラクタ
-	/// </summary>
 	RailCameraEditor();
-
-	/// <summary>
-	/// デストラクタ
-	/// </summary>
 	~RailCameraEditor() = default;
 
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	/// <param name="railCamera">対象のレールカメラ</param>
 	void Initialize(RailCamera* railCamera);
 
 	/// <summary>
@@ -32,121 +25,63 @@ public:
 	void Update();
 
 	/// <summary>
-	/// ImGui表示
+	/// 統合ImGui表示
 	/// </summary>
 	void ImGui();
 
 	/// <summary>
 	/// CSVファイルから読み込み
 	/// </summary>
-	/// <param name="filename">ファイル名</param>
-	/// <returns>成功したかどうか</returns>
 	bool LoadFromCSV(const std::string& filename);
 
 	/// <summary>
 	/// CSVファイルに保存
 	/// </summary>
-	/// <param name="filename">ファイル名</param>
-	/// <returns>成功したかどうか</returns>
 	bool SaveToCSV(const std::string& filename);
 
-	/// <summary>
-	/// 選択したポイントにカメラを移動
-	/// </summary>
-	/// <param name="pointIndex">ポイントのインデックス</param>
-	void MoveToPoint(int pointIndex);
-
-	// Getter
-	int GetSelectedPointIndex() const { return selectedPointIndex_; }
-
 private:
-	/// <summary>
-	/// 制御点リスト
-	/// </summary>
-	std::vector<RailPoint> points_;
+	// サブセクションの表示
+	void ShowMainControls();
+	void ShowMovementControls();
+	void ShowDebugControls();
+	void ShowControlPointsList();
+	void ShowFileOperations();
+	void ShowQuickActions();
 
-	/// <summary>
-	/// 対象のレールカメラ
-	/// </summary>
-	RailCamera* railCamera_;
-
-	/// <summary>
-	/// 選択中の制御点インデックス
-	/// </summary>
-	int selectedPointIndex_;
-
-	/// <summary>
-	/// CSVファイルパス
-	/// </summary>
-	std::string csvFilePath_;
-
-	/// <summary>
-	/// 新しい点の座標
-	/// </summary>
-	Vector3 newPointPosition_;
-
-	/// <summary>
-	/// データが変更されたかどうかのフラグ
-	/// </summary>
-	bool isDirty_;
-
-	/// <summary>
-	/// 名前編集用バッファ
-	/// </summary>
-	char nameEditBuffer_[256];
-
-	/// <summary>
-	/// 名前編集中のポイントインデックス
-	/// </summary>
-	int editingNameIndex_;
-
-	/// <summary>
-	/// RailCameraに制御点を適用
-	/// </summary>
+	// 操作関数
+	void MoveToPoint(int pointIndex);
 	void ApplyToRailCamera();
-
-	/// <summary>
-	/// 制御点をVector3のリストに変換
-	/// </summary>
-	/// <returns>Vector3のリスト</returns>
 	std::vector<Vector3> ConvertToVector3List() const;
-
-	/// <summary>
-	/// デフォルトの制御点を生成
-	/// </summary>
 	void CreateDefaultPoints();
-
-	/// <summary>
-	/// 安全な制御点削除
-	/// </summary>
-	/// <param name="index">削除するインデックス</param>
 	void SafeRemovePoint(int index);
-
-	/// <summary>
-	/// 制御点の範囲チェック
-	/// </summary>
-	/// <param name="index">チェックするインデックス</param>
-	/// <returns>有効なインデックスかどうか</returns>
 	bool IsValidIndex(int index) const;
-
-	/// <summary>
-	/// データ変更フラグを設定
-	/// </summary>
 	void MarkDirty();
 
-	/// <summary>
-	/// 名前編集を開始
-	/// </summary>
-	/// <param name="pointIndex">編集するポイントのインデックス</param>
+	// 名前編集
 	void StartNameEdit(int pointIndex);
-
-	/// <summary>
-	/// 名前編集を確定
-	/// </summary>
 	void ConfirmNameEdit();
-
-	/// <summary>
-	/// 名前編集をキャンセル
-	/// </summary>
 	void CancelNameEdit();
+
+	// デバッグ操作（GameSceneから移動）
+	void HandleFrameNavigation();
+	void HandleProgressControl();
+	void HandleVisualizationSettings();
+	void HandleDebugInfo();
+
+	// メンバ変数
+	std::vector<RailPoint> points_;
+	RailCamera* railCamera_ = nullptr;
+
+	int selectedPointIndex_ = -1;
+	std::string csvFilePath_ = "resources/CSV_Data/RailCameraPoints/Stage0";
+	Vector3 newPointPosition_ = { 0.0f, 0.0f, 0.0f };
+	bool isDirty_ = false;
+
+	// 名前編集
+	char nameEditBuffer_[256];
+	int editingNameIndex_ = -1;
+
+	// デバッグ用（GameSceneから移動）
+	int debugFrameInput_ = 0;
+	float progressSlider_ = 0.0f;
 };
