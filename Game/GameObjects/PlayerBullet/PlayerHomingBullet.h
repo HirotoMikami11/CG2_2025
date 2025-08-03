@@ -93,8 +93,8 @@ private:
 	DirectXCommon* directXCommon_ = nullptr;
 
 	// ホーミング性能
-	static constexpr float kHomingStrength = 0.1f; // ホーミングの強さ（0.0f〜1.0f）
-	static constexpr float kMaxSpeed = 1.0f;       // 最大速度
+	static constexpr float kHomingStrength = 0.2f; // ホーミングの強さ（0.0f〜1.0f）
+	static constexpr float kMaxSpeed = 3.0f;       // 最大速度
 
 	/// <summary>
 	/// ホーミング処理

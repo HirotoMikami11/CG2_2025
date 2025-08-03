@@ -23,6 +23,8 @@ RailCamera::RailCamera()
 	, viewFrustumColor_({ 1.0f, 1.0f, 0.0f, 1.0f })   // 視錐台の色（黄色）
 	, viewFrustumDistance_(50.0f)                       // 視錐台描画距離
 	, debugFrameInput_(0)                               // デバッグ用フレーム入力
+	, isAtEnd_(false)                                   // 修正点2: 終端到達フラグ
+	, lastValidRotation_(Vector3{ 0.0f, 0.0f, 0.0f })  // 修正点2: 最後の有効な回転
 {
 }
 
@@ -54,6 +56,10 @@ void RailCamera::Initialize(const Vector3& position, const Vector3& rotation) {
 	lookAheadDistance_ = 0.01f;
 	uniformSpeedEnabled_ = true;
 
+	// 修正点2: 初期化時にフラグをリセット
+	isAtEnd_ = false;
+	lastValidRotation_ = rotation;
+
 	// 長さテーブルを構築
 	BuildLengthTable();
 
@@ -75,6 +81,11 @@ void RailCamera::UpdateCameraPosition() {
 		return;
 	}
 
+	// 修正点2: 終端フラグをリセット（移動が再開された場合）
+	if (isAtEnd_ && isMoving_) {
+		isAtEnd_ = false;
+	}
+
 	if (uniformSpeedEnabled_ && !lengthTable_.empty()) {
 		// 等間隔移動：距離ベースでの移動
 		float currentLength = t_ * totalLength_;
@@ -84,9 +95,11 @@ void RailCamera::UpdateCameraPosition() {
 		if (currentLength >= totalLength_) {
 			if (loopEnabled_) {
 				currentLength = 0.0f;  // ループ有効時のみリセット
+				isAtEnd_ = false;      // 修正点2: ループ時はフラグをリセット
 			} else {
 				currentLength = totalLength_;  // ループ無効時は終端で停止
 				isMoving_ = false;  // 移動を停止
+				isAtEnd_ = true;    // 修正点2: 終端到達フラグを設定
 			}
 		}
 
@@ -102,9 +115,11 @@ void RailCamera::UpdateCameraPosition() {
 		if (t_ >= 1.0f) {
 			if (loopEnabled_) {
 				t_ = 0.0f;  // ループ有効時のみリセット
+				isAtEnd_ = false;  // 修正点2: ループ時はフラグをリセット
 			} else {
 				t_ = 1.0f;  // ループ無効時は終端で停止
 				isMoving_ = false;  // 移動を停止
+				isAtEnd_ = true;    // 修正点2: 終端到達フラグを設定
 			}
 		}
 	}
@@ -112,14 +127,27 @@ void RailCamera::UpdateCameraPosition() {
 	// 現在の位置を計算
 	Vector3 currentPosition = CatmullRomPosition(controlPoints_, t_);
 
-	// 注視点を計算
-	Vector3 lookAtTarget = CalculateLookAtTarget(t_);
-
 	// カメラの位置を設定
 	transform_.SetPosition(currentPosition);
 
+	// 修正点2: 終端に到達している場合は最後の回転を維持
+	if (isAtEnd_) {
+		transform_.SetRotation(lastValidRotation_);
+		return;
+	}
+
+	// 注視点を計算
+	Vector3 lookAtTarget = CalculateLookAtTarget(t_);
+
 	// 視点から注視点への方向ベクトルを計算
 	Vector3 forward = lookAtTarget - currentPosition;
+
+	// 修正点2: 方向ベクトルが極小の場合は最後の回転を維持
+	if (Length(forward) < 0.001f) {
+		transform_.SetRotation(lastValidRotation_);
+		return;
+	}
+
 	forward = Normalize(forward);
 
 	// 方向ベクトルから回転角を計算
@@ -130,11 +158,23 @@ void RailCamera::UpdateCameraPosition() {
 	rotation.z = 0.0f;
 
 	transform_.SetRotation(rotation);
+
+	// 修正点2: 有効な回転として保存
+	lastValidRotation_ = rotation;
 }
 
 Vector3 RailCamera::GetForwardDirection() const {
 	if (controlPoints_.size() < 4) {
 		return Vector3{ 0.0f, 0.0f, 1.0f }; // デフォルト方向
+	}
+
+	// 修正点2: 終端に到達している場合は保存された回転から前方向を計算
+	if (isAtEnd_) {
+		Vector3 forward;
+		forward.x = std::sin(lastValidRotation_.y) * std::cos(lastValidRotation_.x);
+		forward.y = -std::sin(lastValidRotation_.x);
+		forward.z = std::cos(lastValidRotation_.y) * std::cos(lastValidRotation_.x);
+		return Normalize(forward);
 	}
 
 	// 現在の位置から少し先の位置を計算して進行方向を求める
@@ -148,9 +188,14 @@ Vector3 RailCamera::GetForwardDirection() const {
 
 	Vector3 forwardDirection = futurePos - currentPos;
 
-	// 方向ベクトルが極小の場合はデフォルト方向を返す
+	// 方向ベクトルが極小の場合は現在の回転から計算
 	if (Length(forwardDirection) < 0.001f) {
-		return Vector3{ 0.0f, 0.0f, 1.0f };
+		Vector3 currentRotation = transform_.GetRotation();
+		Vector3 forward;
+		forward.x = std::sin(currentRotation.y) * std::cos(currentRotation.x);
+		forward.y = -std::sin(currentRotation.x);
+		forward.z = std::cos(currentRotation.y) * std::cos(currentRotation.x);
+		return Normalize(forward);
 	}
 
 	return Normalize(forwardDirection);
@@ -241,6 +286,9 @@ float RailCamera::CalculateSegmentLength(float t1, float t2, int subdivisions) c
 
 void RailCamera::SetControlPoints(const std::vector<Vector3>& controlPoints) {
 	controlPoints_ = controlPoints;
+
+	// 修正点2: 制御点が変更されたら終端フラグをリセット
+	isAtEnd_ = false;
 
 	// 長さテーブルを再構築
 	if (uniformSpeedEnabled_) {
@@ -344,6 +392,20 @@ void RailCamera::UpdateCameraModel() {
 }
 
 Vector3 RailCamera::CalculateLookAtTarget(float currentT) {
+	// 修正点2: 終端近くでの特別処理
+	if (currentT >= 0.99f) {
+		// 終端近くでは、少し前の位置を参照して安定させる
+		float safeT = std::max(0.0f, currentT - 0.01f);
+		Vector3 currentPos = CatmullRomPosition(controlPoints_, currentT);
+		Vector3 prevPos = CatmullRomPosition(controlPoints_, safeT);
+
+		Vector3 direction = currentPos - prevPos;
+		if (Length(direction) > 0.001f) {
+			direction = Normalize(direction);
+			return currentPos + direction * (lookAheadDistance_ * totalLength_);
+		}
+	}
+
 	float lookAheadT = currentT + lookAheadDistance_;
 
 	if (uniformSpeedEnabled_ && !lengthTable_.empty()) {
@@ -352,6 +414,7 @@ Vector3 RailCamera::CalculateLookAtTarget(float currentT) {
 		float lookAheadLength = currentLength + (lookAheadDistance_ * totalLength_);
 
 		if (lookAheadLength >= totalLength_) {
+			// 修正点2: 終端を超える場合は、最後の有効な方向を使用
 			lookAheadLength = totalLength_;
 		}
 
@@ -364,6 +427,21 @@ Vector3 RailCamera::CalculateLookAtTarget(float currentT) {
 	}
 
 	return CatmullRomPosition(controlPoints_, lookAheadT);
+}
+
+// 修正点2: リセット機能を強化
+void RailCamera::ResetPosition() {
+	t_ = 0.0f;
+	isMoving_ = false;
+	isAtEnd_ = false;
+	lastValidRotation_ = initialRotation_;
+	transform_.SetRotation(lastValidRotation_);
+}
+
+// 修正点2: 進行度設定時に終端フラグも更新
+void RailCamera::SetProgress(float progress) {
+	t_ = std::clamp(progress, 0.0f, 1.0f);
+	isAtEnd_ = (t_ >= 1.0f && !loopEnabled_);
 }
 
 // ============================ デバッグ機能の実装 ============================
@@ -499,6 +577,12 @@ void RailCamera::ImGui() {
 	if (ImGui::DragFloat3("Rotation", &rotation.x, 0.01f)) {
 		transform_.SetRotation(rotation);
 	}
+
+	// 修正点2: デバッグ情報に終端状態を追加
+	ImGui::Text("At End: %s", isAtEnd_ ? "YES" : "NO");
+	ImGui::Text("Last Valid Rotation: (%.3f, %.3f, %.3f)",
+		lastValidRotation_.x, lastValidRotation_.y, lastValidRotation_.z);
+
 	ImGui::Separator();
 
 	// レール移動制御
@@ -737,6 +821,10 @@ void RailCamera::SetDefaultCamera(const Vector3& position, const Vector3& rotati
 	transform_.SetPosition(position);
 	transform_.SetRotation(rotation);
 	transform_.SetScale({ 1.0f, 1.0f, 1.0f });
+
+	// 修正点2: デフォルト設定時に終端フラグをリセット
+	isAtEnd_ = false;
+	lastValidRotation_ = rotation;
 
 	float fov = 0.45f;
 	float nearClip = 0.1f;

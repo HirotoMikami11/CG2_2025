@@ -2,6 +2,7 @@
 #include "GameObjects/Player/Player.h"
 #include "GameObjects/Enemy/BaseEnemy.h"
 #include "Managers/ImGui/ImGuiManager.h"
+#include "CameraController/CameraController.h"
 
 LockOn::LockOn() {
 }
@@ -41,6 +42,11 @@ void LockOn::Update(Player* player, std::list<std::unique_ptr<BaseEnemy>>& enemi
 	// プレイヤーのワールド座標を取得
 	Vector3 playerPositionWorld = player->GetWorldPosition();
 
+	// カメラの前方向ベクトルを取得（修正点1: カメラの向きに基づく前後判定）
+	CameraController* cameraController = CameraController::GetInstance();
+	Vector3 cameraForward = cameraController ? cameraController->GetForward() : Vector3{ 0.0f, 0.0f, 1.0f };
+	Vector3 cameraPosition = cameraController ? cameraController->GetPosition() : Vector3{ 0.0f, 0.0f, 0.0f };
+
 	// ロックオン判定処理
 	for (auto& enemy : enemies) {
 		// unique_ptrから生ポインタを取得
@@ -54,9 +60,17 @@ void LockOn::Update(Player* player, std::list<std::unique_ptr<BaseEnemy>>& enemi
 		// 敵のワールド座標を取得
 		Vector3 enemyPositionWorld = enemyPtr->GetWorldPosition();
 
-		// 簡易的な判定：Z座標で比較（カメラがZ軸負方向を向いている前提）
-		if (enemyPositionWorld.z <= playerPositionWorld.z) {
-			continue; // プレイヤーより手前（またはカメラの後ろ）にいる敵は除外
+		// 修正点1: カメラの向きに基づく前後判定
+		// カメラから敵への方向ベクトル
+		Vector3 cameraToEnemy = enemyPositionWorld - cameraPosition;
+		cameraToEnemy = Normalize(cameraToEnemy);
+
+		// カメラの前方向とのドット積で前後判定
+		float dotProduct = Dot(cameraForward, cameraToEnemy);
+
+		// ドット積が負またはほぼ0の場合は、敵がカメラの後ろまたは真横にいるので除外
+		if (dotProduct <= 0.1f) { // 少し余裕を持たせる
+			continue;
 		}
 
 		// ワールドからスクリーン座標に変換
@@ -111,8 +125,13 @@ void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<BaseEne
 	// 自機のワールド座標を取得する
 	Vector3 playerPositionWorld = player->GetWorldPosition();
 
-	// 死んだ敵、または自機より後ろに行った敵をマルチロックオンリストから除去
-	multiLockOnTargets.remove_if([&viewProjectionMatrix, &playerPositionWorld](BaseEnemy* enemy) {
+	// カメラの前方向ベクトルを取得（修正点1: マルチロックオンでも同様の修正）
+	CameraController* cameraController = CameraController::GetInstance();
+	Vector3 cameraForward = cameraController ? cameraController->GetForward() : Vector3{ 0.0f, 0.0f, 1.0f };
+	Vector3 cameraPosition = cameraController ? cameraController->GetPosition() : Vector3{ 0.0f, 0.0f, 0.0f };
+
+	// 死んだ敵、またはカメラの後ろに行った敵をマルチロックオンリストから除去
+	multiLockOnTargets.remove_if([&cameraForward, &cameraPosition](BaseEnemy* enemy) {
 		// 死んだ敵は除去
 		if (enemy == nullptr || enemy->IsDead()) {
 			return true;
@@ -121,9 +140,15 @@ void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<BaseEne
 		// 敵のワールド座標を取得
 		Vector3 enemyPositionWorld = enemy->GetWorldPosition();
 
-		// 簡易的な奥行き判定：Z座標で比較（カメラがZ軸負方向を向いている前提）
-		if (enemyPositionWorld.z <= playerPositionWorld.z) {
-			return true; // 自機より後ろに行った敵は除去
+		// 修正点1: カメラの向きに基づく前後判定
+		Vector3 cameraToEnemy = enemyPositionWorld - cameraPosition;
+		cameraToEnemy = Normalize(cameraToEnemy);
+
+		float dotProduct = Dot(cameraForward, cameraToEnemy);
+
+		// カメラの後ろまたは真横にいる敵は除去
+		if (dotProduct <= 0.1f) {
+			return true;
 		}
 
 		return false; // 除去しない
@@ -144,8 +169,14 @@ void LockOn::UpdateMultiLockOn(Player* player, std::list<std::unique_ptr<BaseEne
 		// 敵のワールド座標を取得
 		Vector3 enemyPositionWorld = enemyPtr->GetWorldPosition();
 
-		// 自機と敵の奥行きを比較して、自機より手前にいる場合は除外
-		if (enemyPositionWorld.z <= playerPositionWorld.z) {
+		// 修正点1: カメラの向きに基づく前後判定
+		Vector3 cameraToEnemy = enemyPositionWorld - cameraPosition;
+		cameraToEnemy = Normalize(cameraToEnemy);
+
+		float dotProduct = Dot(cameraForward, cameraToEnemy);
+
+		// カメラの後ろまたは真横にいる場合は除外
+		if (dotProduct <= 0.1f) {
 			continue;
 		}
 

@@ -77,7 +77,7 @@ public:
 	// レール移動制御
 	void StartMovement() { isMoving_ = true; }
 	void StopMovement() { isMoving_ = false; }
-	void ResetPosition() { t_ = 0.0f; isMoving_ = false; }
+	void ResetPosition(); // 修正点2: 実装を変更
 	bool IsMoving() const { return isMoving_; }
 
 	/// <summary>
@@ -153,7 +153,7 @@ public:
 	/// 移動進行度を設定
 	/// </summary>
 	/// <param name="progress">進行度（0.0-1.0）</param>
-	void SetProgress(float progress) { t_ = std::clamp(progress, 0.0f, 1.0f); }
+	void SetProgress(float progress); // 修正点2: 実装を変更
 
 	/// <summary>
 	/// 現在の進行方向ベクトルを取得
@@ -318,6 +318,10 @@ private:
 	Vector4 viewFrustumColor_ = { 1.0f, 1.0f, 0.0f, 1.0f }; // 視錐台の色（黄色）
 	float viewFrustumDistance_ = 50.0f;         // 視錐台描画距離
 	int debugFrameInput_ = 0;                   // デバッグ用フレーム入力
+
+	// 修正点2: 終端処理用の新しいメンバ変数
+	bool isAtEnd_ = false;                      // 終端到達フラグ
+	Vector3 lastValidRotation_ = { 0.0f, 0.0f, 0.0f }; // 最後の有効な回転
 
 	/// <summary>
 	/// カメラモデルの更新（描画時に呼び出し）
