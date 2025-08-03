@@ -202,12 +202,6 @@
     <Filter Include="Game\CollisionManager">
       <UniqueIdentifier>{b30ed82a-661a-440c-b89b-0eb2dc0de461}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\GameObjects\Ground">
-      <UniqueIdentifier>{870c0878-97d5-4239-8ee3-2ad5f21793c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\GameObjects\Skydome">
-      <UniqueIdentifier>{e391d72a-ce5f-49ea-a8dd-1bc2fa8655f7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\RailCamera">
       <UniqueIdentifier>{08e0c1ad-2fbd-425a-97db-968da7068377}</UniqueIdentifier>
     </Filter>
@@ -258,6 +252,21 @@
     </Filter>
     <Filter Include="Game\GameObjects\Enemy\State\Shooting">
       <UniqueIdentifier>{a774b15d-06c2-43ed-854b-5c626da96800}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Feild">
+      <UniqueIdentifier>{415e022d-9b4d-46ad-9ebd-4f72adeb0f74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Feild\Skydome">
+      <UniqueIdentifier>{e391d72a-ce5f-49ea-a8dd-1bc2fa8655f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Feild\Ground">
+      <UniqueIdentifier>{870c0878-97d5-4239-8ee3-2ad5f21793c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Feild\Editor">
+      <UniqueIdentifier>{0feba305-4d2a-4ff8-b3b3-c2f9466958da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Feild\Rock">
+      <UniqueIdentifier>{e1c73e5e-5b6d-4d00-8bf1-8a3ee6cf3391}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -445,10 +454,10 @@
       <Filter>Game\CollisionManager</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Skydome\Skydome.cpp">
-      <Filter>Game\GameObjects\Skydome</Filter>
+      <Filter>Game\Feild\Skydome</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Ground\Ground.cpp">
-      <Filter>Game\GameObjects\Ground</Filter>
+      <Filter>Game\Feild\Ground</Filter>
     </ClCompile>
     <ClCompile Include="Game\Camera\RailCamera.cpp">
       <Filter>Game\RailCamera</Filter>
@@ -545,6 +554,15 @@
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateRush.cpp">
       <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Rock\Rock.cpp">
+      <Filter>Game\Feild\Rock</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\FieldEditor\FieldEditor.cpp">
+      <Filter>Game\Feild\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\FieldEditor\FieldLoader.cpp">
+      <Filter>Game\Feild\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -806,10 +824,10 @@
       <Filter>Game\CollisionManager</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Skydome\Skydome.h">
-      <Filter>Game\GameObjects\Skydome</Filter>
+      <Filter>Game\Feild\Skydome</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Ground\Ground.h">
-      <Filter>Game\GameObjects\Ground</Filter>
+      <Filter>Game\Feild\Ground</Filter>
     </ClInclude>
     <ClInclude Include="Game\Camera\RailCamera.h">
       <Filter>Game\RailCamera</Filter>
@@ -906,6 +924,15 @@
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateHoming.h">
       <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Rock\Rock.h">
+      <Filter>Game\Feild\Rock</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\FieldEditor\FieldEditor.h">
+      <Filter>Game\Feild\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\FieldEditor\FieldLoader.h">
+      <Filter>Game\Feild\Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -26,7 +26,7 @@ void TitleScene::LoadResources() {
 	textureManager_ = TextureManager::GetInstance();
 
 	// モデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/TitleFont", "titleFont.obj", "titleFont");
+	modelManager_->LoadModel("resources/Model/FontModel", "titleFont.obj", "titleFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
 
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");

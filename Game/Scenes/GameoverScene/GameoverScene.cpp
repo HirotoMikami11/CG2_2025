@@ -26,9 +26,9 @@ void GameoverScene::LoadResources() {
 	textureManager_ = TextureManager::GetInstance();
 
 	// モデルを事前読み込み
-	modelManager_->LoadModel("resources/Model/TitleFont", "titleFont.obj", "titleFont");
+	modelManager_->LoadModel("resources/Model/FontModel", "gameoverFont.obj", "gameoverFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
-	//modelManager_->LoadModel("resources/Model/Ground", "ground.obj", "ground");
+
 
 	Logger::Log(Logger::GetStream(), "GameoverScene: Resources loaded successfully\n");
 }
@@ -94,7 +94,7 @@ void GameoverScene::Initialize() {
 
 void GameoverScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
-	///									タイトルフォント							///
+	///									gameocerフォント							///
 	///*-----------------------------------------------------------------------*///
 
 	Vector3 gameoverFontPos = { -0.09f, 1.06f, -0.59f };
@@ -102,7 +102,7 @@ void GameoverScene::InitializeGameObjects() {
 
 	//初期化、座標設定
 	gameoverFont_ = std::make_unique<Model3D>();
-	gameoverFont_->Initialize(directXCommon_, "titleFont");
+	gameoverFont_->Initialize(directXCommon_, "gameoverFont");
 	gameoverFont_->SetPosition(gameoverFontPos);
 	gameoverFont_->SetRotation(gameoverFontRote);
 
@@ -123,6 +123,33 @@ void GameoverScene::InitializeGameObjects() {
 	// 地面の生成
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize(directXCommon_, { 0.0f, 0.0f, 0.0f });
+
+	///*-----------------------------------------------------------------------*///
+	///								wiwa 								///
+	///*-----------------------------------------------------------------------*///
+// 地面の生成
+
+		rock_[0] = std::make_unique<Rock>();
+		rock_[0]->Initialize(directXCommon_, RockType::Rock1,
+			{-4.7f,-0.07f,0.0f},
+			{0.0f,0.0f,0.0f},
+			{1.44f,1.0f,1.0f}
+			);
+	
+		rock_[1] = std::make_unique<Rock>();
+		rock_[1]->Initialize(directXCommon_, RockType::Rock2,
+			{ 2.8f,0.73f,1.65f },
+			{ -0.9f,0.11f,0.0f },
+			{ 3.3f,1.8f,1.6f }
+			);
+
+		rock_[2] = std::make_unique<Rock>();
+		rock_[2]->Initialize(directXCommon_, RockType::Rock3,
+			{ 4.42f,0.4f,-4.2f },
+			{ 0.0f,0.0f,0.0f },
+			{ 1.0f,1.0f,1.0f }
+		);
+
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
@@ -142,7 +169,9 @@ void GameoverScene::UpdateGameObjects() {
 
 	// タイトルシーンに戻る
 	// スペースキーでゲームシーンへ遷移
-	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)) {
+	// Aボタンでゲームシーンへ遷移
+	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)||
+		InputManager::GetInstance()->IsGamePadButtonTrigger(InputManager::GamePadButton::A)) {
 		// フェードを使った遷移（ヘルパークラスを使用）
 		SceneTransitionHelper::FadeToScene("TitleScene", 1.0f);
 
@@ -159,7 +188,10 @@ void GameoverScene::UpdateGameObjects() {
 
 	// モデルの更新
 	gameoverFont_->Update(viewProjectionMatrix);
-
+	for (int i = 0; i < 3; i++)
+	{
+		rock_[i]->Update(viewProjectionMatrix);
+	}
 	//プレイヤー(置物)の更新
 	gameoverPlayer_->Update(viewProjectionMatrix);
 	ground_->Update(viewProjectionMatrix);
@@ -182,6 +214,10 @@ void GameoverScene::DrawGameObjects() {
 	//タイトルプレイヤー(置物)
 	gameoverPlayer_->Draw(directionalLight_);
 	ground_->Draw(directionalLight_);
+	for (int i = 0; i < 3; i++)
+	{
+		rock_[i]->Draw(directionalLight_);
+	}
 }
 
 void GameoverScene::ImGui() {
@@ -194,6 +230,10 @@ void GameoverScene::ImGui() {
 	gameoverPlayer_->ImGui();
 	ground_->ImGui();
 
+	for (int i = 0; i < 3; i++)
+	{
+		rock_[i]->ImGui();
+	}
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

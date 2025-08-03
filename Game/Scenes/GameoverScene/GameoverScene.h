@@ -6,6 +6,8 @@
 #include "Managers/Scene/BaseScene.h"		//シーン基底クラス
 
 #include "GameObjects/Ground/Ground.h"			//地面
+#include "GameObjects/Rock/Rock.h"
+
 
 class GameoverScene : public BaseScene
 {
@@ -59,6 +61,11 @@ private:
 
 	// 背景オブジェクト
 	std::unique_ptr<Ground> ground_;
+
+	//岩
+	std::unique_ptr<Rock> rock_[3];
+	
+
 	// ライティング
 	Light directionalLight_;
 

@@ -22,8 +22,10 @@
 #include "EnemyPopCommand/EnemyPopCommand.h"
 #include "EnemyPlacementEditor/EnemyPlacementEditor.h" // 敵配置エディタ
 
+#include "FieldEditor/FieldEditor.h"		  // フィールドエディタ
+#include "FieldEditor/FieldLoader.h"		 // フィールドローダー
+
 #include "CameraController/CameraController.h"	//カメラコントローラー
-#include "Camera/RailCamera.h"		//レールカメラ
 #include "Camera/RailCameraEditor.h" 
 
 /// <summary>
@@ -103,6 +105,10 @@ private:
 	// システム参照
 	DirectXCommon* directXCommon_;
 	OffscreenRenderer* offscreenRenderer_;
+
+	// フィールド関連
+	std::unique_ptr<FieldEditor> fieldEditor_;     // デバッグ用フィールドエディタ
+	std::unique_ptr<FieldLoader> fieldLoader_;     // フィールドローダー
 
 	// リソース管理
 	ModelManager* modelManager_;

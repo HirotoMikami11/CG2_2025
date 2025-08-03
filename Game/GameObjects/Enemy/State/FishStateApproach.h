@@ -32,7 +32,7 @@ private:
 	static constexpr float kMoveSpeed = 1.2f;
 
 	// カメラの前方に停止する距離
-	static constexpr float kTargetDistance = 100.0f;
+	static constexpr float kTargetDistance = 120.0f;
 
 	// 距離の許容誤差
 	static constexpr float kDistanceTolerance = 5.0f;

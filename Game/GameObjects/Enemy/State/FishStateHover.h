@@ -32,7 +32,7 @@ private:
 	static constexpr float kHoverSpeed = 0.2f;
 
 	// カメラからの基準距離
-	static constexpr float kBaseDistance = 150.0f;
+	static constexpr float kBaseDistance = 120.0f;
 
 	// ランダムオフセットの範囲
 	static constexpr float kOffsetRange = 15.0f;

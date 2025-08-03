@@ -7,6 +7,7 @@
 #include "GameObjects/Enemy/RushingFishEnemy.h"
 #include "GameObjects/Enemy/ShootingFishEnemy.h"
 
+#include "Camera/RailCamera.h"		//レールカメラ
 
 GameScene::GameScene()
 	: BaseScene("GameScene") // シーン名を設定
@@ -35,6 +36,9 @@ void GameScene::LoadResources() {
 	// モデルファイルを読み込み
 	modelManager_->LoadModel("resources/Model/Ground", "ground.obj", "ground");
 	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
+	modelManager_->LoadModel("resources/Model/Rocks", "rock1.obj", "rock1");
+	modelManager_->LoadModel("resources/Model/Rocks", "rock2.obj", "rock2");
+	modelManager_->LoadModel("resources/Model/Rocks", "rock3.obj", "rock3");
 	modelManager_->LoadModel("resources/Model/Camera", "camera.obj", "camera");
 	// プレイヤー関連
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
@@ -44,6 +48,7 @@ void GameScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/EnemyBullet", "enemyBullet.obj", "enemyBullet");
 	modelManager_->LoadModel("resources/Model/Squid", "Mesh_Squid.obj", "rushFish");
 	modelManager_->LoadModel("resources/Model/Goldfish", "Mesh_Goldfish.obj", "shootingFish");
+
 
 	// テクスチャ読み込み
 	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
@@ -134,6 +139,22 @@ void GameScene::Initialize() {
 	enemyPopCommand_ = std::make_unique<EnemyPopCommand>();
 	// 敵発生データの読み込み
 	LoadEnemyPopData();
+	///*-----------------------------------------------------------------------*///
+	///                         フィールドエディタの初期化                        ///
+	///*-----------------------------------------------------------------------*///
+#ifdef _DEBUG
+	fieldEditor_ = std::make_unique<FieldEditor>();
+	fieldEditor_->Initialize(directXCommon_, cameraController_);
+#endif
+
+	///*-----------------------------------------------------------------------*///
+	///                         フィールドローダーの初期化                        ///
+	///*-----------------------------------------------------------------------*///
+	fieldLoader_ = std::make_unique<FieldLoader>();
+	fieldLoader_->Initialize(directXCommon_);
+
+	// デフォルトのフィールドを読み込み
+	fieldLoader_->LoadField("resources/CSV_Data/Field/field.csv");
 
 	// ポストエフェクトの初期設定
 	ConfigureOffscreenEffects();
@@ -253,6 +274,17 @@ void GameScene::Update() {
 	if (enemyPlacementEditor_) {
 		enemyPlacementEditor_->Update(viewProjectionMatrix);
 	}
+	// フィールドエディタの更新（デバッグ時のみ）
+#ifdef _DEBUG
+	if (fieldEditor_) {
+		fieldEditor_->Update(viewProjectionMatrix);
+	}
+#endif
+
+	// フィールドローダーの更新
+	if (fieldLoader_) {
+		fieldLoader_->Update(viewProjectionMatrix);
+	}
 }
 
 void GameScene::UpdateGameObjects() {
@@ -341,6 +373,19 @@ void GameScene::DrawGameObjects() {
 	if (enemyPlacementEditor_) {
 		enemyPlacementEditor_->Draw(directionalLight_);
 	}
+
+	// フィールドオブジェクトの描画
+	if (fieldLoader_) {
+		fieldLoader_->Draw(directionalLight_);
+	}
+
+	// フィールドエディタの描画（デバッグ時のみ）
+#ifdef _DEBUG
+	if (fieldEditor_) {
+		fieldEditor_->Draw(directionalLight_);
+	}
+#endif
+
 }
 
 void GameScene::ClearAllEnemyBullets() {
@@ -446,8 +491,27 @@ void GameScene::ImGui() {
 		}
 	}
 
-	ImGui::Spacing();
+	// フィールドエディタのImGui
+	if (fieldEditor_) {
+		fieldEditor_->ImGui();
+	}
 
+	// フィールドローダーの情報表示
+	if (fieldLoader_) {
+		ImGui::Text("Field Loader");
+		ImGui::Text("Field Loaded: %s", fieldLoader_->IsFieldLoaded() ? "YES" : "NO");
+		ImGui::Text("Rock Count: %zu", fieldLoader_->GetObjectCount());
+
+		if (ImGui::Button("Reload Field")) {
+			fieldLoader_->LoadField("resources/CSV_Data/Field/field.csv");
+		}
+
+		if (ImGui::Button("Clear Field")) {
+			fieldLoader_->ClearField();
+		}
+
+		ImGui::Spacing();
+	}
 #endif
 }
 
@@ -544,6 +608,7 @@ void GameScene::DeleteDeadEnemyBullets() {
 }
 
 void GameScene::Finalize() {
+
 	// 安全のため、再度削除処理を実行
 	ClearAllEnemyBullets();
 	ClearAllEnemies();
@@ -563,6 +628,19 @@ void GameScene::Finalize() {
 	// 敵配置エディタのリソース解放
 	if (enemyPlacementEditor_) {
 		enemyPlacementEditor_.reset();
+	}
+
+
+	// フィールド関連のリソース解放
+#ifdef _DEBUG
+	if (fieldEditor_) {
+		fieldEditor_.reset();
+	}
+#endif
+
+	if (fieldLoader_) {
+		fieldLoader_->ClearField();
+		fieldLoader_.reset();
 	}
 
 	// プレイヤーを明示的にリセット
