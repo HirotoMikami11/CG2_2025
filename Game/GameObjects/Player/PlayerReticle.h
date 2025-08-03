@@ -61,7 +61,7 @@ private:
 	InputManager* input_ = nullptr;
 
 	// 3Dレティクル用のゲームオブジェクト
-	std::unique_ptr<Model3D> reticle3D_;
+	std::unique_ptr<Sphere> reticle3D_;
 
 	// 2Dレティクル用のスプライト
 	std::unique_ptr<Sprite> sprite2DReticle_;

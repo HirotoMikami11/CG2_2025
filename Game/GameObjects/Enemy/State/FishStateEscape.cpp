@@ -21,6 +21,29 @@ void FishStateEscape::Update() {
 	Vector3 currentPos = enemy_->GetPosition();
 	Vector3 newPosition = currentPos + enemy_->GetVelocity();
 	enemy_->SetPosition(newPosition);
+	
+	
+	//消滅処理を描く(今後もっとちゃんとした奴角)
+
+// プレイヤーがいない場合は何もしない
+	if (!GetPlayer()) {
+		return;
+	}
+
+	// プレイヤーの位置を取得
+	Vector3 playerPos = GetPlayer()->GetWorldPosition();
+	Vector3 enemyPos = enemy_->GetPosition();
+
+	// プレイヤーとの距離を計算
+	float distanceToPlayer = Distance(playerPos, enemyPos);
+
+	// 距離が閾値以下になったら直進状態に遷移
+	if (distanceToPlayer >= 200) {
+		// 現在の速度で直進状態に遷移
+		enemy_->SetDead(true);
+		return;
+	}
+
 }
 
 void FishStateEscape::CalculateEscapeDirection() {

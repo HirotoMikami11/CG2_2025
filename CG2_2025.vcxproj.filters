@@ -564,6 +564,9 @@
     <ClCompile Include="Game\FieldEditor\FieldLoader.cpp">
       <Filter>Game\Feild\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Scenes\GameclearScene\GameclearScene.cpp">
+      <Filter>Game\Scenes\GameClearScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -933,6 +936,9 @@
     </ClInclude>
     <ClInclude Include="Game\FieldEditor\FieldLoader.h">
       <Filter>Game\Feild\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scenes\GameclearScene\GameclearScene.h">
+      <Filter>Game\Scenes\GameClearScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

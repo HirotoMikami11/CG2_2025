@@ -6,16 +6,18 @@ void PlayerReticle::Initialize(DirectXCommon* dxCommon) {
 	input_ = InputManager::GetInstance();
 
 	// 3Dレティクルの初期化
-	reticle3D_ = std::make_unique<Model3D>();
-	reticle3D_->Initialize(dxCommon, "player"); // 仮でplayerモデルを使用
+	reticle3D_ = std::make_unique<Sphere>();
+	reticle3D_->Initialize(dxCommon, "sphere"); // 仮でplayerモデルを使用
 	reticle3D_->SetName("Reticle3D");
 
 	Vector3Transform reticleTransform{
-		{2.0f, 2.0f, 2.0f},           // scale（わかりやすくデカく）
+		{0.5f, 0.5f, 0.5f},           // scale（わかりやすくデカく）
 		{0.0f, 0.0f, 0.0f},           // rotate
 		{0.0f, 0.0f, 50.0f}           // translate（プレイヤーの前方）
 	};
+
 	reticle3D_->SetTransform(reticleTransform);
+	reticle3D_->SetColor({ 1.0f,0.0f,0.0f,1.0f });
 
 	// 2Dレティクル用のスプライト初期化
 	sprite2DReticle_ = std::make_unique<Sprite>();

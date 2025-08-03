@@ -286,6 +286,25 @@ void GameScene::Update() {
 	if (fieldLoader_) {
 		fieldLoader_->Update(viewProjectionMatrix);
 	}
+
+	///*-----------------------------------------------------------------------*///
+	///								ゲーム状態判定								///
+	///*-----------------------------------------------------------------------*///
+
+	// ゲームオーバー条件: プレイヤーのHPが0以下
+	if (player_ && player_->GetCurrentHP() <= 0.0f) {
+		// フェードを使った遷移（ヘルパークラスを使用）
+		SceneTransitionHelper::FadeToScene("GameoverScene", 1.0f);
+		return; // 以降の処理をスキップ
+	}
+
+	// ゲームクリア条件: 敵が全滅 かつ レールカメラが終点到達
+	if (enemies_.empty() && railCamera_ &&
+		railCamera_->GetProgress() >= 1.0f && !railCamera_->IsMoving()) {
+		// フェードを使った遷移（ヘルパークラスを使用）
+		SceneTransitionHelper::FadeToScene("GameclearScene", 1.0f);
+		return; // 以降の処理をスキップ
+	}
 }
 
 void GameScene::UpdateGameObjects() {

@@ -123,6 +123,7 @@ public:
 	void SetVelocity(const Vector3& velocity) { velocity_ = velocity; }
 	void SetPlayer(Player* player) { player_ = player; }
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
+	void SetDead(bool isDead) { isDead_ = isDead; }
 
 protected:
 	// ゲームオブジェクト

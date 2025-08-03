@@ -40,12 +40,11 @@ void GameoverScene::ConfigureOffscreenEffects()
 	// 全てのエフェクトを無効化
 	offscreenRenderer_->DisableAllEffects();
 
-
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
 		depthFogEffect->SetEnabled(true); // 深度フォグを有効化
-		depthFogEffect->SetFogColor({ 0.000f, 0.048f, 0.275f, 1.000f});
-		depthFogEffect->SetFogDistance(depthFogEffect->GetFogNear(), 24.0f);
+		depthFogEffect->SetFogColor({ 0.000f, 0.048f, 0.275f, 1.000f });
+		depthFogEffect->SetFogDistance(depthFogEffect->GetFogNear(), 30.0f);
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
@@ -66,7 +65,6 @@ void GameoverScene::ConfigureOffscreenEffects()
 		vignetteEffect->SetVignetteStrength(0.9f);
 		vignetteEffect->SetVignetteRadius(0.38f);
 	}
-
 }
 
 void GameoverScene::Initialize() {
@@ -97,8 +95,8 @@ void GameoverScene::InitializeGameObjects() {
 	///									gameocerフォント							///
 	///*-----------------------------------------------------------------------*///
 
-	Vector3 gameoverFontPos = { -0.09f, 1.06f, -0.59f };
-	Vector3 gameoverFontRote = { 0.12f, -0.058f, -0.47f };
+	Vector3 gameoverFontPos = { 0.75f, 1.18f, -0.6f };
+	Vector3 gameoverFontRote = { 0.02f, -0.098f, -0.52f };
 
 	//初期化、座標設定
 	gameoverFont_ = std::make_unique<Model3D>();
@@ -127,28 +125,29 @@ void GameoverScene::InitializeGameObjects() {
 	///*-----------------------------------------------------------------------*///
 	///								wiwa 								///
 	///*-----------------------------------------------------------------------*///
-// 地面の生成
 
-		rock_[0] = std::make_unique<Rock>();
-		rock_[0]->Initialize(directXCommon_, RockType::Rock1,
-			{-4.7f,-0.07f,0.0f},
-			{0.0f,0.0f,0.0f},
-			{1.44f,1.0f,1.0f}
-			);
-	
-		rock_[1] = std::make_unique<Rock>();
-		rock_[1]->Initialize(directXCommon_, RockType::Rock2,
-			{ 2.8f,0.73f,1.65f },
-			{ -0.9f,0.11f,0.0f },
-			{ 3.3f,1.8f,1.6f }
-			);
+	// 地面の生成
 
-		rock_[2] = std::make_unique<Rock>();
-		rock_[2]->Initialize(directXCommon_, RockType::Rock3,
-			{ 4.42f,0.4f,-4.2f },
-			{ 0.0f,0.0f,0.0f },
-			{ 1.0f,1.0f,1.0f }
-		);
+	rock_[0] = std::make_unique<Rock>();
+	rock_[0]->Initialize(directXCommon_, RockType::Rock1,
+		{ -4.7f,-0.07f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.44f,1.0f,1.0f }
+	);
+
+	rock_[1] = std::make_unique<Rock>();
+	rock_[1]->Initialize(directXCommon_, RockType::Rock2,
+		{ 2.8f,0.73f,1.65f },
+		{ -0.9f,0.11f,0.0f },
+		{ 3.3f,1.8f,1.6f }
+	);
+
+	rock_[2] = std::make_unique<Rock>();
+	rock_[2]->Initialize(directXCommon_, RockType::Rock3,
+		{ 4.42f,0.4f,-4.2f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,1.0f,1.0f }
+	);
 
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
@@ -170,7 +169,7 @@ void GameoverScene::UpdateGameObjects() {
 	// タイトルシーンに戻る
 	// スペースキーでゲームシーンへ遷移
 	// Aボタンでゲームシーンへ遷移
-	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE)||
+	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE) ||
 		InputManager::GetInstance()->IsGamePadButtonTrigger(InputManager::GamePadButton::A)) {
 		// フェードを使った遷移（ヘルパークラスを使用）
 		SceneTransitionHelper::FadeToScene("TitleScene", 1.0f);
