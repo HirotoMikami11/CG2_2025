@@ -5,6 +5,17 @@ void RailCameraDebugger::Initialize(DirectXCommon* dxCommon, RailTrack* track) {
 	directXCommon_ = dxCommon;
 	track_ = track;
 
+	// デバッグでのみ表示する
+#ifdef _DEBUG
+
+	showRailTrack_ = true;
+	showControlPoints_ = true;
+	showViewFrustum_ = true;
+
+#endif // DEBUG
+
+
+
 	cameraModel_ = std::make_unique<Model3D>();
 	cameraModel_->Initialize(dxCommon, "camera");
 	cameraModel_->SetName("RailCamera");

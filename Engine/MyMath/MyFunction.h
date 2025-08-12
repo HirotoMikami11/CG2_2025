@@ -92,12 +92,20 @@ void UpdateMatrix4x4(const Vector3Transform transform, const Matrix4x4 viewProje
 
 
 /// <summary>
-/// CatmullRomスプライン曲線上の座標を得る関数
+/// CatmullRomスプライン曲線上の座標を得る関数(始点、終点含めてすべての点を通る)
 /// </summary>
 /// <param name="points"></param>
 /// <param name="t"></param>
 /// <returns></returns>
 Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t);
+
+/// <summary>
+/// CatmullRomスプライン曲線上の座標を得る関数(標準的な式始点と終点はそれぞれ前後の点と繋がらない)
+/// </summary>
+/// <param name="points"></param>
+/// <param name="t"></param>
+/// <returns></returns>
+Vector3 DefaultCatmullRomPosition(const std::vector<Vector3>& points, float t);
 
 /// <summary>
 /// CatMullRom補間
@@ -109,6 +117,8 @@ Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t);
 /// <param name="t"></param>
 /// <returns></returns>
 Vector3 CatmullRomInterpolation(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+
+
 
 /*-----------------------------------------------------------------------*/
 ///								座標関数

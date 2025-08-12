@@ -11,9 +11,9 @@ public:
 	/// 長さテーブルのエントリ
 	/// </summary>
 	struct LengthTableEntry {
-		float t;            // パラメータt
-		float length;       // 累積長さ
-		float segmentLength; // このセグメントの長さ
+		float t;			// パラメータt
+		float length;		// 累積長さ
+		float segmentLength;// このセグメントの長さ
 	};
 
 	RailTrack() = default;

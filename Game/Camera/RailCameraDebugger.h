@@ -104,9 +104,9 @@ private:
 	// 線描画システム
 	std::unique_ptr<LineRenderer> lineRenderer_;
 
-	// 表示フラグ
-	bool showRailTrack_ = true;
-	bool showControlPoints_ = true;
+
+	bool showRailTrack_ = false;
+	bool showControlPoints_ = false;
 	bool showViewFrustum_ = false;
 
 	// 軌道描画設定

@@ -291,6 +291,9 @@ void GameScene::Update() {
 	///*-----------------------------------------------------------------------*///
 	///								ゲーム状態判定								///
 	///*-----------------------------------------------------------------------*///
+#ifdef _DEBUG
+	return;
+#endif // _DEBUG
 
 	// ゲームオーバー条件: プレイヤーのHPが0以下
 	if (player_ && player_->GetCurrentHP() <= 0.0f) {
@@ -306,6 +309,9 @@ void GameScene::Update() {
 		SceneTransitionHelper::FadeToScene("GameclearScene", 1.0f);
 		return; // 以降の処理をスキップ
 	}
+
+
+
 }
 
 void GameScene::UpdateGameObjects() {

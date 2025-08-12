@@ -278,8 +278,9 @@ void Player::FaceAwayFromCamera() {
 
 void Player::SwitchAttackMode() {
 	// モード切り替え (MキーまたはXボタン)
-	if (input_->IsKeyTrigger(DIK_M) ||// Mキー
-		(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::X))) { // Xボタン
+	if (input_->IsKeyTrigger(DIK_M) // Mキー
+		//||(input_->IsGamePadConnected() && input_->IsGamePadButtonTrigger(InputManager::GamePadButton::X))
+		) { // Xボタン
 
 		// モード切り替え
 		switch (attackMode_) {

@@ -29,9 +29,9 @@ public:
 	void SetName(const std::string& name) { name_ = name; }
 
 private:
-	Vector3 position_;          // 座標
-	std::string name_;          // 名前
-	int id_;                    // 一意ID
+	Vector3 position_;			// 座標
+	std::string name_;			// 名前
+	int id_;					// 一意ID(場所特定)
 
-	static int nextId_;         // 次のID
+	static int nextId_;			// 次のID
 };

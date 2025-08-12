@@ -47,7 +47,7 @@ void RailCameraEditor::ImGui() {
 	ShowMovementControls();
 	ImGui::Separator();
 
-	// デバッグ機能（GameSceneから移動）
+	// デバッグ機能（視界、レールカメラの位置、ポイントの位置など）
 	ShowDebugControls();
 	ImGui::Separator();
 
@@ -67,6 +67,7 @@ void RailCameraEditor::ImGui() {
 }
 
 void RailCameraEditor::ShowMainControls() {
+#ifdef _DEBUG
 	ImGui::Text("Main Controls");
 
 	if (!railCamera_) {
@@ -80,9 +81,11 @@ void RailCameraEditor::ShowMainControls() {
 	}
 
 	ImGui::Text("Points: %zu", points_.size());
+#endif
 }
 
 void RailCameraEditor::ShowMovementControls() {
+#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Camera Movement")) {
 		if (!railCamera_ || !railCamera_->GetMovement()) {
 			return;
@@ -146,10 +149,12 @@ void RailCameraEditor::ShowMovementControls() {
 			movement->SetProgress(progress);
 		}
 	}
+#endif
 }
 
 void RailCameraEditor::ShowDebugControls() {
-	if (ImGui::CollapsingHeader("Debug Controls (from GameScene)")) {
+#ifdef _DEBUG
+	if (ImGui::CollapsingHeader("debug views")) {
 		HandleFrameNavigation();
 		ImGui::Separator();
 		HandleProgressControl();
@@ -158,10 +163,12 @@ void RailCameraEditor::ShowDebugControls() {
 		ImGui::Separator();
 		HandleDebugInfo();
 	}
+#endif
 }
 
 void RailCameraEditor::HandleFrameNavigation() {
-	ImGui::Text("=== Frame Navigation ===");
+#ifdef _DEBUG
+	ImGui::Text("Frame Navigation");
 
 	if (!railCamera_ || !railCamera_->GetMovement()) {
 		return;
@@ -257,7 +264,7 @@ void RailCameraEditor::HandleFrameNavigation() {
 }
 
 void RailCameraEditor::HandleProgressControl() {
-	ImGui::Text("=== Precise Progress Control ===");
+	ImGui::Text("Precise Progress Control");
 
 	if (!railCamera_ || !railCamera_->GetMovement()) {
 		return;
@@ -270,10 +277,12 @@ void RailCameraEditor::HandleProgressControl() {
 		movement->SetProgress(progressSlider_);
 		movement->StopMovement();
 	}
+#endif
 }
 
 void RailCameraEditor::HandleVisualizationSettings() {
-	ImGui::Text("=== Visualization ===");
+#ifdef _DEBUG
+	ImGui::Text("Visualization");
 
 	if (!railCamera_ || !railCamera_->GetDebugger()) {
 		return;
@@ -347,9 +356,11 @@ void RailCameraEditor::HandleVisualizationSettings() {
 			MarkDirty();
 		}
 	}
+#endif
 }
 
 void RailCameraEditor::HandleDebugInfo() {
+#ifdef _DEBUG
 	ImGui::Text("=== Debug Information ===");
 
 	if (!railCamera_) {
@@ -367,9 +378,11 @@ void RailCameraEditor::HandleDebugInfo() {
 	if (railCamera_->GetTrack()) {
 		ImGui::Text("Total Length: %.2f", railCamera_->GetTrack()->GetTotalLength());
 	}
+#endif
 }
 
 void RailCameraEditor::ShowControlPointsList() {
+#ifdef _DEBUG
 	ImGui::Text("Control Points:");
 
 	if (ImGui::BeginChild("PointsList", ImVec2(0, 200), true)) {
@@ -467,9 +480,11 @@ void RailCameraEditor::ShowControlPointsList() {
 		points_.emplace_back(Vector3{ 0.0f, 0.0f, 0.0f });
 		MarkDirty();
 	}
+#endif
 }
 
 void RailCameraEditor::ShowFileOperations() {
+#ifdef _DEBUG
 	ImGui::Text("File Operations:");
 
 	char pathBuffer[512];
@@ -498,9 +513,11 @@ void RailCameraEditor::ShowFileOperations() {
 		std::string filename = std::format("resources/CSV_Data/RailCameraPoints/railCameraPoints_{}.csv", timestamp);
 		SaveToCSV(filename);
 	}
+#endif
 }
 
 void RailCameraEditor::ShowQuickActions() {
+#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Quick Actions")) {
 		if (ImGui::Button("Regenerate Track")) {
 			if (railCamera_ && railCamera_->GetDebugger()) {
@@ -534,6 +551,7 @@ void RailCameraEditor::ShowQuickActions() {
 			}
 		}
 	}
+#endif
 }
 
 bool RailCameraEditor::LoadFromCSV(const std::string& filename) {
