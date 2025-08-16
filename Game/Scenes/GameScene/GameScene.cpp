@@ -486,7 +486,44 @@ void GameScene::ImGui() {
 	if (enemyPlacementEditor_) {
 		enemyPlacementEditor_->ImGui();
 	}
+	//タイマーの初期化
+	if (ImGui::Button("Reset Enemy Pop Commands")) {
+		// 敵発生コマンドをリセット
+		enemyPopCommand_->Reset();
+		LoadEnemyPopData(); // 再読み込み
+		// 待機中フラグ
+		isWait_ = false;
+		// 待機タイマー
+		waitTimer_ = 0;
+	}
 
+	// エディタからCSVを再読み込み
+	if (ImGui::Button("Reload CSV from Editor")) {
+		LoadEnemyPopData();
+		if (enemyPlacementEditor_) {
+			enemyPlacementEditor_->LoadFromEnemyPopCommand(enemyPopCommand_.get());
+		}
+	}
+
+	// フィールドエディタのImGui
+	if (fieldEditor_) {
+		fieldEditor_->ImGui();
+	}
+
+	// フィールドローダーの情報表示
+	if (fieldLoader_) {
+		ImGui::Text("Field Loader");
+		ImGui::Text("Field Loaded: %s", fieldLoader_->IsFieldLoaded() ? "YES" : "NO");
+		if (ImGui::Button("Reload Field")) {
+			fieldLoader_->LoadField("resources/CSV_Data/Field/field.csv");
+		}
+
+		if (ImGui::Button("Clear Field")) {
+			fieldLoader_->ClearField();
+		}
+
+		ImGui::Spacing();
+	}
 	// プレイヤーのImGui
 	ImGui::Text("Player");
 	player_->ImGui();
@@ -555,46 +592,7 @@ void GameScene::ImGui() {
 		CreateEnemy(Vector3{ 30.0f, 20.0f, 180.0f }, EnemyType::ShootingFish, EnemyPattern::Shooting);
 	}
 	ImGui::SameLine();
-	//タイマーの初期化
-	if (ImGui::Button("Reset Enemy Pop Commands")) {
-		// 敵発生コマンドをリセット
-		enemyPopCommand_->Reset();
-		LoadEnemyPopData(); // 再読み込み
-		// 待機中フラグ
-		isWait_ = false;
-		// 待機タイマー
-		waitTimer_ = 0;
-	}
 
-	// エディタからCSVを再読み込み
-	if (ImGui::Button("Reload CSV from Editor")) {
-		LoadEnemyPopData();
-		if (enemyPlacementEditor_) {
-			enemyPlacementEditor_->LoadFromEnemyPopCommand(enemyPopCommand_.get());
-		}
-	}
-
-	// フィールドエディタのImGui
-	if (fieldEditor_) {
-		fieldEditor_->ImGui();
-	}
-
-	// フィールドローダーの情報表示
-	if (fieldLoader_) {
-		ImGui::Text("Field Loader");
-		ImGui::Text("Field Loaded: %s", fieldLoader_->IsFieldLoaded() ? "YES" : "NO");
-		ImGui::Text("Rock Count: %zu", fieldLoader_->GetObjectCount());
-
-		if (ImGui::Button("Reload Field")) {
-			fieldLoader_->LoadField("resources/CSV_Data/Field/field.csv");
-		}
-
-		if (ImGui::Button("Clear Field")) {
-			fieldLoader_->ClearField();
-		}
-
-		ImGui::Spacing();
-	}
 #endif
 }
 
