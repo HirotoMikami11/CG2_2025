@@ -49,7 +49,6 @@ public:
 private:
 	void InitializeGameObjects();
 	void UpdateGameObjects();
-	void DrawGameObjects();
 
 	// ゲームオブジェクト
 
@@ -64,7 +63,7 @@ private:
 
 	//岩
 	std::unique_ptr<Rock> rock_[3];
-	
+
 
 	// ライティング
 	Light directionalLight_;

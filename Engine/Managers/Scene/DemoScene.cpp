@@ -37,7 +37,7 @@ void DemoScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/MultiMesh", "multiMesh.obj", "model_MultiMesh");
 	//マルチマテリアル
 	modelManager_->LoadModel("resources/Model/MultiMaterial", "multiMaterial.obj", "model_MultiMaterial");
-	
+
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
 }
 
@@ -51,8 +51,8 @@ void DemoScene::ConfigureOffscreenEffects()
 
 	auto* depthFogEffect = offscreenRenderer_->GetDepthFogEffect();
 	if (depthFogEffect) {
-		depthFogEffect->SetEnabled(true); 
-		depthFogEffect->SetFogDistance(0.2f,40.0f); // 深度フォグの距離を設定
+		depthFogEffect->SetEnabled(true);
+		depthFogEffect->SetFogDistance(0.2f, 40.0f); // 深度フォグの距離を設定
 	}
 	auto* depthOfFieldEffect = offscreenRenderer_->GetDepthOfFieldEffect();
 	if (depthOfFieldEffect) {
@@ -211,15 +211,6 @@ void DemoScene::DrawOffscreen() {
 	gridLine_->Draw(viewProjectionMatrix);
 
 	// 3Dゲームオブジェクトの描画（オフスクリーンに描画）
-	DrawGameObjects();
-}
-
-void DemoScene::DrawBackBuffer() {
-	// UI(スプライトなど)の描画（オフスクリーン外に描画）
-	sprite_->Draw();
-}
-
-void DemoScene::DrawGameObjects() {
 	// 球体の描画
 	sphere_->Draw(directionalLight_);
 	//平面の描画
@@ -228,6 +219,11 @@ void DemoScene::DrawGameObjects() {
 	modelMultiMesh_->Draw(directionalLight_);
 	//マルチマテリアルモデルの描画
 	modelMultiMaterial_->Draw(directionalLight_);
+}
+
+void DemoScene::DrawBackBuffer() {
+	// UI(スプライトなど)の描画（オフスクリーン外に描画）
+	sprite_->Draw();
 }
 
 void DemoScene::ImGui() {

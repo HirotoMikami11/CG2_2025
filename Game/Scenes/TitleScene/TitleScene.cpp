@@ -148,22 +148,16 @@ void TitleScene::UpdateGameObjects() {
 }
 
 void TitleScene::DrawOffscreen() {
-
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
-	DrawGameObjects();
-}
-void TitleScene::DrawBackBuffer()
-{
-	//一応3Dのものも外に置けるようにした
-
-
-}
-
-void TitleScene::DrawGameObjects() {
 	//タイトル文字
 	titleFont_->Draw(directionalLight_);
 	//タイトルプレイヤー(置物)
 	titlePlayer_->Draw(directionalLight_);
+}
+
+void TitleScene::DrawBackBuffer()
+{
+	//一応3Dのものも外に置けるようにした
 }
 
 void TitleScene::ImGui() {
@@ -180,8 +174,6 @@ void TitleScene::ImGui() {
 	directionalLight_.ImGui("DirectionalLight");
 #endif
 }
-
-
 
 void TitleScene::Finalize() {
 	// unique_ptrで自動的に解放される

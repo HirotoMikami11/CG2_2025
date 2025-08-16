@@ -49,7 +49,6 @@ public:
 private:
 	void InitializeGameObjects();
 	void UpdateGameObjects();
-	void DrawGameObjects();
 
 	// ゲームオブジェクト
 

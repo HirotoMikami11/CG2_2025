@@ -51,14 +51,12 @@ public:
 
 	void Finalize() override;
 
-
 	// ImGui描画
 	void ImGui() override;
 
 private:
 	void InitializeGameObjects();
 	void UpdateGameObjects();
-	void DrawGameObjects();
 
 	// ゲームオブジェクト
 	std::unique_ptr<Sphere> sphere_;
@@ -66,7 +64,6 @@ private:
 
 	std::unique_ptr<Model3D> modelMultiMesh_;
 	std::unique_ptr<Model3D> modelMultiMaterial_;
-
 
 	std::unique_ptr<Sprite> sprite_;
 	std::unique_ptr<GridLine> gridLine_;

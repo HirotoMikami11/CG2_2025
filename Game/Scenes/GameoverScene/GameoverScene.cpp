@@ -199,16 +199,6 @@ void GameoverScene::UpdateGameObjects() {
 
 void GameoverScene::DrawOffscreen() {
 	// ゲームオブジェクトの描画（オフスクリーンに描画）
-	DrawGameObjects();
-}
-void GameoverScene::DrawBackBuffer()
-{
-	//一応3Dのものも外に置けるようにした
-
-
-}
-
-void GameoverScene::DrawGameObjects() {
 	//タイトル文字
 	gameoverFont_->Draw(directionalLight_);
 	//タイトルプレイヤー(置物)
@@ -218,6 +208,11 @@ void GameoverScene::DrawGameObjects() {
 	{
 		rock_[i]->Draw(directionalLight_);
 	}
+}
+
+void GameoverScene::DrawBackBuffer()
+{
+	//一応3Dのものも外に置けるようにした
 }
 
 void GameoverScene::ImGui() {
@@ -239,8 +234,6 @@ void GameoverScene::ImGui() {
 	directionalLight_.ImGui("DirectionalLight");
 #endif
 }
-
-
 
 void GameoverScene::Finalize() {
 	// unique_ptrで自動的に解放される

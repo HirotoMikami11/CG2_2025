@@ -34,8 +34,8 @@ void Game::Initialize() {
 
 void Game::InitializeScenes() {
 	// Sceneの登録
-	//auto demoScene = std::make_unique<DemoScene>();
-	//sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
+	auto demoScene = std::make_unique<DemoScene>();
+	sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
 
 	auto gameScene = std::make_unique<GameScene>();
 	sceneManager_->RegisterScene("GameScene", std::move(gameScene));
@@ -49,14 +49,14 @@ void Game::InitializeScenes() {
 	auto gameclearScene = std::make_unique<GameclearScene>();
 	sceneManager_->RegisterScene("GameclearScene", std::move(gameclearScene));
 
-	// 将来的に追加するシーン
-	// auto debugScene = std::make_unique<DebugScene>();
-	// sceneManager_->RegisterScene("DebugScene", std::move(debugScene));
+	 //将来的に追加するシーン
+	 //auto debugScene = std::make_unique<DebugScene>();
+	 //sceneManager_->RegisterScene("DebugScene", std::move(debugScene));
 
 	// (初期化時に一度だけ)既に登録されているシーンのリソースを読み込み
 	sceneManager_->LoadAllSceneResources();
 	// デフォルトシーンを設定（最初に表示するシーン）
-	sceneManager_->ChangeScene("TitleScene");
+	sceneManager_->ChangeScene("GameScene");
 }
 
 void Game::RegisterTransitionEffects()

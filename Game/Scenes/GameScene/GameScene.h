@@ -28,7 +28,7 @@
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCameraEditor.h" 
 
-// 前方宣言（新しいRailCameraシステム）
+// 前方宣言
 class RailCamera;
 
 /// <summary>
@@ -80,7 +80,6 @@ public:
 private:
 	void InitializeGameObjects();
 	void UpdateGameObjects();
-	void DrawGameObjects();
 
 	// ゲームオブジェクト
 	std::unique_ptr<Player> player_;
@@ -173,7 +172,7 @@ private:
 	void ClearAllEnemies();
 
 	/// <summary>
-	/// デバッグでゲーム開始処理
+	/// デバッグでゲーム開始処理(imguiでリスタートするときにしよう)
 	/// </summary>
 	void DebugStartGame();
 

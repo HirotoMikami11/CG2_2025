@@ -108,7 +108,7 @@ void GameScene::Initialize() {
 	cameraController_->RegisterCamera("rail", std::move(railCamera));
 
 	// デフォルトでレールカメラをアクティブに設定
-	cameraController_->SetActiveCamera("rail");
+	//cameraController_->SetActiveCamera("rail");
 	//railCamera_->StopMovement(); // レールカメラの動きを停止
 	railCamera_->SetLoopEnabled(false);//ループを停止
 
@@ -140,6 +140,7 @@ void GameScene::Initialize() {
 	enemyPopCommand_ = std::make_unique<EnemyPopCommand>();
 	// 敵発生データの読み込み
 	LoadEnemyPopData();
+
 	///*-----------------------------------------------------------------------*///
 	///                         フィールドエディタの初期化                        ///
 	///*-----------------------------------------------------------------------*///
@@ -344,28 +345,7 @@ void GameScene::UpdateGameObjects() {
 
 void GameScene::DrawOffscreen() {
 	// 3Dゲームオブジェクトの描画（オフスクリーンに描画）
-	DrawGameObjects();
-}
 
-void GameScene::DrawBackBuffer() {
-	// UI(スプライトなど)の描画（オフスクリーン外に描画）
-
-	// プレイヤーのUI描画（レティクル）
-	if (player_) {
-		player_->DrawUI();
-	}
-
-	// ロックオンUI描画
-	if (player_->IsMultiLockOnMode()) {
-		// マルチロックオンモードの場合
-		lockOn_->DrawMultiLockOnUI(player_->GetMultiLockOnTargets(), viewProjectionMatrix, viewProjectionMatrixSprite);
-	} else {
-		// 通常モードの場合
-		lockOn_->DrawUI(viewProjectionMatrixSprite);
-	}
-}
-
-void GameScene::DrawGameObjects() {
 	// 背景オブジェクトの描画（先に描画）
 	if (skydome_) {
 		skydome_->Draw(directionalLight_);
@@ -412,7 +392,24 @@ void GameScene::DrawGameObjects() {
 		fieldEditor_->Draw(directionalLight_);
 	}
 #endif
+}
 
+void GameScene::DrawBackBuffer() {
+	// UI(スプライトなど)の描画（オフスクリーン外に描画）
+
+	// プレイヤーのUI描画（レティクル）
+	if (player_) {
+		player_->DrawUI();
+	}
+
+	// ロックオンUI描画
+	if (player_->IsMultiLockOnMode()) {
+		// マルチロックオンモードの場合
+		lockOn_->DrawMultiLockOnUI(player_->GetMultiLockOnTargets(), viewProjectionMatrix, viewProjectionMatrixSprite);
+	} else {
+		// 通常モードの場合
+		lockOn_->DrawUI(viewProjectionMatrixSprite);
+	}
 }
 
 void GameScene::ClearAllEnemyBullets() {
@@ -610,7 +607,7 @@ void GameScene::LoadEnemyPopData() {
 	if (!enemyPopCommand_->LoadFromCSV("resources/CSV_Data/Enemy_Pop/enemyPop.csv")) {
 		Logger::Log(Logger::GetStream(), "GameScene: Failed to load enemy pop data\n");
 	} else {
-		// 敵配置エディタにも読み込んだデータを反映
+		// 敵配置エディタにも読み込んだデータを反映 
 		if (enemyPlacementEditor_) {
 			enemyPlacementEditor_->LoadFromEnemyPopCommand(enemyPopCommand_.get());
 		}
