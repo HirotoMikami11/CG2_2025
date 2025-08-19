@@ -13,7 +13,6 @@
 
 /// <summary>
 /// デバッグ用シーン
-/// Planeとライトのみのシンプルなシーン
 /// </summary>
 class DebugScene : public BaseScene {
 public:
