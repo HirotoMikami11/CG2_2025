@@ -31,15 +31,6 @@
     <Filter Include="Game">
       <UniqueIdentifier>{feec44c0-5ba6-4e64-9ba3-5db0d0ca8d0f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Scenes">
-      <UniqueIdentifier>{91b6173e-1f16-4090-a701-d3fb5a067a8f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Scenes\GameScene">
-      <UniqueIdentifier>{92ccc106-94e0-45b1-96a4-bf83ad623174}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Scenes\TitleScene">
-      <UniqueIdentifier>{657acde6-db28-4149-9d7d-0c9c3feca823}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\RGBShift">
       <UniqueIdentifier>{869937fb-cbe3-4a2d-85c9-d01611d182d2}</UniqueIdentifier>
     </Filter>
@@ -109,32 +100,8 @@
     <Filter Include="Engine\Managers\ImGui">
       <UniqueIdentifier>{24adf0e5-c0e5-49bc-b239-16c89b7788b2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Objects">
-      <UniqueIdentifier>{0126492a-2253-4b67-9cff-eedc8047fabb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\Player">
-      <UniqueIdentifier>{3a16bcdb-d50c-496d-8b75-a6d86459a64a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\Enemy">
-      <UniqueIdentifier>{72884eaa-fda0-45e6-999b-982d08e1e8a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\MapChipField">
-      <UniqueIdentifier>{32651caf-a83b-448e-a20f-28f9e170f45b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\Skydome">
-      <UniqueIdentifier>{f4539ff9-b533-43a6-992b-bd998b0a53c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\TitlePlayer">
-      <UniqueIdentifier>{38dc545c-dc70-4ec2-8b04-589ba2a94d01}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\GameCamera">
-      <UniqueIdentifier>{1f0a3efa-dca2-447c-b994-cd9562ff2d7d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\Shader\Offscreen">
       <UniqueIdentifier>{e28376ba-145a-4bb9-a378-ded6a9af5dcc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Game\Objects\DeathParticles">
-      <UniqueIdentifier>{4cae9bdc-8f4c-44bd-a3f7-d610a56e63e5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Managers\Model">
       <UniqueIdentifier>{511b34ed-608c-4f53-8cb6-30253fa7f735}</UniqueIdentifier>
@@ -185,12 +152,6 @@
     </ClCompile>
     <ClCompile Include="Game\Game.cpp">
       <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp">
-      <Filter>Game\Scenes\GameScene</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp">
-      <Filter>Game\Scenes\TitleScene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Engine.cpp">
       <Filter>Engine</Filter>
@@ -278,27 +239,6 @@
     </ClCompile>
     <ClCompile Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.cpp">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\Skydome.cpp">
-      <Filter>Game\Objects\Skydome</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\TitlePlayer.cpp">
-      <Filter>Game\Objects\TitlePlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\Player.cpp">
-      <Filter>Game\Objects\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\MapChipField.cpp">
-      <Filter>Game\Objects\MapChipField</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\Enemy.cpp">
-      <Filter>Game\Objects\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\GameCamera.cpp">
-      <Filter>Game\Objects\GameCamera</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Objects\DeathParticles.cpp">
-      <Filter>Game\Objects\DeathParticles</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp">
       <Filter>Engine\Managers\Scene</Filter>
@@ -393,12 +333,6 @@
     </ClInclude>
     <ClInclude Include="Game\Game.h">
       <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scenes\GameScene\GameScene.h">
-      <Filter>Game\Scenes\GameScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h">
-      <Filter>Game\Scenes\TitleScene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Engine.h">
       <Filter>Engine</Filter>
@@ -495,27 +429,6 @@
     </ClInclude>
     <ClInclude Include="Engine\BaseSystem\DirectXCommon\DirectXCommon.h">
       <Filter>Engine\BaseSystem\DirectXCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\Skydome.h">
-      <Filter>Game\Objects\Skydome</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\TitlePlayer.h">
-      <Filter>Game\Objects\TitlePlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\Player.h">
-      <Filter>Game\Objects\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\MapChipField.h">
-      <Filter>Game\Objects\MapChipField</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\Enemy.h">
-      <Filter>Game\Objects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\GameCamera.h">
-      <Filter>Game\Objects\GameCamera</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Objects\DeathParticles.h">
-      <Filter>Game\Objects\DeathParticles</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Managers\Scene\FadeManager.h">
       <Filter>Engine\Managers\Scene</Filter>

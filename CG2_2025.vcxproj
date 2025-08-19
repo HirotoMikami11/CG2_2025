@@ -133,15 +133,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Game\Game.cpp" />
-    <ClCompile Include="Game\Objects\DeathParticles.cpp" />
-    <ClCompile Include="Game\Objects\Enemy.cpp" />
-    <ClCompile Include="Game\Objects\GameCamera.cpp" />
-    <ClCompile Include="Game\Objects\MapChipField.cpp" />
-    <ClCompile Include="Game\Objects\Player.cpp" />
-    <ClCompile Include="Game\Objects\Skydome.cpp" />
-    <ClCompile Include="Game\Objects\TitlePlayer.cpp" />
-    <ClCompile Include="Game\Scenes\GameScene\GameScene.cpp" />
-    <ClCompile Include="Game\Scenes\TitleScene\TitleScene.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -247,15 +238,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Game\Game.h" />
-    <ClInclude Include="Game\Objects\DeathParticles.h" />
-    <ClInclude Include="Game\Objects\Enemy.h" />
-    <ClInclude Include="Game\Objects\GameCamera.h" />
-    <ClInclude Include="Game\Objects\MapChipField.h" />
-    <ClInclude Include="Game\Objects\Player.h" />
-    <ClInclude Include="Game\Objects\Skydome.h" />
-    <ClInclude Include="Game\Objects\TitlePlayer.h" />
-    <ClInclude Include="Game\Scenes\GameScene\GameScene.h" />
-    <ClInclude Include="Game\Scenes\TitleScene\TitleScene.h" />
     <ClInclude Include="LeakChecker.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
