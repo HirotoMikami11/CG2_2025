@@ -14,6 +14,10 @@ void ImGuiManager::Initialize(WinApp* winApp, DirectXCommon* directXCommon) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
+	//ドッキング用の設定
+	ImGuiIO& imguiIO = ImGui::GetIO();
+	imguiIO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 	// プラットフォームとレンダラーの初期化
 	ImGui_ImplWin32_Init(winApp->GetHwnd());
 	ImGui_ImplDX12_Init(
