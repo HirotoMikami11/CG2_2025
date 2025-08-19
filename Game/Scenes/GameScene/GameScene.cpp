@@ -474,6 +474,7 @@ void GameScene::DebugStartGame() {
 	Logger::Log(Logger::GetStream(), "GameScene: Game Started! Rail camera activated and moving.\n");
 	Logger::Log(Logger::GetStream(), "GameScene: Enemies cleared, CSV reloaded, camera reset to start position.\n");
 }
+
 void GameScene::ImGui() {
 #ifdef _DEBUG
 
