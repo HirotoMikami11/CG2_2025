@@ -1,12 +1,10 @@
 #pragma once
 #include <memory>
-#include <array>
 
-#include "Objects/Sprite/Sprite.h"
-#include "Objects/Light/Light.h"
 #include "Objects/GameObject/GameObject.h"
-#include "CameraController/CameraController.h"
+#include "Objects/Light/Light.h"
 #include "Objects/Line/GridLine.h"
+#include "CameraController/CameraController.h"
 
 #include "Engine.h"
 #include "BaseSystem/DirectXCommon/DirectXCommon.h"
@@ -14,13 +12,13 @@
 
 
 /// <summary>
-/// 絶対動くシーン(作り変えたりしない)
-/// デバッグ用に使用するシーンは別途用意しておく(DebugScene)
+/// デバッグ用シーン
+/// Planeとライトのみのシンプルなシーン
 /// </summary>
-class DemoScene : public BaseScene {
+class DebugScene : public BaseScene {
 public:
-	DemoScene();
-	~DemoScene() override;
+	DebugScene();
+	~DebugScene() override;
 
 	/// <summary>
 	/// リソース読み込み（1回のみ実行）
@@ -59,16 +57,7 @@ private:
 	void UpdateGameObjects();
 
 	// ゲームオブジェクト
-	std::unique_ptr<Sphere> sphere_;
 	std::unique_ptr<Plane> plane_;
-
-	std::unique_ptr<Model3D> modelMultiMesh_;
-	std::unique_ptr<Model3D> modelMultiMaterial_;
-
-	// フェンス
-	std::unique_ptr<Model3D> fence_;
-
-	std::unique_ptr<Sprite> sprite_;
 	std::unique_ptr<GridLine> gridLine_;
 
 	// ライティング
@@ -77,13 +66,11 @@ private:
 	// カメラ
 	CameraController* cameraController_;
 	Matrix4x4 viewProjectionMatrix;
-	Matrix4x4 viewProjectionMatrixSprite;
 
 	// システム参照
 	DirectXCommon* directXCommon_;
 	OffscreenRenderer* offscreenRenderer_;
 
 	// リソース管理
-	ModelManager* modelManager_;
 	TextureManager* textureManager_;
 };

@@ -6,6 +6,7 @@
 /// 				Scene							///
 //最初から用意されているシーン
 #include "Managers/Scene/DemoScene.h"
+#include "Managers/Scene/DebugScene.h"
 
 /// 				Transitions							///
 #include "Managers/Transition/SceneTransitionHelper.h"

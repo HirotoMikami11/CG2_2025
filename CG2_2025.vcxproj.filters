@@ -360,6 +360,9 @@
     <ClCompile Include="Engine\CameraController\CameraController.cpp">
       <Filter>Engine\CameraController</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Managers\Scene\DebugScene.cpp">
+      <Filter>Engine\Managers\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -609,6 +612,9 @@
     </ClInclude>
     <ClInclude Include="Engine\CameraController\CameraController.h">
       <Filter>Engine\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Managers\Scene\DebugScene.h">
+      <Filter>Engine\Managers\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

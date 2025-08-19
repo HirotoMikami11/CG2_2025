@@ -109,6 +109,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Managers\Input\InputManager.cpp" />
     <ClCompile Include="Engine\Managers\Model\ModelManager.cpp" />
     <ClCompile Include="Engine\Managers\ObjectID\ObjectIDManager.cpp" />
+    <ClCompile Include="Engine\Managers\Scene\DebugScene.cpp" />
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
     <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
     <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
@@ -232,6 +233,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Managers\Model\ModelManager.h" />
     <ClInclude Include="Engine\Managers\ObjectID\ObjectIDManager.h" />
     <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
+    <ClInclude Include="Engine\Managers\Scene\DebugScene.h" />
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
     <ClInclude Include="Engine\Managers\Scene\SceneManager.h" />
     <ClInclude Include="Engine\Managers\Texture\Texture.h" />
