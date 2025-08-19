@@ -95,8 +95,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\BaseSystem\Logger\Logger.cpp" />
     <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp" />
     <ClCompile Include="Engine\CameraController\Camera.cpp" />
-    <ClCompile Include="Engine\CameraController\CameraController.cpp" />
-    <ClCompile Include="Engine\CameraController\DebugCamera.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
     <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
@@ -107,7 +105,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Managers\MyImGui.cpp" />
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp" />
     <ClCompile Include="Engine\Managers\Scene\FadeManager.cpp" />
-    <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp" />
     <ClCompile Include="Engine\Managers\Texture\Texture.cpp" />
     <ClCompile Include="Engine\Managers\Texture\TextureManager.cpp" />
     <ClCompile Include="Engine\MyMath\MyFunction.cpp" />
@@ -210,8 +207,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h" />
     <ClInclude Include="Engine\CameraController\BaseCamera.h" />
     <ClInclude Include="Engine\CameraController\Camera.h" />
-    <ClInclude Include="Engine\CameraController\CameraController.h" />
-    <ClInclude Include="Engine\CameraController\DebugCamera.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
     <ClInclude Include="Engine\Managers\Audio\Audio.h" />
@@ -223,7 +218,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Managers\Scene\BaseScene.h" />
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h" />
     <ClInclude Include="Engine\Managers\Scene\FadeManager.h" />
-    <ClInclude Include="Engine\Managers\Scene\SceneManager.h" />
     <ClInclude Include="Engine\Managers\Texture\Texture.h" />
     <ClInclude Include="Engine\Managers\Texture\TextureManager.h" />
     <ClInclude Include="Engine\MyMath\MyFunction.h" />

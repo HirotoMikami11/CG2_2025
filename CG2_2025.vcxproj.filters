@@ -225,9 +225,6 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\CameraController\CameraController.cpp">
-      <Filter>Engine\CameraController</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\MyMath\MyFunction.cpp">
       <Filter>Engine\MyMath</Filter>
     </ClCompile>
@@ -273,9 +270,6 @@
     <ClCompile Include="Engine\Managers\Scene\DemoScene.cpp">
       <Filter>Engine\Managers\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Managers\Scene\SceneManager.cpp">
-      <Filter>Engine\Managers\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Managers\InputManager.cpp">
       <Filter>Engine\Managers\Input</Filter>
     </ClCompile>
@@ -317,9 +311,6 @@
     </ClCompile>
     <ClCompile Include="Engine\CameraController\Camera.cpp">
       <Filter>Engine\CameraController\NormalCamera</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
-      <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Objects\Line\GridLine.cpp">
       <Filter>Engine\Objects\Line</Filter>
@@ -448,9 +439,6 @@
     <ClInclude Include="LeakChecker.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\CameraController\CameraController.h">
-      <Filter>Engine\CameraController</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\MyMath\MyFunction.h">
       <Filter>Engine\MyMath</Filter>
     </ClInclude>
@@ -499,9 +487,6 @@
     <ClInclude Include="Engine\Managers\Scene\DemoScene.h">
       <Filter>Engine\Managers\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Managers\Scene\SceneManager.h">
-      <Filter>Engine\Managers\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Managers\InputManager.h">
       <Filter>Engine\Managers\Input</Filter>
     </ClInclude>
@@ -546,9 +531,6 @@
     </ClInclude>
     <ClInclude Include="Engine\CameraController\Camera.h">
       <Filter>Engine\CameraController\NormalCamera</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\CameraController\DebugCamera.h">
-      <Filter>Engine\CameraController\DebugCamera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Objects\Line\GridLine.h">
       <Filter>Engine\Objects\Line</Filter>
