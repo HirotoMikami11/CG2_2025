@@ -6,11 +6,6 @@
 /// 				Scene							///
 //最初から用意されているシーン
 #include "Managers/Scene/DemoScene.h"
-//必要なシーン郡
-#include "Scenes/GameScene/GameScene.h"
-#include "Scenes/TitleScene/TitleScene.h"
-#include "Scenes/GameoverScene/GameoverScene.h"
-#include "Scenes/GameclearScene/GameclearScene.h"
 
 /// 				Transitions							///
 #include "Managers/Transition/SceneTransitionHelper.h"
