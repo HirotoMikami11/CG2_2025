@@ -1,5 +1,6 @@
 #include "DemoScene.h"
 #include "Managers/ImGui/ImGuiManager.h" 
+#include <numbers>
 
 
 DemoScene::DemoScene()
@@ -26,17 +27,16 @@ void DemoScene::LoadResources() {
 	textureManager_ = TextureManager::GetInstance();
 
 	// モデルを事前読み込み
-	//modelManager_->LoadModel("resources/Model/Plane", "plane.obj", "model_Plane");
-
-	////バニー
-	//modelManager_->LoadModel("resources/Model/Bunny", "bunny.obj", "model_Bunny");
-	////ティーポット
-	//modelManager_->LoadModel("resources/Model/Teapot", "teapot.obj", "model_Teapot");
 
 	//マルチメッシュ
 	modelManager_->LoadModel("resources/Model/MultiMesh", "multiMesh.obj", "model_MultiMesh");
 	//マルチマテリアル
 	modelManager_->LoadModel("resources/Model/MultiMaterial", "multiMaterial.obj", "model_MultiMaterial");
+	//フェンス
+	modelManager_->LoadModel("resources/Model/fence", "fence.obj", "model_Fence");
+
+
+
 
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
 }
@@ -139,6 +139,20 @@ void DemoScene::InitializeGameObjects() {
 	modelMultiMaterial_->Initialize(directXCommon_, "model_MultiMaterial");
 	modelMultiMaterial_->SetTransform(transformMultiMaterial);
 
+	///*-----------------------------------------------------------------------*///
+	///								フェンス									///
+	///*-----------------------------------------------------------------------*///
+
+	// フェンス（180度回転）
+	Vector3Transform transformFence{
+		{1.0f, 1.0f, 1.0f},						// スケール
+		{0.0f, std::numbers::pi_v<float>, 0.0f},	// Y軸回転180度
+		{0.0f, 0.0f, 0.0f}						// 位置（原点）
+	};
+
+	fence_ = std::make_unique<Model3D>();
+	fence_->Initialize(directXCommon_, "model_Fence");
+	fence_->SetTransform(transformFence);
 
 	///*-----------------------------------------------------------------------*///
 	///								グリッド線									///
@@ -202,6 +216,10 @@ void DemoScene::UpdateGameObjects() {
 	modelMultiMesh_->Update(viewProjectionMatrix);
 	//マルチマテリアルモデルの更新
 	modelMultiMaterial_->Update(viewProjectionMatrix);
+
+	// フェンスの更新
+	fence_->Update(viewProjectionMatrix);
+
 	// グリッド線更新
 	gridLine_->Update(viewProjectionMatrix);
 }
@@ -219,11 +237,15 @@ void DemoScene::DrawOffscreen() {
 	modelMultiMesh_->Draw(directionalLight_);
 	//マルチマテリアルモデルの描画
 	modelMultiMaterial_->Draw(directionalLight_);
+
+
 }
 
 void DemoScene::DrawBackBuffer() {
 	// UI(スプライトなど)の描画（オフスクリーン外に描画）
 	sprite_->Draw();
+	// フェンスの描画
+	fence_->Draw(directionalLight_);
 }
 
 void DemoScene::ImGui() {
@@ -252,6 +274,11 @@ void DemoScene::ImGui() {
 	// マルチマテリアルモデルのImGui
 	ImGui::Text("ModelMultiMaterial");
 	modelMultiMaterial_->ImGui();
+
+	ImGui::Spacing();
+	// フェンスのImGui
+	ImGui::Text("Fence (180° Rotated)");
+	fence_->ImGui();
 
 	ImGui::Spacing();
 	// ライトのImGui

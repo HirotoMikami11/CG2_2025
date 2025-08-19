@@ -65,6 +65,9 @@ private:
 	std::unique_ptr<Model3D> modelMultiMesh_;
 	std::unique_ptr<Model3D> modelMultiMaterial_;
 
+	// フェンス
+	std::unique_ptr<Model3D> fence_;
+
 	std::unique_ptr<Sprite> sprite_;
 	std::unique_ptr<GridLine> gridLine_;
 
