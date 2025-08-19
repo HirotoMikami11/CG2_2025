@@ -13,7 +13,8 @@ enum class BlendMode {
 	AlphaBlend,		// アルファブレンド
 	Add,			// 加算合成
 	Subtract,		// 減算合成
-	Multiply		// 乗算合成
+	Multiply,		// 乗算合成
+	Screen          // スクリーン合成
 };
 
 /// <summary>
