@@ -231,9 +231,6 @@
     <ClCompile Include="Engine\OffscreenRenderer\PostEffect\Grayscale\GrayscalePostEffect.cpp">
       <Filter>Engine\OffScreenRenderer\PostEffect\Grayscale</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\CameraController\CameraController.cpp">
-      <Filter>Engine\CameraController</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\MyMath\MyFunction.cpp">
       <Filter>Engine\MyMath</Filter>
     </ClCompile>
@@ -468,9 +465,6 @@
     </ClInclude>
     <ClInclude Include="LeakChecker.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\CameraController\CameraController.h">
-      <Filter>Engine\CameraController</Filter>
     </ClInclude>
     <ClInclude Include="Engine\MyMath\MyFunction.h">
       <Filter>Engine\MyMath</Filter>

@@ -98,8 +98,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\BaseSystem\Logger\Logger.cpp" />
     <ClCompile Include="Engine\BaseSystem\WinApp\WinApp.cpp" />
     <ClCompile Include="Engine\CameraController\Camera.cpp" />
-    <ClCompile Include="Engine\CameraController\CameraController.cpp" />
-    <ClCompile Include="Engine\CameraController\DebugCamera.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\FrameTimer\FrameTimer.cpp" />
     <ClCompile Include="Engine\Managers\Audio\Audio.cpp" />
@@ -220,8 +218,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\BaseSystem\WinApp\WinApp.h" />
     <ClInclude Include="Engine\CameraController\BaseCamera.h" />
     <ClInclude Include="Engine\CameraController\Camera.h" />
-    <ClInclude Include="Engine\CameraController\CameraController.h" />
-    <ClInclude Include="Engine\CameraController\DebugCamera.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\FrameTimer\FrameTimer.h" />
     <ClInclude Include="Engine\Managers\Audio\Audio.h" />
