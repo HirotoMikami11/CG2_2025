@@ -10,6 +10,7 @@ Game::Game() :
 
 Game::~Game() = default;
 
+
 void Game::Initialize() {
 	// シーンマネージャーの初期化
 	sceneManager_ = SceneManager::GetInstance();

@@ -276,9 +276,6 @@
     <ClCompile Include="Engine\CameraController\Camera.cpp">
       <Filter>Engine\CameraController\NormalCamera</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
-      <Filter>Engine\CameraController\DebugCamera</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Objects\Line\GridLine.cpp">
       <Filter>Engine\Objects\Line</Filter>
     </ClCompile>
@@ -356,6 +353,12 @@
     </ClCompile>
     <ClCompile Include="Engine\MyMath\Random\Random.cpp">
       <Filter>Engine\MyMath\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\DebugCamera.cpp">
+      <Filter>Engine\CameraController\DebugCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\CameraController\CameraController.cpp">
+      <Filter>Engine\CameraController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,9 +520,6 @@
     <ClInclude Include="Engine\CameraController\Camera.h">
       <Filter>Engine\CameraController\NormalCamera</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\CameraController\DebugCamera.h">
-      <Filter>Engine\CameraController\DebugCamera</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Objects\Line\GridLine.h">
       <Filter>Engine\Objects\Line</Filter>
     </ClInclude>
@@ -603,6 +603,12 @@
     </ClInclude>
     <ClInclude Include="Engine\MyMath\Random\Random.h">
       <Filter>Engine\MyMath\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\DebugCamera.h">
+      <Filter>Engine\CameraController\DebugCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\CameraController\CameraController.h">
+      <Filter>Engine\CameraController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
