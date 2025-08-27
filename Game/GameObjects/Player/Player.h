@@ -95,7 +95,9 @@ public:
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
 	/// </summary>
-	void OnCollision() override;
+	/// <param name="other">衝突相手のコライダー</param>
+	void OnCollision(Collider* other) override;
+
 
 	//Getter
 	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
@@ -127,8 +129,7 @@ public:
 	// 体力システムへのアクセス
 	PlayerHealth& GetHealth() { return *health_; }
 	const PlayerHealth& GetHealth() const { return *health_; }
-	/// Health用
-	void TakeDamage(float damage) { health_->TakeDamage(damage); }	// ダメージを受ける
+
 	float GetCurrentHP() const { return health_->GetCurrentHP(); }// 現在のHPを取得
 	float GetMaxHP() const { return health_->GetMaxHP(); }	// 最大HPを取得
 	float GetCurrentEN() const { return health_->GetCurrentEN(); }// 現在のENを取得

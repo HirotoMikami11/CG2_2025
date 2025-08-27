@@ -85,12 +85,6 @@ public:
 	void ChangeState(std::unique_ptr<BaseEnemyState> state);
 
 	/// <summary>
-	/// ダメージを受ける
-	/// </summary>
-	/// <param name="damage">ダメージ量</param>
-	virtual void TakeDamage(float damage);
-
-	/// <summary>
 	/// 時限発動の更新、終了した者の削除
 	/// </summary>
 	void UpdateTimedCalls();
@@ -107,15 +101,32 @@ public:
 	Vector3 GetWorldPosition() override;
 	EnemyType GetEnemyType() const { return enemyType_; }
 	EnemyPattern GetPattern() const { return pattern_; }
-	bool IsDead() const { return isDead_; }
-	float GetCurrentHP() const { return currentHP_; }
-	float GetMaxHP() const { return maxHP_; }
 	Player* GetPlayer() const { return player_; }
 
+	// HP関連はColliderベースを使用（オーバーライドして二重管理を統合）
+	bool IsDead() const override {
+		return isDead_ || Collider::IsDead();
+	}
+
 	/// <summary>
-	/// 衝突時に呼ばれる関数（基本実装、サブクラスでオーバーライド可能）
+	/// 衝突時に呼ばれる関数
 	/// </summary>
-	virtual void OnCollision() override;
+	/// <param name="other">衝突相手のコライダー</param>
+	virtual void OnCollision(Collider* other) override;
+
+	/// <summary>
+	/// ダメージを受ける
+	/// </summary>
+	/// <param name="damage">ダメージ量</param>
+	/// <returns>実際に受けたダメージ量</returns>
+	virtual float TakeDamage(float damage) override;
+
+	/// <summary>
+	/// 敵の初期ステータスを設定（派生クラスで呼び出し）
+	/// </summary>
+	/// <param name="hp">最大HP</param>
+	/// <param name="attackPower">攻撃力</param>
+	void SetEnemyStats(float hp, float attackPower);
 
 	// Setter
 	void SetPosition(const Vector3& position) { gameObject_->SetPosition(position); }
@@ -141,11 +152,11 @@ protected:
 	// 敵の行動パターン
 	EnemyPattern pattern_ = EnemyPattern::Straight;
 
-	// HP関連
-	float maxHP_ = 0.0f;        // 最大HP
-	float currentHP_ = 0.0f;    // 現在のHP
+	// 古いHP変数を削除（Colliderベースに統一）
+	// float maxHP_ = 0.0f;        // 削除
+	// float currentHP_ = 0.0f;    // 削除
 
-	// 死亡フラグ
+	// 死亡フラグ（既存システムとの互換性のため残す）
 	bool isDead_ = false;
 
 	// 遅延クリア用フラグ

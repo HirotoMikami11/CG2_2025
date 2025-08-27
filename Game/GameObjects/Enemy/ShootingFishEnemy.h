@@ -49,10 +49,6 @@ public:
 	void ImGui() override;
 
 	/// <summary>
-	/// 衝突時に呼ばれる関数（オーバーライド）
-	/// </summary>
-	void OnCollision() override;
-	/// <summary>
 	/// 弾丸発射
 	/// </summary>
 	void Fire();
@@ -63,8 +59,6 @@ private:
 	// 移動速度
 	static constexpr float kMoveSpeed = 1.0f;
 
-	// プレイヤーへのダメージ量
-	static constexpr float kPlayerDamage = 5.0f;
 	// 敵の弾丸
 	std::list<std::unique_ptr<EnemyBullet>> bullets_;
 

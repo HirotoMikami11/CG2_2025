@@ -43,7 +43,7 @@ public:
 	/// 死亡フラグを取得
 	/// </summary>
 	/// <returns>死亡フラグ</returns>
-	bool IsDead() const { return isDead_; }
+	bool IsDead() const {  return Collider::IsDead() || deathTimer_ <= 0; ; }
 
 	/// <summary>
 	/// ワールド座標を取得（オーバーライド）
@@ -54,13 +54,10 @@ public:
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
 	/// </summary>
-	void OnCollision() override;
+	/// <param name="other">衝突相手のコライダー</param>
+	void OnCollision(Collider* other) override;
 
-	/// <summary>
-	/// ダメージを受ける
-	/// </summary>
-	/// <param name="damage">ダメージ量</param>
-	void TakeDamage(int damage);
+
 
 	/// <summary>
 	/// HPを取得
@@ -78,7 +75,6 @@ private:
 	// 寿命
 	static const int32_t kLifeTime_ = 60 * 5; // 弾の寿命（フレーム数）
 	int32_t deathTimer_ = kLifeTime_; // 弾の寿命タイマー
-	bool isDead_ = false; // 弾が消滅したかどうかのフラグ
 
 	// HP
 	int hp_ = 1; // 弾のHP（デフォルト1）

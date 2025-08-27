@@ -38,16 +38,13 @@ void Enemy::Initialize(DirectXCommon* dxCommon, const Vector3& position, EnemyPa
 	// パターンの設定
 	pattern_ = pattern;
 
-	// HP設定（通常の敵はHP15）
-	maxHP_ = 15.0f;
-	currentHP_ = maxHP_;
-
-	// 衝突判定設定
-	SetRadius(3.0f); // Colliderの半径をセット
-	/// 衝突属性の設定
-	SetCollisionAttribute(kCollisionAttributeEnemy);
-	/// 衝突対象は自分の属性以外に設定(ビット反転)
-	SetCollisionMask(~kCollisionAttributeEnemy);
+	// 敵のステータス設定（通常の敵）
+	float enemyHP = 15.0f;
+	float enemyAttackPower = 1.0f; // 体当たり攻撃力
+	SetEnemyStats(enemyHP, enemyAttackPower);
+	
+	// 衝突半径の設定
+	SetRadius(3.0f);
 
 	// 設定したパターンによって初期状態を設定する
 	SetInitializeState();
@@ -101,7 +98,9 @@ void Enemy::ImGui() {
 		ImGui::Separator();
 
 		// HP情報
-		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
+		ImGui::Text("HP: %.1f / %.1f", GetCurrentHP(), GetMaxHP());
+		ImGui::Text("Attack Power: %.1f", GetAttackPower());
+		ImGui::Text("Collision Radius: %.1f", GetRadius());
 
 		// デバッグ情報を表示
 		ImGui::Text("Auto Fire: %s", isAutoFire_ ? "ON" : "OFF");
@@ -181,10 +180,7 @@ void Enemy::StartAutoFire() {
 	timedCalls_.push_back(std::make_unique<TimedCall>(std::bind(&Enemy::AutoFire, this), kFireInterval_));
 }
 
-void Enemy::OnCollision() {
-	// プレイヤーの弾に当たった場合はダメージを受ける
-	TakeDamage(1.0f); // 1ダメージ
-}
+
 
 void Enemy::SetInitializeState() {
 	// パターンに応じた初期状態をセットする

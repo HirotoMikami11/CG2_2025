@@ -27,7 +27,7 @@ public:
 
 private:
 	// ホーミング速度
-	float homingSpeed_ = 2.0f; // デフォルト値
+	float homingSpeed_ = 30.0f; // デフォルト値
 
 	// ホーミングの強度（0.0f〜1.0f）
 	static constexpr float kHomingStrength = 0.07f;

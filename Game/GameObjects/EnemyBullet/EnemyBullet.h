@@ -48,7 +48,7 @@ public:
 	/// 死亡フラグを取得
 	/// </summary>
 	/// <returns>死亡フラグ</returns>
-	bool IsDead() const { return isDead_; }
+	bool IsDead() const { return Collider::IsDead() || deathTimer_ <= 0; }
 
 	/// <summary>
 	/// ワールド座標を取得（オーバーライド）
@@ -59,7 +59,9 @@ public:
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
 	/// </summary>
-	void OnCollision() override;
+	/// <param name="other">衝突相手のコライダー</param>
+	void OnCollision(Collider* other) override;
+
 
 	/// <summary>
 	/// プレイヤーを設定
@@ -67,11 +69,6 @@ public:
 	/// <param name="player">プレイヤーのポインタ</param>
 	void SetPlayer(Player* player) { player_ = player; }
 
-	/// <summary>
-	/// ダメージを受ける
-	/// </summary>
-	/// <param name="damage">ダメージ量</param>
-	void TakeDamage(int damage);
 
 	/// <summary>
 	/// HPを取得

@@ -45,6 +45,9 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 
 	// 衝突判定設定
 	SetRadius(1.0f); // Colliderの半径をセット
+	SetAttackPower(500.0f); // プレイヤー本体に当たると敵は死ぬようにしておく
+	SetMaxHP(100.0f); // プレイヤーのHPを100に設定
+
 	// スケールをコライダーの半径に合わせる
 	gameObject_->SetScale(Vector3(GetRadius(), GetRadius(), GetRadius()));
 
@@ -52,6 +55,11 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	/// 衝突対象は自分の属性以外に設定(ビット反転)
 	SetCollisionMask(~kCollisionAttributePlayer);
+
+	// PlayerHealthとColliderのHPを同期
+	if (health_) {
+		health_->SetMaxHP(GetMaxHP());
+	}
 }
 
 void Player::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -202,9 +210,22 @@ Vector3 Player::GetForward() const {
 	return Normalize(forward);
 }
 
-void Player::OnCollision() {
-	// ダメージを受ける(体力システムに渡す)
-	health_->TakeDamage(1.0f);
+void Player::OnCollision(Collider* other) {
+	if (!other) return;
+
+	// 衝突相手が敵の属性を持つかチェック
+	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy) {
+		// 相手の攻撃力分のダメージを受ける
+		float damage = other->GetAttackPower();
+
+		// PlayerHealthシステムでダメージ処理
+		if (health_) {
+			health_->TakeDamage(damage);
+		}
+
+		// ColliderのHPも同期更新
+		SetCurrentHP(health_->GetCurrentHP());
+	}
 }
 
 void Player::Move() {

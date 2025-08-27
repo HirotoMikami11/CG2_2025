@@ -35,19 +35,22 @@ void ShootingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& posit
 	// パターンの設定
 	pattern_ = pattern;
 
-	// HP設定（射撃魚はHP7）
-	maxHP_ = 15.0f;
-	currentHP_ = maxHP_;
+	// 射撃魚のステータス設定
+	float enemyHP = 15.0f;
+	float enemyAttackPower = 1.0f; // 体当たり時のダメージ
+	SetEnemyStats(enemyHP, enemyAttackPower);
 
-	// 衝突判定設定
-	SetRadius(2.5f); // Colliderの半径をセット
-	/// 衝突属性の設定
-	SetCollisionAttribute(kCollisionAttributeEnemy);
-	/// 衝突対象は自分の属性以外に設定(ビット反転)
-	SetCollisionMask(~kCollisionAttributeEnemy);
+	// 衝突半径の設定
+	SetRadius(2.5f);
 
 	// 設定したパターンによって初期状態を設定する
 	SetInitializeState();
+
+#ifdef _DEBUG
+	// Colliderベースの値を表示
+	Logger::LogF("ShootingFish created - HP: %.1f/%.1f, AttackPower: %.1f\n",
+		GetCurrentHP(), GetMaxHP(), GetAttackPower());
+#endif
 }
 
 void ShootingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -92,8 +95,9 @@ void ShootingFishEnemy::ImGui() {
 
 		ImGui::Separator();
 
-		// HP情報
-		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
+		ImGui::Text("HP: %.1f / %.1f", GetCurrentHP(), GetMaxHP());
+		ImGui::Text("Attack Power: %.1f", GetAttackPower());
+		ImGui::Text("Collision Radius: %.1f", GetRadius());
 
 		// プレイヤーとの距離表示
 		if (player_) {
@@ -106,11 +110,25 @@ void ShootingFishEnemy::ImGui() {
 		// デバッグ情報を表示
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 		ImGui::Text("Pattern: %d", static_cast<int>(pattern_));
-		ImGui::Text("Is Dead: %s", isDead_ ? "YES" : "NO");
+		ImGui::Text("Is Dead (Enemy Flag): %s", isDead_ ? "YES" : "NO");
+		ImGui::Text("Is Dead (Collider): %s", Collider::IsDead() ? "YES" : "NO");
+		ImGui::Text("Is Dead (Combined): %s", IsDead() ? "YES" : "NO");
+		ImGui::Text("Shot Count: %d", shotCount_);
 
 		// 現在の状態名を表示
 		if (state_) {
 			ImGui::Text("Current State: %s", state_->GetName().c_str());
+		}
+
+		ImGui::Separator();
+
+		// デバッグでダメージテスト
+		if (ImGui::Button("Take 5 Damage")) {
+			TakeDamage(5.0f);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Take 10 Damage")) {
+			TakeDamage(10.0f);
 		}
 
 		ImGui::Separator();
@@ -132,36 +150,31 @@ void ShootingFishEnemy::ImGui() {
 #endif
 }
 
-void ShootingFishEnemy::OnCollision() {
-	// プレイヤーの弾に当たった場合はダメージを受ける
-	TakeDamage(1.0f); // 1ダメージ
-}
-
 void ShootingFishEnemy::Fire()
 {
-		if (!player_) return;
+	if (!player_) return;
 
-		// 自機狙いの計算
-		Vector3 playerWorldPos = player_->GetWorldPosition();
-		Vector3 enemyWorldPos = GetWorldPosition();
-		Vector3 enemyToPlayerVec = playerWorldPos - enemyWorldPos; // 差分ベクトルを取る
-		enemyToPlayerVec = Normalize(enemyToPlayerVec); // 正規化して向きにする
+	// 自機狙いの計算
+	Vector3 playerWorldPos = player_->GetWorldPosition();
+	Vector3 enemyWorldPos = GetWorldPosition();
+	Vector3 enemyToPlayerVec = playerWorldPos - enemyWorldPos; // 差分ベクトルを取る
+	enemyToPlayerVec = Normalize(enemyToPlayerVec); // 正規化して向きにする
 
-		// 速度と合わせる
-		Vector3 bulletVelocity = enemyToPlayerVec * kBulletSpeed;
+	// 速度と合わせる
+	Vector3 bulletVelocity = enemyToPlayerVec * kBulletSpeed;
 
-		// 弾丸を生成・初期化する
-		auto newBullet = std::make_unique<EnemyBullet>();
-		newBullet->Initialize(directXCommon_, gameObject_->GetPosition(), bulletVelocity, kBulletSpeed);
-		newBullet->SetPlayer(player_);
+	// 弾丸を生成・初期化する
+	auto newBullet = std::make_unique<EnemyBullet>();
+	newBullet->Initialize(directXCommon_, gameObject_->GetPosition(), bulletVelocity, kBulletSpeed);
+	newBullet->SetPlayer(player_);
 
-		// GameSceneがセットされている場合はGameSceneに弾丸を追加
-		if (gameScene_) {
-			gameScene_->AddEnemyBullet(std::move(newBullet));
-		} else {
-			// 弾丸を登録する（ローカルで管理）
-			bullets_.push_back(std::move(newBullet));
-		}
+	// GameSceneがセットされている場合はGameSceneに弾丸を追加
+	if (gameScene_) {
+		gameScene_->AddEnemyBullet(std::move(newBullet));
+	} else {
+		// 弾丸を登録する（ローカルで管理）
+		bullets_.push_back(std::move(newBullet));
+	}
 }
 
 void ShootingFishEnemy::SetInitializeState() {

@@ -68,11 +68,6 @@ public:
 	void StartAutoFire();
 
 	/// <summary>
-	/// 衝突時に呼ばれる関数（オーバーライド）
-	/// </summary>
-	void OnCollision() override;
-
-	/// <summary>
 	/// 弾リストを取得
 	/// </summary>
 	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() const { return bullets_; }

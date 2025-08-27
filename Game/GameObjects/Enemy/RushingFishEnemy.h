@@ -45,17 +45,8 @@ public:
 	/// </summary>
 	void ImGui() override;
 
-	/// <summary>
-	/// 衝突時に呼ばれる関数（オーバーライド）
-	/// </summary>
-	void OnCollision() override;
-
 private:
-	// 移動速度
-	static constexpr float kMoveSpeed = 1.0f;
 
-	// プレイヤーへのダメージ量
-	static constexpr float kPlayerDamage = 5.0f;
 
 	/// <summary>
 	/// 設定されたパターンに応じた初期Stateを設定

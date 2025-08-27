@@ -34,6 +34,9 @@ void PlayerBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, 
 
 	// 衝突判定設定
 	SetRadius(1.0f); // Colliderの半径をセット
+	SetAttackPower(1.0f); // プレイヤーの弾の攻撃力
+	SetMaxHP(1.0f); // 弾のHPは1
+
 	/// 衝突属性の設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	/// 衝突対象は自分の属性以外に設定(ビット反転)
@@ -48,17 +51,12 @@ void PlayerBullet::Update(const Matrix4x4& viewProjectionMatrix) {
 
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
-
-	// 時間経過でデス
-	if (--deathTimer_ <= 0) {
-		isDead_ = true;
-	}
 }
 
 void PlayerBullet::Draw(const Light& directionalLight) {
-	if (!isDead_) {
-		gameObject_->Draw(directionalLight);
-	}
+
+	gameObject_->Draw(directionalLight);
+
 }
 
 Vector3 PlayerBullet::GetWorldPosition() {
@@ -74,15 +72,13 @@ Vector3 PlayerBullet::GetWorldPosition() {
 	return Vector3{ 0.0f, 0.0f, 0.0f };
 }
 
-void PlayerBullet::OnCollision() {
-	// ダメージを受ける
-	TakeDamage(1);
-}
+void PlayerBullet::OnCollision(Collider* other) {
+	if (!other) return;
 
-void PlayerBullet::TakeDamage(int damage) {
-	hp_ -= damage;
-	if (hp_ <= 0) {
-		isDead_ = true; // HPが0以下になったら死亡
+	// 衝突相手が敵の属性を持つかチェック
+	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy) {
+		// 弾は衝突すると消滅
+		TakeDamage(1.0f); // 自分のHPを0にして消滅
 	}
 }
 

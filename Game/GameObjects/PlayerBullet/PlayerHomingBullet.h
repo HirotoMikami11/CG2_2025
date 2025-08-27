@@ -55,7 +55,8 @@ public:
 	/// <summary>
 	/// 衝突時に呼ばれる関数（オーバーライド）
 	/// </summary>
-	void OnCollision() override;
+	/// <param name="other">衝突相手のコライダー</param>
+	void OnCollision(Collider* other) override;
 
 	/// <summary>
 	/// ワールド座標を取得（オーバーライド）

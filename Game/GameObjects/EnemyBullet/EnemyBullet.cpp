@@ -33,9 +33,10 @@ void EnemyBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, c
 
 	// 弾の色を設定（赤色で敵の弾とわかりやすく）
 	gameObject_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });
-
-	// 衝突判定設定
 	SetRadius(1.0f);
+	SetAttackPower(5.0f); // 敵の弾の攻撃力
+	SetMaxHP(1.0f); // 弾のHPは1
+
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	SetCollisionMask(~kCollisionAttributeEnemy);
 
@@ -97,14 +98,13 @@ Vector3 EnemyBullet::IsHoming() {
 	return velocity_;
 }
 
-void EnemyBullet::OnCollision() {
-	TakeDamage(1);
-}
+void EnemyBullet::OnCollision(Collider* other) {
+	if (!other) return;
 
-void EnemyBullet::TakeDamage(int damage) {
-	hp_ -= damage;
-	if (hp_ <= 0) {
-		isDead_ = true;
+	// 衝突相手がプレイヤー陣営かチェック
+	if (other->GetCollisionAttribute() & kCollisionAttributePlayer) {
+		// 弾は衝突すると消滅
+		TakeDamage(1.0f); // 自分のHPを0にして消滅
 	}
 }
 

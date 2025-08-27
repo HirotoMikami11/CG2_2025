@@ -15,17 +15,6 @@ void BaseEnemy::ChangeState(std::unique_ptr<BaseEnemyState> state) {
 	state_ = std::move(state);
 }
 
-void BaseEnemy::TakeDamage(float damage) {
-	// ダメージを受ける
-	currentHP_ -= damage;
-
-	// HPが0以下になったら死亡フラグを立てる
-	if (currentHP_ <= 0.0f) {
-		currentHP_ = 0.0f;
-		isDead_ = true;
-	}
-}
-
 void BaseEnemy::UpdateTimedCalls() {
 	// １フレ遅れさせてからクリアの実行
 	if (shouldClearTimedCalls_) {
@@ -63,10 +52,41 @@ Vector3 BaseEnemy::GetWorldPosition() {
 	return Vector3{ 0.0f, 0.0f, 0.0f };
 }
 
-void BaseEnemy::OnCollision() {
-	// 基本実装：衝突時に即死
-	isDead_ = true;
+void BaseEnemy::SetEnemyStats(float hp, float attackPower) {
+	SetMaxHP(hp);
+	SetAttackPower(attackPower);
+
+	// 衝突判定の基本設定
+	SetCollisionAttribute(kCollisionAttributeEnemy);
+	SetCollisionMask(~kCollisionAttributeEnemy);
 }
+
+void BaseEnemy::OnCollision(Collider* other) {
+	if (!other) return;
+
+	// 衝突相手がプレイヤー陣営かチェック
+ 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer) {
+		// プレイヤーの弾に当たった場合はダメージを受ける
+		float damage = other->GetAttackPower();
+		TakeDamage(damage);
+#ifdef _DEBUG
+		Logger::LogF("Enemy took %.1f damage. Remaining HP: %.1f\n", damage, GetCurrentHP());
+#endif
+	}
+}
+
+float BaseEnemy::TakeDamage(float damage) {
+	// Colliderベースのダメージ処理を呼び出し
+	float actualDamage = Collider::TakeDamage(damage);
+
+	// HPが0以下になったら死亡フラグを立てる
+	if (GetCurrentHP() <= 0.0f) {
+		isDead_ = true;
+	}
+
+	return actualDamage;
+}
+
 
 void BaseEnemy::SetToVelocityDirection() {
 	if (gameObject_) {

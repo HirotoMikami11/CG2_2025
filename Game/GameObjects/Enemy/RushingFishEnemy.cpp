@@ -23,7 +23,7 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 
 	// 大きさを設定（通常の敵より少し小さく）
 	Vector3Transform enemyTransform{
-		{5.0f, 5.0f, 5.0f},   // scale（少し小さめ）
+		{3.0f, 3.0f, 3.0f},   // scale
 		{0.0f, 0.0f, 0.0f},   // rotate
 		position              // translate
 	};
@@ -35,16 +35,13 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 	// パターンの設定
 	pattern_ = pattern;
 
-	// HP設定（突進魚はHP30）
-	maxHP_ = 30.0f;
-	currentHP_ = maxHP_;
+	// 突進魚のステータス設定
+	float enemyHP = 30.0f;
+	float enemyAttackPower = 10.0f; // 体当たり攻撃力（高い）
+	SetEnemyStats(enemyHP, enemyAttackPower);
 
-	// 衝突判定設定
-	SetRadius(4.0f); // Colliderの半径をセット（通常より小さく）
-	/// 衝突属性の設定
-	SetCollisionAttribute(kCollisionAttributeEnemy);
-	/// 衝突対象は自分の属性以外に設定(ビット反転)
-	SetCollisionMask(~kCollisionAttributeEnemy);
+	// 衝突半径の設定
+	SetRadius(2.0f);
 
 	// 設定したパターンによって初期状態を設定する
 	SetInitializeState();
@@ -85,7 +82,9 @@ void RushingFishEnemy::ImGui() {
 		ImGui::Separator();
 
 		// HP情報
-		ImGui::Text("HP: %.1f / %.1f", currentHP_, maxHP_);
+		ImGui::Text("HP: %.1f / %.1f", GetCurrentHP(), GetMaxHP());
+		ImGui::Text("Attack Power: %.1f", GetAttackPower());
+		ImGui::Text("Collision Radius: %.1f", GetRadius());
 
 		// プレイヤーとの距離表示
 		if (player_) {
@@ -111,17 +110,6 @@ void RushingFishEnemy::ImGui() {
 		}
 	}
 #endif
-}
-
-void RushingFishEnemy::OnCollision() {
-	// プレイヤーと衝突した場合
-	if (player_) {
-		// プレイヤーにダメージを与える
-		player_->TakeDamage(kPlayerDamage);
-	}
-
-	// 自分は死亡
-	isDead_ = true;
 }
 
 void RushingFishEnemy::SetInitializeState() {

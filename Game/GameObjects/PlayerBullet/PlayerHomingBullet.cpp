@@ -28,10 +28,13 @@ void PlayerHomingBullet::Initialize(DirectXCommon* dxCommon, const Vector3& posi
 
 	// 衝突判定設定
 	SetRadius(0.5f); // Colliderの半径をセット
+	SetAttackPower(3.0f); // プレイヤーの弾の攻撃力
+	SetMaxHP(1.0f); // 弾のHPは1
+
 	/// 衝突属性の設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
-	/// 衝突対象は敵に設定
-	SetCollisionMask(kCollisionAttributeEnemy);
+	/// 衝突対象は自分の属性以外に設定(ビット反転)
+	SetCollisionMask(~kCollisionAttributePlayer);
 }
 
 void PlayerHomingBullet::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -94,11 +97,15 @@ void PlayerHomingBullet::ImGui() {
 #endif
 }
 
-void PlayerHomingBullet::OnCollision() {
-	// 敵に当たったら弾は消える
-	isDead_ = true;
-}
+void PlayerHomingBullet::OnCollision(Collider* other) {
+	if (!other) return;
 
+	// 衝突相手が敵の属性を持つかチェック
+	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy) {
+		// 弾は衝突すると消滅
+		TakeDamage(1.0f); // 自分のHPを0にして消滅
+	}
+}
 Vector3 PlayerHomingBullet::GetWorldPosition() {
 	if (gameObject_) {
 		// Transform3DのWorld行列から移動成分を取得
