@@ -56,6 +56,9 @@ void RushingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 時限発動の更新
 	UpdateTimedCalls();
 
+	// ダメージエフェクトの更新
+	UpdateDamageEffect();
+
 	// 向きの更新
 	SetToVelocityDirection();
 

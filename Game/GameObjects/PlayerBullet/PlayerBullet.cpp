@@ -49,6 +49,11 @@ void PlayerBullet::Update(const Matrix4x4& viewProjectionMatrix) {
 	currentPos += velocity_;
 	gameObject_->SetPosition(currentPos);
 
+	// タイマーを減らす
+	if (--deathTimer_ <= 0) {
+		TakeDamage(GetMaxHP()); // 自分のHPを0にして削除
+	}
+
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
 }
@@ -78,7 +83,7 @@ void PlayerBullet::OnCollision(Collider* other) {
 	// 衝突相手が敵の属性を持つかチェック
 	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy) {
 		// 弾は衝突すると消滅
-		TakeDamage(1.0f); // 自分のHPを0にして消滅
+		TakeDamage(GetMaxHP()); // 自分のHPを0にして消滅
 	}
 }
 

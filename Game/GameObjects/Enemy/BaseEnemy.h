@@ -152,10 +152,6 @@ protected:
 	// 敵の行動パターン
 	EnemyPattern pattern_ = EnemyPattern::Straight;
 
-	// 古いHP変数を削除（Colliderベースに統一）
-	// float maxHP_ = 0.0f;        // 削除
-	// float currentHP_ = 0.0f;    // 削除
-
 	// 死亡フラグ（既存システムとの互換性のため残す）
 	bool isDead_ = false;
 
@@ -174,10 +170,32 @@ protected:
 	// システム参照
 	DirectXCommon* directXCommon_ = nullptr;
 
+	// ダメージエフェクト関連
+	Vector4 originalColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };  // 元の色
+	Vector4 damageColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };    // ダメージ時の色（赤）
+	bool isDamageEffectActive_ = false;                     // ダメージエフェクトが有効か
+	float damageEffectTimer_ = 0.0f;                       // ダメージエフェクトのタイマー
+	float damageEffectDuration_ = 30.0f;                   // ダメージエフェクトの持続時間（フレーム）
+
 	/// <summary>
 	/// 速度の方向を向く
 	/// </summary>
 	void SetToVelocityDirection();
+
+	/// <summary>
+	/// ダメージエフェクトを開始する
+	/// </summary>
+	void StartDamageEffect();
+
+	/// <summary>
+	/// ダメージエフェクトを更新する（Update関数から呼び出し）
+	/// </summary>
+	void UpdateDamageEffect();
+
+	/// <summary>
+	/// 元の色を保存する
+	/// </summary>
+	void SaveOriginalColor();
 
 	/// <summary>
 	/// 設定されたパターンに応じた初期Stateを設定（サブクラスで実装）

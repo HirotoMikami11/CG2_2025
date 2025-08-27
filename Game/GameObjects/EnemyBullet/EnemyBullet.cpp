@@ -48,7 +48,7 @@ void EnemyBullet::Update(const Matrix4x4& viewProjectionMatrix) {
 	// ホーミング時間中のみホーミング処理
 	if (homingTimer_ > 0.0f) {
 		velocity_ = IsHoming();
-		homingTimer_ -- ;
+		homingTimer_--;
 	}
 
 	// プレイヤーの方向を向くように回転
@@ -62,16 +62,16 @@ void EnemyBullet::Update(const Matrix4x4& viewProjectionMatrix) {
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
 
-	// 時間経過でデス
+	// タイマーを減らす
 	if (--deathTimer_ <= 0) {
-		isDead_ = true;
+		TakeDamage(GetMaxHP()); // 自分のHPを0にして削除
 	}
+
 }
 
 void EnemyBullet::Draw(const Light& directionalLight) {
-	if (!isDead_) {
-		gameObject_->Draw(directionalLight);
-	}
+	gameObject_->Draw(directionalLight);
+
 }
 
 Vector3 EnemyBullet::GetWorldPosition() {

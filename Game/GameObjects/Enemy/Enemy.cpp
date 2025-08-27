@@ -62,6 +62,9 @@ void Enemy::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 時限発動の更新
 	UpdateTimedCalls();
 
+	// ダメージエフェクトの更新
+	UpdateDamageEffect();
+
 	// 弾の更新
 	for (auto& bullet : bullets_) {
 		bullet->Update(viewProjectionMatrix);

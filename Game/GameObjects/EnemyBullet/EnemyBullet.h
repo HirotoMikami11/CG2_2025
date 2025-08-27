@@ -86,7 +86,6 @@ private:
 	// 寿命
 	static const int32_t kLifeTime_ = 60 * 3; // 弾の寿命（フレーム数）
 	int32_t deathTimer_ = kLifeTime_; // 弾の寿命タイマー
-	bool isDead_ = false; // 弾が消滅したかどうかのフラグ
 
 	static const int32_t kHomingTime_ = 60;   // ホーミングする時間（秒）
 	int homingTimer_ = kHomingTime_;  // 残りホーミング時間

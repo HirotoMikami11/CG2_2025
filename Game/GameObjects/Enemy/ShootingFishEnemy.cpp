@@ -46,11 +46,6 @@ void ShootingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& posit
 	// 設定したパターンによって初期状態を設定する
 	SetInitializeState();
 
-#ifdef _DEBUG
-	// Colliderベースの値を表示
-	Logger::LogF("ShootingFish created - HP: %.1f/%.1f, AttackPower: %.1f\n",
-		GetCurrentHP(), GetMaxHP(), GetAttackPower());
-#endif
 }
 
 void ShootingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -61,6 +56,9 @@ void ShootingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
 
 	// 時限発動の更新
 	UpdateTimedCalls();
+
+	// ダメージエフェクトの更新
+	UpdateDamageEffect();
 
 	// 向きの更新（射撃状態では手動で制御するのでスキップする場合もある）
 	if (state_ && state_->GetName() != "Shoting Fish Shoot") {

@@ -43,7 +43,7 @@ public:
 	/// 死亡フラグを取得
 	/// </summary>
 	/// <returns>死亡フラグ</returns>
-	bool IsDead() const {  return Collider::IsDead() || deathTimer_ <= 0; ; }
+	bool IsDead() const { return Collider::IsDead() || deathTimer_ <= 0; ; }
 
 	/// <summary>
 	/// ワールド座標を取得（オーバーライド）

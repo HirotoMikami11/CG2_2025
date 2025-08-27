@@ -59,13 +59,16 @@ void BaseEnemy::SetEnemyStats(float hp, float attackPower) {
 	// 衝突判定の基本設定
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	SetCollisionMask(~kCollisionAttributeEnemy);
+
+	// 元の色を保存（初期化後に呼び出す）
+	SaveOriginalColor();
 }
 
 void BaseEnemy::OnCollision(Collider* other) {
 	if (!other) return;
 
 	// 衝突相手がプレイヤー陣営かチェック
- 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer) {
+	if (other->GetCollisionAttribute() & kCollisionAttributePlayer) {
 		// プレイヤーの弾に当たった場合はダメージを受ける
 		float damage = other->GetAttackPower();
 		TakeDamage(damage);
@@ -79,6 +82,9 @@ float BaseEnemy::TakeDamage(float damage) {
 	// Colliderベースのダメージ処理を呼び出し
 	float actualDamage = Collider::TakeDamage(damage);
 
+	// ダメージエフェクトを開始
+	StartDamageEffect();
+
 	// HPが0以下になったら死亡フラグを立てる
 	if (GetCurrentHP() <= 0.0f) {
 		isDead_ = true;
@@ -87,6 +93,57 @@ float BaseEnemy::TakeDamage(float damage) {
 	return actualDamage;
 }
 
+void BaseEnemy::StartDamageEffect() {
+	// ダメージエフェクトを開始
+	isDamageEffectActive_ = true;
+	damageEffectTimer_ = damageEffectDuration_;
+
+	// すぐに赤色に変更
+	if (gameObject_) {
+		gameObject_->SetColor(damageColor_);
+	}
+
+}
+
+void BaseEnemy::UpdateDamageEffect() {
+	// ダメージエフェクトが有効でない場合は何もしない
+	if (!isDamageEffectActive_ || !gameObject_) {
+		return;
+	}
+
+	// タイマーを減少
+	damageEffectTimer_--;
+
+	// エフェクト終了チェック
+	if (damageEffectTimer_ <= 0.0f) {
+		// エフェクト終了：元の色に戻す
+		gameObject_->SetColor(originalColor_);
+		isDamageEffectActive_ = false;
+		damageEffectTimer_ = 0.0f;
+		return;
+	}
+
+	// イージング計算（0.0f～1.0f の範囲で補間）
+	float t = 1.0f - (damageEffectTimer_ / damageEffectDuration_);
+	float easedT = EaseOutQuart(t);
+
+	// Lerp を使用して色を補間（赤色→元の色）
+	Vector4 currentColor;
+	currentColor.x = Lerp(damageColor_.x, originalColor_.x, easedT);
+	currentColor.y = Lerp(damageColor_.y, originalColor_.y, easedT);
+	currentColor.z = Lerp(damageColor_.z, originalColor_.z, easedT);
+	currentColor.w = Lerp(damageColor_.w, originalColor_.w, easedT);
+
+	// 補間した色を適用
+	gameObject_->SetColor(currentColor);
+}
+
+void BaseEnemy::SaveOriginalColor() {
+	// ゲームオブジェクトが存在する場合のみ色を保存
+	if (gameObject_) {
+		originalColor_ = gameObject_->GetColor();
+	}
+}
 
 void BaseEnemy::SetToVelocityDirection() {
 	if (gameObject_) {
