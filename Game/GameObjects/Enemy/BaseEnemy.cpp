@@ -1,7 +1,7 @@
 #include "BaseEnemy.h"
 #include "GameObjects/Player/Player.h"
 #include "Scenes/GameScene/GameScene.h"
-
+#include "Managers/Audio/AudioManager.h"
 BaseEnemy::BaseEnemy(EnemyType type) : enemyType_(type) {
 }
 
@@ -99,10 +99,30 @@ float BaseEnemy::TakeDamage(float damage) {
 	if (GetCurrentHP() <= 0.0f) {
 		isPlayingDeathAnimation_ = true;
 		isDeathAnimationComplete_ = false;
+		// 敵死亡音を再生
+		AudioManager* audioManager = AudioManager::GetInstance();
+		if (audioManager) {
+			audioManager->Play("EnemyDead");
+		}
 		OnDeath(); // 各派生クラスで実装される死亡処理
 	}
 
 	return actualDamage;
+}
+void BaseEnemy::KillOffscreenEnemy() {
+	// 既に死亡アニメーション中の場合は何もしない
+	if (isPlayingDeathAnimation_) {
+		return;
+	}
+
+	// HPを直接設定
+	SetCurrentHP(0);
+
+	// 死亡アニメーションフラグを設定
+	isPlayingDeathAnimation_ = true;
+	isDeathAnimationComplete_ = false;
+	// 各派生クラスの死亡処理を呼び出し
+	OnDeath();
 }
 
 void BaseEnemy::StartDamageEffect() {
@@ -174,3 +194,4 @@ void BaseEnemy::SetToVelocityDirection() {
 		gameObject_->SetRotation(rotation);
 	}
 }
+

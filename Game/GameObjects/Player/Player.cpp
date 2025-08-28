@@ -60,6 +60,9 @@ void Player::Initialize(DirectXCommon* dxCommon, const Vector3& position) {
 	if (health_) {
 		health_->SetMaxHP(GetMaxHP());
 	}
+
+	// 元の色を保存（無敵エフェクト用）
+	originalColor_ = gameObject_->GetColor();
 }
 
 void Player::Update(const Matrix4x4& viewProjectionMatrix) {
@@ -78,6 +81,9 @@ void Player::Update(const Matrix4x4& viewProjectionMatrix) {
 
 	// 攻撃処理
 	Attack();
+
+	// 無敵時間の更新
+	UpdateInvincibility();
 
 	// 分離したシステムの更新
 	health_->Update();
@@ -159,6 +165,15 @@ void Player::ImGui() {
 		ImGui::Separator();
 		ImGui::Text("Bullets Count: %zu", bullets_.size());
 
+		// 無敵時間デバッグ情報
+		ImGui::Separator();
+		ImGui::Text("Invincibility Status");
+		ImGui::Text("Is Invincible: %s", isInvincible_ ? "YES" : "NO");
+		ImGui::Text("Invincibility Timer: %.1f / %.1f", invincibilityTimer_, kInvincibilityDuration);
+		if (ImGui::Button("Trigger Invincibility")) {
+			StartInvincibility();
+		}
+
 		// KamataEngineのデバッグ表示と同様の情報を表示
 		Vector3 worldPos = GetWorldPosition();
 		ImGui::Text("World Position: (%.2f, %.2f, %.2f)", worldPos.x, worldPos.y, worldPos.z);
@@ -213,6 +228,11 @@ Vector3 Player::GetForward() const {
 void Player::OnCollision(Collider* other) {
 	if (!other) return;
 
+	// 無敵時間中はダメージを受けない
+	if (isInvincible_) {
+		return;
+	}
+
 	// 衝突相手が敵の属性を持つかチェック
 	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy) {
 		// 相手の攻撃力分のダメージを受ける
@@ -225,6 +245,14 @@ void Player::OnCollision(Collider* other) {
 
 		// ColliderのHPも同期更新
 		SetCurrentHP(health_->GetCurrentHP());
+
+		// 無敵時間を開始
+		StartInvincibility();
+
+#ifdef _DEBUG
+		Logger::LogF("Player took %.1f damage. Remaining HP: %.1f. Started invincibility.\n",
+			damage, GetCurrentHP());
+#endif
 	}
 }
 
@@ -487,4 +515,58 @@ Vector3 Player::CalculateLeadingShot(const Vector3& enemyPos, const Vector3& ene
 
 	// 予測位置を計算
 	return enemyPos + enemyVelocity * t;
+}
+
+void Player::StartInvincibility() {
+	isInvincible_ = true;
+	invincibilityTimer_ = kInvincibilityDuration;
+
+#ifdef _DEBUG
+	Logger::Log(Logger::GetStream(), "Player invincibility started\n");
+#endif
+}
+
+void Player::UpdateInvincibility() {
+	if (!isInvincible_) {
+		return;
+	}
+
+	// 無敵時間タイマーを減らす
+	invincibilityTimer_--;
+
+	// 無敵時間終了チェック
+	if (invincibilityTimer_ <= 0.0f) {
+		isInvincible_ = false;
+		invincibilityTimer_ = 0.0f;
+
+		// 元の色に戻す
+		if (gameObject_) {
+			gameObject_->SetColor(originalColor_);
+		}
+
+#ifdef _DEBUG
+		Logger::Log(Logger::GetStream(), "Player invincibility ended\n");
+#endif
+		return;
+	}
+
+	// 無敵時の視覚エフェクトを更新
+	UpdateInvincibilityEffect();
+}
+
+void Player::UpdateInvincibilityEffect() {
+	if (!gameObject_ || !isInvincible_) {
+		return;
+	}
+
+	// 点滅エフェクト（フレーム数による計算）
+	int flashFrame = static_cast<int>(invincibilityTimer_) % static_cast<int>(kFlashInterval * 2);
+
+	if (flashFrame < kFlashInterval) {
+		// 半透明にする
+		gameObject_->SetColor(invincibleColor_);
+	} else {
+		// 通常色にする
+		gameObject_->SetColor(originalColor_);
+	}
 }

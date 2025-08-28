@@ -268,6 +268,9 @@
     <Filter Include="Game\Feild\Rock">
       <UniqueIdentifier>{e1c73e5e-5b6d-4d00-8bf1-8a3ee6cf3391}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObjects\Button">
+      <UniqueIdentifier>{d2cdf854-9ac7-4e20-8e23-333bb3e53a6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -581,6 +584,9 @@
     </ClCompile>
     <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateDead.cpp">
       <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Button\Button.cpp">
+      <Filter>Game\GameObjects\Button</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -969,6 +975,9 @@
     </ClInclude>
     <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateDead.h">
       <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Button\Button.h">
+      <Filter>Game\GameObjects\Button</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

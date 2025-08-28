@@ -140,6 +140,10 @@ public:
 	/// <param name="damage">ダメージ量</param>
 	/// <returns>実際に受けたダメージ量</returns>
 	virtual float TakeDamage(float damage) override;
+	/// <summary>
+/// 画面外に出た敵を確実に殺す（ステートから呼び出し用）
+/// </summary>
+	void KillOffscreenEnemy();
 
 	/// <summary>
 	/// 敵の初期ステータスを設定（派生クラスで呼び出し）
@@ -226,4 +230,5 @@ protected:
 	/// HPが0になった時の死亡処理（各派生クラスで実装）
 	/// </summary>
 	virtual void OnDeath() = 0;
+
 };

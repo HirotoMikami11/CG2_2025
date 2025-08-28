@@ -34,7 +34,7 @@ void EnemyBullet::Initialize(DirectXCommon* dxCommon, const Vector3& position, c
 	// 弾の色を設定（赤色で敵の弾とわかりやすく）
 	gameObject_->SetColor({ 1.0f, 0.2f, 0.2f, 1.0f });
 	SetRadius(1.0f);
-	SetAttackPower(5.0f); // 敵の弾の攻撃力
+	SetAttackPower(15.0f); // 敵の弾の攻撃力
 	SetMaxHP(1.0f); // 弾のHPは1
 
 	SetCollisionAttribute(kCollisionAttributeEnemy);

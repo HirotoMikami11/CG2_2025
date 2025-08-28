@@ -98,6 +98,11 @@ public:
 	/// <param name="other">衝突相手のコライダー</param>
 	void OnCollision(Collider* other) override;
 
+	/// <summary>
+	/// 無敵状態かどうかを取得
+	/// </summary>
+	/// <returns>無敵状態かどうか</returns>
+	bool IsInvincible() const { return isInvincible_; }
 
 	//Getter
 	Vector3 GetPosition() const { return gameObject_->GetPosition(); }
@@ -175,6 +180,14 @@ private:
 	static constexpr float kCharacterSpeed = 0.2f; // 移動速度
 	static constexpr float kBulletSpeed = 2.0f; // 弾の速度
 
+	// 無敵時間関連
+	bool isInvincible_ = false;								// 無敵状態フラグ
+	float invincibilityTimer_ = 0.0f;						// 無敵時間タイマー
+	static constexpr float kInvincibilityDuration = 120.0f;	// 無敵時間の長さ（フレーム数、2秒）
+	static constexpr float kFlashInterval = 6.0f;			// 点滅間隔（フレーム数）
+	Vector4 originalColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };	// 元の色
+	Vector4 invincibleColor_ = { 1.0f, 1.0f, 1.0f, 0.3f };	// 無敵時の色（半透明）
+
 	/// <summary>
 	/// 移動処理
 	/// </summary>
@@ -223,4 +236,19 @@ private:
 	/// <param name="bulletSpeed">弾の速度</param>
 	/// <returns>予測位置</returns>
 	Vector3 CalculateLeadingShot(const Vector3& enemyPos, const Vector3& enemyVelocity, float bulletSpeed);
+
+	/// <summary>
+	/// 無敵時間を開始する
+	/// </summary>
+	void StartInvincibility();
+
+	/// <summary>
+	/// 無敵時間を更新する
+	/// </summary>
+	void UpdateInvincibility();
+
+	/// <summary>
+	/// 無敵時の視覚エフェクトを更新する
+	/// </summary>
+	void UpdateInvincibilityEffect();
 };

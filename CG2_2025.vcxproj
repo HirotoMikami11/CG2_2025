@@ -160,6 +160,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\FieldEditor\FieldEditor.cpp" />
     <ClCompile Include="Game\FieldEditor\FieldLoader.cpp" />
     <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Game\GameObjects\Button\Button.cpp" />
     <ClCompile Include="Game\GameObjects\EnemyBullet\EnemyBullet.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\BaseEnemy.cpp" />
     <ClCompile Include="Game\GameObjects\Enemy\Enemy.cpp" />
@@ -332,6 +333,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\FieldEditor\FieldEditor.h" />
     <ClInclude Include="Game\FieldEditor\FieldLoader.h" />
     <ClInclude Include="Game\Game.h" />
+    <ClInclude Include="Game\GameObjects\Button\Button.h" />
     <ClInclude Include="Game\GameObjects\Collider.h" />
     <ClInclude Include="Game\GameObjects\EnemyBullet\EnemyBullet.h" />
     <ClInclude Include="Game\GameObjects\Enemy\BaseEnemy.h" />

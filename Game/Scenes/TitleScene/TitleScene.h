@@ -8,6 +8,9 @@
 //タイトルプレイヤー
 #include "GameObjects/TitlePlayer/TitlePlayer.h"
 
+//ボタンクラス
+#include "GameObjects/Button/Button.h"
+
 class TitleScene : public BaseScene
 {
 public:
@@ -58,6 +61,9 @@ private:
 	std::unique_ptr<TitlePlayer> titlePlayer_ = nullptr;
 	//回転速度
 	Vector3 rotate_ = { 0,0.005f,0 };
+
+	// Aボタン
+	std::unique_ptr<Button> aButton_ = nullptr;
 
 	// ライティング
 	Light directionalLight_;

@@ -37,7 +37,7 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 
 	// 突進魚のステータス設定
 	float enemyHP = 3.0f;
-	float enemyAttackPower = 5.0f; // 体当たり攻撃力（高い）
+	float enemyAttackPower = 15.0f; // 体当たり攻撃力（高い）
 	SetEnemyStats(enemyHP, enemyAttackPower);
 
 	// 衝突半径の設定

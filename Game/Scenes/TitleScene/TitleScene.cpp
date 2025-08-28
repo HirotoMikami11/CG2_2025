@@ -10,6 +10,7 @@ TitleScene::TitleScene()
 	, offscreenRenderer_(nullptr)
 	, modelManager_(nullptr)
 	, textureManager_(nullptr)
+	, audioManager_(nullptr)
 	, viewProjectionMatrix{ MakeIdentity4x4() }
 	, viewProjectionMatrixSprite{ MakeIdentity4x4() }
 {
@@ -29,6 +30,9 @@ void TitleScene::LoadResources() {
 	// モデルを事前読み込み
 	modelManager_->LoadModel("resources/Model/FontModel", "titleFont.obj", "titleFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+
+	// Aボタンのテクスチャを読み込み
+	textureManager_->LoadTexture("resources/Texture/AButton.png", "AButton");
 
 	// 音声の読み込み
 	audioManager_->LoadAudio("resources/Audio/TitleBGM.mp3", "TitleBGM");
@@ -116,6 +120,18 @@ void TitleScene::InitializeGameObjects() {
 	titlePlayer_->Initialize();
 
 	///*-----------------------------------------------------------------------*///
+	///									Aボタン									///
+	///*-----------------------------------------------------------------------*///
+
+	// 初期位置を画面中央、Y座標620に設定（ImGuiで調整可能）
+	Vector2 buttonPosition = { 640.0f, 620.0f };  // Y座標を620に設定
+	Vector2 buttonSize = { 64.0f, 64.0f };
+
+	aButton_ = std::make_unique<Button>();
+	aButton_->Initialize(directXCommon_, "AButton", buttonPosition, buttonSize);
+	aButton_->SetName("A Button");
+
+	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
@@ -136,16 +152,13 @@ void TitleScene::UpdateGameObjects() {
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE) ||
 		InputManager::GetInstance()->IsGamePadButtonTrigger(InputManager::GamePadButton::A)) {
 		if (!SceneTransitionHelper::IsTransitioning()) {
-		audioManager_->Stop("TitleBGM");
-		audioManager_->Play("Select");
-		audioManager_->SetVolume("Select", 0.3f);
+			audioManager_->Stop("TitleBGM");
+			audioManager_->Play("Select");
+			audioManager_->SetVolume("Select", 0.3f);
 
-		// フェードを使った遷移（ヘルパークラスを使用）
-		SceneTransitionHelper::FadeToScene("GameScene", 1.0f);
+			// フェードを使った遷移（ヘルパークラスを使用）
+			SceneTransitionHelper::FadeToScene("GameScene", 1.0f);
 		}
-
-
-
 	}
 
 	// 行列更新
@@ -158,6 +171,9 @@ void TitleScene::UpdateGameObjects() {
 	//プレイヤー(置物)の更新
 	titlePlayer_->AddRotation(rotate_);
 	titlePlayer_->Update(viewProjectionMatrix);
+
+	// Aボタンの更新
+	aButton_->Update(viewProjectionMatrixSprite);
 }
 
 void TitleScene::DrawOffscreen() {
@@ -171,6 +187,9 @@ void TitleScene::DrawOffscreen() {
 void TitleScene::DrawBackBuffer()
 {
 	//一応3Dのものも外に置けるようにした
+
+	// Aボタンの描画
+	aButton_->Draw();
 }
 
 void TitleScene::ImGui() {
@@ -181,6 +200,12 @@ void TitleScene::ImGui() {
 
 	//プレイヤー(置物)
 	titlePlayer_->ImGui();
+	ImGui::Spacing();
+
+	// AボタンのImGui
+	ImGui::Text("A Button");
+	aButton_->ImGui();
+	ImGui::Spacing();
 
 	// ライトのImGui
 	ImGui::Text("Lighting");

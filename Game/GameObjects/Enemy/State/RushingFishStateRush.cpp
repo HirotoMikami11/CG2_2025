@@ -34,7 +34,7 @@ void RushingFishStateRush::Update() {
 
 	//自機から離れたら死亡
 	if (distanceToPlayer >= 200) {
-		enemy_->Collider::IsDead();
+		enemy_->KillOffscreenEnemy();
 		return;
 	}
 

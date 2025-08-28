@@ -55,6 +55,7 @@ void GameScene::LoadResources() {
 
 	// 音声の読み込み
 	audioManager_->LoadAudio("resources/Audio/GameBGM.mp3", "GameBGM");
+	audioManager_->LoadAudio("resources/Audio/EnemyDead.mp3", "EnemyDead");
 
 
 	Logger::Log(Logger::GetStream(), "GameScene: Resources loaded successfully\n");
