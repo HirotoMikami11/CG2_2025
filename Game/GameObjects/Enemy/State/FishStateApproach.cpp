@@ -25,10 +25,13 @@ void FishStateApproach::Update() {
 		return;
 	}
 
-	// カメラが動いた場合は目標位置を再計算
+	// カメラが動いた場合は目標位置を平行移動（新しいランダム位置は生成しない）
 	Vector3 currentCameraPos = cameraController->GetPosition();
 	if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold) {
-		CalculateTargetPosition();
+		// カメラの移動量を計算
+		Vector3 cameraMovement = currentCameraPos - lastCameraPosition_;
+		// 目標位置をカメラと一緒に移動（相対位置を維持）
+		targetPosition_ += cameraMovement;
 		lastCameraPosition_ = currentCameraPos;
 	}
 

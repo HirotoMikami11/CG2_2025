@@ -113,7 +113,7 @@ void GameScene::Initialize() {
 
 	// デフォルトでレールカメラをアクティブに設定
 	cameraController_->SetActiveCamera("rail");
-	railCamera_->StopMovement(); // レールカメラの動きを停止
+	//railCamera_->StopMovement(); // レールカメラの動きを停止
 	railCamera_->SetLoopEnabled(false);//ループを停止
 
 	// レールカメラエディタの初期化
