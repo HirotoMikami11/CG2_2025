@@ -52,6 +52,8 @@ void GameScene::LoadResources() {
 
 	// テクスチャ読み込み
 	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
+	textureManager_->LoadTexture("resources/Texture/RBButton.png", "RBButton");
+
 
 	// 音声の読み込み
 	audioManager_->LoadAudio("resources/Audio/GameBGM.mp3", "GameBGM");
@@ -209,6 +211,15 @@ void GameScene::InitializeGameObjects() {
 	// 地面の生成
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize(directXCommon_, { 0.0f, -70.0f, 0.0f });
+
+
+	Vector2 rbButtonPosition = { 1170.0f, 670.0f };  // 右下寄りの位置
+	Vector2 buttonSize = { 128.0f, 128.0f };
+	rbButton_ = std::make_unique<Button>();
+	rbButton_->Initialize(directXCommon_, "RBButton", rbButtonPosition, buttonSize);
+	rbButton_->SetGamePadButton(InputManager::GamePadButton::RB);
+	rbButton_->SetName("RB Button");
+	rbButton_->SetIdleAnimationRange(2.0f);
 }
 
 void GameScene::Update() {
@@ -298,12 +309,15 @@ void GameScene::Update() {
 		fieldLoader_->Update(viewProjectionMatrix);
 	}
 
+	// RBボタンの更新
+	rbButton_->Update(viewProjectionMatrixSprite);
+
 	///*-----------------------------------------------------------------------*///
 	///								ゲーム状態判定								///
 	///*-----------------------------------------------------------------------*///
-//#ifdef _DEBUG
-//	return;
-//#endif // _DEBUG
+#ifdef _DEBUG
+	return;
+#endif // _DEBUG
 
 	// ゲームオーバー条件: プレイヤーのHPが0以下
 	if (player_ && player_->GetCurrentHP() <= 0.0f) {
@@ -415,6 +429,7 @@ void GameScene::DrawBackBuffer() {
 		player_->DrawUI();
 	}
 
+
 	// ロックオンUI描画
 	if (player_->IsMultiLockOnMode()) {
 		// マルチロックオンモードの場合
@@ -423,7 +438,11 @@ void GameScene::DrawBackBuffer() {
 		// 通常モードの場合
 		lockOn_->DrawUI(viewProjectionMatrixSprite);
 	}
+
+	// RBボタンの描画
+	rbButton_->Draw();
 }
+
 
 void GameScene::ClearAllEnemyBullets() {
 	// 弾が持っているプレイヤーポインタを無効化してから削除
@@ -606,7 +625,10 @@ void GameScene::ImGui() {
 		CreateEnemy(Vector3{ 30.0f, 20.0f, 180.0f }, EnemyType::ShootingFish, EnemyPattern::Shooting);
 	}
 	ImGui::SameLine();
-
+	// RBボタンのImGui
+	ImGui::Text("RB Button");
+	rbButton_->ImGui();
+	ImGui::Spacing();
 #endif
 }
 

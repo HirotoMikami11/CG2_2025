@@ -161,7 +161,7 @@ void Button::UpdateIdleAnimation()
 {
 	// アイドルアニメーションが無効、または押されている時は基準位置に戻す
 	if (!idleAnimationEnabled_ || isPressed_) {
-		sprite_->SetPosition(basePosition_);
+		//sprite_->SetPosition(basePosition_);
 		// 押されていない時にタイマーをリセットして、次回スムーズに開始
 		if (!isPressed_) {
 			idleAnimationTimer_ = 0.0f;

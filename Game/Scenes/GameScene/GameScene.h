@@ -28,6 +28,8 @@
 #include "CameraController/CameraController.h"	//カメラコントローラー
 #include "Camera/RailCameraEditor.h" 
 
+#include "GameObjects/Button/Button.h"
+
 // 前方宣言
 class RailCamera;
 
@@ -94,6 +96,9 @@ private:
 	// 背景オブジェクト
 	std::unique_ptr<Ground> ground_;
 	std::unique_ptr<Skydome> skydome_;
+
+	// RBボタン
+	std::unique_ptr<Button> rbButton_ = nullptr;
 
 	// ライティング
 	Light directionalLight_;
