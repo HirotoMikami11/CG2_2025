@@ -29,7 +29,6 @@ void TitleScene::LoadResources() {
 	// モデルを事前読み込み
 	modelManager_->LoadModel("resources/Model/FontModel", "titleFont.obj", "titleFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
-	audioManager_->LoadAudio("resources/Audio/Se01.mp3", "SE");
 
 	// 音声の読み込み
 	audioManager_->LoadAudio("resources/Audio/TitleBGM.mp3", "TitleBGM");

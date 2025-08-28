@@ -51,10 +51,10 @@ private:
 	std::unique_ptr<Sprite> enGaugeFill_;		 // ENゲージの中身
 
 	// ゲージ設定
-	Vector2 hpGaugePosition_{ 25.0f, 50.0f };
-	Vector2 enGaugePosition_{ 25.0f, 80.0f };
-	Vector2 gaugeSize_{ 200.0f, 20.0f };
-	Vector2 gaugeFrameSize_{ 204.0f, 24.0f };
+	Vector2 hpGaugePosition_{ 25.0f, 615.0f };
+	Vector2 enGaugePosition_{ 25.0f, 668.0f };
+	Vector2 gaugeSize_{ 260.0f, 30.0f };
+	Vector2 gaugeFrameSize_{ 266.0f, 36.0f };
 
 	Vector4 hpNormalColor_{ 0.0f, 1.0f, 0.0f, 1.0f };	// 緑色
 	Vector4 hpWarningColor_{ 1.0f, 1.0f, 0.0f, 1.0f };	 // 黄色
