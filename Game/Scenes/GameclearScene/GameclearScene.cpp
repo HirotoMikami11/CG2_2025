@@ -32,6 +32,8 @@ void GameclearScene::LoadResources() {
 	// 音声の読み込み
 	audioManager_->LoadAudio("resources/Audio/ClearBGM.mp3", "ClearBGM");
 
+	// Aボタンのテクスチャを読み込み
+	textureManager_->LoadTexture("resources/Texture/AButton.png", "AButton");
 
 	Logger::Log(Logger::GetStream(), "GameclearScene: Resources loaded successfully\n");
 }
@@ -151,6 +153,19 @@ void GameclearScene::InitializeGameObjects() {
 		{ 0.0f,0.0f,0.0f },
 		{ 1.7f,3.6f,1.0f }
 	);
+
+	///*-----------------------------------------------------------------------*///
+	///									Aボタン									///
+	///*-----------------------------------------------------------------------*///
+
+	// 初期位置を画面中央、Y座標620に設定（ImGuiで調整可能）
+	Vector2 buttonPosition = { 640.0f, 620.0f };  // Y座標を620に設定
+	Vector2 buttonSize = { 64.0f, 64.0f };
+
+	aButton_ = std::make_unique<Button>();
+	aButton_->Initialize(directXCommon_, "AButton", buttonPosition, buttonSize);
+	aButton_->SetName("A Button");
+
 	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
@@ -192,9 +207,6 @@ void GameclearScene::UpdateGameObjects() {
 	viewProjectionMatrix = cameraController_->GetViewProjectionMatrix();
 	viewProjectionMatrixSprite = cameraController_->GetViewProjectionMatrixSprite();
 
-
-
-
 	// t を進める
 	t += tSpeed;
 	if (t >= 1.0f) {
@@ -213,7 +225,6 @@ void GameclearScene::UpdateGameObjects() {
 	// イージング補間
 	gameclearPlayer_->SetPosition({ x,0.0f,0.0f });
 
-
 	// モデルの更新
 	gameclearFont_->Update(viewProjectionMatrix);
 	for (int i = 0; i < 3; i++)
@@ -223,6 +234,9 @@ void GameclearScene::UpdateGameObjects() {
 	//プレイヤー(置物)の更新
 	gameclearPlayer_->Update(viewProjectionMatrix);
 	ground_->Update(viewProjectionMatrix);
+
+	// Aボタンの更新
+	aButton_->Update(viewProjectionMatrixSprite);
 }
 
 void GameclearScene::DrawOffscreen() {
@@ -241,6 +255,9 @@ void GameclearScene::DrawOffscreen() {
 void GameclearScene::DrawBackBuffer()
 {
 	//一応3Dのものも外に置けるようにした
+
+	// Aボタンの描画
+	aButton_->Draw();
 }
 
 void GameclearScene::ImGui() {
@@ -257,6 +274,12 @@ void GameclearScene::ImGui() {
 	{
 		rock_[i]->ImGui();
 	}
+
+	// AボタンのImGui
+	ImGui::Text("A Button");
+	aButton_->ImGui();
+	ImGui::Spacing();
+
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

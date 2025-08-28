@@ -8,6 +8,8 @@
 #include "GameObjects/Ground/Ground.h"			//地面
 #include "GameObjects/Rock/Rock.h"
 
+//ボタンクラス
+#include "GameObjects/Button/Button.h"
 
 class GameoverScene : public BaseScene
 {
@@ -64,6 +66,8 @@ private:
 	//岩
 	std::unique_ptr<Rock> rock_[3];
 
+	// Aボタン
+	std::unique_ptr<Button> aButton_ = nullptr;
 
 	// ライティング
 	Light directionalLight_;

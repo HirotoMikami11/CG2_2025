@@ -29,6 +29,8 @@ void GameoverScene::LoadResources() {
 	modelManager_->LoadModel("resources/Model/FontModel", "gameoverFont.obj", "gameoverFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
 
+	// Aボタンのテクスチャを読み込み
+	textureManager_->LoadTexture("resources/Texture/AButton.png", "AButton");
 
 	Logger::Log(Logger::GetStream(), "GameoverScene: Resources loaded successfully\n");
 }
@@ -153,6 +155,18 @@ void GameoverScene::InitializeGameObjects() {
 	);
 
 	///*-----------------------------------------------------------------------*///
+	///									Aボタン									///
+	///*-----------------------------------------------------------------------*///
+
+	// 初期位置を画面中央、Y座標620に設定（ImGuiで調整可能）
+	Vector2 buttonPosition = { 640.0f, 620.0f };  // Y座標を620に設定
+	Vector2 buttonSize = { 64.0f, 64.0f };
+
+	aButton_ = std::make_unique<Button>();
+	aButton_->Initialize(directXCommon_, "AButton", buttonPosition, buttonSize);
+	aButton_->SetName("A Button");
+
+	///*-----------------------------------------------------------------------*///
 	///									ライト									///
 	///*-----------------------------------------------------------------------*///
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
@@ -198,6 +212,9 @@ void GameoverScene::UpdateGameObjects() {
 	//プレイヤー(置物)の更新
 	gameoverPlayer_->Update(viewProjectionMatrix);
 	ground_->Update(viewProjectionMatrix);
+
+	// Aボタンの更新
+	aButton_->Update(viewProjectionMatrixSprite);
 }
 
 void GameoverScene::DrawOffscreen() {
@@ -216,6 +233,9 @@ void GameoverScene::DrawOffscreen() {
 void GameoverScene::DrawBackBuffer()
 {
 	//一応3Dのものも外に置けるようにした
+
+	// Aボタンの描画
+	aButton_->Draw();
 }
 
 void GameoverScene::ImGui() {
@@ -232,6 +252,12 @@ void GameoverScene::ImGui() {
 	{
 		rock_[i]->ImGui();
 	}
+
+	// AボタンのImGui
+	ImGui::Text("A Button");
+	aButton_->ImGui();
+	ImGui::Spacing();
+
 	// ライトのImGui
 	ImGui::Text("Lighting");
 	directionalLight_.ImGui("DirectionalLight");

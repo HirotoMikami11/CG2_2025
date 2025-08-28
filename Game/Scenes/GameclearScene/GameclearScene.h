@@ -8,6 +8,8 @@
 #include "GameObjects/Ground/Ground.h"			//地面
 #include "GameObjects/Rock/Rock.h"
 
+//ボタンクラス
+#include "GameObjects/Button/Button.h"
 
 class GameclearScene : public BaseScene
 {
@@ -64,11 +66,12 @@ private:
 	//岩
 	std::unique_ptr<Rock> rock_[3];
 
+	// Aボタン
+	std::unique_ptr<Button> aButton_ = nullptr;
 
 	// イージングパラメータ
 	float t = 0.0f;
 	const float tSpeed = 1.0f / 400.0f; // イージングの進行速度
-
 
 	// ライティング
 	Light directionalLight_;
