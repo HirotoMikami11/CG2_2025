@@ -131,6 +131,12 @@ public:
 	VignettePostEffect* GetVignetteEffect() { return vignetteEffect_; }
 
 	/// <summary>
+/// ダメージエフェクトを取得
+/// </summary>
+/// <returns>ビネットポストエフェクトのポインタ</returns>
+	VignettePostEffect* GetDamageEffect() { return damageEffect_; }
+
+	/// <summary>
 	/// 深度ぼかしエフェクトを取得
 	/// </summary>
 	/// <returns>深度ぼかしポストエフェクトのポインタ</returns>
@@ -216,7 +222,9 @@ private:
 	LineGlitchPostEffect* lineGlitchEffect_ = nullptr;
 	GrayscalePostEffect* grayscaleEffect_ = nullptr;
 	VignettePostEffect* vignetteEffect_ = nullptr;
+	VignettePostEffect* damageEffect_ = nullptr;
 
 	DepthFogPostEffect* depthFogEffect_ = nullptr;
 	DepthOfFieldPostEffect* depthOfFieldEffect_ = nullptr;
+	
 };

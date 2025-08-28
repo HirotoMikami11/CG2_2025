@@ -24,10 +24,13 @@ void GameclearScene::LoadResources() {
 	// リソースマネージャーの取得
 	modelManager_ = ModelManager::GetInstance();
 	textureManager_ = TextureManager::GetInstance();
-
+	audioManager_ = AudioManager::GetInstance();
 	// モデルを事前読み込み
 	modelManager_->LoadModel("resources/Model/FontModel", "gameclearFont.obj", "gameclearFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+
+	// 音声の読み込み
+	audioManager_->LoadAudio("resources/Audio/ClearBGM.mp3", "ClearBGM");
 
 
 	Logger::Log(Logger::GetStream(), "GameclearScene: Resources loaded successfully\n");
@@ -154,6 +157,10 @@ void GameclearScene::InitializeGameObjects() {
 	directionalLight_.Initialize(directXCommon_, Light::Type::DIRECTIONAL);
 	directionalLight_.SetDirection({ -1.0f,-0.59f,-1.0f });
 	directionalLight_.SetIntensity(0.65f);
+
+	// BGMをループ再生で開始
+	audioManager_->PlayLoop("ClearBGM");
+	audioManager_->SetVolume("ClearBGM", 0.17f);
 }
 
 void GameclearScene::Update() {
@@ -171,14 +178,14 @@ void GameclearScene::UpdateGameObjects() {
 	// Aボタンでゲームシーンへ遷移
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE) ||
 		InputManager::GetInstance()->IsGamePadButtonTrigger(InputManager::GamePadButton::A)) {
-		// フェードを使った遷移（ヘルパークラスを使用）
-		SceneTransitionHelper::FadeToScene("TitleScene", 1.0f);
+		if (!SceneTransitionHelper::IsTransitioning()) {
+			audioManager_->Stop("ClearBGM");
+			audioManager_->Play("Select");
+			audioManager_->SetVolume("Select", 0.3f);
+			// フェードを使った遷移（ヘルパークラスを使用）
+			SceneTransitionHelper::FadeToScene("TitleScene", 1.0f);
+		}
 
-		// スライドエフェクトを使った遷移
-		// SceneTransitionHelper::TransitionToScene("GameScene", "slide_left", 0.5f, 0.5f);
-
-		// エフェクトなしの即座の遷移
-		// SceneTransitionHelper::ChangeSceneImmediate("GameScene");
 	}
 
 	// 行列更新

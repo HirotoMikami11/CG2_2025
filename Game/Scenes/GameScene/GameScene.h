@@ -115,7 +115,8 @@ private:
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
-
+	// 音声管理
+	AudioManager* audioManager_;
 	//					衝突マネージャー					//
 	std::unique_ptr<CollisionManager> collisionManager_;
 

@@ -24,10 +24,16 @@ void TitleScene::LoadResources() {
 	// リソースマネージャーの取得
 	modelManager_ = ModelManager::GetInstance();
 	textureManager_ = TextureManager::GetInstance();
+	audioManager_ = AudioManager::GetInstance();
 
 	// モデルを事前読み込み
 	modelManager_->LoadModel("resources/Model/FontModel", "titleFont.obj", "titleFont");
 	modelManager_->LoadModel("resources/Model/Player", "player.obj", "player");
+	audioManager_->LoadAudio("resources/Audio/Se01.mp3", "SE");
+
+	// 音声の読み込み
+	audioManager_->LoadAudio("resources/Audio/TitleBGM.mp3", "TitleBGM");
+	audioManager_->LoadAudio("resources/Audio/Select.mp3", "Select");
 
 	Logger::Log(Logger::GetStream(), "TitleScene: Resources loaded successfully\n");
 }
@@ -84,6 +90,11 @@ void TitleScene::Initialize() {
 	InitializeGameObjects();
 	//ポストエフェクトの初期設定
 	ConfigureOffscreenEffects();
+
+	// BGMをループ再生で開始
+	audioManager_->PlayLoop("TitleBGM");
+	audioManager_->SetVolume("TitleBGM", 1.0f);
+
 }
 
 void TitleScene::InitializeGameObjects() {
@@ -125,14 +136,17 @@ void TitleScene::UpdateGameObjects() {
 	// スペースキーでゲームシーンへ遷移
 	if (InputManager::GetInstance()->IsKeyTrigger(DIK_SPACE) ||
 		InputManager::GetInstance()->IsGamePadButtonTrigger(InputManager::GamePadButton::A)) {
+		if (!SceneTransitionHelper::IsTransitioning()) {
+		audioManager_->Stop("TitleBGM");
+		audioManager_->Play("Select");
+		audioManager_->SetVolume("Select", 0.3f);
+
 		// フェードを使った遷移（ヘルパークラスを使用）
 		SceneTransitionHelper::FadeToScene("GameScene", 1.0f);
+		}
 
-		// スライドエフェクトを使った遷移
-		// SceneTransitionHelper::TransitionToScene("GameScene", "slide_left", 0.5f, 0.5f);
 
-		// エフェクトなしの即座の遷移
-		// SceneTransitionHelper::ChangeSceneImmediate("GameScene");
+
 	}
 
 	// 行列更新

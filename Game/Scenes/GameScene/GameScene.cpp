@@ -33,7 +33,7 @@ void GameScene::LoadResources() {
 	// リソースマネージャーの取得
 	modelManager_ = ModelManager::GetInstance();
 	textureManager_ = TextureManager::GetInstance();
-
+	audioManager_ = AudioManager::GetInstance();
 	// モデルファイルを読み込み
 	modelManager_->LoadModel("resources/Model/Ground", "ground.obj", "ground");
 	modelManager_->LoadModel("resources/Model/Skydome", "skydome.obj", "skydome");
@@ -52,6 +52,10 @@ void GameScene::LoadResources() {
 
 	// テクスチャ読み込み
 	textureManager_->LoadTexture("resources/Texture/Reticle/reticle.png", "reticle");
+
+	// 音声の読み込み
+	audioManager_->LoadAudio("resources/Audio/GameBGM.mp3", "GameBGM");
+
 
 	Logger::Log(Logger::GetStream(), "GameScene: Resources loaded successfully\n");
 }
@@ -160,6 +164,10 @@ void GameScene::Initialize() {
 
 	// ポストエフェクトの初期設定
 	ConfigureOffscreenEffects();
+
+	// BGMをループ再生で開始
+	audioManager_->PlayLoop("GameBGM");
+	audioManager_->SetVolume("GameBGM", 0.2f);
 }
 
 void GameScene::InitializeGameObjects() {
@@ -300,7 +308,9 @@ void GameScene::Update() {
 	if (player_ && player_->GetCurrentHP() <= 0.0f) {
 		// フェードを使った遷移（ヘルパークラスを使用）
 		SceneTransitionHelper::FadeToScene("GameoverScene", 1.0f);
+		audioManager_->Stop("GameBGM");
 		return; // 以降の処理をスキップ
+
 	}
 
 	// ゲームクリア条件: 敵が全滅 かつ レールカメラが終点到達
@@ -308,7 +318,9 @@ void GameScene::Update() {
 		railCamera_->GetProgress() >= 1.0f && !railCamera_->IsMoving()) {
 		// フェードを使った遷移（ヘルパークラスを使用）
 		SceneTransitionHelper::FadeToScene("GameclearScene", 1.0f);
+		audioManager_->Stop("GameBGM");
 		return; // 以降の処理をスキップ
+
 	}
 
 

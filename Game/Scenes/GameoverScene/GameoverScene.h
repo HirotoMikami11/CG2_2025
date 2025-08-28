@@ -79,4 +79,6 @@ private:
 	// リソース管理
 	ModelManager* modelManager_;
 	TextureManager* textureManager_;
+	// 音声管理
+	AudioManager* audioManager_;
 };
