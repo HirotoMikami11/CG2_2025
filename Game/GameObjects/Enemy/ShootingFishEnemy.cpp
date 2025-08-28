@@ -60,8 +60,8 @@ void ShootingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
 	// ダメージエフェクトの更新
 	UpdateDamageEffect();
 
-	// 向きの更新（射撃状態では手動で制御するのでスキップする場合もある）
-	if (state_ && state_->GetName() != "Shoting Fish Shoot") {
+	// 向きの更新（射撃状態では手動で制御、死亡アニメーション中は呼ばない）
+	if (!isPlayingDeathAnimation_ && state_ && state_->GetName() != "Shoting Fish Shoot") {
 		SetToVelocityDirection();
 	}
 
@@ -108,7 +108,6 @@ void ShootingFishEnemy::ImGui() {
 		// デバッグ情報を表示
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 		ImGui::Text("Pattern: %d", static_cast<int>(pattern_));
-		ImGui::Text("Is Dead (Enemy Flag): %s", isDead_ ? "YES" : "NO");
 		ImGui::Text("Is Dead (Collider): %s", Collider::IsDead() ? "YES" : "NO");
 		ImGui::Text("Is Dead (Combined): %s", IsDead() ? "YES" : "NO");
 		ImGui::Text("Shot Count: %d", shotCount_);

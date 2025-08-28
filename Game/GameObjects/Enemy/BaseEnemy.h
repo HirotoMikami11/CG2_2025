@@ -103,9 +103,29 @@ public:
 	EnemyPattern GetPattern() const { return pattern_; }
 	Player* GetPlayer() const { return player_; }
 
-	// HP関連はColliderベースを使用（オーバーライドして二重管理を統合）
+	// Color関連のGetter/Setter（GameObjectを介してアクセス）
+	Vector4 GetColor() const {
+		return gameObject_ ? gameObject_->GetColor() : Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	}
+	void SetColor(const Vector4& color) {
+		if (gameObject_) gameObject_->SetColor(color);
+	}
+
+	// 死亡判定をオーバーライド（死亡アニメーション中の制御）
 	bool IsDead() const override {
-		return isDead_ || Collider::IsDead();
+		// 死亡アニメーション中は削除されないよう制御
+		if (isPlayingDeathAnimation_) {
+			return isDeathAnimationComplete_;
+		}
+		// 通常はColliderのHP基準判定を使用
+		return Collider::IsDead();
+	}
+
+	/// <summary>
+	/// 死亡アニメーション完了時に呼び出す
+	/// </summary>
+	void CompleteDeathAnimation() {
+		isDeathAnimationComplete_ = true;
 	}
 
 	/// <summary>
@@ -134,7 +154,6 @@ public:
 	void SetVelocity(const Vector3& velocity) { velocity_ = velocity; }
 	void SetPlayer(Player* player) { player_ = player; }
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
-	void SetDead(bool isDead) { isDead_ = isDead; }
 
 protected:
 	// ゲームオブジェクト
@@ -152,8 +171,9 @@ protected:
 	// 敵の行動パターン
 	EnemyPattern pattern_ = EnemyPattern::Straight;
 
-	// 死亡フラグ（既存システムとの互換性のため残す）
-	bool isDead_ = false;
+	// 死亡アニメーション制御フラグ
+	bool isPlayingDeathAnimation_ = false;      // 死亡アニメーション再生中フラグ
+	bool isDeathAnimationComplete_ = false;     // 死亡アニメーション完了フラグ
 
 	// 遅延クリア用フラグ
 	bool shouldClearTimedCalls_ = false;
@@ -201,4 +221,9 @@ protected:
 	/// 設定されたパターンに応じた初期Stateを設定（サブクラスで実装）
 	/// </summary>
 	virtual void SetInitializeState() = 0;
+
+	/// <summary>
+	/// HPが0になった時の死亡処理（各派生クラスで実装）
+	/// </summary>
+	virtual void OnDeath() = 0;
 };

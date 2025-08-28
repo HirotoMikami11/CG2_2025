@@ -4,6 +4,7 @@
 #include "BaseEnemy.h"
 #include "State/RushingFishStateHoming.h"
 #include "State/RushingFishStateRush.h"
+#include "State/RushingFishStateDead.h"
 
 /// <summary>
 /// 突進してくる魚の敵クラス
@@ -44,7 +45,13 @@ public:
 	/// ImGui
 	/// </summary>
 	void ImGui() override;
-
+	/// <summary>
+	/// HPが0になった時の死亡処理
+	/// </summary>
+	void OnDeath() override {
+		// 死亡ステートに遷移
+		ChangeState(std::make_unique<RushingFishStateDead>(this));
+	}
 private:
 
 

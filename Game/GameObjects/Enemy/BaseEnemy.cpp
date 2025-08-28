@@ -67,6 +67,11 @@ void BaseEnemy::SetEnemyStats(float hp, float attackPower) {
 void BaseEnemy::OnCollision(Collider* other) {
 	if (!other) return;
 
+	// 死亡アニメーション中は衝突処理をスキップ
+	if (isPlayingDeathAnimation_) {
+		return;
+	}
+
 	// 衝突相手がプレイヤー陣営かチェック
 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer) {
 		// プレイヤーの弾に当たった場合はダメージを受ける
@@ -79,15 +84,22 @@ void BaseEnemy::OnCollision(Collider* other) {
 }
 
 float BaseEnemy::TakeDamage(float damage) {
-	// Colliderベースのダメージ処理を呼び出し
+	// 死亡アニメーション中はダメージを受けない
+	if (isPlayingDeathAnimation_) {
+		return 0.0f;
+	}
+
+	// Colliderベースのダメージ処理を呼び出し（HPが0になる）
 	float actualDamage = Collider::TakeDamage(damage);
 
 	// ダメージエフェクトを開始
 	StartDamageEffect();
 
-	// HPが0以下になったら死亡フラグを立てる
+	// HPが0以下になったら死亡アニメーションを開始
 	if (GetCurrentHP() <= 0.0f) {
-		isDead_ = true;
+		isPlayingDeathAnimation_ = true;
+		isDeathAnimationComplete_ = false;
+		OnDeath(); // 各派生クラスで実装される死亡処理
 	}
 
 	return actualDamage;

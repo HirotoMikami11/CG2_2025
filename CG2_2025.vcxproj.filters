@@ -576,6 +576,12 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\ShootingFishStateDead.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObjects\Enemy\State\RushingFishStateDead.cpp">
+      <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\Shader\Grayscale\Grayscale.PS.hlsl">
@@ -957,6 +963,12 @@
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\ShootingFishStateDead.h">
+      <Filter>Game\GameObjects\Enemy\State\Shooting</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjects\Enemy\State\RushingFishStateDead.h">
+      <Filter>Game\GameObjects\Enemy\State\Rushing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

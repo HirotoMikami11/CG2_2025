@@ -85,6 +85,10 @@ private:
 	// 弾の速度
 	static constexpr float kBulletSpeed = 2.0f;
 
+	void OnDeath() override {
+		//実装を後回しにする
+	}
+
 	/// <summary>
 	/// 設定されたパターンに応じた初期Stateを設定
 	/// </summary>

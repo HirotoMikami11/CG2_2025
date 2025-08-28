@@ -110,7 +110,6 @@ void Enemy::ImGui() {
 		ImGui::Text("Timed Calls Count: %zu", timedCalls_.size());
 		ImGui::Text("Bullets Count: %zu", bullets_.size());
 		ImGui::Text("Pattern: %d", static_cast<int>(pattern_));
-		ImGui::Text("Is Dead: %s", isDead_ ? "YES" : "NO");
 
 		ImGui::Separator();
 

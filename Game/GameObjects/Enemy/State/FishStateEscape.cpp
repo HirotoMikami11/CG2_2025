@@ -37,10 +37,9 @@ void FishStateEscape::Update() {
 	// プレイヤーとの距離を計算
 	float distanceToPlayer = Distance(playerPos, enemyPos);
 
-	// 距離が閾値以下になったら直進状態に遷移
+	//自機から離れたら死亡
 	if (distanceToPlayer >= 200) {
-		// 現在の速度で直進状態に遷移
-		enemy_->SetDead(true);
+		enemy_->Collider::IsDead();
 		return;
 	}
 

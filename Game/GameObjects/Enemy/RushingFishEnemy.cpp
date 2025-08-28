@@ -36,7 +36,7 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 	pattern_ = pattern;
 
 	// 突進魚のステータス設定
-	float enemyHP = 30.0f;
+	float enemyHP = 5.0f;
 	float enemyAttackPower = 10.0f; // 体当たり攻撃力（高い）
 	SetEnemyStats(enemyHP, enemyAttackPower);
 
@@ -46,7 +46,6 @@ void RushingFishEnemy::Initialize(DirectXCommon* dxCommon, const Vector3& positi
 	// 設定したパターンによって初期状態を設定する
 	SetInitializeState();
 }
-
 void RushingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
 	// 状態更新
 	if (state_) {
@@ -59,12 +58,15 @@ void RushingFishEnemy::Update(const Matrix4x4& viewProjectionMatrix) {
 	// ダメージエフェクトの更新
 	UpdateDamageEffect();
 
-	// 向きの更新
-	SetToVelocityDirection();
+	// 向きの更新（死亡アニメーション中は呼ばない）
+	if (!isPlayingDeathAnimation_) {
+		SetToVelocityDirection();
+	}
 
 	// ゲームオブジェクトの更新
 	gameObject_->Update(viewProjectionMatrix);
 }
+
 
 void RushingFishEnemy::Draw(const Light& directionalLight) {
 	// 敵本体の描画
@@ -100,7 +102,6 @@ void RushingFishEnemy::ImGui() {
 		// デバッグ情報を表示
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", velocity_.x, velocity_.y, velocity_.z);
 		ImGui::Text("Pattern: %d", static_cast<int>(pattern_));
-		ImGui::Text("Is Dead: %s", isDead_ ? "YES" : "NO");
 
 		ImGui::Separator();
 

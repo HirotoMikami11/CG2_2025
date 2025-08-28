@@ -6,7 +6,7 @@
 #include "GameObjects/Enemy/State/FishStateHover.h"
 #include "GameObjects/Enemy/State/FishStateShoot.h"
 #include "GameObjects/Enemy/State/FishStateEscape.h"
-
+#include "GameObjects/Enemy/State/ShootingFishStateDead.h"
 /// <summary>
 /// 射撃する魚の敵クラス
 /// プレイヤーの前方に移動してうろうろし、4回射撃した後に逃げる
@@ -67,6 +67,13 @@ private:
 
 	// 射撃回数
 	int shotCount_ = 0;
+	/// <summary>
+/// HPが0になった時の死亡処理
+/// </summary>
+	void OnDeath() override {
+		// 死亡ステートに遷移
+		ChangeState(std::make_unique<ShootingFishStateDead>(this));
+	}
 
 	/// <summary>
 	/// 設定されたパターンに応じた初期Stateを設定
