@@ -38,10 +38,13 @@ private:
 	static constexpr float kOffsetRange = 15.0f;
 
 	// 射撃間隔（フレーム数）
-	static constexpr int kShootInterval = 120 ;
+	static constexpr int kShootInterval = 120;
 
 	// カメラが移動したと判定する閾値
 	static constexpr float kCameraMovementThreshold = 1.0f;
+
+	// カメラが回転したと判定する閾値
+	static constexpr float kCameraRotationThreshold = 0.1f;
 
 	// 射撃タイマー
 	int shootTimer_ = 0;
@@ -57,6 +60,13 @@ private:
 
 	// 前回のカメラ位置（カメラの移動を検出するため）
 	Vector3 lastCameraPosition_;
+
+	// 前回のカメラ前方向（カメラの回転を検出するため）
+	Vector3 lastCameraForward_;
+
+	// 保存されたオフセット（カメラ座標系での右・上方向成分）
+	float savedOffsetX_ = 0.0f;
+	float savedOffsetY_ = 0.0f;
 
 	/// <summary>
 	/// 新しいホバー目標位置を生成（カメラ基準）

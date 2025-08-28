@@ -25,14 +25,26 @@ void FishStateApproach::Update() {
 		return;
 	}
 
-	// カメラが動いた場合は目標位置を平行移動（新しいランダム位置は生成しない）
+	// カメラが動いた場合は目標位置をカメラの前方向基準で再計算
 	Vector3 currentCameraPos = cameraController->GetPosition();
-	if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold) {
-		// カメラの移動量を計算
-		Vector3 cameraMovement = currentCameraPos - lastCameraPosition_;
-		// 目標位置をカメラと一緒に移動（相対位置を維持）
-		targetPosition_ += cameraMovement;
+	Vector3 currentCameraForward = cameraController->GetForward();
+	if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold ||
+		Distance(currentCameraForward, lastCameraForward_) > kCameraRotationThreshold) {
+
+		// カメラの新しい座標系を計算
+		Vector3 worldUp = { 0.0f, 1.0f, 0.0f };
+		Vector3 newCameraRight = Normalize(Cross(currentCameraForward, worldUp));
+		Vector3 newCameraUp = Normalize(Cross(newCameraRight, currentCameraForward));
+
+		// カメラから基準距離離れた基準位置
+		Vector3 basePosition = currentCameraPos + currentCameraForward * kTargetDistance;
+
+		// 保存されたオフセットを新しいカメラ座標系で再適用
+		targetPosition_ = basePosition + newCameraRight * savedOffsetX_ + newCameraUp * savedOffsetY_;
+
+		// 前回の値を更新
 		lastCameraPosition_ = currentCameraPos;
+		lastCameraForward_ = currentCameraForward;
 	}
 
 	Vector3 enemyPos = enemy_->GetPosition();
@@ -70,6 +82,7 @@ void FishStateApproach::CalculateTargetPosition() {
 	Vector3 cameraPos = cameraController->GetPosition();
 	Vector3 cameraForward = cameraController->GetForward();
 	lastCameraPosition_ = cameraPos;
+	lastCameraForward_ = cameraForward;
 
 	// カメラの右方向と上方向を計算
 	Vector3 worldUp = { 0.0f, 1.0f, 0.0f };
@@ -79,10 +92,10 @@ void FishStateApproach::CalculateTargetPosition() {
 	// カメラから kTargetDistance 離れた基準位置
 	Vector3 basePosition = cameraPos + cameraForward * kTargetDistance;
 
-	// x,y方向に -+10 の範囲でランダムオフセットを追加
-	float randomX = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
-	float randomY = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
+	// x,y方向に -+10 の範囲でランダムオフセットを生成して保存
+	savedOffsetX_ = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
+	savedOffsetY_ = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
 
 	// カメラの座標系に基づいてオフセットを適用
-	targetPosition_ = basePosition + cameraRight * randomX + cameraUp * randomY;
+	targetPosition_ = basePosition + cameraRight * savedOffsetX_ + cameraUp * savedOffsetY_;
 }

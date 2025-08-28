@@ -10,6 +10,7 @@ FishStateHover::FishStateHover(BaseEnemy* enemy) : BaseEnemyState("Shoting Fish 
 	CameraController* cameraController = CameraController::GetInstance();
 	if (cameraController) {
 		lastCameraPosition_ = cameraController->GetPosition();
+		lastCameraForward_ = cameraController->GetForward();
 	}
 
 	// 初期ホバー目標位置を生成
@@ -32,14 +33,27 @@ void FishStateHover::Update() {
 		return;
 	}
 
-	// カメラが移動した場合は目標位置を再計算
+	// カメラが移動・回転した場合は目標位置をカメラの前方向基準で再計算
 	Vector3 currentCameraPos = cameraController->GetPosition();
-	if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold) {
-		// カメラの移動量を計算
-		Vector3 cameraMovement = currentCameraPos - lastCameraPosition_;
-		// ホバー目標位置もカメラと一緒に移動
-		hoverTarget_ += cameraMovement;
+	Vector3 currentCameraForward = cameraController->GetForward();
+
+	if (Distance(currentCameraPos, lastCameraPosition_) > kCameraMovementThreshold ||
+		Distance(currentCameraForward, lastCameraForward_) > kCameraRotationThreshold) {
+
+		// カメラの新しい座標系を計算
+		Vector3 worldUp = { 0.0f, 1.0f, 0.0f };
+		Vector3 newCameraRight = Normalize(Cross(currentCameraForward, worldUp));
+		Vector3 newCameraUp = Normalize(Cross(newCameraRight, currentCameraForward));
+
+		// カメラから基準距離離れた基準位置
+		Vector3 basePosition = currentCameraPos + currentCameraForward * kBaseDistance;
+
+		// 保存されたオフセットを新しいカメラ座標系で再適用
+		hoverTarget_ = basePosition + newCameraRight * savedOffsetX_ + newCameraUp * savedOffsetY_;
+
+		// 前回の値を更新
 		lastCameraPosition_ = currentCameraPos;
+		lastCameraForward_ = currentCameraForward;
 	}
 
 	// 射撃タイマーの更新
@@ -97,10 +111,10 @@ void FishStateHover::GenerateNewHoverTarget() {
 	// カメラから基準距離離れた位置
 	Vector3 basePosition = cameraPos + cameraForward * kBaseDistance;
 
-	// カメラ座標系でランダムオフセットを生成
-	float randomOffsetX = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
-	float randomOffsetY = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
+	// カメラ座標系でランダムオフセットを生成して保存
+	savedOffsetX_ = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
+	savedOffsetY_ = Random::GetInstance().GenerateFloat(-kOffsetRange, kOffsetRange);
 
 	// カメラの座標系に基づいてオフセットを適用
-	hoverTarget_ = basePosition + cameraRight * randomOffsetX + cameraUp * randomOffsetY;
+	hoverTarget_ = basePosition + cameraRight * savedOffsetX_ + cameraUp * savedOffsetY_;
 }

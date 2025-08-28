@@ -33,5 +33,5 @@ private:
 	static constexpr float kHomingStrength = 0.07f;
 
 	// 直進状態に遷移する距離の閾値
-	static constexpr float kRushTriggerDistance = 30.0f;
+	static constexpr float kRushTriggerDistance = 15.0f;
 };

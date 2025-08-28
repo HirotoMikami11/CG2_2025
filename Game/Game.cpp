@@ -56,7 +56,7 @@ void Game::InitializeScenes() {
 	// (初期化時に一度だけ)既に登録されているシーンのリソースを読み込み
 	sceneManager_->LoadAllSceneResources();
 	// デフォルトシーンを設定（最初に表示するシーン）
-	sceneManager_->ChangeScene("GameclearScene");
+	sceneManager_->ChangeScene("TitleScene");
 }
 
 void Game::RegisterTransitionEffects()

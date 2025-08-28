@@ -27,33 +27,12 @@ public:
 	void Update() override;
 
 private:
-	// 死亡アニメーションの段階
-	enum class DeathPhase {
-		Moving,     // 上向きに移動しながら下向きになる段階（透明度変更開始）
-		Fading      // 透明度を急激に下げる段階
-	};
-
-	DeathPhase currentPhase_ = DeathPhase::Moving;
-
-	
 	// 回転関連
 	Vector3 initialRotation_;        // 初期回転値
 	Vector3 targetRotation_;         // 目標回転値（下向き）
-	float rotationTimer_ = 0.0f;     // 回転のタイマー
-	static constexpr float kRotationDuration = 0.5f;  // 回転にかける時間
+	float deathTimer_ = 0.0f;        // 死亡アニメーションのタイマー
+	static constexpr float kDeathDuration = 0.8f;  // 死亡アニメーションにかける時間
 
 	// フェード関連
 	float initialAlpha_ = 1.0f;      // 初期透明度
-	float fadeTimer_ = 0.0f;         // フェードのタイマー
-	static constexpr float kFadeDuration = 0.5f;   // フェードにかける時間（回転と同時進行）
-
-	/// <summary>
-	/// 移動段階の更新
-	/// </summary>
-	void UpdateMovingPhase();
-
-	/// <summary>
-	/// フェード段階の更新
-	/// </summary>
-	void UpdateFadingPhase();
 };

@@ -28,17 +28,14 @@ public:
 
 private:
 	// 移動関連
-	Vector3 deathVelocity_;              // 死亡時の移動速度（上方向）
 	static constexpr float kUpwardSpeed = 2.0f;  // 上向きの移動速度
 
 	// 回転関連
 	Vector3 initialRotation_;            // 初期回転値
 	Vector3 targetRotation_;             // 目標回転値（下向き）
-	float rotationTimer_ = 0.0f;         // 回転のタイマー
-	static constexpr float kRotationDuration = 3.0f;  // 回転にかける時間
+	float deathTimer_ = 0.0f;            // 死亡アニメーションのタイマー
+	static constexpr float kDeathDuration = 1.0f;  // 死亡アニメーションにかける時間
 
 	// フェード関連
 	float initialAlpha_ = 1.0f;          // 初期透明度
-	float fadeTimer_ = 0.0f;             // フェードのタイマー
-	static constexpr float kFadeDuration = 0.3f;   // フェードにかける時間（回転と同時進行）
 };
