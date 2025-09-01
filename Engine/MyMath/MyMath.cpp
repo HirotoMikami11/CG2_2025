@@ -190,15 +190,6 @@ float EaseInOutBounce(float x) {
 		? (1 - EaseOutBounce(1 - 2 * x)) / 2
 		: (1 + EaseOutBounce(2 * x - 1)) / 2;
 }
-
-void ResetEase(float t, float EaseT, int dir)
-{
-	t = 0;
-	EaseT = 0;
-	dir = 1;
-}
-
-
 ///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
 
 ///																		///
