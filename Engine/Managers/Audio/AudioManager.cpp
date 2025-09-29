@@ -89,7 +89,7 @@ void AudioManager::Play(const std::string& tagName) {
 	if (audios.find(tagName) == audios.end()) {
 		return;
 	}
-
+	audios[tagName]->Stop();
 	// 音声の再生
 	audios[tagName]->Play(xAudio2.Get());
 }

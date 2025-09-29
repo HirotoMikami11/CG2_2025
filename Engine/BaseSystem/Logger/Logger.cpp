@@ -90,6 +90,8 @@ void Logger::Log(std::ostream& os, const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
 
+
+
 /// string -> wstringに変換する関数
 std::wstring Logger::ConvertString(const std::string& str) {
 	if (str.empty()) {

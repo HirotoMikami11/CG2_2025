@@ -54,7 +54,8 @@ void OffscreenRenderer::Initialize(DirectXCommon* dxCommon, uint32_t width, uint
 	grayscaleEffect_ = postProcessChain_->AddEffect<GrayscalePostEffect>();
 	// ビネットエフェクトを追加
 	vignetteEffect_ = postProcessChain_->AddEffect<VignettePostEffect>();
-
+	// ダメージエフェクトを追加
+	damageEffect_ = postProcessChain_->AddEffect<VignettePostEffect>();
 
 
 
@@ -79,6 +80,7 @@ void OffscreenRenderer::Finalize() {
 	depthFogEffect_ = nullptr;
 	RGBShiftEffect_ = nullptr;
 	vignetteEffect_ = nullptr;
+	damageEffect_ = nullptr;
 	lineGlitchEffect_ = nullptr;
 	depthOfFieldEffect_ = nullptr;
 
