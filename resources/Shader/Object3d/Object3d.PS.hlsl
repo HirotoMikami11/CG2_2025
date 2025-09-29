@@ -34,12 +34,6 @@ PixelShaderOutput main(VertexShaderOutput input)
     float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     
-    //texture.colorのa値が0.5以下のときPixelを破棄(空白で塗りつぶされないように)
-    if (textureColor.a <= 0.5f)
-    {
-        discard;
-    }
-    
     if (gMaterial.enableLighting != 0)//Lightingする場合
     {
         ///最初に宣言
@@ -63,14 +57,13 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color.rgb = gMaterial.color.rgb * textureColor.rgb;
     }
 
-    // アルファ値：テクスチャとマテリアルの両方を乗算
-    output.color.a = gMaterial.color.a * textureColor.a;
+
+    output.color.a = gMaterial.color.a; // アルファはマテリアルの値をそのまま使用
     
-   //output.colorのa値が0のときPixelを破棄(空白で塗りつぶされないように)
+        //output.colorのa値が0のときPixelを破棄(空白で塗りつぶされないように)
     if (output.color.a == 0.0)
     {
         discard;
     }
-    
     return output;
 }
