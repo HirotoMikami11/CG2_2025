@@ -33,8 +33,8 @@ void Game::Initialize() {
 
 void Game::InitializeScenes() {
 	// Sceneの登録
-	//auto demoScene = std::make_unique<DemoScene>();
-	//sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
+	auto demoScene = std::make_unique<DemoScene>();
+	sceneManager_->RegisterScene("DemoScene", std::move(demoScene));
 
 	 //将来的に追加するシーン
 	 //auto debugScene = std::make_unique<DebugScene>();
