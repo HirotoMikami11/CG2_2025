@@ -18,7 +18,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Engine* engine = Engine::GetInstance();
 
 	// エンジンの初期化
-	engine->Initialize(L"LE2A_15_ミカミ_ヒロト_Napoleon Blue Diver");
+	engine->Initialize(L"LE2A_15_ミカミ_ヒロト_");
 
 	//ゲーム
 	Game* game = new Game;
